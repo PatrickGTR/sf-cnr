@@ -1,3 +1,43 @@
-*
-!*/
-!.gitignore
+samp.ban
+*.exe
+*.amx
+*.dll
+*.txt
+*.rec
+
+# include
+include/*
+
+# pawno
+pawno/pawn.ico
+pawno/new.pwn
+pawno/settings.ini
+pawno/.pwn
+pawno/include/**/*
+!pawno/pawn.cfg
+!pawno/include/anticheat
+!pawno/include/anticheat/**
+
+
+# filterscripts
+filterscripts/*
+!filterscripts/objects.pwn
+
+# plugins
+plugins/*
+
+# gamemodes
+gamemodes/*
+# !gamemodes/sf-cnr.*
+
+# scriptfiles
+scriptfiles/**/*
+!scriptfiles/COD/
+!scriptfiles/COD/**
+
+# npc
+npcmodes/**/*
+!npcmodes/.gitkeep 
+!npcmodes/secureguard.pwn
+!npcmodes/recordings/
+!npcmodes/recordings/*.rec
