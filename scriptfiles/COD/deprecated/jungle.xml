@@ -1,0 +1,15 @@
+<codServer>
+	<map name="Jungle">
+	<map author="Jackob">
+
+	<map t1_max_xy="-193.1748,4352.3076">
+	<map t1_min_xy="-205.3939,4352.9365">
+	<map t1_z="92.4508">
+		
+	<map t2_max_xy="-493.9080,4308.7998">
+	<map t2_min_xy="-486.4502,4320.1860">
+	<map t2_z="103.0079">
+
+	<map weather="20">
+	<map interior="0">
+</codServer>

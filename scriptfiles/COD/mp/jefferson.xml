@@ -1,0 +1,17 @@
+<codServer>
+	<map name="Deversorium">
+	<map author="Adam_South">
+
+	<map t1_max_xy="2220.06055,-1145.04187">
+	<map t1_min_xy="2223.77246,-1154.20313">
+	<map t1_z="1025.95483">
+
+	<map t2_max_xy="2191.73535,-1146.11829">
+	<map t2_min_xy="2198.41528,-1139.01746">
+	<map t2_z="1029.71741">
+	
+	<map ground_z="1"/>
+	
+	<map weather="1">
+	<map interior="15">
+</codServer>

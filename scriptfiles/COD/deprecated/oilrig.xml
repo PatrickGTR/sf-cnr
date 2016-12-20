@@ -1,0 +1,15 @@
+<codServer>
+	<map name="Oilrig">
+	<map author="[RTH]Mr.LOL">
+
+	<map t1_max_xy="3886.4995,-1869.0093">
+	<map t1_min_xy="3877.0212,-1871.9082">
+	<map t1_z="1.8255">
+
+	<map t2_max_xy="3867.7417,-1855.8372">
+	<map t2_min_xy="3886.6787,-1875.4695">
+	<map t2_z="19.8281">
+	
+	<map weather="8">
+	<map interior="0">
+</codServer>

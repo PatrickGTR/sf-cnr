@@ -1,0 +1,15 @@
+<codServer>
+	<map name="Skyfight">
+	<map author="AgentZero">
+
+	<map t1_max_xy="-1150.9683,-204.4365">
+	<map t1_min_xy="-1209.4478,-255.5932">
+	<map t1_z="14.5">
+	
+	<map t2_max_xy="-1324.5061,-144.3121">
+	<map t2_min_xy="-1264.2284,-95.9007">
+	<map t2_z="14.5">	
+
+	<map weather="1">
+	<map interior="0">
+</codServer>

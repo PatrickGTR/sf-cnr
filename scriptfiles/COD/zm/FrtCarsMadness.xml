@@ -1,0 +1,85 @@
+<zombieServer>
+	<!-- 
+		COMMANDS:
+		
+		name - Set map name
+		author - Set map author
+		helicopter - The evacuation point; where the helicopter lands.
+		human_spawn - Set human spawns (MAX = 3)
+		zombie_spawn - Set zombie spawns (MAX = 3)
+	
+	-->
+	<map name="Fort Carson Madness"></map>
+	<map author="Lorenc"></map>
+	<map helicopter="-130.7713, 975.7412, 22.3281"></map>
+	<map human_spawn="-129.49, 917.10, 21.27"></map>
+	<map human_spawn="-150.43, 930.11, 21.27"></map>
+	<map human_spawn="-151.82, 913.24, 21.27"></map>
+	<map zombie_spawn="34.070, 927.18, 25.40"></map>
+	<map zombie_spawn="-8.510, 967.67, 20.82"></map>
+	<map zombie_spawn="-44.94, 927.09, 21.74"></map>
+
+	<object model="8149" posX="-157.1400000" posY="1006.9900000" posZ="21.3700000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+	<object model="8149" posX="-6.7800000" posY="1006.9800000" posZ="14.8600000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+	<object model="8149" posX="-164.4600000" posY="928.5000000" posZ="21.3700000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="8149" posX="-164.4600000" posY="928.5000000" posZ="14.8600000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="8149" posX="-93.3400000" posY="867.7800000" posZ="21.4000000" rotX="0.0000000" rotY="0.0000000" rotZ="90.0000000"/>
+	<object model="8149" posX="-93.3400000" posY="867.7800000" posZ="14.5900000" rotX="0.0000000" rotY="0.0000000" rotZ="90.0000000"/>
+	<object model="8149" posX="44.2700000" posY="903.0200000" posZ="21.4000000" rotX="0.0000000" rotY="0.0000000" rotZ="117.0000000"/>
+	<object model="8149" posX="44.2700000" posY="903.0200000" posZ="16.8200000" rotX="0.0000000" rotY="0.0000000" rotZ="117.0000000"/>
+	<object model="8149" posX="68.5400000" posY="971.2300000" posZ="21.3700000" rotX="0.0000000" rotY="0.0000000" rotZ="-180.0000000"/>
+	<object model="8149" posX="68.5400000" posY="971.2300000" posZ="15.4700000" rotX="0.0000000" rotY="0.0000000" rotZ="-180.0000000"/>
+	<object model="8149" posX="68.5400000" posY="971.2300000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="-180.0000000"/>
+	<object model="8149" posX="44.2700000" posY="903.0200000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="117.0000000"/>
+	<object model="8149" posX="-93.3400000" posY="867.7800000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="90.0000000"/>
+	<object model="8149" posX="-164.4600000" posY="928.5000000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="8149" posX="-157.1400000" posY="1006.9900000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+	<object model="8149" posX="-6.7800000" posY="1006.9800000" posZ="28.3400000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+	<object model="9241" posX="-130.8100000" posY="975.8000000" posZ="19.3000000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="3594" posX="-131.8700000" posY="957.8400000" posZ="19.4300000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="3594" posX="-110.2800000" posY="944.4000000" posZ="20.0600000" rotX="0.0000000" rotY="0.0000000" rotZ="113.1600000"/>
+	<object model="3594" posX="-83.7400000" posY="969.0800000" posZ="19.1900000" rotX="0.0000000" rotY="0.0000000" rotZ="41.7000000"/>
+	<object model="3594" posX="-70.5000000" posY="950.8200000" posZ="19.1900000" rotX="0.0000000" rotY="0.0000000" rotZ="3.9000000"/>
+	<object model="3594" posX="-40.5900000" posY="950.4600000" posZ="18.4600000" rotX="0.0000000" rotY="0.0000000" rotZ="-64.4400000"/>
+	<object model="3594" posX="-50.8400000" posY="926.8800000" posZ="20.5800000" rotX="0.0000000" rotY="0.0000000" rotZ="-64.4400000"/>
+	<object model="3594" posX="-11.6900000" posY="955.7400000" posZ="18.9500000" rotX="0.0000000" rotY="0.0000000" rotZ="-64.4400000"/>
+	<object model="3594" posX="-100.9400000" posY="906.3400000" posZ="19.9900000" rotX="0.0000000" rotY="0.0000000" rotZ="-9.4800000"/>
+	<object model="852" posX="-104.3800000" posY="918.4200000" posZ="19.4600000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="852" posX="-102.7700000" posY="938.4500000" posZ="19.4600000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="852" posX="-104.3800000" posY="918.4200000" posZ="19.4600000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="852" posX="-116.2800000" posY="931.7300000" posZ="19.4600000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="1358" posX="-47.0500000" posY="962.6400000" posZ="19.7200000" rotX="39.4800000" rotY="15.3000000" rotZ="-163.9200000"/>
+	<object model="1358" posX="-47.0500000" posY="962.6400000" posZ="19.7200000" rotX="39.4800000" rotY="15.3000000" rotZ="-163.9200000"/>
+	<object model="3594" posX="-37.7500000" posY="925.4800000" posZ="19.1900000" rotX="-54.3000000" rotY="-48.1200000" rotZ="35.0400000"/>
+	<object model="3594" posX="-37.7500000" posY="925.4800000" posZ="19.1900000" rotX="-54.3000000" rotY="-48.1200000" rotZ="35.0400000"/>
+	<object model="3594" posX="-37.7500000" posY="925.4800000" posZ="19.1900000" rotX="-54.3000000" rotY="-48.1200000" rotZ="35.0400000"/>
+	<object model="3594" posX="-20.9300000" posY="931.0300000" posZ="20.5800000" rotX="-49.2000000" rotY="2.7000000" rotZ="136.8600000"/>
+	<object model="3594" posX="20.7500000" posY="957.2800000" posZ="18.9500000" rotX="0.0000000" rotY="0.0000000" rotZ="-64.4400000"/>
+	<object model="3594" posX="37.1200000" posY="951.2700000" posZ="19.4200000" rotX="0.0000000" rotY="0.0000000" rotZ="-6.3000000"/>
+	<object model="3594" posX="23.5600000" posY="916.4700000" posZ="21.9900000" rotX="19.9800000" rotY="172.5000000" rotZ="-6.9600000"/>
+	<object model="850" posX="-23.5400000" posY="907.2400000" posZ="22.2200000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-43.4400000" posY="924.4000000" posZ="20.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-70.2900000" posY="946.3600000" posZ="19.7100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-28.6600000" posY="907.4600000" posZ="22.3000000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-43.8000000" posY="954.2400000" posZ="19.4000000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-90.5100000" posY="927.1400000" posZ="19.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-55.9900000" posY="972.3400000" posZ="18.7000000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-37.8500000" posY="925.5300000" posZ="20.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-48.3100000" posY="930.5100000" posZ="20.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-59.0600000" posY="906.1800000" posZ="20.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-80.4300000" posY="942.0500000" posZ="20.4100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-97.9100000" posY="909.5400000" posZ="20.5800000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="13591" posX="-70.2400000" posY="980.5200000" posZ="18.8000000" rotX="0.0000000" rotY="0.0000000" rotZ="-42.4800000"/>
+	<object model="819" posX="-8.5700000" posY="958.8600000" posZ="19.8900000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="18.9400000" posY="956.4800000" posZ="19.8900000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="36.0000000" posY="950.7800000" posZ="19.8900000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-19.6000000" posY="928.5800000" posZ="19.8900000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-44.2200000" posY="959.0700000" posZ="19.8900000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="-44.8300000" posY="896.2500000" posZ="21.6400000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="13591" posX="7.9400000" posY="978.4300000" posZ="18.5500000" rotX="0.0000000" rotY="0.0000000" rotZ="-145.8000000"/>
+	<object model="13591" posX="6.8100000" posY="924.7900000" posZ="20.8600000" rotX="0.0000000" rotY="0.0000000" rotZ="-145.8000000"/>
+	<object model="819" posX="7.9100000" posY="980.1600000" posZ="18.8100000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="819" posX="4.7400000" posY="928.3200000" posZ="21.8800000" rotX="0.0000000" rotY="0.0000000" rotZ="0.0000000"/>
+	<object model="8149" posX="-157.1400000" posY="1006.9900000" posZ="14.8600000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+	<object model="8149" posX="-6.7800000" posY="1006.9800000" posZ="21.3700000" rotX="0.0000000" rotY="0.0000000" rotZ="-90.0000000"/>
+</zombieServer>
