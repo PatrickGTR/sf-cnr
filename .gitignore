@@ -11,4 +11,7 @@
 
 # Whitelist
 !scriptfiles/COD/
+scriptfiles/*
+
 !pawno/include/anticheat/
+pawno/include/*
