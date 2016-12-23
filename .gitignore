@@ -28,7 +28,7 @@ plugins/*
 
 # gamemodes
 gamemodes/*
-# !gamemodes/sf-cnr.*
+!gamemodes/sf-cnr.pwn
 
 # scriptfiles
 scriptfiles/**/*
