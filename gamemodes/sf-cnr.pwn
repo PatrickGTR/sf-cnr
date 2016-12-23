@@ -12,7 +12,7 @@
 */
 
 #pragma dynamic 					7200000
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -3533,9 +3533,9 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Gas Station",      	3000, -20.58315, -58.06674, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 	CreateRobberyNPC( "Gas Cashier",			1000, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 
-	CreateRobberyCheckpoint( "Drug House", 			5000, 2201.00952, -1212.8709, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
-	CreateRobberyNPC( "Triad Boss",			2500, 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 26, 27, 94 ); // TRIADS
-	CreateRobberyNPC( "Mafia Boss",			2500, 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 44, 10, 15 ); // Mafia
+	CreateRobberyCheckpoint( "Drug House", 			7000, 2201.00952, -1212.8709, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
+	CreateRobberyNPC( "Triad Boss",			2500, 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
+	CreateRobberyNPC( "Mafia Boss",			2500, 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
 
 	CreateRobberyCheckpoint( "Film Studio", 		3000, 2327.25122, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
 	CreateRobberyCheckpoint( "Grotti Cars", 		3000, 542.361816, -1303.5104, 16.725925, 180.00000, -1 );
@@ -4351,24 +4351,6 @@ public OnGameModeInit()
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 
 	/* ** Christmas ** */
-	new snow;
-	snow = CreateObject( 11340, -2079.95313, 159.20309, 30.86720, 0.00000, 0.00000, 0.00000, 500.0 );
-	SetObjectMaterial( snow, 0, 3914, "snow", "mp_snow", 0xFFFFFFFF );
-
-	snow = CreateObject( 10983, -2076.64844, 222.85156, 31.21875, 0.00000, 0.00000, 0.00000, 500.0 );
-	SetObjectMaterial( snow, 0, 3914, "snow", "mp_snow", 0xFFFFFFFF );
-	SetObjectMaterial( snow, 1, 3914, "snow", "mp_snow", 0xFFFFFFFF );
-
-	snow = CreateObject( 11223, -2049.17188, 250.32031, 33.07813, 0.00000, 0.00000, 0.00000, 500.0 );
-	SetObjectMaterial( snow, 0, 3914, "snow", "mp_snow", 0xFFFFFFFF );
-
-	SetObjectInvisible( CreateDynamicObject( 19377, -2100.19312, 215.44859, 33.89216, 0.00000, 90.00000, 0.00000 ) );
-	SetObjectInvisible( CreateDynamicObject( 19377, -2110.69702, 215.42146, 33.89216, 0.00000, 90.00000, 0.00000 ) );
-	SetObjectInvisible( CreateDynamicObject( 19377, -2121.22290, 215.46042, 33.89216, 0.00000, 90.00000, 0.00000 ) );
-	SetObjectInvisible( CreateDynamicObject( 19377, -2131.67261, 215.20615, 34.17818, 0.00000, 90.00000, 0.00000 ) );
-	SetObjectInvisible( CreateDynamicObject( 19377, -2134.36670, 224.83891, 34.17818, 0.00000, 90.00000, 0.00000 ) );
-	SetObjectInvisible( CreateDynamicObject( 19377, -2132.85571, 234.38968, 33.93288, 0.00000, 90.00000, 0.00000 ) );
-
 	gFerrisWheel = CreateObject( FERRIS_WHEEL_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
    	CreateObject( FERRIS_BASE_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
 
