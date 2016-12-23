@@ -2332,9 +2332,9 @@ new
 #define ENABLED_EASTER_EGG 			( false )
 
 #if ENABLED_EASTER_EGG == true
-	#define EASTEREGG_LABEL 			"[EASTER EGG]"
-	#define EASTEREGG_NAME 				"Easter Egg"
-	#define EASTEREGG_MODEL 			( 19341 )
+	#define EASTEREGG_LABEL 			"[XMAS BOX]" // "[EASTER EGG]"
+	#define EASTEREGG_NAME 				"Christmas Box" // "Easter Egg"
+	#define EASTEREGG_MODEL 			randarg( 19054, 19054, 19056, 19057, 19058 ) // ( 19341 )
 	#define MAX_EGGS 					( 4 )
 
 	enum E_EASTEREGG_DATA
@@ -2881,8 +2881,6 @@ new
 	Iterator:InformedRobbery< MAX_INFORMED_ROBBERIES >
 ;
 
-
-
 /* ** Christmas ** */
 #define UPDATE_INTERVAL     750
 #define NUM_FERRIS_CAGES        10
@@ -2908,7 +2906,6 @@ new Float:gFerrisCageOffsets[NUM_FERRIS_CAGES][3] = {
 	{7.0399, -0.0200, 9.3600}
 };
 new gFerrisWheel;
-new gFerrisBase;
 new gFerrisCages[NUM_FERRIS_CAGES];
 new Float:gCurrentTargetYAngle = 0.0;
 new gWheelTransAlternate = 0;
@@ -4373,7 +4370,7 @@ public OnGameModeInit()
 	SetObjectInvisible( CreateDynamicObject( 19377, -2132.85571, 234.38968, 33.93288, 0.00000, 90.00000, 0.00000 ) );
 
 	gFerrisWheel = CreateObject( FERRIS_WHEEL_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
-    gFerrisBase = CreateObject( FERRIS_BASE_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
+   	CreateObject( FERRIS_BASE_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
 
 	new x=0;
 	while(x != NUM_FERRIS_CAGES) {
@@ -24366,7 +24363,7 @@ stock initializeTextDraws( )
 	TextDrawSetProportional(g_ChristmasTD[ 0 ], 1);
 	TextDrawSetShadow(g_ChristmasTD[ 0 ], 1);
 	TextDrawUseBox(g_ChristmasTD[ 0 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 0 ], 255);
+	TextDrawBoxColor(g_ChristmasTD[ 0 ], 0);
 	TextDrawTextSize(g_ChristmasTD[ 0 ], 15.000000, 19.000000);
 	TextDrawSetPreviewModel(g_ChristmasTD[ 0 ], 19056);
 	TextDrawSetPreviewRot(g_ChristmasTD[ 0 ], 0.000000, 0.000000, -50.000000, 1.000000);
@@ -24381,7 +24378,7 @@ stock initializeTextDraws( )
 	TextDrawSetProportional(g_ChristmasTD[ 1 ], 1);
 	TextDrawSetShadow(g_ChristmasTD[ 1 ], 1);
 	TextDrawUseBox(g_ChristmasTD[ 1 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 1 ], 255);
+	TextDrawBoxColor(g_ChristmasTD[ 1 ], 0);
 	TextDrawTextSize(g_ChristmasTD[ 1 ], 75.000000, 80.000000);
 	TextDrawSetPreviewModel(g_ChristmasTD[ 1 ], 19076);
 	TextDrawSetPreviewRot(g_ChristmasTD[ 1 ], 0.000000, 0.000000, 0.000000, 1.000000);
@@ -24396,7 +24393,7 @@ stock initializeTextDraws( )
 	TextDrawSetProportional(g_ChristmasTD[ 2 ], 1);
 	TextDrawSetShadow(g_ChristmasTD[ 2 ], 1);
 	TextDrawUseBox(g_ChristmasTD[ 2 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 2 ], 255);
+	TextDrawBoxColor(g_ChristmasTD[ 2 ], 0);
 	TextDrawTextSize(g_ChristmasTD[ 2 ], 15.000000, 19.000000);
 	TextDrawSetPreviewModel(g_ChristmasTD[ 2 ], 19057);
 	TextDrawSetPreviewRot(g_ChristmasTD[ 2 ], 0.000000, 0.000000, -50.000000, 1.000000);
@@ -31652,7 +31649,26 @@ stock initializeActors( )
 			{ 90, -2426.1587, -746.5093, 140.8393, 92.7638, "GANGS", "leanIDLE", 0 },
 			{ 139, -2422.8667, -746.1351, 140.9746, 145.6708, "BEACH", "ParkSit_M_loop", 0 },
 			{ 214, -2425.2937, -728.2106, 141.3340, 272.7170,"BEACH", "bather", 0 },
-			{ 16, -2398.5425, -717.8216, 133.1562, 78.5421, "INT_HOUSE", "wash_up", 0 }
+			{ 16, -2398.5425, -717.8216, 133.1562, 78.5421, "INT_HOUSE", "wash_up", 0 },
+
+		// Christmas
+			{ 53, -1965.7535,879.6472,42.1192,292.2784, "DANCING", "dance_loop", 0 },
+			{ 50, -1965.8983,881.8383,42.1192,271.2848, "DANCING", "DAN_Up_A", 0 },
+			{ 39, -1965.7107,885.0992,42.1192,250.6048, "DANCING", "dance_loop", 0 },
+			{ 37, -1964.8478,888.0038,42.1192,233.3712, "DANCING", "DAN_Up_A", 0 },
+
+			{ 28, -1933.2917,871.0927,38.5078,276.2980, "ON_LOOKERS", "wave_loop", 0 }, // wave
+			{ 29, -1933.1804,896.5349,38.5078,277.2377, "ON_LOOKERS", "wave_loop", 0 }, // wave
+
+			{ 71, -1989.7068,900.0749,45.2032,215.2203, "COP_AMBIENT", "Coplook_loop", 0 },
+			{ 71, -1989.4297,868.3258,45.2032,303.8954, "COP_AMBIENT", "Coplook_loop", 0 },
+			{ 211, -1982.0345,885.1508,45.2032,120.7622, "DEALER", "DEALER_IDLE", 0 }, // guard
+ 			{ 77,-1915.8590,865.8470,35.4260,212.589, "BEACH", "ParkSit_M_loop", 0 },
+ 			{ 78,-1915.7534,902.8911,35.4260,85.7110, "BEACH", "ParkSit_M_loop", 0 },
+ 			{ 79,-1929.5313,897.4926,35.4260,222.157, "BEACH", "ParkSit_M_loop", 0 },
+ 			{ 134,-1929.8927,870.9359,35.4260,324.45, "BEACH", "ParkSit_M_loop", 0 }
+
+
 		}
 	;
 
