@@ -15,6 +15,10 @@ pawno/settings.ini
 pawno/.pwn
 pawno/include/**/*
 !pawno/pawn.cfg
+!pawno/include/a_ig.inc
+!pawno/include/sf-cnr.inc
+!pawno/include/lookupffs.inc
+!pawno/include/attachments.inc
 !pawno/include/anticheat
 !pawno/include/anticheat/**
 
