@@ -560,7 +560,6 @@ new
 	Text:  g_SlotMachineRight 		= Text: INVALID_TEXT_DRAW,
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
-	Text:  g_ChristmasTD[ 6 ] 		= { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -2329,7 +2328,7 @@ new
 ;
 
 /* ** Easter Eggs ** */
-#define ENABLED_EASTER_EGG 			( false )
+#define ENABLED_EASTER_EGG 			( true )
 
 #if ENABLED_EASTER_EGG == true
 	#define EASTEREGG_LABEL 			"[XMAS BOX]" // "[EASTER EGG]"
@@ -2880,37 +2879,6 @@ new
 	g_informedRobberies[ MAX_INFORMED_ROBBERIES ] [ E_INFORMED_ROBBERY_DATA ],
 	Iterator:InformedRobbery< MAX_INFORMED_ROBBERIES >
 ;
-
-/* ** Christmas ** */
-#define UPDATE_INTERVAL     750
-#define NUM_FERRIS_CAGES        10
-#define FERRIS_WHEEL_ID         18877
-#define FERRIS_CAGE_ID          18879
-#define FERRIS_BASE_ID          18878
-#define FERRIS_DRAW_DISTANCE    300.0
-#define FERRIS_WHEEL_SPEED      0.01
-
-#define FERRIS_WHEEL_Z_ANGLE  	90.0
-
-new Float:gFerrisOrigin[3] = {-1980.259399, 883.610412, 59.363193};
-new Float:gFerrisCageOffsets[NUM_FERRIS_CAGES][3] = {
-	{0.0699, 0.0600, -11.7500},
-	{-6.9100, -0.0899, -9.5000},
-	{11.1600, 0.0000, -3.6300},
-	{-11.1600, -0.0399, 3.6499},
-	{-6.9100, -0.0899, 9.4799},
-	{0.0699, 0.0600, 11.7500},
-	{6.9599, 0.0100, -9.5000},
-	{-11.1600, -0.0399, -3.6300},
-	{11.1600, 0.0000, 3.6499},
-	{7.0399, -0.0200, 9.3600}
-};
-new gFerrisWheel;
-new gFerrisCages[NUM_FERRIS_CAGES];
-new Float:gCurrentTargetYAngle = 0.0;
-new gWheelTransAlternate = 0;
-
-public RotateWheel();
 
 /* ** Ammunation Cops ** */
 #define MAX_WEAPON_LOCKERS					( 7 )
@@ -3500,6 +3468,9 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Otto's cars", 		3000, -1657.9169, 1206.51867, 6.709994000, 180.00000, 0 );
 	CreateRobberyNPC( "Otto",						1000, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
 
+	CreateRobberyCheckpoint( "Wang Cars", 			3000, -1950.5010, 302.176483, 34.91876200, -90.00000, 0 );
+	CreateRobberyNPC( "Salesman",					1000, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
+
 	CreateRobberyCheckpoint( "Jizzy's", 			3000, -2664.4997, 1425.92639, 906.3808590, -90.00000, 18 );
 	CreateRobberyNPC( "Jizzy",						1000, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
 
@@ -3540,7 +3511,6 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Film Studio", 		3000, 2327.25122, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
 	CreateRobberyCheckpoint( "Grotti Cars", 		3000, 542.361816, -1303.5104, 16.725925, 180.00000, -1 );
 	CreateRobberyCheckpoint( "Supa Save", 			3000, -2396.8779, 769.094421, 1056.135864, 0.00000, -1 );
-	CreateRobberyCheckpoint( "Wang Cars", 			3000, -1950.5010, 302.176483, 34.91876200, -90.00000, -1 ); // needs mapping
 	CreateRobberyCheckpoint( "Driving School", 		3000, -2036.3061, -116.89804, 1034.611328, 90.000000, -1 ); // needs mapping
 	CreateRobberyCheckpoint( "Tattoo Parlour", 		3000, -200.06947, -22.932298, 1001.712890, -90.00000, 22, 46, 42 ); // needs mapping
 	CreateRobberyCheckpoint( "Gym", 				3000, 754.936767, -18.894632, 1000.045532, 90.000000, 8 ); // needs mapping
@@ -4350,20 +4320,6 @@ public OnGameModeInit()
 	CreateDynamicPickup( 337, 2, 589.440800, 869.86900, -42.4973 ); // Spade @Mining
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 
-	/* ** Christmas ** */
-	gFerrisWheel = CreateObject( FERRIS_WHEEL_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
-   	CreateObject( FERRIS_BASE_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
-
-	new x=0;
-	while(x != NUM_FERRIS_CAGES) {
-        gFerrisCages[x] = CreateObject( FERRIS_CAGE_ID, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, FERRIS_DRAW_DISTANCE );
-        AttachObjectToObject( gFerrisCages[x], gFerrisWheel, gFerrisCageOffsets[x][0], gFerrisCageOffsets[x][1], gFerrisCageOffsets[x][2], 0.0, 0.0, FERRIS_WHEEL_Z_ANGLE, 0 );
-		x++;
-	}
-
-	SetTimer("RotateWheel",3*1000,0);
-
-
 	/* ** RDM protection **
 	static const
 		Float: radius = 100.0;
@@ -5101,13 +5057,13 @@ public OnServerUpdate( )
 			if ( !p_AdminLevel[ playerid ] )
 			{
 				if ( g_EasterHunt )
-				{/
+				{
 					foreach(new easterid : eastereggs)
 					{
 						if ( IsPlayerInRangeOfPoint( playerid, 2.0, g_EasterEggs[ easterid ] [ E_X ], g_EasterEggs[ easterid ] [ E_Y ], g_EasterEggs[ easterid ] [ E_Z ] ) )
 						{
 						    new
-						    	iMoney, szPrize[ 12 ];
+						    	iMoney, Float: iCoins, szPrize[ 12 ];
 
 							switch( random( 4 ) )
 							{
@@ -5130,8 +5086,8 @@ public OnServerUpdate( )
 							    }
 							    case 3:
 							    {
-							    	szPrize = "10,000 XP";
-							    	GivePlayerXP( playerid, 10000 );
+							    	p_IrresistibleCoins[ playerid ] += ( iCoins = fRandomEx( 50.0, 250.0 ) );
+							    	format( szPrize, sizeof( szPrize ), "%0.2f coins", iCoins );
 							    }
 							}
 
@@ -5705,7 +5661,6 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	HidePlayerChristmasTextDraw( playerid );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -6372,7 +6327,6 @@ public OnPlayerSpawn( playerid )
 		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
-		ShowPlayerChristmasTextDraw( playerid );
 		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -7154,7 +7108,6 @@ public OnPlayerDeath(playerid, killerid, reason)
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	HidePlayerChristmasTextDraw( playerid );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -11124,7 +11077,6 @@ CMD:moviemode( playerid, params[ ] )
 			TextDrawShowForPlayer( playerid, g_WebsiteTD );
 			if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
 			TextDrawShowForPlayer( playerid, g_MotdTD );
-			ShowPlayerChristmasTextDraw( playerid );
 			if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 			if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -11136,7 +11088,6 @@ CMD:moviemode( playerid, params[ ] )
 		}
 		case false:
 		{
-			HidePlayerChristmasTextDraw( playerid );
 			HidePlayerTogglableTextdraws( playerid );
 			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 			TextDrawHideForPlayer( playerid, g_currentXPTD );
@@ -16730,7 +16681,7 @@ CMD:vipdiscount( playerid, params[ ] )
 	new Float: percent;
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
 	else if ( sscanf( params, "f", percent ) ) return SendUsage( playerid, "/vipdiscount [PERCENTAGE]" );
-	else if ( percent < 50.0 || percent > 100.0 ) return SendError( playerid, "The percentage must be over 50 and less than 100." );
+	// else if ( percent < 50.0 || percent > 100.0 ) return SendError( playerid, "The percentage must be over 50 and less than 100." );
 	else
 	{
 	    SendServerMessage( playerid, "V.I.P discount percentage set to %f! (old = %f)", percent, GetGVarFloat( "vip_discount" ) );
@@ -18480,10 +18431,6 @@ stock approveClassSpawned( playerid ) {
 
 public OnObjectMoved(objectid)
 {
-	// christmas
-    if(objectid != gFerrisWheel) return 0;
-
-    SetTimer("RotateWheel",3*1000,0);
 	return 1;
 }
 
@@ -19585,7 +19532,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			new
 				closestid = GetClosestPlayer( playerid );
 
-			if ( p_Class[ closestid ] != CLASS_POLICE ) {
+			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE ) {
 				if ( p_WantedLevel[ closestid ] > 5 )
 					TazePlayer( playerid, closestid );
 				else {
@@ -23264,7 +23211,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new
 					iVipLevel = 6 - listitem;
 
-				if ( ( iCoinRequirement = a_vipCoinRequirements[ iVipLevel ] * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+				if ( ( iCoinRequirement = a_vipCoinRequirements[ iVipLevel ] * ( iVipLevel == 6 ? 1.0 : GetGVarFloat( "vip_discount" ) ) ) <= p_IrresistibleCoins[ playerid ] )
 				{
 					// Deduct IC
 					p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
@@ -24336,80 +24283,6 @@ stock SavePlayerData( playerid, bool: logout = false )
 
 stock initializeTextDraws( )
 {
-	g_ChristmasTD[ 0 ] = TextDrawCreate(527.000000, 360.000000, "box");
-	TextDrawBackgroundColor(g_ChristmasTD[ 0 ], 0);
-	TextDrawFont(g_ChristmasTD[ 0 ], 5);
-	TextDrawLetterSize(g_ChristmasTD[ 0 ], 0.500000, 1.000000);
-	TextDrawColor(g_ChristmasTD[ 0 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 0 ], 0);
-	TextDrawSetProportional(g_ChristmasTD[ 0 ], 1);
-	TextDrawSetShadow(g_ChristmasTD[ 0 ], 1);
-	TextDrawUseBox(g_ChristmasTD[ 0 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 0 ], 0);
-	TextDrawTextSize(g_ChristmasTD[ 0 ], 15.000000, 19.000000);
-	TextDrawSetPreviewModel(g_ChristmasTD[ 0 ], 19056);
-	TextDrawSetPreviewRot(g_ChristmasTD[ 0 ], 0.000000, 0.000000, -50.000000, 1.000000);
-	TextDrawSetSelectable(g_ChristmasTD[ 0 ], 0);
-
-	g_ChristmasTD[ 1 ] = TextDrawCreate(504.000000, 308.000000, "tree");
-	TextDrawBackgroundColor(g_ChristmasTD[ 1 ], 0);
-	TextDrawFont(g_ChristmasTD[ 1 ], 5);
-	TextDrawLetterSize(g_ChristmasTD[ 1 ], 0.449999, 1.000000);
-	TextDrawColor(g_ChristmasTD[ 1 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 1 ], 0);
-	TextDrawSetProportional(g_ChristmasTD[ 1 ], 1);
-	TextDrawSetShadow(g_ChristmasTD[ 1 ], 1);
-	TextDrawUseBox(g_ChristmasTD[ 1 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 1 ], 0);
-	TextDrawTextSize(g_ChristmasTD[ 1 ], 75.000000, 80.000000);
-	TextDrawSetPreviewModel(g_ChristmasTD[ 1 ], 19076);
-	TextDrawSetPreviewRot(g_ChristmasTD[ 1 ], 0.000000, 0.000000, 0.000000, 1.000000);
-	TextDrawSetSelectable(g_ChristmasTD[ 1 ], 0);
-
-	g_ChristmasTD[ 2 ] = TextDrawCreate(541.000000, 360.000000, "box");
-	TextDrawBackgroundColor(g_ChristmasTD[ 2 ], 0);
-	TextDrawFont(g_ChristmasTD[ 2 ], 5);
-	TextDrawLetterSize(g_ChristmasTD[ 2 ], 0.500000, 1.000000);
-	TextDrawColor(g_ChristmasTD[ 2 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 2 ], 0);
-	TextDrawSetProportional(g_ChristmasTD[ 2 ], 1);
-	TextDrawSetShadow(g_ChristmasTD[ 2 ], 1);
-	TextDrawUseBox(g_ChristmasTD[ 2 ], 1);
-	TextDrawBoxColor(g_ChristmasTD[ 2 ], 0);
-	TextDrawTextSize(g_ChristmasTD[ 2 ], 15.000000, 19.000000);
-	TextDrawSetPreviewModel(g_ChristmasTD[ 2 ], 19057);
-	TextDrawSetPreviewRot(g_ChristmasTD[ 2 ], 0.000000, 0.000000, -50.000000, 1.000000);
-	TextDrawSetSelectable(g_ChristmasTD[ 2 ], 0);
-
-	g_ChristmasTD[ 3 ] = TextDrawCreate(527.000000, 316.000000, "    ~n~  .  .    .      . ~n~ .   .   .    . .  .~n~  .  .    . ~n~ .   . .    .     . ~n~    .    .    .  . ~n~ .  .   ");
-	TextDrawBackgroundColor(g_ChristmasTD[ 3 ], 0);
-	TextDrawFont(g_ChristmasTD[ 3 ], 1);
-	TextDrawLetterSize(g_ChristmasTD[ 3 ], 0.250000, 1.099998);
-	TextDrawColor(g_ChristmasTD[ 3 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 3 ], 0);
-	TextDrawSetProportional(g_ChristmasTD[ 3 ], 1);
-	TextDrawSetShadow(g_ChristmasTD[ 3 ], 1);
-	TextDrawSetSelectable(g_ChristmasTD[ 3 ], 0);
-
-	g_ChristmasTD[ 4 ] = TextDrawCreate(537.000000, 311.000000, "    ~n~  .  .    .      . ~n~ .   .   .    . .  .~n~  .  .    . ~n~ .   . .    .     . ~n~    .    .    .  . ~n~ .  .   ");
-	TextDrawBackgroundColor(g_ChristmasTD[ 4 ], 0);
-	TextDrawFont(g_ChristmasTD[ 4 ], 1);
-	TextDrawLetterSize(g_ChristmasTD[ 4 ], 0.250000, 1.099998);
-	TextDrawColor(g_ChristmasTD[ 4 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 4 ], 0);
-	TextDrawSetProportional(g_ChristmasTD[ 4 ], 1);
-	TextDrawSetShadow(g_ChristmasTD[ 4 ], 1);
-	TextDrawSetSelectable(g_ChristmasTD[ 4 ], 0);
-
-	g_ChristmasTD[ 4 ] = TextDrawCreate(552.000000, 324.000000, "~r~M~g~e~r~r~g~r~r~y~n~____~g~C~r~h~g~r~r~i~g~s~r~t~g~m~r~a~g~s");
-	TextDrawBackgroundColor(g_ChristmasTD[ 4 ], 255);
-	TextDrawFont(g_ChristmasTD[ 4 ], 3);
-	TextDrawLetterSize(g_ChristmasTD[ 4 ], 0.250000, 1.200000);
-	TextDrawColor(g_ChristmasTD[ 4 ], -1);
-	TextDrawSetOutline(g_ChristmasTD[ 4 ], 1);
-	TextDrawSetProportional(g_ChristmasTD[ 4 ], 1);
-	TextDrawSetSelectable(g_ChristmasTD[ 4 ], 0);
-
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -29962,7 +29835,7 @@ stock ShowPlayerShopMenu( playerid )
 #if ENABLED_EASTER_EGG == true
 	stock DestroyEasterEgg( id )
 	{
-		if ( id > MAX_EGGS || id < 0 )
+		if ( id >= MAX_EGGS || id < 0 )
 			return 0;
 
 		Iter_Remove(eastereggs, id);
@@ -31631,26 +31504,7 @@ stock initializeActors( )
 			{ 90, -2426.1587, -746.5093, 140.8393, 92.7638, "GANGS", "leanIDLE", 0 },
 			{ 139, -2422.8667, -746.1351, 140.9746, 145.6708, "BEACH", "ParkSit_M_loop", 0 },
 			{ 214, -2425.2937, -728.2106, 141.3340, 272.7170,"BEACH", "bather", 0 },
-			{ 16, -2398.5425, -717.8216, 133.1562, 78.5421, "INT_HOUSE", "wash_up", 0 },
-
-		// Christmas
-			{ 53, -1965.7535,879.6472,42.1192,292.2784, "DANCING", "dance_loop", 0 },
-			{ 50, -1965.8983,881.8383,42.1192,271.2848, "DANCING", "DAN_Up_A", 0 },
-			{ 39, -1965.7107,885.0992,42.1192,250.6048, "DANCING", "dance_loop", 0 },
-			{ 37, -1964.8478,888.0038,42.1192,233.3712, "DANCING", "DAN_Up_A", 0 },
-
-			{ 28, -1933.2917,871.0927,38.5078,276.2980, "ON_LOOKERS", "wave_loop", 0 }, // wave
-			{ 29, -1933.1804,896.5349,38.5078,277.2377, "ON_LOOKERS", "wave_loop", 0 }, // wave
-
-			{ 71, -1989.7068,900.0749,45.2032,215.2203, "COP_AMBIENT", "Coplook_loop", 0 },
-			{ 71, -1989.4297,868.3258,45.2032,303.8954, "COP_AMBIENT", "Coplook_loop", 0 },
-			{ 211, -1982.0345,885.1508,45.2032,120.7622, "DEALER", "DEALER_IDLE", 0 }, // guard
- 			{ 77,-1915.8590,865.8470,35.4260,212.589, "BEACH", "ParkSit_M_loop", 0 },
- 			{ 78,-1915.7534,902.8911,35.4260,85.7110, "BEACH", "ParkSit_M_loop", 0 },
- 			{ 79,-1929.5313,897.4926,35.4260,222.157, "BEACH", "ParkSit_M_loop", 0 },
- 			{ 134,-1929.8927,870.9359,35.4260,324.45, "BEACH", "ParkSit_M_loop", 0 }
-
-
+			{ 16, -2398.5425, -717.8216, 133.1562, 78.5421, "INT_HOUSE", "wash_up", 0 }
 		}
 	;
 
@@ -33162,36 +33016,4 @@ stock CreateAmmunationLocker( Float: X, Float: Y, Float: Z, Float: rX )
 		CreateDynamic3DTextLabel( "[WEAPON LOCKER]", COLOR_GOLD, nX, nY, Z, 20.0 );
 	}
 	return lockerid;
-}
-
-/// XMAS
-stock ShowPlayerChristmasTextDraw( playerid )
-{
-	for( new i = 0; i < sizeof( g_ChristmasTD ); i++ )
-		TextDrawShowForPlayer( playerid, g_ChristmasTD[ i ] );
-}
-
-stock HidePlayerChristmasTextDraw( playerid )
-{
-	for( new i = 0; i < sizeof( g_ChristmasTD ); i++ )
-		TextDrawHideForPlayer( playerid, g_ChristmasTD[ i ] );
-}
-UpdateWheelTarget()
-{
-    gCurrentTargetYAngle += 36.0; // There are 10 carts, so 360 / 10
-    if(gCurrentTargetYAngle >= 360.0) {
-		gCurrentTargetYAngle = 0.0;
-    }
-	if(gWheelTransAlternate) gWheelTransAlternate = 0;
-	else gWheelTransAlternate = 1;
-}
-public RotateWheel()
-{
-    UpdateWheelTarget();
-
-    new Float:fModifyWheelZPos = 0.0;
-    if(gWheelTransAlternate) fModifyWheelZPos = 0.05;
-
-    MoveObject( gFerrisWheel, gFerrisOrigin[0], gFerrisOrigin[1], gFerrisOrigin[2]+fModifyWheelZPos,
-				FERRIS_WHEEL_SPEED, 0.0, gCurrentTargetYAngle, FERRIS_WHEEL_Z_ANGLE );
-}
+}\
