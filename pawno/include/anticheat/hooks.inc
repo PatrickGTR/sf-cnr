@@ -491,7 +491,6 @@
 			vAutoCbugKeyState 	( playerid, newkeys, oldkeys );
 		}
 
-
 		#if defined SAMPAC_OnPlayerKeyStateChange
 			return SAMPAC_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 		#else
