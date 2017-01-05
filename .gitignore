@@ -18,6 +18,9 @@ pawno/include/**/*
 !pawno/include/a_ig.inc
 !pawno/include/sf-cnr.inc
 !pawno/include/lookupffs.inc
+!pawno/include/a_analytics.inc
+!pawno/include/a_explosion.inc
+!pawno/include/a_weapondata.inc
 !pawno/include/attachments.inc
 !pawno/include/anticheat
 !pawno/include/anticheat/**
@@ -33,6 +36,7 @@ plugins/*
 # gamemodes
 gamemodes/*
 !gamemodes/sf-cnr.pwn
+!gamemodes/COD8.pwn
 
 # scriptfiles
 scriptfiles/**/*
@@ -41,7 +45,7 @@ scriptfiles/**/*
 
 # npc
 npcmodes/**/*
-!npcmodes/.gitkeep 
+!npcmodes/.gitkeep
 !npcmodes/secureguard.pwn
 !npcmodes/recordings/
 !npcmodes/recordings/*.rec

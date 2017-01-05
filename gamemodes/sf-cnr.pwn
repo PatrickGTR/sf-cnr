@@ -2766,15 +2766,15 @@ enum E_RANK_DATA
 stock const
 	g_aPlayerRanks[ ] [ E_RANK_DATA ] =
 	{
-		{ 5497.0,	"Elite V", 		19780, COLOR_GOLD },
-		{ 3435.0,	"Elite IV", 	19782, COLOR_GOLD },
-		{ 2147.0, 	"Elite III", 	19781, COLOR_GOLD },
-		{ 1342.0, 	"Elite II", 	19784, COLOR_GOLD },
-		{ 838.0, 	"Elite I", 		19783, COLOR_GOLD },
-		{ 524.0,	"Silver V", 	19780, COLOR_GREY },
-		{ 328.0,	"Silver IV", 	19782, COLOR_GREY },
-		{ 205.0, 	"Silver III", 	19781, COLOR_GREY },
-		{ 128.0, 	"Silver II", 	19784, COLOR_GREY },
+		{ 9497.2,	"Elite V", 		19780, COLOR_GOLD },
+		{ 5301.7,	"Elite IV", 	19782, COLOR_GOLD },
+		{ 2959.61, 	"Elite III", 	19781, COLOR_GOLD },
+		{ 1652.17, 	"Elite II", 	19784, COLOR_GOLD },
+		{ 922.303, 	"Elite I", 		19783, COLOR_GOLD },
+		{ 514.865,	"Silver V", 	19780, COLOR_GREY },
+		{ 287.417,	"Silver IV", 	19782, COLOR_GREY },
+		{ 160.45, 	"Silver III", 	19781, COLOR_GREY },
+		{ 89.56, 	"Silver II", 	19784, COLOR_GREY },
 		{ 50.0, 	"Silver I", 	19783, COLOR_GREY },
 		{ 0.0, 		"unranked",		19300, COLOR_GREY }
 	}
@@ -5509,7 +5509,7 @@ public ZoneTimer( )
 					{
 						if ( IsPlayerSpawned( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == g_gangzoneAttacker[ z ] && !p_inPaintBall{ d } )
 						{
-							GivePlayerScore( d, 2 );
+							GivePlayerScore( d, 2, .multiplier = 0.5 );
 							GivePlayerWantedLevel( d, 6 );
 						}
 					}
@@ -7315,7 +7315,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 			}
 		}
 
-		if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 12 ), GivePlayerScore( killerid, 1, .multiplier = 0.25 );
+		if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 12 ), GivePlayerScore( killerid, 1, .multiplier = 0.2 );
 	}
 	else if ( IsPlayerNPC( killerid ) ) SendDeathMessage( killerid, playerid, reason );
 	else
@@ -8206,7 +8206,7 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 			ShowPlayerHelpDialog( playerid, 5000, "The process is done. Bag it up and do another round if you wish." );
 			SendServerMessage( playerid, "Process is done. Bag it up, and do another round if you wish. Export it for money." );
 			GivePlayerWantedLevel( playerid, 12 );
-			GivePlayerScore( playerid, 3 );
+			GivePlayerScore( playerid, 3, .multiplier = 0.30 );
 			Achievement::HandleMethYielded( playerid );
 			SetGVarInt( "meth_yield", CreateDynamicObject( 1579, 1477.72449, 1464.36450, 1011.78589, 0.00000, 0.00000, 0.00000, GetPlayerVirtualWorld( playerid ) ), vehicleid );
 		}
@@ -12949,7 +12949,7 @@ CMD:arrest( playerid, params[ ] )
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
 		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
-		GivePlayerScore( playerid, 2 );
+		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
 		GivePlayerCash( playerid, totalCash );
 		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), ConvertPrice( totalCash ) ); // 8hska7082bmahu
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", ConvertPrice( totalCash ), ReturnPlayerName( victimid ), victimid );
@@ -18283,7 +18283,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			}
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
-			GivePlayerScore( playerid, score == 0 ? 1 : score );
+			GivePlayerScore( playerid, score == 0 ? 1 : score, .multiplier = 0.4 );
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
 			DestroyDynamicRaceCP( p_PawnStoreExport[ playerid ] );
@@ -31371,8 +31371,8 @@ stock GivePlayerIrresistiblePoints( playerid, Float: points )
 	if ( fCurrentPoints < 0.0 )
 		fCurrentPoints = 0.0;
 
-	if ( fCurrentPoints > 6000.0 )
-		fCurrentPoints = 6000.0;
+	if ( fCurrentPoints > 10000.0 )
+		fCurrentPoints = 10000.0;
 
 	// gained
 	for( new iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
