@@ -371,6 +371,7 @@ const
 #define DIALOG_LOGIN_QUIT			124			+ 1000
 #define DIALOG_WEAPON_LOCKER		125			+ 1000
 #define DIALOG_WEAPON_LOCKER_BUY	126			+ 1000
+#define DIALOG_FEEDBACK				127			+ 1000
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
@@ -1590,7 +1591,8 @@ enum E_ENTER_DATA
 	Float: E_EX,    			Float: E_EY, 				Float: E_EZ,
 	Float: E_LX,    			Float: E_LY, 				Float: E_LZ,
 	E_ENTER,            		E_EXIT,						bool: E_CUSTOM,
-	Text3D:  E_ENTER_LABEL,		Text3D: E_EXIT_LABEL,		bool: E_SAVED
+	Text3D:  E_ENTER_LABEL,		Text3D: E_EXIT_LABEL,		bool: E_SAVED,
+	E_SQL_ID
 };
 
 new
@@ -3389,9 +3391,7 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Dope's Casino - Safe 1", 3000, -2049.279541, 415.303710, 1959.170898, 0.000000, 68 );
 	CreateRobberyCheckpoint( "Dope's Casino - Safe 2", 3000, -2048.228515, 415.303710, 1959.170898, 0.000000, 68 );
 
-	CreateRobberyCheckpoint( "Kidz Cafe - Safe 1", 1500, -1949.119628, 994.946899, 34.641654, 180.000000, -1 );
-	CreateRobberyCheckpoint( "Kidz Cafe - Safe 2", 1500, -1950.020507, 994.946899, 34.641654, 180.000000, -1 );
-
+	CreateRobberyCheckpoint( "Desperado Cafe", 1500, 2113.085693, -1784.566406, 12.950445, 180.000000, -1 );
 	CreateRobberyCheckpoint( "Ahmyy's Cafe", 3000, 2540.558593, 2013.840209, 10.289649, 90.000000, -1 );
 	CreateRobberyCheckpoint( "FaZe's Cafe", 3000, 1978.845336, 2066.297607, 10.285301, 90.000000, -1 );
 
@@ -8345,6 +8345,12 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 
 	if ( g_CommandLogging ) printf( "[COMMAND_LOG] %s(%d) - %s", ReturnPlayerName( playerid ), playerid, cmdtext );
 	return 1;
+}
+
+CMD:suggest( playerid, params[ ] ) return cmd_feedback( playerid, params );
+CMD:feedback( playerid, params[ ] )
+{
+	return ShowPlayerDialog( playerid, DIALOG_FEEDBACK, DIALOG_STYLE_INPUT, ""COL_GOLD"Server Feedback", ""COL_WHITE"Let us know how you think we can make the server better to play! Impactful feedback is rewarded.\n\n    Be as serious and straight forward as you wish. You can rant if you need to. Be impactful.", "Submit", "Close" );
 }
 
 CMD:weaponstats( playerid, params[ ] ) {
@@ -23849,6 +23855,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 	}
 	#endif
+	if ( ( dialogid == DIALOG_FEEDBACK ) && response )
+	{
+		if ( ! ( 10 < strlen( inputtext ) <= 512 ) )
+		{
+			SendError( playerid, "Your feedback must be between 10 and 512 characters long." );
+			return ShowPlayerDialog( playerid, DIALOG_FEEDBACK, DIALOG_STYLE_INPUT, ""COL_GOLD"Server Feedback", ""COL_WHITE"Let us know how you think we can make the server better to play! Impactful feedback is rewarded.\n\n    Be as serious and straight forward as you wish. You can rant if you need to. Be impactful.\n\n"COL_RED"Your feedback must be between 10 and 512 characters long.", "Submit", "Close" );
+		}
+
+		new
+			szFeedback[ 512 ];
+
+		// escape feedback
+		mysql_real_escape_string( inputtext, szFeedback );
+
+		// insert into database
+		format( szLargeString, sizeof( szLargeString ), "INSERT INTO `FEEDBACK` (`USER_ID`, `FEEDBACK`) VALUES (%d, '%s')", p_AccountID[ playerid ], szFeedback );
+		mysql_single_query( szLargeString );
+
+		format( szLargeString, sizeof( szLargeString ), ""COL_GOLD"Thank you for your feedback!"COL_WHITE" If it can make a positive impact on the server then you will be rewarded.\n\nYou can speak as freely as you want. Be vulgar, serious if you need to. It's okay as long as it's constructive.\n\nHere is what you have submitted!\n\n"COL_GREY"%s", szFeedback );
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Server Feedback", szLargeString, "Close", "" );
+	}
 	return 1;
 }
 
@@ -32363,7 +32390,7 @@ function ope_Unfreeze( a )
 	TogglePlayerControllable( a, 1 );
 }
 
-stock CreateEntrance( name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: lY, Float: lZ, interior, world, bool: custom = false, bool: viponly = false, mapicon = -1, bool: saved = false )
+stock CreateEntrance( name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: lY, Float: lZ, interior, world, bool: custom = false, bool: viponly = false, mapicon = -1, savedId = 0 )
 {
 	new
 		ID = Iter_Free(entrances);
@@ -32379,9 +32406,10 @@ stock CreateEntrance( name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: l
 	    g_entranceData[ ID ] [ E_LX ] = lX;
 	    g_entranceData[ ID ] [ E_LY ] = lY;
 	    g_entranceData[ ID ] [ E_LZ ] = lZ;
+	    g_entranceData[ ID ] [ E_SQL_ID ] = savedId;
 	    g_entranceData[ ID ] [ E_CUSTOM ] = custom;
 	    g_entranceData[ ID ] [ E_VIP ] = viponly;
-	    g_entranceData[ ID ] [ E_SAVED ] = saved;
+	    g_entranceData[ ID ] [ E_SAVED ] = savedId != 0;
 	    g_entranceData[ ID ] [ E_ENTER ] = CreateDynamicCP( X, Y, Z, 1.5, -1, -1 );
 	    g_entranceData[ ID ] [ E_EXIT ] = CreateDynamicCP( lX, lY, lZ, 1.0, world, interior );
 		g_entranceData[ ID ] [ E_ENTER_LABEL ] = CreateDynamic3DTextLabel( name, COLOR_GOLD, X, Y, Z, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1 );
@@ -32419,7 +32447,7 @@ thread OnEntrancesLoad( )
 				!!cache_get_field_content_int( i, "CUSTOM", dbHandle ),
 				!!cache_get_field_content_int( i, "VIP_ONLY", dbHandle ),
 				cache_get_field_content_int( i, "MAP_ICON", dbHandle ),
-				.saved = true
+				.savedId = cache_get_field_content_int( i, "ID", dbHandle )
 			);
 		}
 	}
@@ -32438,7 +32466,7 @@ stock DestroyEntrance( entranceid )
 	DestroyDynamicCP( g_entranceData[ entranceid ] [ E_EXIT ] );
 	DestroyDynamic3DTextLabel( g_entranceData[ entranceid ] [ E_ENTER_LABEL ] );
 	DestroyDynamic3DTextLabel( g_entranceData[ entranceid ] [ E_EXIT_LABEL ] );
-	mysql_single_query( sprintf( "DELETE FROM `ENTRANCES` WHERE `ID`=%d", entranceid ) );
+	mysql_single_query( sprintf( "DELETE FROM `ENTRANCES` WHERE `ID`=%d", g_entranceData[ entranceid ] [ E_SQL_ID ] ) );
 }
 
 stock GetClosestEntrance( playerid, &Float: distance = FLOAT_INFINITY ) {
