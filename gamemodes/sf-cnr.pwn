@@ -12,7 +12,7 @@
 */
 
 #pragma dynamic 					7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -372,6 +372,9 @@ const
 #define DIALOG_WEAPON_LOCKER		125			+ 1000
 #define DIALOG_WEAPON_LOCKER_BUY	126			+ 1000
 #define DIALOG_FEEDBACK				127			+ 1000
+#define DIALOG_MAP_TAX 				128			+ 1000
+#define DIALOG_MAP_TAX_PAY			129 		+ 1000
+#define DIALOG_MAP_TAX_TRANSFER		130 		+ 1000
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
@@ -459,10 +462,8 @@ new gBotID							[MAX_BOTS], gGroupID;*/
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ 45 ] [ 137 ] =
+	g_randomMessages[ 46 ] [ 137 ] =
 	{
-		//{"{8ADE47}Stephanie:"COL_WHITE" Don't always follow what people say with IRC if they have the Anonymous tag!"},
-		//{"{8ADE47}Stephanie:"COL_WHITE" You need more than 15,000 XP to unlock weapon skills!"},
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
         { "{8ADE47}Stephanie:"COL_WHITE" You can catch updates on our website - "#SERVER_WEBSITE"!" },
@@ -507,7 +508,8 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Be assigned to a rank by playing the game frequently, making use of all features!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" View the current robbing, arresting and killing streak that you are on with "COL_GREY"/streaks"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Check out what your favourite weapon is with "COL_GREY"/weaponstats"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -2890,6 +2892,22 @@ new
 	Iterator:WeaponLockers< MAX_WEAPON_LOCKERS >
 ;
 
+/* ** Mapping Tax ** */
+#define MAX_MAPPING							( 100 )
+#define IC_CASH_VALUE						( 17500.0 )
+
+enum E_MAPPING_DATA
+{
+	E_SQL_ID,					E_ACCOUNT_ID,					E_RENEWAL_TIMESTAMP,
+	Text3D: E_LABEL,			E_OBJECTS,						Float: E_COST,
+	E_DESCRIPTION[ 32 ]
+};
+
+new
+	g_mappingData					[ MAX_MAPPING ] [ E_MAPPING_DATA ],
+	Iterator:Mapping< MAX_MAPPING >
+;
+
 /* ** Player Data ** */
 new
     bool: p_Spawned    				[ MAX_PLAYERS char ],
@@ -4406,6 +4424,7 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `GARAGES`", true, "OnGaragesLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
+	mysql_function_query( dbHandle, "SELECT `MAP_TAX`.*,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "OnMapTaxLoad", "" );
 
 	/* ** Timers ** */
 	rl_ServerUpdate = SetTimer( "OnServerUpdate", 960, true );
@@ -5469,6 +5488,9 @@ public ZoneTimer( )
 				}
 			}
 		}
+
+		// Update All Map Tax Labels
+		mysql_function_query( dbHandle, "SELECT `MAP_TAX`.`ID`,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "UpdateMapTaxNames", "" );
 	}
 
 
@@ -8347,6 +8369,33 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
+CMD:mycustomizations( playerid, params[ ] ) return cmd_mymaps( playerid, params );
+CMD:mymaps( playerid, params[ ] )
+{
+
+	new
+		totalObjects = 0,
+		Float: totalCost = 0;
+
+	szLargeString = ""COL_WHITE"Customization Description\t"COL_WHITE"Object Count\t"COL_WHITE"Total Cost (IC)\t"COL_WHITE"Due For Payment\n";
+
+	foreach (new i : Mapping) if ( g_mappingData[ i ] [ E_ACCOUNT_ID ] == p_AccountID[ playerid ] )
+	{
+		// Count data
+		totalObjects += g_mappingData[ i ] [ E_OBJECTS ];
+		totalCost += float( g_mappingData[ i ] [ E_OBJECTS ] ) * g_mappingData[ i ] [ E_COST ];
+
+		// Append
+		format( szLargeString, sizeof( szLargeString ), "%s%s\t%d\t%0.2f IC\t%s\n", szLargeString, g_mappingData[ i ] [ E_DESCRIPTION ], g_mappingData[ i ] [ E_OBJECTS ], float( g_mappingData[ i ] [ E_OBJECTS ] ) * g_mappingData[ i ] [ E_COST ], g_mappingData[ i ] [ E_RENEWAL_TIMESTAMP ] - g_iTime < 0 ? ( COL_RED # "OVERDUE" ) : secondstotime( g_mappingData[ i ] [ E_RENEWAL_TIMESTAMP ] - g_iTime, ", ", 5, 1 ) );
+	}
+
+	if ( ! totalObjects )
+		return SendError( playerid, "You have no house customizations to pay tax on." );
+
+	format( szLargeString, sizeof( szLargeString ), "%s"COL_GOLD"Quick Renew (1 Month)\t"COL_GOLD"%d\t"COL_GOLD"%0.2f IC\t"COL_GOLD">>>", szLargeString, totalObjects, totalCost );
+	return ShowPlayerDialog( playerid, DIALOG_MAP_TAX, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"My Customization Taxes", szLargeString, "Select", "Close" );
+}
+
 CMD:suggest( playerid, params[ ] ) return cmd_feedback( playerid, params );
 CMD:feedback( playerid, params[ ] )
 {
@@ -8479,7 +8528,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		}
 		return 1;
 	}
-	return SendUsage( playerid, "/irresistiblecoins [MARKET/SEND]" );
+	return SendUsage( playerid, "/irresistiblecoins [MARKET/SEND] "COL_GREY"(type /irresistiblecoins to see your coins)" );
 }
 
 CMD:rank( playerid, params[ ] )
@@ -9975,7 +10024,18 @@ CMD:viplist( playerid, params[ ] )
 CMD:vipcmds( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}V.I.P Commands", ""COL_GREY"/vipspawnwep -"COL_WHITE" Configure your spawning weapons.\n"COL_GREY"/vipskin -"COL_WHITE" Configure your spawning skin.\n"COL_GREY"/vipgun -"COL_WHITE" Redeem weapons or an armour vest from the gun locker.\n"COL_GREY"/vsay -"COL_WHITE" Global V.I.P Chat.\n"COL_GREY"/vipjob -"COL_WHITE" Set your secondary VIP job.\n"COL_GREY"/vippackage -"COL_WHITE" Customize your VIP package name", "Okay", "" );
+
+	erase( szLargeString );
+	strcat( szLargeString,	""COL_GREY"/vipspawnwep\tConfigure your spawning weapons\n"\
+							""COL_GREY"/vipskin\tConfigure your spawning skin\n"\
+							""COL_GREY"/vipgun\tRedeem weapons or an armour vest from the gun locker\n"\
+							""COL_GREY"/vsay\tGlobal V.I.P Chat\n" );
+	strcat( szLargeString,	""COL_GREY"/vipjob\tSet your secondary VIP job\n"\
+							""COL_GREY"/vippackage\tCustomize your VIP package name\n"\
+							""COL_GREY"/mynotes\tAccess your VIP notes and material\n"\
+							""COL_GREY"/mycustomizations\tAccess your house customization taxes" );
+
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}V.I.P Commands", szLargeString, "Okay", "" );
 	return 1;
 }
 
@@ -12396,7 +12456,7 @@ CMD:help( playerid, params[ ] )
 CMD:commands( playerid, params[ ] ) return cmd_cmds( playerid, params );
 CMD:cmds( playerid, params[ ] )
 {
-    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nFireman Commands\nParamedic Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands", "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nFireman Commands\nParamedic Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands\n"COL_GOLD"V.I.P Commands", "Okay", "" );
 	return 1;
 }
 
@@ -15114,6 +15174,25 @@ CMD:venter( playerid, params[ ] )
 	return 1;
 }
 
+CMD:vforce( playerid, params[ ] )
+{
+	new pID, vID;
+	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	else if ( sscanf( params, ""#sscanf_u"d", pID, vID ) ) return SendUsage( playerid, "/vforce [PLAYER_ID] [VEHICLE_ID]" );
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+	else if ( !IsValidVehicle( vID ) ) return SendError( playerid, "Invalid Vehicle ID." );
+	else
+	{
+		// Maybe virtual world support
+	    SetPlayerVirtualWorld( pID, GetVehicleVirtualWorld( vID ) );
+	    PutPlayerInVehicle( pID, vID, 0 );
+
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), vID );
+	  	AddAdminLogLineFormatted( "%s(%d) has forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), vID );
+    }
+	return 1;
+}
+
 CMD:hgoto( playerid, params[ ] )
 {
 	new hID;
@@ -16593,6 +16672,38 @@ CMD:weather( playerid, params[ ] )
 }
 
 /* Level RCON */
+CMD:createmaptax( playerid, params[ ] )
+{
+	new
+		owner[ 24 ], objects, Float: cost, days, description[ 32 ];
+
+	if ( !IsPlayerAdmin( playerid ) ) return 0;
+	else if ( sscanf( params, "s[24]dF(1.0)D(30)S(House Tax)[32]", owner, objects, cost, days, description ) ) return SendUsage( playerid, "/createmaptax [USERNAME] [OBJECTS] [COST (= 1.0)] [DAYS (= 30)] [DESCRIPTION (= House Tax)]" );
+	else
+	{
+		format( szNormalString, sizeof( szNormalString ), "SELECT `ID`, `NAME` FROM `USERS` WHERE `NAME`='%s' LIMIT 1", mysql_escape( owner ) );
+		mysql_function_query( dbHandle, szNormalString, true, "FindUserForMapTax", "ddfds", playerid, objects, cost, days, description );
+	}
+	return 1;
+}
+
+CMD:destroymaptax( playerid, params[ ] )
+{
+	new
+	    mid;
+
+	if ( !IsPlayerAdmin( playerid ) ) return 0;
+	else if ( sscanf( params, "d", mid ) ) return SendUsage( playerid, "/destroymaptax [MAP_ID]" );
+	else if ( !Iter_Contains( Mapping, mid ) ) return SendError( playerid, "Invalid Map ID." );
+	else
+	{
+		AddAdminLogLineFormatted( "%s(%d) has deleted a map tax", ReturnPlayerName( playerid ), playerid );
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[MAP TAX]"COL_WHITE" You have destroyed the map tax occupying id %d (sql id %d).", mid, g_mappingData[ mid ] [ E_SQL_ID ] );
+	    DestroyMapTax( mid );
+	}
+	return 1;
+}
+
 CMD:updatedonortd( playerid, params[ ] )
 {
 	new
@@ -21956,7 +22067,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								""COL_GREY"/moviemode{FFFFFF} - Toggles movie mode so you can record without all the text on the screen." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Miscellaneous Commands", szCMDS, "Okay", "Back" );
 	        }
+	        case 10:
+	        {
+				if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+				cmd_vipcmds( playerid, "" );
+	        }
 	    }
+	    return 1;
 	}
 	if ( ( dialogid == DIALOG_CMDS_REDIRECT ) && !response ) { cmd_cmds( playerid, "" ); }
 	if ( ( dialogid == DIALOG_STATS ) && response )
@@ -23188,8 +23305,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			case 6: 	 iCoinRequirement = 750.0;
 			case 7: 	 iCoinRequirement = 600.0;
 			case 8:		 iCoinRequirement = 600.0;
-			case 9:		 iCoinRequirement = 250.0;
-			case 10:	 iCoinRequirement = 200.0;
+			case 9:	 	 iCoinRequirement = 350.0;
+			case 10:	 iCoinRequirement = 250.0;
 			case 11: 	 iCoinRequirement = 125.0;
 			case 12:	 iCoinRequirement = 100.0;
 			case 13: 	 iCoinRequirement = 50.0;
@@ -23305,13 +23422,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			case 9:
 			{
-				if ( ( iCoinRequirement = 250.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+				if ( ( iCoinRequirement = 350.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 				{
 					p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
-	    			AddPlayerNote( playerid, -1, ""COL_GOLD"V.I.P Garage (IC)" #COL_WHITE );
-	    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP garage. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
-	    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"V.I.P Garage"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
-	    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your garage." );
+	    			AddPlayerNote( playerid, -1, ""COL_GOLD"Custom Gate (IC)" #COL_WHITE );
+	    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a custom gate. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+	    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"Custom Gate"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
+	    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your custom gate." );
 				}
 				else
 				{
@@ -23321,13 +23438,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			case 10:
 			{
-				if ( ( iCoinRequirement = 200.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+				if ( ( iCoinRequirement = 250.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 				{
 					p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
-	    			AddPlayerNote( playerid, -1, ""COL_GOLD"Custom Gate (IC)" #COL_WHITE );
-	    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a custom gate. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
-	    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"Custom Gate"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
-	    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your custom gate." );
+	    			AddPlayerNote( playerid, -1, ""COL_GOLD"V.I.P Garage (IC)" #COL_WHITE );
+	    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP garage. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+	    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"V.I.P Garage"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
+	    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your garage." );
 				}
 				else
 				{
@@ -23875,6 +23992,148 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 		format( szLargeString, sizeof( szLargeString ), ""COL_GOLD"Thank you for your feedback!"COL_WHITE" If it can make a positive impact on the server then you will be rewarded.\n\nYou can speak as freely as you want. Be vulgar, serious if you need to. It's okay as long as it's constructive.\n\nHere is what you have submitted!\n\n"COL_GREY"%s", szFeedback );
 		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Server Feedback", szLargeString, "Close", "" );
+	}
+	if ( ( dialogid == DIALOG_MAP_TAX ) && response )
+	{
+		new
+			x = 0;
+
+	    foreach(new i : Mapping)
+		{
+			if ( g_mappingData[ i ] [ E_ACCOUNT_ID ] == p_AccountID[ playerid ] )
+		 	{
+		       	if ( x == listitem )
+		      	{
+		      		SetPVarInt( playerid, "maptax_mappingid", i );
+				 	return ShowMappingTaxOptions( playerid, i );
+	      		}
+		      	x ++;
+			}
+		}
+
+		if ( listitem - x == 0 )
+		{
+			new
+				Float: totalCost = 0.0;
+
+		    foreach(new mappingid : Mapping) if ( g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] == p_AccountID[ playerid ] ) {
+		    	totalCost += float( g_mappingData[ mappingid ] [ E_OBJECTS ] ) * g_mappingData[ mappingid ] [ E_COST ];
+		    }
+
+			if ( p_IrresistibleCoins[ playerid ] < totalCost )
+				return SendError( playerid, "You need %0.2f more IC in order to renew this mapping.", totalCost - p_IrresistibleCoins[ playerid ] ), cmd_mymaps( playerid, "" );
+
+			// Generate receipt
+			format( szNormalString, sizeof( szNormalString ), "INSERT INTO `MAP_TAX_RECEIPTS` (`USER_ID`, `MAPPING_ID`, `COINS`, `CASH`) VALUES (%d, -1, %f, 0)", p_AccountID[ playerid ], totalCost );
+			mysql_function_query( dbHandle, szNormalString, true, "OnMapTaxReceiptCreated", "d", playerid );
+
+			// Apply 1 month && deduct coins
+			p_IrresistibleCoins[ playerid ] -= totalCost;
+
+		    foreach(new mappingid : Mapping) if ( g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] == p_AccountID[ playerid ] ) {
+				RenewMappingTax( mappingid, ReturnPlayerName( playerid ) );
+			}
+
+			// Alert user
+			SendServerMessage( playerid, "You have renewed all your mappings another month for "COL_GOLD"%0.2f IC"COL_WHITE".", totalCost );
+		}
+		return 1;
+	}
+	if ( dialogid == DIALOG_MAP_TAX_PAY )
+	{
+		if ( ! response )
+			return cmd_mymaps( playerid, "" );
+
+		new
+			mappingid = GetPVarInt( playerid, "maptax_mappingid" );
+
+		if ( ! Iter_Contains( Mapping, mappingid ) )
+			return SendError( playerid, "An invalid map was selected. Try again." );
+
+		if ( g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] != p_AccountID[ playerid ] )
+			return SendError( playerid, "You must be the owner of this map." );
+
+		switch ( listitem )
+		{
+			case 0:
+			{
+				new
+					Float: coinCost = float( g_mappingData[ mappingid ] [ E_OBJECTS ] ) * g_mappingData[ mappingid ] [ E_COST ];
+
+				if ( p_IrresistibleCoins[ playerid ] < coinCost )
+					return SendError( playerid, "You need %0.2f more IC in order to renew this mapping.", coinCost - p_IrresistibleCoins[ playerid ] ), ShowMappingTaxOptions( playerid, mappingid );
+
+				// Generate receipt
+				format( szNormalString, sizeof( szNormalString ), "INSERT INTO `MAP_TAX_RECEIPTS` (`USER_ID`, `MAPPING_ID`, `COINS`, `CASH`) VALUES (%d, %d, %f, 0)", p_AccountID[ playerid ], mappingid, coinCost );
+				mysql_function_query( dbHandle, szNormalString, true, "OnMapTaxReceiptCreated", "d", playerid );
+
+				// Apply 1 month && deduct coins
+				p_IrresistibleCoins[ playerid ] -= coinCost;
+				RenewMappingTax( mappingid, ReturnPlayerName( playerid ) );
+				SendServerMessage( playerid, "Successfully mapping renewed for "COL_GOLD"%0.2f IC"COL_WHITE". Expires in "COL_GREY"%s"COL_WHITE".", coinCost, secondstotime( g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] - g_iTime ) );
+			}
+			case 1:
+			{
+				new
+					cashCost = g_mappingData[ mappingid ] [ E_OBJECTS ] * floatround( IC_CASH_VALUE * g_mappingData[ mappingid ] [ E_COST ] );
+
+				if ( GetPlayerCash( playerid ) < cashCost )
+					return SendError( playerid, "You need %s more in order to renew this mapping.", ConvertPrice( cashCost - GetPlayerCash( playerid ) ) ), ShowMappingTaxOptions( playerid, mappingid );
+
+				// Generate receipt
+				format( szNormalString, sizeof( szNormalString ), "INSERT INTO `MAP_TAX_RECEIPTS` (`USER_ID`, `MAPPING_ID`, `COINS`, `CASH`) VALUES (%d, %d, 0.0, %d)", p_AccountID[ playerid ], mappingid, cashCost );
+				mysql_function_query( dbHandle, szNormalString, true, "OnMapTaxReceiptCreated", "d", playerid );
+
+				// Apply 1 month && deduct coins
+				GivePlayerCash( playerid, -cashCost );
+				RenewMappingTax( mappingid, ReturnPlayerName( playerid ) );
+				SendServerMessage( playerid, "Successfully mapping renewed for "COL_GOLD"%s"COL_WHITE". Expires in "COL_GREY"%s"COL_WHITE".", ConvertPrice( cashCost ), secondstotime( g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] - g_iTime ) );
+			}
+			case 2:
+			{
+				ShowPlayerDialog( playerid, DIALOG_MAP_TAX_TRANSFER, DIALOG_STYLE_INPUT, sprintf( ""COL_GOLD"Customization Tax - %s", g_mappingData[ mappingid ] [ E_DESCRIPTION ] ), ""COL_WHITE"Enter the player name or id of whom you wish to transfer the customization to.\n\n"COL_ORANGE"Note: the player must be online.", "Transfer", "Back" );
+			}
+		}
+		return 1;
+	}
+
+	if ( dialogid == DIALOG_MAP_TAX_TRANSFER )
+	{
+		new
+			mappingid = GetPVarInt( playerid, "maptax_mappingid" );
+
+		if ( ! Iter_Contains( Mapping, mappingid ) )
+			return SendError( playerid, "An invalid map was selected. Try again." );
+
+		if ( g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] != p_AccountID[ playerid ] )
+			return SendError( playerid, "You must be the owner of this map." );
+
+		if ( response )
+		{
+			new
+				pID;
+
+			if ( sscanf( inputtext, #sscanf_u, pID ) )
+			{
+				SendError( playerid, "This value must be numerical." );
+				return ShowPlayerDialog( playerid, DIALOG_MAP_TAX_TRANSFER, DIALOG_STYLE_INPUT, sprintf( ""COL_GOLD"Customization Tax - %s", g_mappingData[ mappingid ] [ E_DESCRIPTION ] ), ""COL_WHITE"Enter the player name or id of whom you wish to transfer the customization to.\n\n"COL_ORANGE"Note: the player must be online.", "Transfer", "Back" );
+			}
+			else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) )
+			{
+				SendError( playerid, "Invalid Player ID." );
+				return ShowPlayerDialog( playerid, DIALOG_MAP_TAX_TRANSFER, DIALOG_STYLE_INPUT, sprintf( ""COL_GOLD"Customization Tax - %s", g_mappingData[ mappingid ] [ E_DESCRIPTION ] ), ""COL_WHITE"Enter the player name or id of whom you wish to transfer the customization to.\n\n"COL_ORANGE"Note: the player must be online.", "Transfer", "Back" );
+			}
+
+			g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] = p_AccountID[ pID ];
+			UpdateMappingTaxLabel( mappingid, ReturnPlayerName( pID ) );
+			mysql_single_query( sprintf( "UPDATE `MAP_TAX` SET `USER_ID`=%d WHERE `ID`=%d", g_mappingData[ mappingid ] [ E_ACCOUNT_ID ], g_mappingData[ mappingid ] [ E_SQL_ID ] ) );
+			SendServerMessage( playerid, "You have transferred the house customization rights to "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( pID ) );
+		}
+		else
+		{
+			ShowMappingTaxOptions( playerid, mappingid );
+		}
+		return 1;
 	}
 	return 1;
 }
@@ -28111,7 +28370,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 stock PreloadAnimationLibrary( playerid, animlib[ ] )
 	return ApplyAnimation( playerid, animlib, "null", 0.0, 0, 0, 0, 0, 0 );
 
-stock secondstotime(seconds, const delimiter[] = ", ")
+stock secondstotime(seconds, const delimiter[] = ", ", start = 0, end = -1)
 {
     static const times[] = {
         1,
@@ -28122,6 +28381,8 @@ stock secondstotime(seconds, const delimiter[] = ", ")
         2419200,
         29030400
     };
+
+
 
     static const names[][] = {
         "second",
@@ -28143,7 +28404,7 @@ stock secondstotime(seconds, const delimiter[] = ", ")
 
     erase(string);
 
-    for(new i = sizeof(times) - 1;  i != -1; i--)
+    for(new i = start != 0 ? start : (sizeof(times) - 1);  i != end; i--)
     {
         if (seconds / times[i])
         {
@@ -29686,8 +29947,8 @@ stock SetPlayerVipLevel( pID, level, bool: gifted = false )
 
 	if ( p_VIPLevel[ pID ] < level ) p_VIPLevel[ pID ] = level;
 	if ( level > 0 ) {
-	    if ( p_VIPExpiretime[ pID ] > g_iTime ) p_VIPExpiretime[ pID ] += 2592000;
-	    else p_VIPExpiretime[ pID ] += ( g_iTime + 2592000 );
+	    if ( p_VIPExpiretime[ pID ] > g_iTime ) p_VIPExpiretime[ pID ] += 2595600;
+	    else p_VIPExpiretime[ pID ] += ( g_iTime + 2595600 );
 	}
 	else { p_VIPExpiretime[ pID ] = 0; }
 }
@@ -31241,8 +31502,8 @@ stock ShowPlayerCoinMarketDialog( playerid )
 	format( szMarket, sizeof( szMarket ), "%sExtra Vehicle And House Slot\t"COL_GOLD"%0.0f\n", szMarket, 750.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sV.I.P Vehicle\t"COL_GOLD"%0.0f\n", szMarket, 600.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sV.I.P House\t"COL_GOLD"%0.0f\n", szMarket, 600.0 * discount );
+	format( szMarket, sizeof( szMarket ), "%sCustom Gate\t"COL_GOLD"%0.0f\n", szMarket, 350.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sV.I.P Garage\t"COL_GOLD"%0.0f\n", szMarket, 250.0 * discount );
-	format( szMarket, sizeof( szMarket ), "%sCustom Gate\t"COL_GOLD"%0.0f\n", szMarket, 200.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sSave Gang\t"COL_GOLD"%0.0f\n", szMarket, 125.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sGold Rims\t"COL_GOLD"%0.0f\n", szMarket, 100.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sChange your name\t"COL_GOLD"%0.0f", szMarket, 50.0 * discount );
@@ -31885,6 +32146,11 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
     	foreach(new g : garages)
     		if ( g_garageData[ g ] [ E_OWNER_ID ] == p_AccountID[ playerid ] )
     			UpdateGarageTitle( g );
+
+    	// Update mapping taxes
+    	foreach (new m : Mapping)
+    		if ( g_mappingData[ m ] [ E_ACCOUNT_ID ] == p_AccountID[ playerid ] )
+    			UpdateMappingTaxLabel( m, ReturnPlayerName( playerid ) );
 	}
 	else
 	{
@@ -32452,7 +32718,6 @@ thread OnEntrancesLoad( )
 		}
 	}
 	printf( "[ENTRANCES]: %d extra entrances have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
-	printf( "[LOADING]: Total time elapsed querying and loading: %dms", GetTickCount( ) - g_loadingTick );
 	return 1;
 }
 
@@ -33044,4 +33309,174 @@ stock CreateAmmunationLocker( Float: X, Float: Y, Float: Z, Float: rX )
 		CreateDynamic3DTextLabel( "[WEAPON LOCKER]", COLOR_GOLD, nX, nY, Z, 20.0 );
 	}
 	return lockerid;
-}\
+}
+
+
+
+thread OnMapTaxLoad( )
+{
+	new
+		rows, fields, i = -1, username[ MAX_PLAYER_NAME ], description[ 16 ],
+	    loadingTick = GetTickCount( )
+	;
+
+	cache_get_data( rows, fields );
+	if ( rows )
+	{
+		while( ++i < rows )
+		{
+			// Get username
+			cache_get_field_content( i, "USERNAME", username );
+			cache_get_field_content( i, "DESCRIPTION", description );
+
+			// Create mapping tax label
+			CreateMappingTax(
+				cache_get_field_content_int( i, "USER_ID", dbHandle ),
+				cache_get_field_content_int( i, "OBJECTS", dbHandle ),
+				cache_get_field_content_float( i, "COST", dbHandle ),
+				cache_get_field_content_float( i, "X", dbHandle ),
+				cache_get_field_content_float( i, "Y", dbHandle ),
+				cache_get_field_content_float( i, "Z", dbHandle ),
+				cache_get_field_content_int( i, "RENEWAL_TIMESTAMP", dbHandle ),
+				cache_get_field_content_int( i, "ID", dbHandle ),
+				username
+			);
+		}
+	}
+	printf( "[MAP TAXES]: %d map tax labels have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
+	printf( "[LOADING]: Total time elapsed querying and loading: %dms", GetTickCount( ) - g_loadingTick );
+	return 1;
+}
+
+stock CreateMappingTax( accountid, objects, Float: cost, Float: X, Float: Y, Float: Z, timestamp, sql_id = 0, username[ MAX_PLAYER_NAME ] = "No-one", description[ 32 ] = "House Tax" )
+{
+	new
+		mappingid = Iter_Free(Mapping);
+
+	if ( mappingid != -1 )
+	{
+		Iter_Add(Mapping, mappingid);
+
+		format( g_mappingData[ mappingid ] [ E_DESCRIPTION ], 32, "%s", description );
+		g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] = accountid;
+		g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] = timestamp;
+		g_mappingData[ mappingid ] [ E_OBJECTS ] = objects;
+		g_mappingData[ mappingid ] [ E_COST ] = cost;
+
+		g_mappingData[ mappingid ] [ E_LABEL ] = CreateDynamic3DTextLabel( "Loading Customization Tax Info", 0xC0C0C025, X, Y, Z, 5.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, -1, -1 );
+
+		if ( ! sql_id )
+		{
+			format( szBigString, sizeof( szBigString ), "INSERT INTO `MAP_TAX` (`USER_ID`, `DESCRIPTION`, `OBJECTS`, `COST`, `X`, `Y`, `Z`, `RENEWAL_TIMESTAMP`) VALUES (%d, '%s', %d, %f, %f, %f, %f, %d)", accountid, description, objects, cost, X, Y, Z, timestamp );
+			mysql_function_query( dbHandle, szBigString, true, "OnMapTaxAdded", "ds", mappingid, username );
+		}
+		else
+		{
+			// Loading the SQL ID on
+			g_mappingData[ mappingid ] [ E_SQL_ID ] = sql_id;
+			UpdateMappingTaxLabel( mappingid, username );
+		}
+	}
+	return mappingid;
+}
+
+stock DestroyMapTax( mappingid )
+{
+	if ( !Iter_Contains( Mapping, mappingid ) )
+		return;
+
+	Iter_Remove( Mapping, mappingid );
+	DestroyDynamic3DTextLabel( g_mappingData[ mappingid ] [ E_LABEL ] );
+	mysql_single_query( sprintf( "DELETE FROM `MAP_TAX` WHERE `ID`=%d", g_mappingData[ mappingid ] [ E_SQL_ID ] ) );
+}
+
+thread UpdateMapTaxNames( )
+{
+	static
+		rows, fields, username[ MAX_PLAYER_NAME ];
+
+	cache_get_data( rows, fields );
+
+	if ( rows )
+	{
+    	for( new i = 0; i < rows; i++ )
+		{
+			// get name
+			cache_get_field_content( i, "USERNAME", username );
+
+			// update mapping
+			foreach(new m : Mapping) if ( g_mappingData[ m ] [ E_SQL_ID ] == cache_get_field_content_int( i, "ID", dbHandle ) ) {
+				UpdateMappingTaxLabel( m, username );
+				break;
+			}
+		}
+	}
+}
+
+stock UpdateMappingTaxLabel( mappingid, username[ MAX_PLAYER_NAME ] )
+{
+	new
+		is_overdue = ( g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] - g_iTime < 0 );
+
+	format( szBigString, sizeof( szBigString ), "Customization Tax %d\nBound To: %s\nObjects: %d\nCost: %0.2f ic/month\nExpires: %s", mappingid, username, g_mappingData[ mappingid ] [ E_OBJECTS ], float( g_mappingData[ mappingid ] [ E_OBJECTS ] ) * g_mappingData[ mappingid ] [ E_COST ], is_overdue ? ( "OVERDUE" ) : secondstotime( g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] - g_iTime, ", ", 3, 1 ) );
+	return UpdateDynamic3DTextLabelText( g_mappingData[ mappingid ] [ E_LABEL ], is_overdue ? 0xFF000050 : 0xC0C0C050, szBigString );
+}
+
+thread OnMapTaxAdded( mappingid, username[ MAX_PLAYER_NAME ] )
+{
+	g_mappingData[ mappingid ] [ E_SQL_ID ] = cache_insert_id( );
+	UpdateMappingTaxLabel( mappingid, username );
+	return 1;
+}
+
+stock ShowMappingTaxOptions( playerid, mappingid )
+{
+	new
+		Float: coinCost = float( g_mappingData[ mappingid ] [ E_OBJECTS ] ) * g_mappingData[ mappingid ] [ E_COST ], cashCost = g_mappingData[ mappingid ] [ E_OBJECTS ] * floatround( IC_CASH_VALUE * g_mappingData[ mappingid ] [ E_COST ] );
+
+	format( szNormalString, sizeof( szNormalString ), "Renew 1 Month With Coins\t"COL_GOLD"%0.2f IC\nRenew 1 Month With Cash\t"COL_GREEN"%s\nTransfer Ownership\t"COL_GREY"FREE", coinCost, ConvertPrice( cashCost ) );
+	return ShowPlayerDialog( playerid, DIALOG_MAP_TAX_PAY, DIALOG_STYLE_TABLIST, sprintf( ""COL_GOLD"Customization Tax - %s", g_mappingData[ mappingid ] [ E_DESCRIPTION ] ), szNormalString, "Select", "Back" );
+}
+
+stock RenewMappingTax( mappingid, username[ MAX_PLAYER_NAME ] )
+{
+	if ( g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] <= 0 ) {
+		g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] = g_iTime + 2595600; // Start fresh
+	} else {
+		g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ] += 2595600;
+	}
+
+	// Update label & Alert
+	UpdateMappingTaxLabel( mappingid, username );
+	mysql_single_query( sprintf( "UPDATE `MAP_TAX` SET `RENEWAL_TIMESTAMP`=%d WHERE `ID`=%d", g_mappingData[ mappingid ] [ E_RENEWAL_TIMESTAMP ], g_mappingData[ mappingid ] [ E_SQL_ID ] ) );
+}
+
+thread OnMapTaxReceiptCreated( playerid )
+{
+	SendServerMessage( playerid, "The receipt number for your recent mapping renewal is #%d. It is automatically recorded.", cache_insert_id( ) );
+	return 1;
+}
+
+thread FindUserForMapTax( adminid, objects, Float: cost, days, description[ 32 ] )
+{
+	new
+	    rows, fields, username[ MAX_PLAYER_NAME ];
+
+    cache_get_data( rows, fields );
+
+    if ( ! rows )
+    	return SendError( adminid, "No such user was found." );
+
+	new
+		Float: X, Float: Y, Float: Z;
+
+	GetPlayerPos( adminid, X, Y, Z );
+    cache_get_field_content( 0, "NAME", username );
+
+	new
+		slotid = CreateMappingTax( cache_get_field_content_int( 0, "ID", dbHandle ), objects, cost, X, Y, Z, g_iTime + ( 86400 * days ), 0, username, description );
+
+	AddAdminLogLineFormatted( "%s(%d) has added a map tax for %s", ReturnPlayerName( adminid ), adminid, username );
+	SendClientMessageFormatted( adminid, -1, ""COL_PINK"[MAP TAX]"COL_WHITE" You have created a map tax for %s using slot id %d.", username, slotid );
+	return 1;
+}
