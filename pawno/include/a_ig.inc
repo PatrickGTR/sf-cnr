@@ -24,7 +24,7 @@
 
 //mysqldump -u service -p82JA8LDL1JAG2GF69 sa-mp > ~/dump01.sql
 /* ** Defines ** */
-#define IRC_SERVER 					"foco.ca.irc.tl" // test "maple.nl.eu.gtanet.com"
+// #define IRC_SERVER 					"foco.ca.irc.tl" // test "maple.nl.eu.gtanet.com"
 #define GetPlayerFPS(%1)			p_FPS[%1]
 
 // Client messages

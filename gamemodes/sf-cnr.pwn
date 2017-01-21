@@ -155,7 +155,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v10.0.0-RC3"
+#define FILE_BUILD                	"v10.0.0-RC4"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -2893,7 +2893,7 @@ new
 ;
 
 /* ** Mapping Tax ** */
-#define MAX_MAPPING							( 100 )
+#define MAX_MAPPING							( 200 )
 #define IC_CASH_VALUE						( 17500.0 )
 
 enum E_MAPPING_DATA
@@ -15188,7 +15188,7 @@ CMD:vforce( playerid, params[ ] )
 	    PutPlayerInVehicle( pID, vID, 0 );
 
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), vID );
-	  	AddAdminLogLineFormatted( "%s(%d) has forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), vID );
+	  	AddAdminLogLineFormatted( "%s(%d) has forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), vID );
     }
 	return 1;
 }
@@ -15745,7 +15745,10 @@ CMD:creategarage( playerid, params[ ] )
 		if ( GetVehiclePos( iVehicle, X, Y, Z ) && GetVehicleZAngle( iVehicle, Angle ) )
 		{
 		    if ( ( iTmp = CreateGarage( 0, cost, 0, X, Y, Z, Angle ) ) != -1 )
+		    {
+				SaveToAdminLog( playerid, iTmp, "created garage" );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GARAGE]"COL_WHITE" You have created a %s garage taking up garage id %d.", ConvertPrice( cost ), iTmp );
+		    }
 			else
 				SendClientMessage( playerid, -1, ""COL_PINK"[GARAGE]"COL_WHITE" Unable to create a garage due to a unexpected error." );
 		}
@@ -15765,6 +15768,7 @@ CMD:destroygarage( playerid, params[ ] )
 	else if ( !Iter_Contains( garages, iGarage ) ) return SendError( playerid, "Invalid Garage ID." );
 	else
 	{
+		SaveToAdminLog( playerid, iGarage, "destroy garage" );
 		format( szBigString, sizeof( szBigString ), "[DG] [%s] %s | %d | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_garageData[ iGarage ] [ E_OWNER_ID ], iGarage );
 	    AddFileLogLine( "log_garages.txt", szBigString );
 		AddAdminLogLineFormatted( "%s(%d) has deleted a garage", ReturnPlayerName( playerid ), playerid );
@@ -15783,9 +15787,7 @@ CMD:connectsong( playerid, params[ ] )
 	else if ( sscanf( params, "s[128]", szURL ) ) return SendUsage( playerid, "/connectsong [SONG_URL]" );
 	else
 	{
-		format( szBigString, sizeof( szBigString ), "[SONG] [%s] %s -> %s\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), szURL );
-	    AddFileLogLine( "log_admin.txt", szBigString );
-
+		SaveToAdminLogFormatted( playerid, 0, "updated connection song to %s", szURL );
 		SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has set the connection song to: "COL_GREY"%s", ReturnPlayerName( playerid ), playerid, szURL );
 		UpdateServerVariable( "connectsong", 0, 0.0, szURL, GLOBAL_VARTYPE_STRING );
 	}
@@ -15810,7 +15812,10 @@ CMD:creategate( playerid, params[ ] )
 	{
 		GetXYInFrontOfPlayer( playerid, X, Y, Z, 5.0 );
 		new iTmp = CreateGate( pID, password, model, speed, range, X, Y, Z, 0.0, 0.0, 0.0 );
-	    if ( iTmp != -1 ) SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GATE]"COL_WHITE" You have created a gate taking place of ID: %d", iTmp );
+	    if ( iTmp != -1 ) {
+			SaveToAdminLog( playerid, iTmp, "created gate" );
+	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GATE]"COL_WHITE" You have created a gate taking place of ID: %d", iTmp );
+	    }
 		else SendClientMessage( playerid, -1, ""COL_PINK"[GATE]"COL_WHITE" Unable to create a gate due to a unexpected error." );
 	}
 	return 1;
@@ -15832,6 +15837,7 @@ CMD:editgate( playerid, params[ ] )
 		);
 
 		SetPVarInt( playerid, "gate_editing", gID );
+		SaveToAdminLog( playerid, gID, "editing gate" );
 		ShowPlayerDialog( playerid, DIALOG_GATE, DIALOG_STYLE_TABLIST, "{FFFFFF}Edit Gate", szLargeString, "Select", "Cancel" );
 	}
 	return 1;
@@ -15850,6 +15856,7 @@ CMD:acunban( playerid, params[ ] )
  		UnBlockIpAddress( address );
 		SetServerRule( "unbanip", address );
 		SetServerRule( "reloadbans", "" );
+		SaveToAdminLogFormatted( playerid, 0, "acunban %s", address );
 	 	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[AC UNBAN]{FFFFFF} You've unbanned %s from the anti-cheat.", address );
 	 	AddAdminLogLineFormatted( "%s(%d) has un-banned %s", ReturnPlayerName( playerid ), playerid, address );
 	}
@@ -15899,6 +15906,8 @@ CMD:autovehrespawn( playerid, params[ ] )
 
 			KillTimer( rl_AutoVehicleRespawner );
 			rl_AutoVehicleRespawner = SetTimer( "autoVehicleSpawn", tick, true );
+
+			SaveToAdminLogFormatted( playerid, 0, "autovehrespawn %d", tick );
 	        SendClientMessageFormatted( playerid, COLOR_WHITE, ""COL_GREY"[SERVER]"COL_WHITE" The auto vehicle spawner has been set to %dms.", tick );
 		}
 	#endif
@@ -15933,6 +15942,7 @@ CMD:megaban( playerid, params [ ] )
     //else if ( p_AdminLevel[ playerid ] < p_AdminLevel[ pID ] ) return SendError( playerid, "This player has a higher administration level than you." );
 	else
 	{
+		SaveToAdminLogFormatted( playerid, 0, "megaban %s (reason: %s)", ReturnPlayerName( pID ), reason );
         AddAdminLogLineFormatted( "%s(%d) has mega-banned %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
 	    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has mega-banned %s(%d) "COL_GREEN"[REASON: %s]", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID, reason );
 		BanPlayerISP( pID );
@@ -15972,6 +15982,7 @@ thread OnAdminChangePlayerName( playerid, pID, nName[ ] )
 	 	mysql_single_query( sprintf( "UPDATE `USERS` SET `NAME` = '%s' WHERE `NAME` = '%s'", mysql_escape( nName ), mysql_escape( ReturnPlayerName( pID ) ) ) );
 	 	mysql_single_query( sprintf( "INSERT INTO `NAME_CHANGES`(`USER_ID`,`ADMIN_ID`,`NAME`) VALUES (%d,%d,'%s')", p_AccountID[ pID ], p_AccountID[ playerid ], mysql_escape( ReturnPlayerName( pID ) ) ) );
 
+		SaveToAdminLogFormatted( playerid, 0, "changename %s to %s", ReturnPlayerName( pID ), nName );
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have changed %s(%d)'s name to %s!", ReturnPlayerName( pID ), pID, nName );
 		SendClientMessageFormatted( pID, -1, ""COL_PINK"[ADMIN]"COL_WHITE" Your name has been changed to %s by %s(%d)!", nName, ReturnPlayerName( playerid ), playerid );
         AddAdminLogLineFormatted( "%s(%d) has changed %s(%d)'s name to %s", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, nName );
@@ -16015,6 +16026,7 @@ thread OnPlayerUnbanIP( playerid, irc, address[ ] )
 	{
     	if ( !irc )
     	{
+			SaveToAdminLogFormatted( playerid, 0, "unbanip %s", address );
     		AddAdminLogLineFormatted( "%s(%d) has un-banned IP %s", ReturnPlayerName( playerid ), playerid, address );
 	 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} IP %s has been un-banned from the server.", address );
 		}
@@ -16060,6 +16072,8 @@ thread OnPlayerUnbanPlayer( playerid, irc, player[ ] )
 		}*/
 		format(szNormalString, sizeof(szNormalString), "DELETE FROM `BANS` WHERE `NAME` = '%s'", mysql_escape( player ) );
 		mysql_single_query( szNormalString );
+
+		SaveToAdminLogFormatted( playerid, 0, "unban %s", player );
 	 	SendClientMessageToAllFormatted(-1, ""COL_PINK"[ADMIN]{FFFFFF} \"%s\" has been un-banned from the server.", player);
 	}
 	else {
@@ -16086,6 +16100,7 @@ CMD:doublexp( playerid, params[ ] )
 		GameTextForAll( "~w~DOUBLE ~y~~h~XP~r~~h~~h~ DEACTIVATED!", 6000, 3 );
 	}
 
+	SaveToAdminLogFormatted( playerid, 0, "doublexp %s", IsDoubleXP( ) ? ("toggled") : ("un-toggled") );
     SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have %s double XP!", IsDoubleXP( ) ? ("toggled") : ("un-toggled") );
 	AddAdminLogLineFormatted( "%s(%d) has %s double xp", ReturnPlayerName( playerid ), playerid, IsDoubleXP( ) ? ("toggled") : ("un-toggled") );
 	return 1;
@@ -16131,7 +16146,10 @@ CMD:createbribe( playerid, params[ ] )
 		GetPlayerPos( playerid, X, Y, Z );
 	    new iTmp = CreateBribe( X, Y, Z );
 		AddAdminLogLineFormatted( "%s(%d) has created a bribe", ReturnPlayerName( playerid ), playerid );
-	    if ( iTmp != -1 ) SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BRIBE]"COL_WHITE" You have created a bribe taking place of ID: %d.", iTmp );
+	    if ( iTmp != -1 ) {
+			SaveToAdminLog( playerid, iTmp, "created bribe" );
+	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BRIBE]"COL_WHITE" You have created a bribe taking place of ID: %d.", iTmp );
+	    }
 		else SendClientMessage( playerid, -1, ""COL_PINK"[BRIBE]"COL_WHITE" Unable to create a bribe due to a unexpected error." );
 	}
 	return 1;
@@ -16149,6 +16167,7 @@ CMD:destroybribe( playerid, params[ ] )
 	else if ( !Iter_Contains( BribeCount, bID ) ) return SendError( playerid, "Invalid Bribe ID." );
 	else
 	{
+		SaveToAdminLog( playerid, bID, "destroyed bribe" );
 		AddAdminLogLineFormatted( "%s(%d) has deleted a bribe", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BRIBE]"COL_WHITE" You have destroyed a bribe pickup which was the ID of %d.", bID);
 	    DestroyBribe( bID );
@@ -16179,6 +16198,7 @@ CMD:createcar( playerid, params[ ] )
 			GetPlayerFacingAngle( playerid, Angle );
 
 		    if ( ( iTmp = CreateBuyableVehicle( pID, iModel, 0, 0, X, Y, Z, Angle, 1337 ) ) != -1 ) {
+				SaveToAdminLogFormatted( playerid, iTmp, "created car (model id %d) for %s (acc id %d)", iModel, ReturnPlayerName( pID ), p_AccountID[ pID ] );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[VEHICLE]"COL_WHITE" You have created a vehicle in the name of %s(%d).", ReturnPlayerName( pID ), pID );
 		    	PutPlayerInVehicle( playerid, g_vehicleData[ pID ] [ iTmp ] [ E_VEHICLE_ID ], 0 );
 		    }
@@ -16204,6 +16224,7 @@ CMD:destroycar( playerid, params[ ] )
 		if ( v == -1 ) return SendError( playerid, "This vehicle doesn't look like it can be destroyed. (0xAA)" );
 		if ( g_vehicleData[ ownerid ] [ slotid ] [ E_CREATED ] == false ) return SendError( playerid, "This vehicle doesn't look like it can be destroyed. (0xAF)" );
 
+		SaveToAdminLogFormatted( playerid, slotid, "destroycar (model id %d) for %s (acc id %d)", g_vehicleData[ slotid ] [ slotid ] [ E_MODEL ], ReturnPlayerName( ownerid ), p_AccountID[ ownerid ] );
 		AddAdminLogLineFormatted( "%s(%d) has deleted a car", ReturnPlayerName( playerid ), playerid );
 		format( szBigString, sizeof( szBigString ), "[DC] [%s] %s | %s | %s\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), ReturnPlayerName( ownerid ), GetVehicleName( GetVehicleModel( g_vehicleData[ ownerid ] [ slotid ] [ E_VEHICLE_ID ] ) ) );
         AddFileLogLine( "log_destroycar.txt", szBigString );
@@ -16229,6 +16250,7 @@ CMD:stripcarmods( playerid, params[ ] )
 		if ( v == -1 ) return SendError( playerid, "This vehicle doesn't look like it can be stripped of its components. (0xAA)" );
 		if ( g_vehicleData[ ownerid ] [ slotid ] [ E_CREATED ] == false ) return SendError( playerid, "This vehicle doesn't look like it can be destroyed. (0xAF)" );
 
+		SaveToAdminLogFormatted( playerid, slotid, "stripcarmods on %s (acc id %d, model id %d)", ReturnPlayerName( ownerid ), p_AccountID[ ownerid ], g_vehicleData[ ownerid ] [ slotid ] [ E_MODEL ] );
 		AddAdminLogLineFormatted( "%s(%d) has deleted a car's mods", ReturnPlayerName( playerid ), playerid );
 		format( szBigString, sizeof( szBigString ), "[DC_MODS] [%s] %s | %s | %s\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), ReturnPlayerName( ownerid ), GetVehicleName( GetVehicleModel( g_vehicleData[ ownerid ] [ slotid ] [ E_VEHICLE_ID ] ) ) );
         AddFileLogLine( "log_destroycar.txt", szBigString );
@@ -16253,8 +16275,10 @@ CMD:createhouse( playerid, params[ ] )
 	{
 		AddAdminLogLineFormatted( "%s(%d) has created a house", ReturnPlayerName( playerid ), playerid );
 		if ( GetPlayerPos( playerid, X, Y, Z ) ) {
-		    if ( ( iTmp = CreateHouse( cost, X, Y, Z ) ) != -1 )
+		    if ( ( iTmp = CreateHouse( cost, X, Y, Z ) ) != -1 ) {
+				SaveToAdminLogFormatted( playerid, iTmp, "created house for %s", ConvertPrice( cost ) );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You have created a %s house taking up house id %d.", ConvertPrice( cost ), iTmp );
+		    }
 			else
 				SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" Unable to create a house due to a unexpected error." );
 		}
@@ -16274,6 +16298,7 @@ CMD:destroyhouse( playerid, params[ ] )
 	else if ( g_houseData[ hID ] [ E_CREATED ] == false ) return SendError( playerid, "Invalid house ID." );
 	else
 	{
+		SaveToAdminLog( playerid, hID, "destroy house" );
 		format( szBigString, sizeof( szBigString ), "[DH] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ hID ][ E_OWNER ], hID );
 	    AddFileLogLine( "log_houses.txt", szBigString );
 		AddAdminLogLineFormatted( "%s(%d) has deleted a house", ReturnPlayerName( playerid ), playerid );
@@ -16297,6 +16322,7 @@ CMD:hadminsell( playerid, params[ ] )
 	else
 	{
 	    SetHouseForAuction( hID );
+		SaveToAdminLog( playerid, hID, "hadminsell" );
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You made "COL_GREY"House ID %d"COL_WHITE" go for sale.", hID );
 	}
 	return 1;
@@ -16325,6 +16351,7 @@ CMD:createentrance( playerid, params[ ] )
 		    if ( entranceid == -1 )
 				return SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" Unable to create a entrance due to a unexpected error." );
 
+			SaveToAdminLog( playerid, entranceid, "created entrance" );
 			g_entranceData[ entranceid ] [ E_SAVED ] = true;
 
 			format( szBigString, 256, "INSERT INTO `ENTRANCES` (`OWNER`, `LABEL`, `X`, `Y`, `Z`, `EX`, `EY`, `EZ`, `INTERIOR`, `WORLD`, `CUSTOM`, `VIP_ONLY`) VALUES ('%s','%s',%f,%f,%f,%f,%f,%f,%d,%d,%d,%d)", mysql_escape( ReturnPlayerName( ownerid ) ), mysql_escape( label ), X, Y, Z, toX, toY, toZ, interior, world, customInterior, vipOnly );
@@ -16356,6 +16383,7 @@ CMD:destroyentrance( playerid, params[ ] )
 	    AddFileLogLine( "log_entrances.txt", szBigString );
 
 	    // delete and log
+		SaveToAdminLog( playerid, entranceid, "destroy entrance" );
 		AddAdminLogLineFormatted( "%s(%d) has deleted an entrance", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ENTRANCE]"COL_WHITE" You have destroyed entrance id %d", entranceid );
 	    DestroyEntrance( entranceid );
@@ -16378,6 +16406,8 @@ CMD:setgangleader( playerid, params[ ] )
 	{
 		p_GangID[ pID ] = gID;
         g_gangData[ gID ] [ E_LEADER ] = p_AccountID[ pID ];
+
+		SaveToAdminLogFormatted( playerid, gID, "setgangleader to %s (acc id %d)", ReturnPlayerName( pID ), p_AccountID[ pID ] );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GANG]"COL_WHITE" %s(%d) is now the leader of %s.", ReturnPlayerName( pID ), pID, g_gangData[ gID ] [ E_NAME ] );
 		SendClientMessageToGang( gID, g_gangData[ gID ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) is the new gang leader, forcefully by %s.", ReturnPlayerName( pID ), pID, ReturnPlayerName( playerid ) );
         SaveGangData( gID );
@@ -16444,6 +16474,7 @@ CMD:broadcast( playerid, params[ ] )
 		}
 		else
 		{
+			SaveToAdminLogFormatted( playerid, 0, "broadcast %s", szURL );
 			SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" Broadcasting "COL_GREY"%s"COL_WHITE".", szURL );
 		}
 	}
@@ -16482,6 +16513,7 @@ CMD:seteventhost( playerid, params[ ] )
 	else
 	{
 		UpdateServerVariable( "eventhost", p_AccountID[ pID ], 0.0, "", GLOBAL_VARTYPE_INT );
+		SaveToAdminLogFormatted( playerid, 0, "seteventhost to %s (acc id %d)", ReturnPlayerName( pID ), p_AccountID[ pID ] );
 
 		if ( playerid != pID )
 		{
@@ -16645,8 +16677,10 @@ thread OnPlayerTruncateUser( playerid, name[ ], debt )
 		AddAdminLogLineFormatted( "%s(%d) has truncated %s's money", ReturnPlayerName( playerid ), playerid, name );
 
 		if ( debt ) {
+			SaveToAdminLogFormatted( playerid, 0, "truncate %s (with debt)", name );
 	    	return SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've truncated %s and issued them a 250K debt.", name );
 		} else {
+			SaveToAdminLogFormatted( playerid, 0, "truncate %s", name );
 	    	return SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've truncated %s.", name );
 		}
 	}
@@ -16666,6 +16700,7 @@ CMD:weather( playerid, params[ ] )
 
 	g_WorldWeather = weatherid;
 
+	SaveToAdminLogFormatted( playerid, 0, "weather %d", weatherid );
 	AddAdminLogLineFormatted( "%s(%d) has changed the weather to %d", ReturnPlayerName( playerid ), playerid, weatherid );
 	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has changed the weather to %d!", ReturnPlayerName( playerid ), playerid, weatherid );
 	return 1;
@@ -23100,6 +23135,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			DeletePVar( playerid, "gate_editing" );
 			DeletePVar( playerid, "gate_edititem" );
 
+			SaveToAdminLog( playerid, objectid, "destroyed gate" );
 			format( szNormalString, sizeof( szNormalString ), "DELETE FROM `GATES` WHERE ID=%d", objectid );
 			mysql_single_query( szNormalString );
 
@@ -28275,6 +28311,27 @@ stock AddAdminLogLine( szMessage[ sizeof( log__Text[ ] ) ] )
 	return TextDrawSetString( g_AdminLogTD, szLargeString );
 }
 
+stock SaveToAdminLogFormatted( playerid, id, format[ ], va_args<> )
+{
+    static
+		out[ sizeof( log__Text[ ] ) ];
+
+    va_format( out, sizeof( out ), format, va_start<3> );
+    return SaveToAdminLog( playerid, id, out );
+}
+
+stock SaveToAdminLog( playerid, id, message[ ] )
+{
+	if ( id ) {
+		format( szBigString, sizeof( szBigString ),"INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`, `ACTION_ID`) VALUES (%d, '%s', %d)", p_AccountID[ playerid ], mysql_escape( message ), id );
+	} else {
+		format( szBigString, sizeof( szBigString ),"INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`) VALUES (%d, '%s')", p_AccountID[ playerid ], mysql_escape( message ) );
+	}
+	mysql_single_query( szBigString );
+	return 1;
+}
+
+
 stock SyncSpectation( playerid, playerstate = -1 )
 {
 	if ( playerstate == -1 )
@@ -30665,6 +30722,7 @@ thread deleteplayernote( playerid, noteid )
     cache_get_data( rows, fields );
 
 	if ( rows ) {
+		SaveToAdminLog( playerid, noteid, "removed note" );
  		format( szNormalString, 64, "UPDATE `NOTES` SET `DELETED`=%d WHERE `ID`=%d", p_AccountID[ playerid ], noteid ), mysql_single_query( szNormalString );
  		SendServerMessage( playerid, "You have removed note id %d. If there are any problems, contact Lorenc/Council.", noteid );
 		AddAdminLogLineFormatted( "%s(%d) has deleted note id %d", ReturnPlayerName( playerid ), playerid, noteid );
@@ -31766,19 +31824,6 @@ stock initializeActors( )
 
 		// Hobo
 			{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 },
-
-		// Gal
-			{ 305, -2086.961, 1408.9247, 7.6050, 268.1938, "BEACH", "ParkSit_M_loop", 0 },
-			{ 303, -2086.524, 1411.3597, 7.1466, 278.5958, "PAULNMAC", "wank_loop", 0 },
-			{ 164, -2073.548, 1428.9172, 7.1307, 179.4365, "DEALER", "DEALER_IDLE", 0 },
-			{ 40, -2070.0261, 1395.9854, 7.2207, 94.08740, "INT_HOUSE", "wash_up", 0 },
-			{ 12, -2067.8718, 1391.5746, 7.2207, 86.59940, "GANGS", "leanIDLE", 0 },
-			{ 163, -2083.864, 1389.8462, 7.1307, 270.2764, "DEALER", "DEALER_IDLE", 0 },
-			{ 101, -2072.567, 1391.0491, 7.2010, 339.0653, "DANCING", "dance_loop", 0 },
-			{ 56, -2072.8125, 1394.5935, 7.2010, 207.7774, "DANCING", "DAN_Up_A", 0 },
-			{ 166, -2083.049, 1390.7590, 12.100, 296.3300, "DEALER", "DEALER_IDLE", 0 },
-			{ 50, -2081.7195, 1413.5900, 12.110, 118.7149, "COP_AMBIENT", "Coplook_loop", 0 },
-			{ 50, -2074.4705, 1415.5098, 12.110, 285.2416, "COP_AMBIENT", "Coplook_loop", 0 },
 
 		// Gal Diamond
 			{ 163, -2038.4918, 263.2710, 904.9886, 9.3693, "DEALER", "DEALER_IDLE", 0 },
