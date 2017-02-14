@@ -12,7 +12,7 @@
 */
 
 #pragma dynamic 					7200000
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -34,6 +34,7 @@
 #include                            < gvar >
 #include                            < lookupffs >
 #include 							< FloodControl >
+#include 							< mailer >
 #include 							< a_weapondata >
 #include 							< MathParser > // has emit
 #include                            < YSI/y_va > // has emit
@@ -155,7 +156,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v10.0.0-RC4"
+#define FILE_BUILD                	"v10.0.0"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -226,6 +227,7 @@ const
 #define COLOR_YELLOW            	0xFFFF00FF
 #define COLOR_ORANGE            	0xEE9911FF
 #define COLOR_POLICE              	0x3E7EFF70
+#define COLOR_MAYOR              	0x99000070
 #define COLOR_GREY                  0xC0C0C0FF
 #define COLOR_WHITE                 0xFFFFFFFF
 #define COLOR_PINK                  0xFF0770FF
@@ -375,6 +377,11 @@ const
 #define DIALOG_MAP_TAX 				128			+ 1000
 #define DIALOG_MAP_TAX_PAY			129 		+ 1000
 #define DIALOG_MAP_TAX_TRANSFER		130 		+ 1000
+#define DIALOG_ACC_GUARD 			131			+ 1000
+#define DIALOG_ACC_GUARD_EMAIL		132 		+ 1000
+#define DIALOG_ACC_GUARD_MODE 		133			+ 1000
+#define DIALOG_ACC_GUARD_CONFIRM	134			+ 1000
+#define DIALOG_ACC_GUARD_DEL_CANCEL	135			+ 1000
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
@@ -462,7 +469,7 @@ new gBotID							[MAX_BOTS], gGroupID;*/
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ 46 ] [ 137 ] =
+	g_randomMessages[ 48 ] [ 137 ] =
 	{
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
@@ -509,7 +516,9 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" View the current robbing, arresting and killing streak that you are on with "COL_GREY"/streaks"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Check out what your favourite weapon is with "COL_GREY"/weaponstats"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for strong security features!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -585,88 +594,96 @@ enum E_RANDOM_SPAWNS
 	Float:RANDOM_SPAWN_Y,
 	Float:RANDOM_SPAWN_Z,
 	Float:RANDOM_SPAWN_A,
-	RANDOM_SPAWN_INTERIOR
+	RANDOM_SPAWN_INTERIOR,
+	RANDOM_SPAWN_WORLD
 };
 
 stock const
 	g_SanFierroSpawns[ ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -2097.5737, 715.2664, 69.5625, 277.9042, 	0 },
-		{ -1757.4670, 961.8670, 24.8828, 181.7833,  0 },
-		{ -1953.8724, 300.1801, 41.0471, 133.1765, 	0 },
-		{ -2020.3107, -96.6103, 35.1641, 331.9525,  0 },
-		{ -2343.3860, -138.315, 35.3203, 3.2265,   	0 },
-		{ -2519.0496, -30.7666, 25.6172, 319.5007,  0 },
-		{ -2759.6978, 375.4238, 4.5230,  270.5632,  0 },
-		{ -2474.5874, 1264.014, 28.7647, 275.3246, 	0 },
-		{ -1501.3506, 914.5378, 7.1875,  90.5807,   0 },
-		{ -2238.6428, 113.4054, 35.3203, 243.0862,  0 },
-		{ -1983.5684, 129.8655, 27.6875, 74.4550, 	0 },
-		{ -2626.2156, 1398.626, 7.1016,  204.5252,  0 },
-		{ -2626.2156, 1398.626, 7.1016,  204.5252,  0 },
-		{ -2587.4861, 212.0579, 9.0733,  9.073300,  0 }
+		{ -2097.5737, 715.2664, 69.5625, 277.9042, 	0, 0 },
+		{ -1757.4670, 961.8670, 24.8828, 181.7833,  0, 0 },
+		{ -1953.8724, 300.1801, 41.0471, 133.1765, 	0, 0 },
+		{ -2020.3107, -96.6103, 35.1641, 331.9525,  0, 0 },
+		{ -2343.3860, -138.315, 35.3203, 3.2265,   	0, 0 },
+		{ -2519.0496, -30.7666, 25.6172, 319.5007,  0, 0 },
+		{ -2759.6978, 375.4238, 4.5230,  270.5632,  0, 0 },
+		{ -2474.5874, 1264.014, 28.7647, 275.3246, 	0, 0 },
+		{ -1501.3506, 914.5378, 7.1875,  90.5807,   0, 0 },
+		{ -2238.6428, 113.4054, 35.3203, 243.0862,  0, 0 },
+		{ -1983.5684, 129.8655, 27.6875, 74.4550, 	0, 0 },
+		{ -2626.2156, 1398.626, 7.1016,  204.5252,  0, 0 },
+		{ -2626.2156, 1398.626, 7.1016,  204.5252,  0, 0 },
+		{ -2587.4861, 212.0579, 9.0733,  9.073300,  0, 0 }
 	},
 
 	g_LasVenturasSpawns[ ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ 2170.4834, 1714.3723, 11.0469, 137.5881, 	0 },
-		{ 2000.1403, 1564.7941, 15.3672, 236.5212,  0 },
-		{ 2417.5991, 1136.6140, 10.8125, 225.6512,  0 },
-		{ 2484.6160, 1528.7273, 10.8954, 323.0129, 	0 },
-		{ 2464.4070, 2033.2441, 11.0625, 47.88940,  0 },
-		{ 2451.2332, 2347.0044, 12.1635, 112.7286,  0 },
-		{ 1480.3296, 2250.1125, 11.0291, 279.2149, 	0 },
-		{ 2143.3252, 2840.4441, 10.8203, 139.9116, 	0 }
+		{ 2170.4834, 1714.3723, 11.0469, 137.5881, 	0, 0 },
+		{ 2000.1403, 1564.7941, 15.3672, 236.5212,  0, 0 },
+		{ 2417.5991, 1136.6140, 10.8125, 225.6512,  0, 0 },
+		{ 2484.6160, 1528.7273, 10.8954, 323.0129, 	0, 0 },
+		{ 2464.4070, 2033.2441, 11.0625, 47.88940,  0, 0 },
+		{ 2451.2332, 2347.0044, 12.1635, 112.7286,  0, 0 },
+		{ 1480.3296, 2250.1125, 11.0291, 279.2149, 	0, 0 },
+		{ 2143.3252, 2840.4441, 10.8203, 139.9116, 	0, 0 }
 	},
 
 	g_LosSantosSpawns[ ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ 810.63520, -1340.0682, 13.5386, 37.33070, 0 },
-		{ 1124.6071, -1427.5155, 15.7969, 350.9336, 0 },
-		{ 585.81520, -1247.9160, 17.9521, 335.6035, 0 },
-		{ 2025.2626, -1423.2682, 16.9922, 135.4516, 0 },
-		{ 2509.2468, -1679.2029, 13.5469, 50.24740, 0 },
-		{ 1457.1467, -1011.7307, 26.8438, 51.79910, 0 },
-		{ 2017.8206, -1279.4851, 23.9820, 47.38920, 0 },
-		{ 1935.7644, -1794.6068, 13.5469, 295.5515, 0 },
-		{ 1371.4569, -1090.6387, 24.5459, 92.84640, 0 },
-		{ 2298.4055, -1500.3264, 25.3047, 199.6940, 0 }
+		{ 810.63520, -1340.0682, 13.5386, 37.33070, 0, 0 },
+		{ 1124.6071, -1427.5155, 15.7969, 350.9336, 0, 0 },
+		{ 585.81520, -1247.9160, 17.9521, 335.6035, 0, 0 },
+		{ 2025.2626, -1423.2682, 16.9922, 135.4516, 0, 0 },
+		{ 2509.2468, -1679.2029, 13.5469, 50.24740, 0, 0 },
+		{ 1457.1467, -1011.7307, 26.8438, 51.79910, 0, 0 },
+		{ 2017.8206, -1279.4851, 23.9820, 47.38920, 0, 0 },
+		{ 1935.7644, -1794.6068, 13.5469, 295.5515, 0, 0 },
+		{ 1371.4569, -1090.6387, 24.5459, 92.84640, 0, 0 },
+		{ 2298.4055, -1500.3264, 25.3047, 199.6940, 0, 0 }
 	},
 
 	g_FiremanSpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -2026.3287, 67.1439, 28.6916, 270.0000, 	0 },
-		{ 1744.56240, 2079.43, 10.8203, 172.1325, 	0 },
-		{ 1757.44350, -1456.7, 13.5469, 282.4133, 	0 }
+		{ -2026.3287, 67.1439, 28.6916, 270.0000, 	0, 0 },
+		{ 1744.56240, 2079.43, 10.8203, 172.1325, 	0, 0 },
+		{ 1757.44350, -1456.7, 13.5469, 282.4133, 	0, 0 }
 	},
 
 	g_MedicSpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -2658.0764, 634.333, 14.4531, 180.0000, 	0 },
-		{ 1615.62490, 1840.19, 10.9696, 0.000000, 	0 },
-		{ 1178.04170, -1323.6, 14.1005, 285.5701, 	0 }
+		{ -2658.0764, 634.333, 14.4531, 180.0000, 	0, 0 },
+		{ 1615.62490, 1840.19, 10.9696, 0.000000, 	0, 0 },
+		{ 1178.04170, -1323.6, 14.1005, 285.5701, 	0, 0 }
 	},
 
 	g_ArmySpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -1401.8173, 493.496, 18.2294, 0.000000, 	0 },
-		{ 199.572200, 1920.97, 17.6406, 180.0000, 	0 },
-		{ 1229.35670, -2611.4, 19.7344, 264.2092, 	0 }
+		{ -1401.8173, 493.496, 18.2294, 0.000000, 	0, 0 },
+		{ 199.572200, 1920.97, 17.6406, 180.0000, 	0, 0 },
+		{ 1229.35670, -2611.4, 19.7344, 264.2092, 	0, 0 }
 	},
 
 	g_CIASpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -2455.4487, 503.92360, 30.078, 270.000, 	0 },
-		{ 940.813400, 1733.6327, 8.8516, 270.000, 	0 },
-		{ 1518.82930, -1452.430, 14.203, 0.00000, 	0 }
+		{ -2455.4487, 503.92360, 30.078, 270.000, 	0, 0 },
+		{ 940.813400, 1733.6327, 8.8516, 270.000, 	0, 0 },
+		{ 1518.82930, -1452.430, 14.203, 0.00000, 	0, 0 }
 	},
 
 	g_PoliceSpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
 	{
-		{ -1606.3693, 674.1749, -5.2422, 0.0000, 	0 },
-		{ 2295.62960, 2468.796, 10.8203, 90.000, 	0 },
-		{ 1528.58340, -1677.49, 5.89060, 270.00, 	0 }
+		{ -1606.3693, 674.1749, -5.2422, 0.0000, 	0, 0 },
+		{ 2295.62960, 2468.796, 10.8203, 90.000, 	0, 0 },
+		{ 1528.58340, -1677.49, 5.89060, 270.00, 	0, 0 }
 	}
+
+	/*g_MayorSpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
+	{
+		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 1 },
+		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 2 },
+		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 5 }
+	}*/
 ;
 
 /* ** House System ** */
@@ -1314,11 +1331,12 @@ new
 ;
 
 /* ** Gang System ** */
-#define MAX_GANGS                   ( 100 )
+#define MAX_GANGS                   ( MAX_PLAYERS )
 #define TURF_TAKEOVER_TIME          ( 60 )
 #define TAKEOVER_NEEDED_PEOPLE		( 3 )
 #define TURF_PAYOUT 				( 1250 )
 #define INVALID_GANG_ID             ( -1 )
+#define MAX_COLEADERS				( 3 )
 
 enum E_ZONE_DATA
 {
@@ -1332,17 +1350,17 @@ enum E_ZONE_DATA
 
 enum e_gang_data
 {
+	E_SQL_ID,
 	E_NAME[ 30 ],
 	E_LEADER,
 	E_COLOR,
-	bool: E_SAVED,
 
 	E_BANK,
 	E_KILLS,
 	E_DEATHS,
 	E_SCORE,
 
-	E_COLEADER,
+	E_COLEADER[ MAX_COLEADERS ],
 	bool: E_INVITE_ONLY,
 	E_JOIN_MSG[ 96 ]
 };
@@ -2852,7 +2870,7 @@ enum E_ROBBERY_NPC_DATA
 	E_NPC_NAME[ 24 ], 			E_NPC_ID,						E_TIMEOUT,
 	E_HOLDUP_TIMER,				bool: E_PROVOKED,				Float: E_RZ,
  	E_WORLD,					E_MAX_LOOT, 					E_LOOT,
- 	Text3D: E_LABEL
+ 	Text3D: E_LABEL,			E_SHOOTING_TIMER,				Float: E_SHOOTING_OFFSET
 };
 
 enum E_CIVILIAN_DATA
@@ -2906,6 +2924,21 @@ enum E_MAPPING_DATA
 new
 	g_mappingData					[ MAX_MAPPING ] [ E_MAPPING_DATA ],
 	Iterator:Mapping< MAX_MAPPING >
+;
+
+/* ** Security System ** */
+#define SECURITY_MODE_MILD					( 0 )
+#define SECURITY_MODE_PARANOID				( 1 )
+#define SECURITY_MODE_DISABLED				( 2 )
+
+enum E_IRRESISTIBLE_GUARD
+{
+	E_ID,						E_EMAIL[ 64 ],					E_MODE,
+	bool: E_VERIFIED,			E_LAST_DISABLED
+};
+
+new
+	p_accountSecurityData		[ MAX_PLAYERS ] [ E_IRRESISTIBLE_GUARD ]
 ;
 
 /* ** Player Data ** */
@@ -2978,6 +3011,7 @@ new
 	p_InfoLabelString               [ MAX_PLAYERS ] [ 32 ],
 	bool: p_inMovieMode             [ MAX_PLAYERS char ],
 	bool: p_inCIA                   [ MAX_PLAYERS char ],
+	// bool: p_inMayor					[ MAX_PLAYERS char ],
 	p_AntiEmpSpam                   [ MAX_PLAYERS ],
 	bool: p_inPaintBall           	[ MAX_PLAYERS char ],
 	p_Scissors                      [ MAX_PLAYERS ],
@@ -3297,6 +3331,9 @@ public OnGameModeInit()
 	AddServerVariable( "doublexp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventbank", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventhost", "0", GLOBAL_VARTYPE_INT );
+	// AddServerVariable( "mayor", "0", GLOBAL_VARTYPE_INT );
+	// AddServerVariable( "mayor_timeout", "0", GLOBAL_VARTYPE_INT );
+	// AddServerVariable( "mayor_timestamp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
@@ -3381,15 +3418,19 @@ public OnGameModeInit()
 	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
 	AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
 
+	/* ** MAYOR ** */
+	// AddPlayerClass( 187, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 64
+	// AddPlayerClass( 148, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 65
+
 	/* ** POLICE ** */
-	AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 64
-	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 65
-	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
-	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 67
-	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 68
-	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
-	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 70
-	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 71
+	AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
+	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 67
+	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 68
+	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 69
+	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 70
+	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 71
+	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 72
+	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
  	/* ** IRC configuration **
  	gBotID[ 0 ] = IRC_Connect( IRC_SERVER, IRC_PORT, BOT_1_NICKNAME, BOT_1_REALNAME, BOT_1_USERNAME );
@@ -4419,7 +4460,6 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "OnApartmentLoad", "" );
-	mysql_function_query( dbHandle, "SELECT * FROM `GANGS`", true, "OnGangLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `FURNITURE`", true, "OnFurnitureLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `GARAGES`", true, "OnGaragesLoad", "" );
@@ -4471,7 +4511,14 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 	;
     cache_get_data( rows, fields );
 
-	if ( rows ) ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"Sorry this transaction ID has already been redeemed by someone else.", "Okay", "" );
+	if ( rows )
+	{
+		static
+			szName[ MAX_PLAYER_NAME ];
+
+		cache_get_field_content( 0, "REDEEMER", szName );
+		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", sprintf( ""COL_WHITE"Sorry this transaction ID has already been redeemed by %s.", szName ), "Okay", "" );
+	}
 	else
 	{
 		g_redeemVipWait = g_iTime + 10;
@@ -4488,8 +4535,8 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 			Float: iCoins = fAmount * ( 1 + GetGVarFloat( "vip_bonus" ) ) * 100.0
 		;
 
-		if ( fAmount < 2.0 )
-			return SendError( playerid, "Thanks for donating! As this donation was under $2.00 USD, no coins have been issued." );
+		if ( fAmount < 4.9999 )
+			return SendError( playerid, "Thanks for donating! As this donation was under $5.00 USD, no coins have been issued." );
 
 		p_IrresistibleCoins[ playerid ] += iCoins;
 		SetPVarFloat( playerid, "just_donated", fAmount );
@@ -4964,7 +5011,7 @@ public OnServerUpdate( )
 			if ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 45000 )
 			{
 				// AFK Jail
-				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerDetained( playerid ) ) {
+				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerDetained( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) ) {
 			    	JailPlayer( playerid, 60, 1 );
 		        	SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
 				}
@@ -5338,7 +5385,7 @@ public OnServerUpdate( )
 				closestid = GetClosestPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], distance );
 
 			if ( IsPlayerConnected( closestid ) && 0.0 < distance < 5625 )
-				FCNPC_AimAtPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], closestid, .shoot = true, .shoot_delay = -1, .setangle = true, .offsetx = 0.0, .offsety = 0.0, .offsetz = 0.6 );
+				FCNPC_AimAtPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], closestid, .shoot = true );
 
 			else
 			{
@@ -5490,7 +5537,7 @@ public ZoneTimer( )
 		}
 
 		// Update All Map Tax Labels
-		mysql_function_query( dbHandle, "SELECT `MAP_TAX`.`ID`,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "UpdateMapTaxNames", "" );
+		mysql_function_query( dbHandle, "SELECT `MAP_TAX`.`ID`,`MAP_TAX`.`USER_ID`,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "UpdateMapTaxNames", "" );
 	}
 
 
@@ -5736,6 +5783,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = false;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = false;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Select different types of Jobs~n~> Can rob places for score~n~> Can team up with players" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Civilian" );
@@ -5748,6 +5796,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = true;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = false;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Needs ~r~10000~w~ XP or more" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~Federal Bureau of Investigation" );
@@ -5760,6 +5809,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = true;
 			p_inArmy{ playerid } = true;
 			p_inCIA{ playerid } = true;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Can use strong air support~n~> Needs ~r~20000~w~ XP or more" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~San Fierro Army" );
@@ -5772,6 +5822,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = true;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = true;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Can turn electronic devices off~n~> Needs ~r~15000~w~ XP or more" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~Central Intelligence Agency" );
@@ -5784,6 +5835,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = false;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = false;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from fires~n~> Can extinguish fires~n~> Needs ~r~1000~w~ XP or more" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Fire Man" );
@@ -5796,11 +5848,26 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = false;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = false;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Can cure diseases~n~> Can heal players~n~> Needs ~r~2000~w~ XP or more" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Paramedic" );
 		}
-	    case 64..71:
+	    /*case 64..65:
+	    {
+			p_Class[ playerid ] = ( CLASS_POLICE );
+			SetPlayerColor( playerid, COLOR_MAYOR );
+			//SetPlayerTeam( playerid, CLASS_POLICE );
+			p_inFBI{ playerid } = false;
+			p_inArmy{ playerid } = false;
+			p_inCIA{ playerid } = false;
+			p_inMayor{ playerid } = true;
+
+			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Enforces police agenda~n~> Dictates the law in the game~n~> Can issue warrants~n~> Can jail/arrest people~n~> Limited to 1 person every 60 min~n~> Needs ~r~5000~w~ XP or more" );
+	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~r~~h~ The Mayor" );
+	    }
+	  	case 66..73:*/
+	  	case 64..73:
 	    {
 			p_Class[ playerid ] = ( CLASS_POLICE );
 			SetPlayerColor( playerid, COLOR_POLICE );
@@ -5808,6 +5875,7 @@ public OnPlayerRequestClass( playerid, classid )
 			p_inFBI{ playerid } = false;
 			p_inArmy{ playerid } = false;
 			p_inCIA{ playerid } = false;
+			// p_inMayor{ playerid } = false;
 
 			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people" );
 	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Police Officer" );
@@ -6293,6 +6361,9 @@ public OnPlayerDisconnect( playerid, reason )
 	resetPlayerToys( playerid, 0 );
 	resetPlayerToys( playerid, 1 );
 	resetPlayerToys( playerid, 2 );
+	p_accountSecurityData[ playerid ] [ E_VERIFIED ] = false;
+	p_accountSecurityData[ playerid ] [ E_ID ] = 0;
+	p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = 0;
 
 	switch( reason )
 	{
@@ -8369,6 +8440,43 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
+CMD:dw( playerid, params[ ] ) return cmd_disposeweapon( playerid, params );
+CMD:disposeweapon(playerid, params[]) {
+
+	new
+	    iCurrentWeapon = GetPlayerWeapon( playerid ),
+	    iWeaponID[ 12 ],
+	    iWeaponAmmo[ 12 ]
+	;
+
+	if ( iCurrentWeapon != 0 )
+	{
+		for( new iSlot = 0; iSlot != 12; iSlot++ )
+		{
+		    new
+				iWeapon,
+				iAmmo;
+
+			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
+
+			if ( iWeapon != iCurrentWeapon ) {
+			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
+			}
+		}
+
+		ResetPlayerWeapons( playerid );
+
+		for( new iSlot = 0; iSlot != 12; iSlot++ ) {
+		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
+		}
+
+		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
+		return SendServerMessage( playerid, "You have dropped your weapon." );
+	} else {
+		return SendError( playerid, "You are not holding any weapon." );
+	}
+}
+
 CMD:mycustomizations( playerid, params[ ] ) return cmd_mymaps( playerid, params );
 CMD:mymaps( playerid, params[ ] )
 {
@@ -8491,6 +8599,9 @@ CMD:t( playerid, params[ ] )
 CMD:ic( playerid, params[ ] ) return cmd_irresistiblecoins( playerid, params );
 CMD:irresistiblecoins( playerid, params[ ] )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	if ( isnull( params ) )
 	{
 		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%f"COL_WHITE" Irresistible Coins!", p_IrresistibleCoins[ playerid ] );
@@ -8568,6 +8679,9 @@ thread currentUserRank( playerid, watchingid )
 
 CMD:garage( playerid, params[ ] )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	new
 		iOwner = INVALID_PLAYER_ID,
 		iGarage = p_InGarage[ playerid ],
@@ -10499,13 +10613,17 @@ CMD:animlist( playerid, params[ ] )
 	return 1;
 }
 
+CMD:email( playerid, params[ ] ) {
+	return ShowPlayerAccountGuard( playerid );
+}
+
 CMD:cp( playerid, params[ ] ) return cmd_controlpanel( playerid, params );
 CMD:controlpanel( playerid, params[ ] )
 {
-	szLargeString = ""COL_WHITE"Setting\t"COL_WHITE"Status\t"COL_WHITE"Default\n";
+	szLargeString = ""COL_WHITE"Setting\t"COL_WHITE"Status\t"COL_WHITE"Default\n"COL_GREY"Irresistible Guard\t \t"COL_GREY">>>\n";
 
 	for( new i = 0; i < MAX_SETTINGS; i++ )
-		format( szLargeString, 600, "%s%s\t%s\t"COL_GREY"%s\n", szLargeString, g_PlayerSettings[ i ] [ E_NAME ], p_PlayerSettings[ playerid ] { i } == g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( ""#COL_GREEN"ENABLED" ) : ( ""#COL_RED"DISABLED" ), g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( "DISABLED" ) : ( "ENABLED" ) );
+		format( szLargeString, 600, "%s%s\t%s\t"COL_GREY"%s\n", szLargeString, g_PlayerSettings[ i ] [ E_NAME ], p_PlayerSettings[ playerid ] { i } == g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( ""#COL_GREEN"enabled" ) : ( ""#COL_RED"disabled" ), g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ) );
 
 	ShowPlayerDialog( playerid, DIALOG_CP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Control Panel", szLargeString, "Select", "Cancel" );
 	return 1;
@@ -11678,6 +11796,9 @@ CMD:setspike( playerid, params[ ] )
 
 CMD:h( playerid, params[ ] )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	new
 	    ID = p_InHouse[ playerid ],
 	    query[ 140 ]
@@ -11965,6 +12086,9 @@ CMD:crb( playerid, params[ ] )
 
 CMD:v( playerid, params[ ] )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	new
 		vehicleid = GetPlayerVehicleID( playerid ),
 		ownerid = INVALID_PLAYER_ID
@@ -12277,6 +12401,9 @@ CMD:sendmoney( playerid, params[ ] )
 		iTime = g_iTime
 	;
 
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	/* ** Anti Tie Spam ** */
 	if ( GetPVarInt( playerid, "sm_antispam" ) > iTime ) return SendError( playerid, "You must wait 10 seconds before sending payments again." );
 	/* ** End of Anti Tie Spam ** */
@@ -12499,6 +12626,9 @@ CMD:shop( playerid, params[ ] )
 
 CMD:placehit( playerid, params[ ] )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	/* ** Anti Spammy Commands ** */
 	if ( p_AntiSpammyTS[ playerid ] > g_iTime ) return SendError( playerid, "You cannot use commands that are sent to players globally for %d seconds.", p_AntiSpammyTS[ playerid ] - g_iTime );
 	/* ** End Anti Spammy Commands ** */
@@ -12515,6 +12645,11 @@ CMD:placehit( playerid, params[ ] )
 	else if ( pID == playerid ) return SendError( playerid, "You cannot place a hit on your self.");
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	{
+		// transaction
+    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS` (`TO_ID`, `FROM_ID`, `CASH`, `NATURE`) VALUES (%d, %d, %d, 'contract')", p_AccountID[ pID ], p_AccountID[ playerid ], cash );
+     	mysql_single_query( szNormalString );
+
+     	// place hit
 		p_ContractedAmount[ pID ] += cash;
 		GivePlayerCash( playerid, -cash );
 		p_AntiSpammyTS[ playerid  ] = g_iTime + 10;
@@ -13035,7 +13170,7 @@ CMD:getwanted( playerid, params[ ] )
 	new pID;
 	if ( p_Class[ playerid ] != CLASS_POLICE && !p_AdminLevel[ playerid ] ) return SendError( playerid, "This is restricted to police only." );
    	else if ( sscanf( params, #sscanf_u, pID ) ) return SendUsage( playerid, "/getwanted [PLAYER_ID]" );
-	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
+	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player is not connected." );
    	else
    	{
    		if ( p_WantedLevel[ pID ] )
@@ -13053,7 +13188,7 @@ CMD:cuff( playerid, params[ ] )
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/cuff [PLAYER_ID]" );
 	else if ( victimid == playerid ) return SendError( playerid, "You cannot cuff yourself." );
-	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
+	else if ( !IsPlayerConnected( victimid ) || IsPlayerNPC( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
  	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
  	{
@@ -13548,6 +13683,46 @@ CMD:takeover( playerid, params[ ] )
 	return 1;
 }
 
+CMD:clans( playerid, params[ ] )
+{
+	mysql_function_query( dbHandle, "SELECT * FROM `GANGS` WHERE `CLAN_TAG` IS NOT NULL ORDER BY `SCORE` DESC", true, "readclans", "d", playerid );
+	return 1;
+}
+
+thread readclans( playerid )
+{
+	new
+	    rows, fields
+	;
+    cache_get_data( rows, fields );
+
+    if ( rows )
+    {
+    	new
+    		szTag[ 8 ],
+    		szName[ 30 ],
+    		iScore, iColor
+    	;
+
+    	szLargeString = ""COL_WHITE"Tag\t"COL_WHITE"Name\t"COL_WHITE"Score\n";
+
+    	for( new i = 0; i < rows; i++ )
+		{
+			cache_get_field_content( i, "CLAN_TAG", szTag );
+			cache_get_field_content( i, "NAME", szName );
+			iScore = cache_get_field_content_int( i, "SCORE", dbHandle );
+			iColor = cache_get_field_content_int( i, "COLOR", dbHandle );
+
+			format( szLargeString, sizeof( szLargeString ), "%s[%s]\t{%06x}%s\t%d\n", szLargeString, szTag, iColor >>> 8, szName, iScore );
+		}
+
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "Clan List", szLargeString, "Close", "" ), 1;
+	}
+	SendError( playerid, "There are no clans to show." );
+	return 1;
+}
+
+
 CMD:gangs( playerid, params[ ] )
 {
 	if ( !Iter_Count(gangs) )
@@ -13588,29 +13763,39 @@ CMD:gang( playerid, params[ ] )
 	else if ( !strcmp( params, "coleader", false, 8 ) )
 	{
 		new
-		    pID
-		;
+			gangid = p_GangID[ playerid ], pID;
+
 	    if ( p_GangID[ playerid ] == INVALID_GANG_ID ) return SendError( playerid, "You are not inside a gang." );
 		else if ( !IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) ) return SendError( playerid, "You are not the gang leader." );
-		else if ( sscanf( params[ 9 ], ""#sscanf_u"", pID ) )
-		{
-			if ( g_gangData[ p_GangID[ playerid ] ] [ E_COLEADER ] != 0 )
-			{
-				g_gangData[ p_GangID[ playerid ] ] [ E_COLEADER ] = 0;
-
-				SaveGangData( p_GangID[ playerid ] );
-				return SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} The co-leader has been removed from the gang." );
-			}
-			return SendUsage( playerid, "/gang coleader [PLAYER_ID]" );
-		}
+		else if ( sscanf( params[ 9 ], ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/gang coleader [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 		else if ( pID == playerid ) return SendError( playerid, "You cannot apply this action to yourself." );
 		else if ( p_GangID[ pID ] != p_GangID[ playerid ] ) return SendError( playerid, "This player isn't in your gang." );
 		else
 		{
-	        g_gangData[ p_GangID[ playerid ] ] [ E_COLEADER ] = p_AccountID[ pID ];
-			SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) is the new gang co-leader.", ReturnPlayerName( pID ), pID );
-            SaveGangData( p_GangID[ playerid ] );
+			new
+				slotid = -1;
+
+			for ( new i = 0; i < MAX_COLEADERS; i ++ )
+			{
+				// check for dupes
+				if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] == p_AccountID[ pID ] )
+					return SendError( playerid, "This player is already a coleader of your gang." );
+
+				// find slot
+				if ( ! g_gangData[ gangid ] [ E_COLEADER ] [ i ] ) {
+					slotid = i;
+					break;
+				}
+			}
+
+			if ( slotid != -1 )
+			{
+		        g_gangData[ gangid ] [ E_COLEADER ] [ slotid ] = p_AccountID[ pID ];
+				SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) is the #%d co-leader.", ReturnPlayerName( pID ), pID, slotid + 1 );
+				mysql_single_query( sprintf( "INSERT INTO `GANG_COLEADERS` (`GANG_ID`,`USER_ID`) VALUES (%d, %d)", gangid, p_AccountID[ pID ] ) );
+			}
+			else SendError( playerid, "There can only be a maximum of %d gang co-leaders. Kick one of them first.", MAX_COLEADERS );
 		}
 		return 1;
 	}
@@ -13685,12 +13870,12 @@ CMD:gang( playerid, params[ ] )
 
 		if ( sscanf( params[ 8 ], "s[96]", g_gangData[ gangid ] [ E_JOIN_MSG ] ) )
 		{
-			mysql_single_query( sprintf( "UPDATE `GANGS` SET `JOIN_MSG`=NULL WHERE `ID`=%d", gangid ) );
+			mysql_single_query( sprintf( "UPDATE `GANGS` SET `JOIN_MSG`=NULL WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 			SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) removed the gang's join message.", ReturnPlayerName( playerid ), playerid );
 		}
 		else
 		{
-			format( szBigString, sizeof( szBigString ), "UPDATE `GANGS` SET `JOIN_MSG`='%s' WHERE `ID`=%d", mysql_escape( g_gangData[ gangid ] [ E_JOIN_MSG ] ), gangid );
+			format( szBigString, sizeof( szBigString ), "UPDATE `GANGS` SET `JOIN_MSG`='%s' WHERE `ID`=%d", mysql_escape( g_gangData[ gangid ] [ E_JOIN_MSG ] ), g_gangData[ gangid ] [ E_SQL_ID ] );
 			mysql_single_query( szBigString );
 
 			SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) set the gang's join message:", ReturnPlayerName( playerid ), playerid );
@@ -13791,7 +13976,7 @@ CMD:gang( playerid, params[ ] )
 			}
 
 			// Update private status
-			mysql_single_query( sprintf( "UPDATE `GANGS` SET `INVITE_ONLY`=%d WHERE `ID`=%d", ( g_gangData[ gangid ] [ E_INVITE_ONLY ] = !g_gangData[ gangid ] [ E_INVITE_ONLY ] ), gangid ) );
+			mysql_single_query( sprintf( "UPDATE `GANGS` SET `INVITE_ONLY`=%d WHERE `ID`=%d", ( g_gangData[ gangid ] [ E_INVITE_ONLY ] = !g_gangData[ gangid ] [ E_INVITE_ONLY ] ), g_gangData[ gangid ] [ E_SQL_ID ] ) );
 			SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) %s made the gang private.", ReturnPlayerName( playerid ), playerid, g_gangData[ gangid ] [ E_INVITE_ONLY ] ? ( "has" ) : ( "has not" ) );
 		}
 		return 1;
@@ -18547,6 +18732,10 @@ stock approveClassSpawned( playerid ) {
 	if ( !p_PlayerLogged{ playerid } )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must be authenticated to play the game." ), 0;
 
+	// is verified
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_PARANOID )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must be verified to play the game." ), 0;
+
 	// is cop/army banned
 	if ( p_CopBanned{ playerid } == MAX_CLASS_BAN_WARNS && ( IsPlayerPolice( playerid ) || IsPlayerFBI( playerid ) || IsPlayerCIA( playerid ) ) )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You are banned from using the police class(es). Use "COL_GREY"/unbanme"COL_WHITE" to pay for an unban." ), 0;
@@ -18573,6 +18762,21 @@ stock approveClassSpawned( playerid ) {
 
 	if ( IsPlayerMedic( playerid ) && p_XP[ playerid ] < 2000 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 XP to use this class." ), 0;
+
+	/* if ( IsPlayerMayor( playerid ) && p_XP[ playerid ] < 5000 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 5,000 XP to use this class." ), 0;
+
+	// restrict to one mayor
+	new
+		mayorAccountId = GetGVarInt( "mayor" );
+
+	if( mayorAccountId != 0 && mayorAccountId != p_AccountID[ playerid ] ) {
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" The mayor class is currently full." ), 0;
+	} else {
+		UpdateServerVariable( "mayor_timeout", 0, 0.0, "", GLOBAL_VARTYPE_INT );
+		UpdateServerVariable( "mayor_timestamp", g_iTime, 0.0, "", GLOBAL_VARTYPE_INT );
+		UpdateServerVariable( "mayor", p_AccountID[ playerid ], 0.0, "", GLOBAL_VARTYPE_INT );
+	}*/
 
 	// job not set
 	if ( !p_JobSet{ playerid } || !p_CitySet{ playerid } )
@@ -19976,6 +20180,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			new iCash 		= cache_get_field_content_int( 0, "CASH", dbHandle );
 			new iFightStyle = cache_get_field_content_int( 0, "FIGHTSTYLE", dbHandle );
 			new iWanted 	= cache_get_field_content_int( 0, "WANTEDLVL", dbHandle );
+			new iGang		= cache_get_field_content_int( 0, "GANG_ID", dbHandle );
 
 			SetPlayerCash			( playerid, iCash );
 			SetPlayerScore			( playerid, iScore );
@@ -20029,15 +20234,11 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
 			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
 			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_GangID[ playerid ] 			= cache_get_field_content_int( 0, "GANG_ID", dbHandle );
 			p_HouseSpawnLocation[ playerid ]= cache_get_field_content_int( 0, "HOUSE_ID", dbHandle );
 			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 
 			// Gang validation
-			if ( !Iter_Contains( gangs, p_GangID[ playerid ] ) && p_GangID[ playerid ] != -1 )
-				p_GangID[ playerid ] = -1;
-
 			if ( p_HouseSpawnLocation[ playerid ] != -1 && !strmatch( g_houseData[ p_HouseSpawnLocation[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 				p_HouseSpawnLocation[ playerid ] = -1;
 
@@ -20053,22 +20254,25 @@ thread OnPlayerLogin( playerid, password[ ] )
 			CheckPlayerVipExpiry( playerid );
 
 			// Load some more linking tables
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE OWNER=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `EMAILS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
+			mysql_function_query( dbHandle, szNormalString, true, "OnEmailLoad", "d", playerid );
+
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnVehicleLoad", "d", playerid );
 
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOY_UNLOCKS` WHERE USER_ID=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOY_UNLOCKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnToyLoad", "d", playerid );
 
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOYS` WHERE USER_ID=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOYS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnToyOffsetLoad", "d", playerid );
 
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `SETTINGS` WHERE USER_ID=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `SETTINGS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnSettingsLoad", "d", playerid );
 
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `STREAKS` WHERE USER_ID=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `STREAKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnStreaksLoad", "d", playerid );
 
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `WEAPON_STATS` WHERE USER_ID=%d", p_AccountID[ playerid ] );
+			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `WEAPON_STATS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnWeaponStatsLoad", "d", playerid );
 
 			if ( p_VIPLevel[ playerid ] ) {
@@ -20088,9 +20292,23 @@ thread OnPlayerLogin( playerid, password[ ] )
 				if ( strmatch( GetPlayerISP( playerid ), "AS812 Rogers Cable Communications Inc." ) )
 					format( p_PlayerIP[ playerid ], 16, "72.229.%d.%d", random( 255 ), random( 255 ) );
 
-				if ( strmatch( GetPlayerISP( playerid ), "AS6799 OTEnet S.A." ) )
-					format( p_PlayerIP[ playerid ], 16, "188.39.%d.%d", random( 255 ), random( 255 ) );
+				if ( strmatch( GetPlayerISP( playerid ), "AS9443 Primus Telecommunications" ) )
+					format( p_PlayerIP[ playerid ], 16, "124.106.%d.%d", random( 255 ), random( 255 ) );
 		  	}
+
+		  	// Gang create
+		  	new
+		  		bool: foundGang = false;
+
+			foreach(new g : gangs) if( iGang == g_gangData[ g ] [ E_SQL_ID ] ) {
+				p_GangID[ playerid ] = g, foundGang = true;
+				break;
+			}
+
+			if ( ! foundGang ) {
+				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `ID`=%d OR `LEADER`=%d LIMIT 0,1", iGang, p_AccountID[ playerid ] );
+				mysql_function_query( dbHandle, szNormalString, true, "OnGangLoad", "dd", playerid, iGang );
+			}
 
 		  	// Send gang join message
 		  	if ( p_GangID[ playerid ] != INVALID_GANG_ID && strlen( g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] ) ) {
@@ -20523,6 +20741,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             GivePlayerCash( playerid, iAfterTax );
             SaveGangData( gangid );
 
+			// transaction
+	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS` (`TO_ID`, `FROM_ID`, `CASH`, `NATURE`) VALUES (%d, %d, %d, 'gang withdraw')", p_AccountID[ playerid ], g_gangData[ gangid ] [ E_SQL_ID ], iWithdraw );
+	     	mysql_single_query( szNormalString );
+
+	     	// withdraw
             SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s (inc. 10%s fee) from the gang bank account.", ReturnPlayerName( playerid ), playerid, ConvertPrice( iAfterTax ), "%%" );
             format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", ConvertPrice( iWithdraw ), ConvertPrice( g_gangData[ gangid ] [ E_BANK ] ), ConvertPrice( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
@@ -20533,6 +20756,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 		if ( !response )
 			return ShowPlayerBankMenuDialog( playerid );
+
+		if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+			return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
 		new
 			iDeposit,
@@ -20566,6 +20792,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             GivePlayerCash( playerid, -iDeposit );
             SaveGangData( gangid );
 
+			// transaction
+	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS` (`TO_ID`, `FROM_ID`, `CASH`, `NATURE`) VALUES (%d, %d, %d, 'gang deposit')", p_AccountID[ playerid ], g_gangData[ gangid ] [ E_SQL_ID ], iDeposit );
+	     	mysql_single_query( szNormalString );
+
+	     	// deposit
             SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has deposited %s into the gang bank account.", ReturnPlayerName( playerid ), playerid, ConvertPrice( iDeposit ) );
             format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", ConvertPrice( iDeposit ), ConvertPrice( g_gangData[ gangid ] [ E_BANK ] ), ConvertPrice( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
@@ -21070,17 +21301,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				new iPlayers = GetOnlineGangMembers( g );
 				format( szLargeString, 350, ""COL_GREY"Gang ID:"COL_WHITE" %d\n"COL_GREY"Online Members:"COL_WHITE" %d\n"COL_GREY"Score:"COL_WHITE" %d\n"COL_GREY"Kills:"COL_WHITE" %d\n"COL_GREY"Deaths:"COL_WHITE" %d\n"COL_GREY"K/D Ratio:"COL_WHITE" %0.2f\n", g, iPlayers, g_gangData[ g ] [ E_SCORE ], g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ], floatdiv( g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ] ) );
-				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d\n"COL_GREY"Saved:"COL_WHITE" %s", szLargeString, ConvertPrice( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ), g_gangData[ g ] [ E_SAVED ] ? ( "Yes" ) : ( "No" ) );
+				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d", szLargeString, ConvertPrice( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ) );
 				ShowPlayerDialog( playerid, DIALOG_GANG_LIST_RESPONSE, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Statistics", szLargeString, "Close", "Back" );
 			}
-			case 1:
-			{
-				if ( g_gangData[ g ] [ E_SAVED ] ) {
-					mysql_function_query( dbHandle, sprintf( "SELECT `NAME`,`ONLINE` FROM `USERS` WHERE `GANG_ID`=%d ORDER BY `ONLINE` DESC", g ), true, "OnListGangMembers", "dd", playerid, g ); // View gang members
-				} else {
-					SendError( playerid, "This feature is only available to gangs that are saved." );
-				}
-			}
+			case 1: mysql_function_query( dbHandle, sprintf( "SELECT `NAME`,`ONLINE` FROM `USERS` WHERE `GANG_ID`=%d ORDER BY `ONLINE` DESC", g_gangData[ g ] [ E_SQL_ID ] ), true, "OnListGangMembers", "dd", playerid, g ); // View gang members
 		}
 		return 1;
 	}
@@ -22421,11 +22645,106 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		ShowPlayerDialog( playerid, DIALOG_BOUGHT_VEH, DIALOG_STYLE_MSGBOX, "{FFFFFF}You've purchased a vehicle!", "{FFFFFF}Glad to see you've purchased a vehicle. Please ensure you read:\n\n* Vehicles are kept until you sell them or go two months inactive. This is not refundable.\n* Do not mispark your vehicle or it can be removed/impounded.\n* Check out /v for vehicle commands.\n* Find an acceptable place to park your new vehicle such as your house or a parking lot.", "Okay", "" );
 
 	}
+	if ( ( dialogid == DIALOG_ACC_GUARD ) && response )
+	{
+		if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] )
+			return SendError( playerid, "You must be verified to use this feature." );
+
+		switch ( listitem )
+		{
+			case 0:
+			{
+				if ( p_accountSecurityData[ playerid ] [ E_ID ] )
+					return SendError( playerid, "Your email is already confirmed!" ), ShowPlayerAccountGuard( playerid ), 1;
+
+				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `EMAILS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
+	    		mysql_function_query( dbHandle, szNormalString, true, "OnEmailConfirm", "d", playerid );
+			}
+			case 1: ShowPlayerDialog( playerid, DIALOG_ACC_GUARD_MODE, DIALOG_STYLE_TABLIST, "{FFFFFF}Irresistible Guard - Mode", "Mild\t"COL_GREY"Must verify IP before making transactions\nParanoid\t"COL_GREY"Must verify IP after logging in\nDisable\t"COL_GREY"No form of verification", "Select", "Back" );
+			case 2:
+			{
+				format( szBigString, sizeof( szBigString ), "SELECT * FROM `EMAILS` WHERE `ID`=%d", p_accountSecurityData[ playerid ] [ E_ID ] );
+				mysql_function_query( dbHandle, szBigString, true, "OnAccountGuardDelete", "d", playerid );
+			}
+		}
+		return 1;
+	}
+	if ( dialogid == DIALOG_ACC_GUARD_CONFIRM )
+	{
+		if ( ! response )
+		{
+			if ( p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_PARANOID ) {
+				return Kick( playerid );
+			}
+
+			// allow other modes
+			return 1;
+		}
+
+		static
+			szInput[ 10 ];
+
+		format( szInput, sizeof( szInput ), "%s", inputtext );
+		trimString( szInput ); // gotta take out the whitespace
+
+		if ( strlen( szInput ) != 8 )
+			return SendError( playerid, "The verification code must be 8 characters." ), ShowPlayerAccountVerification( playerid );
+
+		format( szBigString, sizeof( szBigString ), "SELECT * FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s' AND `TOKEN`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ), szInput );
+		mysql_function_query( dbHandle, szBigString, true, "OnAccountGuardVerify", "d", playerid );
+		return 1;
+	}
+	if ( dialogid == DIALOG_ACC_GUARD_DEL_CANCEL )
+	{
+		if ( !response )
+			return ShowPlayerAccountGuard( playerid );
+
+		p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = 0;
+		mysql_single_query( sprintf( "UPDATE `EMAILS` SET `LAST_CHANGED`=%d,`LAST_DISABLED`=0 WHERE `ID`=%d", g_iTime, p_accountSecurityData[ playerid ] [ E_ID ] ) );
+		return SendServerMessage( playerid, "You have cancelled the process to removing Irresistible Guard." );
+	}
+	if ( dialogid == DIALOG_ACC_GUARD_MODE )
+	{
+		if ( !response )
+			return ShowPlayerAccountGuard( playerid );
+
+		if ( ! p_accountSecurityData[ playerid ] [ E_ID ] )
+			return SendError( playerid, "You need to assign an email to your account." );
+
+		p_accountSecurityData[ playerid ] [ E_MODE ] = listitem;
+		mysql_single_query( sprintf( "UPDATE `EMAILS` SET `MODE`=%d WHERE `ID`=%d", listitem, p_accountSecurityData[ playerid ] [ E_ID ] ) );
+		SendServerMessage( playerid, "Your Irresistible Guard mode is now set to "COL_GREY"%s"COL_WHITE".", SecurityModeToString( listitem ) );
+		return ShowPlayerAccountGuard( playerid );
+	}
+	if ( dialogid == DIALOG_ACC_GUARD_EMAIL )
+	{
+		if ( ! response )
+			return SendError( playerid, "Nothing to show!" );
+
+		if ( ! ( 3 < strlen( inputtext ) < 64 ) )
+			return SendError( playerid, "Your email must be between 4 and 64 characters long." );
+
+		if ( ! regex_match( inputtext, "[a-zA-Z0-9_\\.]+@([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,4}" ) )
+			return SendError( playerid, "Your email must be valid (foo@example.com)." );
+
+	    format( szBigString, sizeof( szBigString ), "INSERT INTO `EMAIL_VERIFY`(`USER_ID`, `EMAIL`) VALUES (%d, '%s') ON DUPLICATE KEY UPDATE `EMAIL`='%s',`DATE`=CURRENT_TIMESTAMP", p_AccountID[ playerid ], mysql_escape( inputtext ), mysql_escape( inputtext ) );
+	    mysql_function_query( dbHandle, szBigString, true, "OnQueueEmailVerification", "ds", playerid, inputtext );
+		return 1;
+	}
 	if ( ( dialogid == DIALOG_CP_MENU ) && response )
 	{
-		if ( ( p_PlayerSettings[ playerid ] { listitem } = !p_PlayerSettings[ playerid ] { listitem } ) == true )
+		if ( GetPlayerVirtualWorld( playerid ) == 69 ) return SendError( playerid, "You cannot modify your player settings within an event." );
+
+		if ( listitem == 0 ) {
+			return ShowPlayerAccountGuard( playerid );
+		}
+
+		new
+			settingid = listitem - 1;
+
+		if ( ( p_PlayerSettings[ playerid ] { settingid } = !p_PlayerSettings[ playerid ] { settingid } ) == true )
 		{
-			if ( listitem == SETTING_VIPSKIN )
+			if ( settingid == SETTING_VIPSKIN )
 			{
 				if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
 				SyncObject( playerid );
@@ -22433,26 +22752,26 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
 			}
 
-			else if ( listitem == SETTING_COINS_BAR )
+			else if ( settingid == SETTING_COINS_BAR )
 			 	ShowPlayerTogglableTextdraws( playerid, .force = false );
 
-			else if ( listitem == SETTING_TOP_DONOR )
+			else if ( settingid == SETTING_TOP_DONOR )
  				HidePlayerTogglableTextdraws( playerid, .force = false );
 
-			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], listitem );
+			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid );
 		}
 		else
 		{
-			if ( listitem == SETTING_COINS_BAR )
+			if ( settingid == SETTING_COINS_BAR )
  				HidePlayerTogglableTextdraws( playerid, .force = false );
 
-			else if ( listitem == SETTING_TOP_DONOR )
+			else if ( settingid == SETTING_TOP_DONOR )
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
 
-			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], listitem );
+			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], settingid );
 		}
 		mysql_single_query( szNormalString );
-		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { listitem } != g_PlayerSettings[ listitem ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ), g_PlayerSettings[ listitem ] [ E_NAME ] );
+		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { settingid } != g_PlayerSettings[ settingid ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ), g_PlayerSettings[ listitem ] [ E_NAME ] );
 	    cmd_cp( playerid, "" ); // Redirect to control panel again...
 	}
 	if ( dialogid == DIALOG_WEAPON_DEAL )
@@ -22490,6 +22809,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 	    // The discount is %50 - You can change it above!
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot buy weapons in jail." );
+	    if ( GetPlayerVirtualWorld( playerid ) == 69 ) return SendError( playerid, "You cannot buy weapons in an event." );
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED || !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You are unable to purchase any weapons at this time." );
 
 		new
@@ -23343,9 +23663,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			case 8:		 iCoinRequirement = 600.0;
 			case 9:	 	 iCoinRequirement = 350.0;
 			case 10:	 iCoinRequirement = 250.0;
-			case 11: 	 iCoinRequirement = 125.0;
-			case 12:	 iCoinRequirement = 100.0;
-			case 13: 	 iCoinRequirement = 50.0;
+			case 11:	 iCoinRequirement = 100.0;
+			case 12: 	 iCoinRequirement = 50.0;
 		}
 
 		if ( listitem != 0 ) // No discount for diamond
@@ -23490,47 +23809,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			case 11:
 			{
-				new
-					gangid = p_GangID[ playerid ];
-
-				if ( gangid == INVALID_GANG_ID ) SendError( playerid, "You are not in any gang." );
-				else if ( g_gangData[ gangid ] [ E_LEADER ] != p_AccountID[ playerid ] ) SendError( playerid, "You are not the leader of this gang." );
-				else if ( g_gangData[ gangid ] [ E_SAVED ] ) SendError( playerid, "The leader of this gang has already made this gang saveable." );
-				else if ( GetOnlineGangMembers( gangid ) < 3 ) SendError( playerid, "You need to have at least 3 gang members to save your gang." );
-				else if ( p_IrresistibleCoins[ playerid ] < 125.0 * GetGVarFloat( "vip_discount" ) ) SendError( playerid, "You need {00CCFF}125.0 Irresistible Coins{FFFFFF} to permanently save your gang." );
-				else
-				{
-					// Update gang
-					format( szBigString, sizeof( szBigString ), "INSERT INTO `GANGS`(`ID`,`NAME`,`LEADER`,`COLOR`,`BANK`,`KILLS`,`DEATHS`,`SCORE`) VALUES (%d,'%s',%d,%d,%d,%d,%d,%d)", gangid, mysql_escape( g_gangData[ gangid ] [ E_NAME ] ), g_gangData[ gangid ] [ E_LEADER ], g_gangData[ gangid ] [ E_COLOR ], g_gangData[ gangid ] [ E_BANK ], g_gangData[ gangid ] [ E_KILLS ], g_gangData[ gangid ] [ E_DEATHS ], g_gangData[ gangid ] [ E_SCORE ] );
-					mysql_single_query( szBigString );
-
-					// Get online gang users
-					erase( szNormalString );
-
-					foreach(new i : Player) if ( p_GangID[ i ] == gangid ) {
-						format( szNormalString, sizeof( szNormalString ), "%s%d,", szNormalString, p_AccountID[ i ] );
-					}
-
-					// Subtract final comma
-					new
-						iLength = strlen( szNormalString );
-
-					strdel( szNormalString, iLength - 1, iLength );
-
-					// Update gang ids
-					format( szBigString, sizeof( szBigString ), "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID` IN (%s)", gangid, szNormalString );
-					mysql_single_query( szBigString );
-
-					// Deduct coins
-					p_IrresistibleCoins[ playerid ] -= 125.0 * GetGVarFloat( "vip_discount" );
-					g_gangData[ gangid ] [ E_SAVED ] = true;
-
-					SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has spent %0.1f Irresistible Coins to permanently save this gang.", ReturnPlayerName( playerid ), playerid, 125.0 * GetGVarFloat( "vip_discount" ) );
-				}
-				return ShowPlayerCoinMarketDialog( playerid );
-			}
-			case 12:
-			{
 				if ( ( iCoinRequirement = 100.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 				{
 			        new
@@ -23576,7 +23854,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					return ShowPlayerCoinMarketDialog( playerid );
 				}
 			}
-			case 13: ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
+			case 12: ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
 		}
 	}
 	if ( dialogid == DIALOG_CHANGENAME )
@@ -24160,9 +24438,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				return ShowPlayerDialog( playerid, DIALOG_MAP_TAX_TRANSFER, DIALOG_STYLE_INPUT, sprintf( ""COL_GOLD"Customization Tax - %s", g_mappingData[ mappingid ] [ E_DESCRIPTION ] ), ""COL_WHITE"Enter the player name or id of whom you wish to transfer the customization to.\n\n"COL_ORANGE"Note: the player must be online.", "Transfer", "Back" );
 			}
 
+			printf("MAP TAX TRANSFER %d - %d to %d", g_mappingData[ mappingid ] [ E_SQL_ID ], p_AccountID[ playerid ], p_AccountID[ pID ] );
 			g_mappingData[ mappingid ] [ E_ACCOUNT_ID ] = p_AccountID[ pID ];
 			UpdateMappingTaxLabel( mappingid, ReturnPlayerName( pID ) );
-			mysql_single_query( sprintf( "UPDATE `MAP_TAX` SET `USER_ID`=%d WHERE `ID`=%d", g_mappingData[ mappingid ] [ E_ACCOUNT_ID ], g_mappingData[ mappingid ] [ E_SQL_ID ] ) );
+			mysql_single_query( sprintf( "UPDATE `MAP_TAX` SET `USER_ID`=%d WHERE `ID`=%d", p_AccountID[ pID ], g_mappingData[ mappingid ] [ E_SQL_ID ] ) );
 			SendServerMessage( playerid, "You have transferred the house customization rights to "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( pID ) );
 		}
 		else
@@ -24554,18 +24833,22 @@ stock SavePlayerData( playerid, bool: logout = false )
     static
 		Query[ 870 ];
 
+	if ( IsPlayerNPC( playerid ) )
+		return 0;
+
     if ( p_PlayerLogged{ playerid } )
     {
     	new
-    		bool: bQuitToAvoid = false,
-    		iGangId = p_GangID[ playerid ]
-    	;
+    		bool: bQuitToAvoid = false;
 
 		if ( IsPlayerCuffed( playerid ) || IsPlayerTazed( playerid ) || IsPlayerTied( playerid ) || p_LeftCuffed{ playerid } || p_QuitToAvoidTimestamp[ playerid ] > g_iTime )
 			bQuitToAvoid = true;
 
-		if ( iGangId != -1 && !g_gangData[ iGangId ] [ E_SAVED ] )
-			iGangId = -1;
+		new
+			gangid = -1;
+
+		if ( 0 <= p_GangID[ playerid ] < MAX_GANGS || Iter_Contains( gangs, p_GangID[ playerid ] ) )
+			gangid = g_gangData[ p_GangID[ playerid ] ] [ E_SQL_ID ];
 
         format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`XP`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
                                        	GetPlayerScore( playerid ), 	GetPlayerCash( playerid ),		p_AdminLevel[ playerid ],
@@ -24591,7 +24874,7 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_JailsBlown[ playerid ], 	p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],	mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },		p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										iGangId,					p_HouseSpawnLocation[ playerid ], 	p_IrresistiblePoints[ playerid ],
+										gangid,						p_HouseSpawnLocation[ playerid ], 	p_IrresistiblePoints[ playerid ],
 										!logout,					p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
 										p_AccountID[ playerid ] );
 
@@ -25336,19 +25619,22 @@ stock SetPlayerRandomSpawn( playerid )
 		city = p_SpawningCity{ playerid };
 
 	if ( p_Class[ playerid ] == CLASS_FIREMAN )
-		return SetPlayerPos( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_X ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Y ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 	SetPlayerInterior( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerFacingAngle( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+		return SetPlayerPos( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_X ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Y ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 	SetPlayerInterior( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerVirtualWorld( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_Class[ playerid ] == CLASS_MEDIC )
-		return SetPlayerPos( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_X ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerFacingAngle( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+		return SetPlayerPos( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_X ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+
+	// if ( p_inMayor{ playerid } == true )
+	//	return SetPlayerPos( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_X ], g_MayorSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MayorSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_inArmy{ playerid } == true )
-		return SetPlayerPos( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Y ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerFacingAngle( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+		return SetPlayerPos( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Y ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_inCIA{ playerid } == true || p_inFBI{ playerid } == true )
-		return SetPlayerPos( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_X ], g_CIASpawns[ city ] [ RANDOM_SPAWN_Y ], g_CIASpawns[ city ] [ RANDOM_SPAWN_Z ] ), 				SetPlayerInterior( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerFacingAngle( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+		return SetPlayerPos( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_X ], g_CIASpawns[ city ] [ RANDOM_SPAWN_Y ], g_CIASpawns[ city ] [ RANDOM_SPAWN_Z ] ), 				SetPlayerInterior( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_CIASpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_Class[ playerid ] == CLASS_POLICE )
-		return SetPlayerPos( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_X ], g_PoliceSpawns[ city ] [ RANDOM_SPAWN_Y ], g_PoliceSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 		SetPlayerInterior( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerFacingAngle( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
+		return SetPlayerPos( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_X ], g_PoliceSpawns[ city ] [ RANDOM_SPAWN_Y ], g_PoliceSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 		SetPlayerInterior( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerVirtualWorld( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_PoliceSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN )
 	{
@@ -26083,6 +26369,7 @@ stock SetPlayerColorToTeam( playerid )
 			if ( p_inFBI{ playerid } ) SetPlayerColor( playerid, COLOR_FBI );
 			if ( p_inCIA{ playerid } ) SetPlayerColor( playerid, COLOR_CIA );
 			if ( p_inArmy{ playerid } ) SetPlayerColor( playerid, COLOR_ARMY );
+			// if ( p_inMayor{ playerid } ) SetPlayerColor( playerid, COLOR_MAYOR );
 	    }
 	    case CLASS_FIREMAN: SetPlayerColor( playerid, COLOR_FIREMAN );
 	    case CLASS_MEDIC: 	SetPlayerColor( playerid, COLOR_MEDIC );
@@ -26090,8 +26377,8 @@ stock SetPlayerColorToTeam( playerid )
 	    {
 	    	SetPlayerColor( playerid, COLOR_DEFAULT );
 		    if ( p_GangID[ playerid ] != INVALID_GANG_ID ) 	SetPlayerColor( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ] );
-			if ( p_WantedLevel[ playerid ] > 1 )				SetPlayerColor( playerid, COLOR_WANTED2 );
-			if ( p_WantedLevel[ playerid ] > 5 )				SetPlayerColor( playerid, COLOR_WANTED6 );
+			if ( p_WantedLevel[ playerid ] > 1 )			SetPlayerColor( playerid, COLOR_WANTED2 );
+			if ( p_WantedLevel[ playerid ] > 5 )			SetPlayerColor( playerid, COLOR_WANTED6 );
 			if ( p_WantedLevel[ playerid ] > 11 )			SetPlayerColor( playerid, COLOR_WANTED12 );
 		}
 	}
@@ -26136,6 +26423,22 @@ stock IsPlayerFBI( playerid )
 	}
 	return false;
 }
+
+/*stock IsPlayerMayor( playerid )
+{
+	new
+		skinid = GetPlayerSkin( playerid );
+
+	switch( skinid ) {
+	    case 187, 148: {
+			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+				return false;
+			}
+	    	return true;
+	    }
+	}
+	return false;
+}*/
 
 stock IsPlayerCIA( playerid )
 {
@@ -27444,6 +27747,9 @@ stock isValidPlayerName( szName[ ] )
 	if ( strmatch( szName, SECURE_TRUCK_DRIVER_NAME ) )
 		return false;
 
+	if( !( 2 < strlen( szName ) < MAX_PLAYER_NAME ) )
+		return false;
+
 	return regex_match( szName, "^[a-zA-Z0-9@=_\\[\\]\\.\\(\\)\\$]+$" );
 }
 
@@ -27532,6 +27838,9 @@ stock CreateGang( szName[ ], playerid )
 
 	if ( ID != -1 )
 	{
+		new
+			color = g_gangColors[ random( sizeof( g_gangColors ) ) ];
+
 		format( g_gangData[ ID ] [ E_NAME ], 30, "%s", szName );
 
 	    g_gangData[ ID ] [ E_LEADER ] 			= p_AccountID[ playerid ];
@@ -27539,11 +27848,12 @@ stock CreateGang( szName[ ], playerid )
 	    g_gangData[ ID ] [ E_DEATHS ] 			= 1;
 	    g_gangData[ ID ] [ E_SCORE ] 			= 0;
 	    g_gangData[ ID ] [ E_BANK ] 			= 0;
-	    g_gangData[ ID ] [ E_SAVED ] 			= false;
-	    g_gangData[ ID ] [ E_COLOR ]        	= g_gangColors[ random( sizeof( g_gangColors ) ) ];
-		g_gangData[ ID ] [ E_COLEADER ] 		= 0;
+	    g_gangData[ ID ] [ E_COLOR ]        	= color;
 		g_gangData[ ID ] [ E_INVITE_ONLY ] 		= false;
 		g_gangData[ ID ] [ E_JOIN_MSG ] [ 0 ] 	= '\0';
+
+		for ( new i = 0; i < MAX_COLEADERS; i ++ )
+			g_gangData[ ID ] [ E_COLEADER ] [ i ] = 0;
 
 	    p_GangID[ playerid ] = ID;
 
@@ -27552,55 +27862,101 @@ stock CreateGang( szName[ ], playerid )
 
 	    SendClientMessageToGang( ID, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have created the gang: %s(%d)", szName, ID );
 
+		// Insert gang to db
+		mysql_function_query( dbHandle, sprintf( "INSERT INTO `GANGS`(`NAME`,`LEADER`,`COLOR`) VALUES ('%s', %d, %d)", g_gangData[ ID ] [ E_NAME ], p_AccountID[ playerid ], color ), true, "OnGangAdded", "d", ID );
+
+		// Insert into iterator
 	    Iter_Add(gangs, ID);
 	}
 	return ID;
 }
 
-thread OnGangLoad( )
+thread OnGangAdded( gangid )
+{
+	g_gangData[ gangid ] [ E_SQL_ID ] = cache_insert_id( );
+	return 1;
+}
+
+thread OnGangLoad( playerid, gang_sql_id )
 {
 	new
-		rows, fields, i,
-	    loadingTick = GetTickCount( )
-	;
+		rows, fields, i;
 
 	cache_get_data( rows, fields );
 
 	if ( rows )
 	{
-		for( i = 0; i < rows; i++ )
+		new
+			id = Iter_Free(gangs);
+
+		// Check again if the gang exists
+		foreach (new g : gangs) if ( gang_sql_id == g_gangData[ g ] [ E_SQL_ID ] ) {
+			p_GangID[ playerid ] = g;
+			return InformGangConnectMessage( playerid, g ), 1;
+		}
+
+		if ( !Iter_Contains( gangs, id ) )
 		{
-			new
-				id = cache_get_field_content_int( i, "ID", dbHandle );
+			// Load data into variables
+			cache_get_field_content( 0, "NAME", g_gangData[ id ] [ E_NAME ], dbHandle, 30 );
+			cache_get_field_content( 0, "JOIN_MSG", g_gangData[ id ] [ E_JOIN_MSG ], dbHandle, 96 );
+			g_gangData[ id ] [ E_SQL_ID ] = cache_get_field_content_int( 0, "ID", dbHandle );
+			g_gangData[ id ] [ E_LEADER ] = cache_get_field_content_int( 0, "LEADER", dbHandle );
+			g_gangData[ id ] [ E_COLOR ] = cache_get_field_content_int( 0, "COLOR", dbHandle );
+			g_gangData[ id ] [ E_KILLS ] = cache_get_field_content_int( 0, "KILLS", dbHandle );
+			g_gangData[ id ] [ E_BANK ] = cache_get_field_content_int( 0, "BANK", dbHandle );
+			g_gangData[ id ] [ E_DEATHS ] = cache_get_field_content_int( 0, "DEATHS", dbHandle );
+			g_gangData[ id ] [ E_SCORE ] = cache_get_field_content_int( 0, "SCORE", dbHandle );
+			g_gangData[ id ] [ E_INVITE_ONLY ] = !!cache_get_field_content_int( 0, "INVITE_ONLY", dbHandle );
 
-			if ( !Iter_Contains( gangs, id ) )
-			{
-				// Load data into variables
-				cache_get_field_content( i, "NAME", g_gangData[ id ] [ E_NAME ], dbHandle, 30 );
-				cache_get_field_content( i, "JOIN_MSG", g_gangData[ id ] [ E_JOIN_MSG ], dbHandle, 96 );
-				g_gangData[ id ] [ E_LEADER ] = cache_get_field_content_int( i, "LEADER", dbHandle );
-				g_gangData[ id ] [ E_COLOR ] = cache_get_field_content_int( i, "COLOR", dbHandle );
-				g_gangData[ id ] [ E_KILLS ] = cache_get_field_content_int( i, "KILLS", dbHandle );
-				g_gangData[ id ] [ E_BANK ] = cache_get_field_content_int( i, "BANK", dbHandle );
-				g_gangData[ id ] [ E_DEATHS ] = cache_get_field_content_int( i, "DEATHS", dbHandle );
-				g_gangData[ id ] [ E_SCORE ] = cache_get_field_content_int( i, "SCORE", dbHandle );
-				g_gangData[ id ] [ E_COLEADER ] = cache_get_field_content_int( i, "COLEADER", dbHandle );
-				g_gangData[ id ] [ E_INVITE_ONLY ] = !!cache_get_field_content_int( i, "INVITE_ONLY", dbHandle );
-
-				// Set to '\0' instead of null
-				if ( ismysqlnull( g_gangData[ id ] [ E_JOIN_MSG ] ) ) {
-					g_gangData[ id ] [ E_JOIN_MSG ] [ 0 ] = '\0';
-				}
-
-				// Declare saved gang
-				g_gangData[ id ] [ E_SAVED ] = true;
-				Iter_Add(gangs, id);
+			// Set to '\0' instead of null
+			if ( ismysqlnull( g_gangData[ id ] [ E_JOIN_MSG ] ) ) {
+				g_gangData[ id ] [ E_JOIN_MSG ] [ 0 ] = '\0';
 			}
-			else printf("[EXCEPTION] Had an issue loading a gang row id %d", i );
+
+			// Throw the user in
+			p_GangID[ playerid ] = id;
+
+			// Load coleaders
+			format( szNormalString, sizeof( szNormalString ), "SELECT `USER_ID` FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d LIMIT 0,%d", g_gangData[ id ] [ E_SQL_ID ], MAX_COLEADERS );
+			mysql_function_query( dbHandle, szNormalString, true, "OnGangColeaderLoad", "d", id );
+
+			// Declare saved gang
+			Iter_Add(gangs, id);
+
+			// Message player
+			InformGangConnectMessage( playerid, id );
+		}
+		else printf("[EXCEPTION] Had an issue loading a gang row id %d", i );
+	}
+	else
+	{
+		p_GangID[ playerid ] = -1;
+	}
+	return 1;
+}
+
+thread OnGangColeaderLoad( gangid ) {
+
+	new
+		rows, fields;
+
+	cache_get_data( rows, fields );
+
+	if ( rows ) {
+		for( new i = 0; i < rows; i ++ ) if ( i < MAX_COLEADERS ) {
+			g_gangData[ gangid ] [ E_COLEADER ] [ i ] = cache_get_field_content_int( i, "USER_ID", dbHandle );
 		}
 	}
+}
 
-	printf( "[GANGS]: %d gangs have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
+stock InformGangConnectMessage( playerid, gangid )
+{
+	if ( ! strlen( g_gangData[ gangid ] [ E_JOIN_MSG ] ) ) {
+  		SendClientMessageFormatted( playerid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s has been loaded into the server.", g_gangData[ gangid ] [ E_NAME ] );
+	} else {
+  		SendClientMessageFormatted( playerid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s", g_gangData[ gangid ] [ E_JOIN_MSG ] );
+	}
 	return 1;
 }
 
@@ -27610,11 +27966,9 @@ stock DestroyGang( gangid )
 		return;
 
  	// Do SQL operations
- 	if ( g_gangData[ gangid ] [ E_SAVED ] )
- 	{
-	 	mysql_single_query( sprintf( "DELETE FROM `GANGS` WHERE `ID`=%d", gangid ) );
-	 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `GANG_ID`=%d", gangid ) );
- 	}
+ 	mysql_single_query( sprintf( "DELETE FROM `GANGS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
+ 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
+ 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 
  	// Disconnect current users
  	foreach(new i : Player) if ( p_GangID[ i ] == gangid ) {
@@ -27622,14 +27976,17 @@ stock DestroyGang( gangid )
  	}
 
 	// Reset gang data
+	g_gangData[ gangid ] [ E_SQL_ID ] 			= 0;
     g_gangData[ gangid ] [ E_LEADER ] 			= 0;
  	g_gangData[ gangid ] [ E_COLOR ]       	 	= COLOR_GANGZONE;
  	g_gangData[ gangid ] [ E_NAME ] [ 0 ]   	= '\0';
  	g_gangData[ gangid ] [ E_BANK ] 			= 0;
-	g_gangData[ gangid ] [ E_SAVED ] 			= false;
-	g_gangData[ gangid ] [ E_COLEADER ] 		= 0;
 	g_gangData[ gangid ] [ E_INVITE_ONLY ] 		= false;
 	g_gangData[ gangid ] [ E_JOIN_MSG ] [ 0 ] 	= '\0';
+
+	// Reset coleaders
+	for ( new i = 0; i < MAX_COLEADERS; i ++ )
+		g_gangData[ gangid ] [ E_COLEADER ] [ i ] = 0;
 
  	// Free iterator id
  	Iter_Remove( gangs, gangid );
@@ -27651,11 +28008,8 @@ stock SaveGangData( gangid )
 	if ( gangid == INVALID_GANG_ID )
 		return;
 
-	if ( !g_gangData[ gangid ] [ E_SAVED ] )
-		return;
-
-	format( szBigString, sizeof( szBigString ), "UPDATE `GANGS` SET `NAME`='%s',`LEADER`=%d,`COLOR`=%d,`KILLS`=%d,`DEATHS`=%d,`SCORE`=%d,`BANK`=%d,`COLEADER`=%d WHERE `ID`=%d",
-		mysql_escape( g_gangData[ gangid ] [ E_NAME ] ), g_gangData[ gangid ] [ E_LEADER ], g_gangData[ gangid ] [ E_COLOR ], g_gangData[ gangid ] [ E_KILLS ], g_gangData[ gangid ] [ E_DEATHS ], g_gangData[ gangid ] [ E_SCORE ], g_gangData[ gangid ] [ E_BANK ], g_gangData[ gangid ] [ E_COLEADER ], gangid );
+	format( szBigString, sizeof( szBigString ), "UPDATE `GANGS` SET `NAME`='%s',`LEADER`=%d,`COLOR`=%d,`KILLS`=%d,`DEATHS`=%d,`SCORE`=%d,`BANK`=%d WHERE `ID`=%d",
+		mysql_escape( g_gangData[ gangid ] [ E_NAME ] ), g_gangData[ gangid ] [ E_LEADER ], g_gangData[ gangid ] [ E_COLOR ], g_gangData[ gangid ] [ E_KILLS ], g_gangData[ gangid ] [ E_DEATHS ], g_gangData[ gangid ] [ E_SCORE ], g_gangData[ gangid ] [ E_BANK ], g_gangData[ gangid ] [ E_SQL_ID ] );
 
 	mysql_single_query( szBigString );
 }
@@ -27665,9 +28019,13 @@ stock IsPlayerGangLeader( playerid, gangid, only_leader = 0 ) {
 	if ( g_gangData[ gangid ] [ E_LEADER ] == p_AccountID[ playerid ] )
 		return true;
 
-	if ( only_leader == 0 && g_gangData[ gangid ] [ E_COLEADER ] == p_AccountID[ playerid ] )
-		return true;
-
+	// Reset coleaders
+	if ( only_leader == 0 ) {
+		for ( new i = 0; i < MAX_COLEADERS; i ++ ) {
+			if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] == p_AccountID[ playerid ] )
+				return true;
+		}
+	}
 	return false;
 }
 
@@ -27682,10 +28040,27 @@ stock DisconnectFromGang( playerid )
 	if ( !Iter_Contains( gangs, gangid ) )
 		return 0;
 
-	if ( !g_gangData[ gangid ] [ E_SAVED ] )
-		return RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
+	// if ( !g_gangData[ gangid ] [ E_SAVED ] )
+	// 	return RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
 
 	p_GangID[ playerid ] = INVALID_GANG_ID;
+
+	if ( GetOnlineGangMembers( gangid ) < 1 )
+	{
+	 	// Free iterator id
+	 	Iter_Remove( gangs, gangid );
+
+	 	// Empty out the turfs
+	 	for( new z; z < sizeof( g_gangzoneData ); z++ )
+	 	{
+	 		if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] == gangid )
+	 		{
+	 			g_gangzoneData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
+	 			g_gangzoneData[ z ] [ E_GANG_OWNER ] = INVALID_GANG_ID;
+				GangZoneShowForAll( g_gangzoneID[ z ], COLOR_GANGZONE );
+	 		}
+	 	}
+	}
 	return 1;
 }
 
@@ -27703,13 +28078,21 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
 
  	if ( g_gangData[ gangid ] [ E_LEADER ] == p_AccountID[ playerid ] )
  	{
- 		// Coleader exists?
- 		if ( g_gangData[ gangid ] [ E_COLEADER ] )
- 		{
-	 		g_gangData[ gangid ] [ E_LEADER ] = g_gangData[ gangid ] [ E_COLEADER ];
-	 		g_gangData[ gangid ] [ E_COLEADER ] = 0;
+ 		new
+ 			selected_coleader = -1;
 
-			SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} The co-leader of the gang has been selected as the gang leader." );
+ 		for ( new i = 0; i < MAX_COLEADERS; i ++ ) if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] ) {
+ 			selected_coleader = i;
+ 			break;
+ 		}
+
+ 		// Coleader exists?
+ 		if ( selected_coleader != -1 )
+ 		{
+	 		g_gangData[ gangid ] [ E_LEADER ] = g_gangData[ gangid ] [ E_COLEADER ] [ selected_coleader ];
+	 		g_gangData[ gangid ] [ E_COLEADER ] [ selected_coleader ] = 0;
+
+			SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} The co-leader of the gang has been selected as the gang leader (acc id %d).", selected_coleader );
  		}
  		else
  		{
@@ -27740,8 +28123,15 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
 		 		return 1;
 		 	}
  		}
-
 	}
+
+	// reset the coleader
+	for ( new i = 0; i < MAX_COLEADERS; i++ ) if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] == p_AccountID[ playerid ] ) {
+ 		g_gangData[ gangid ] [ E_COLEADER ] [ i ] = 0;
+ 	}
+
+ 	// wouldn't make sense to keep the coleader in any gang
+ 	mysql_single_query( "DELETE FROM `GANG_COLEADERS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 
 	// Alter the gang & players
 	if ( Iter_Contains( gangs, gangid ) )
@@ -31545,6 +31935,9 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 
 stock ShowPlayerCoinMarketDialog( playerid )
 {
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	new
 		Float: discount = GetGVarFloat( "vip_discount" ),
 		szMarket[ 512 ] = ""COL_GREY"Item Name\t"COL_GREY"Coins Needed\n";
@@ -31562,7 +31955,6 @@ stock ShowPlayerCoinMarketDialog( playerid )
 	format( szMarket, sizeof( szMarket ), "%sV.I.P House\t"COL_GOLD"%0.0f\n", szMarket, 600.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sCustom Gate\t"COL_GOLD"%0.0f\n", szMarket, 350.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sV.I.P Garage\t"COL_GOLD"%0.0f\n", szMarket, 250.0 * discount );
-	format( szMarket, sizeof( szMarket ), "%sSave Gang\t"COL_GOLD"%0.0f\n", szMarket, 125.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sGold Rims\t"COL_GOLD"%0.0f\n", szMarket, 100.0 * discount );
 	format( szMarket, sizeof( szMarket ), "%sChange your name\t"COL_GOLD"%0.0f", szMarket, 50.0 * discount );
 
@@ -31604,7 +31996,7 @@ stock GetOnlineGangMembers( gangid )
 		iPlayers = 0;
 
 	foreach(new playerid : Player)
-		if ( p_GangID[ playerid ] == gangid && p_Class[ playerid ] == CLASS_CIVILIAN )
+		if ( p_GangID[ playerid ] == gangid )
 			iPlayers ++;
 
 	return iPlayers;
@@ -32227,11 +32619,8 @@ thread OnListGangMembers( playerid, gangid )
 	}
 	else
 	{
-		// Destroy gang
-		DestroyGang( gangid );
-
 		// Notify user
-		SendError( playerid, "This gang no longer has any members. It has now been destroyed. (0x837A)" );
+		SendError( playerid, "This gang no longer has any members." );
 	}
 	return 1;
 }
@@ -32848,7 +33237,7 @@ stock TriggerRobberyForClerks( playerid, robberyid )
 			return;
 
 		StopPlayerNpcRobbery( playerid );
-		FCNPC_ShootAtPlayer( playerid, npcid );
+		FCNPC_ShootAtPlayer( playerid, npcid, .weaponid = 25, .clerkid = clerkid );
 		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
 		KillTimer( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] ), g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
 		TriggerClosestCivilians( playerid, clerkid );
@@ -32870,8 +33259,8 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 
 			// Lean
 			{
-				{ 2194.4973, -1207.5936, 1049.0234, 357.3345 },
-				{ 2188.1479, -1206.3643, 1049.0234, 270.5215 }
+				{ 2194.5054, -1207.9854, 1049.0234, 360.0000 },
+				{ 2187.7302, -1206.4150, 1049.0308, 270.0000 }
 			},
 
 			// Lay
@@ -32882,8 +33271,8 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 
 			// Leaning
 			{
-				{ 2196.3550, -1218.3185, 1049.0234, 267.9442 },
-				{ 2196.3459, -1213.3950, 1049.0234, 267.3174 }
+				{ 2196.0134, -1218.3213, 1049.0234, 270.0000 },
+				{ 2196.0159, -1213.3755, 1049.0234, 270.0000 }
 			},
 
 			// Cross arms
@@ -32921,6 +33310,7 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 			g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
 			g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ] = randomMaxLoot;
 			g_robberyNpcData[ clerkid ] [ E_LOOT ] = randomMaxLoot;
+			g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = -1;
 			FCNPC_Spawn( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], skinid, X, Y, Z );
 			FCNPC_SetAngle( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], ( g_robberyNpcData[ clerkid ] [ E_RZ ] = rZ ) );
 
@@ -33039,7 +33429,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 			// Shoot player
 			if ( random( 101 ) < 20 ) {
 				g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-				return StopPlayerNpcRobbery( playerid ), FCNPC_ShootAtPlayer( playerid, npcid );
+				return StopPlayerNpcRobbery( playerid ), FCNPC_ShootAtPlayer( playerid, npcid, .weaponid = 25, .clerkid = clerkid );
 			}
 		}
 		else
@@ -33089,6 +33479,8 @@ stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
 		new
 			npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
 
+		FCNPC_StopAim( npcid );
+		FCNPC_SetWeapon( npcid, 0 );
 		FCNPC_SetInvulnerable( npcid, true );
 
 		if ( cower ) {
@@ -33100,6 +33492,7 @@ stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
 		g_robberyNpcData[ clerkid ] [ E_LOOT ] = 0;
 		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = false;
 		g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] = g_iTime + 180;
+		g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = -1;
 
 		// Reset timer
 		KillTimer( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] ), g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
@@ -33108,14 +33501,57 @@ stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
 	return 1;
 }
 
-stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25 )
+stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25, clerkid = -1 )
 {
+	// Auto aim on crouch for store clerks
+	if ( clerkid != -1 )
+	{
+		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.6;
+		KillTimer( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] );
+		g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid );
+	}
+	else
+	{
+		// Civilians should have inaccuracy
+		FCNPC_SetWeaponAccuracy( npcid, weaponid, 0.5 );
+	}
+
+	// Adjust weapon accuracy
+	if ( weaponid == 25 )
+	{
+		FCNPC_SetWeaponReloadTime( npcid, 25, 1800 );
+		FCNPC_SetWeaponShootTime( npcid, 25, 1800 );
+	}
+
 	FCNPC_ResetAnimation( npcid );
 	FCNPC_ClearAnimations( npcid );
 	FCNPC_SetWeapon( npcid, weaponid );
 	FCNPC_ToggleInfiniteAmmo( npcid, true );
-	FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offsetx = 0.0, .offsety = 0.0, .offsetz = 0.6 );
+	FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.6 );
 	return 1;
+}
+
+function RobberyNpcShootCheck( clerkid, playerid )
+{
+	new
+		npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
+
+	if ( ! IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || FCNPC_IsDead( npcid ) ) {
+		return StopPlayerNpcRobbery( playerid, clerkid, .cower = true );
+	}
+
+	new
+		specialAnimation = GetPlayerSpecialAction( playerid );
+
+	if ( specialAnimation == SPECIAL_ACTION_DUCK && g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] != 0.1 ) {
+		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.1;
+		FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.1 );
+	} else if ( specialAnimation != SPECIAL_ACTION_DUCK && g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] != 0.6 ) {
+		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.6;
+		FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.6 );
+	}
+
+	return ( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid ) ), 1;
 }
 
 public FCNPC_OnDeath(npcid, killerid, weaponid)
@@ -33163,6 +33599,7 @@ public FCNPC_OnSpawn( npcid )
 	if ( 0 <= clerkid < MAX_ROBBERY_NPCS )
 	{
 		FCNPC_ApplyAnimation( npcid, "SHOP", "null", 0.0, 0, 0, 0, 0, 0 );
+		FCNPC_ApplyAnimation( npcid, "PED", "null", 0.0, 0, 0, 0, 0, 0 );
 		FCNPC_SetVirtualWorld( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], g_robberyNpcData[ clerkid ] [ E_WORLD ] );
 	}
 	else
@@ -33175,10 +33612,10 @@ public FCNPC_OnSpawn( npcid )
 			FCNPC_SetVirtualWorld( npcid, g_civilianNpcData[ civilianid ] [ E_WORLD ] );
 			FCNPC_SetInterior( npcid, g_civilianNpcData[ civilianid ] [ E_INTERIOR ] );
 
-			//"GANGS", "leanIDLE"
-			FCNPC_ApplyAnimation( npcid, "GANGS", "null", 0.0, 0, 0, 0, 0, 0 );
-			FCNPC_ApplyAnimation( npcid, "GANGS", "leanIDLE", 3.0, 0, 1, 1, 1, 0 );
-			FCNPC_SetAnimationByName( npcid, "GANGS:leanIDLE", 3.0, 0, 1, 1, 1, 0 );
+			// animations
+			FCNPC_ApplyAnimation( npcid, g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], "null", 0.0, 0, 0, 0, 0, 0 );
+			FCNPC_ApplyAnimation( npcid, g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ], 3.0, 1, 1, 1, 1, 0 );
+			FCNPC_SetAnimationByName( npcid, sprintf( "%s:%s", g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ] ), 3.0, 1, 1, 1, 1, 0 );
 		}
 	}
 	return 1;
@@ -33265,10 +33702,10 @@ stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 25.0, &Fl
     }
 
     // Trigger the robbery NPC TOO!
-	if ( clerkid != -1 && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 )
+	if ( clerkid != -1 && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_iTime > g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] )
 	{
 		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-		FCNPC_ShootAtPlayer( playerid, g_robberyNpcData[ clerkid ] [ E_NPC_ID ], randarg( 28, 30, 25 ) );
+		FCNPC_ShootAtPlayer( playerid, g_robberyNpcData[ clerkid ] [ E_NPC_ID ], randarg( 28, 30, 25 ), clerkid );
 		StopPlayerNpcRobbery( playerid );
 	}
 }
@@ -33356,12 +33793,10 @@ stock CreateAmmunationLocker( Float: X, Float: Y, Float: Z, Float: rX )
 	return lockerid;
 }
 
-
-
 thread OnMapTaxLoad( )
 {
 	new
-		rows, fields, i = -1, username[ MAX_PLAYER_NAME ], description[ 16 ],
+		rows, fields, i = -1, username[ MAX_PLAYER_NAME ], description[ 32 ],
 	    loadingTick = GetTickCount( )
 	;
 
@@ -33384,7 +33819,7 @@ thread OnMapTaxLoad( )
 				cache_get_field_content_float( i, "Z", dbHandle ),
 				cache_get_field_content_int( i, "RENEWAL_TIMESTAMP", dbHandle ),
 				cache_get_field_content_int( i, "ID", dbHandle ),
-				username
+				username, description
 			);
 		}
 	}
@@ -33451,6 +33886,7 @@ thread UpdateMapTaxNames( )
 
 			// update mapping
 			foreach(new m : Mapping) if ( g_mappingData[ m ] [ E_SQL_ID ] == cache_get_field_content_int( i, "ID", dbHandle ) ) {
+				g_mappingData[ m ] [ E_ACCOUNT_ID ] = cache_get_field_content_int( i, "USER_ID", dbHandle );
 				UpdateMappingTaxLabel( m, username );
 				break;
 			}
@@ -33523,5 +33959,339 @@ thread FindUserForMapTax( adminid, objects, Float: cost, days, description[ 32 ]
 
 	AddAdminLogLineFormatted( "%s(%d) has added a map tax for %s", ReturnPlayerName( adminid ), adminid, username );
 	SendClientMessageFormatted( adminid, -1, ""COL_PINK"[MAP TAX]"COL_WHITE" You have created a map tax for %s using slot id %d.", username, slotid );
+	return 1;
+}
+
+/*stock ResetMayor( disconnectedPlayerId = INVALID_PLAYER_ID )
+{// pause for two minutes
+	if ( disconnectedPlayerId != INVALID_PLAYER_ID )
+	{
+
+
+	}
+	else
+	{
+
+	}
+
+	// restrict to one mayor
+	new
+		mayorAccountId = GetGVarInt( "mayor" );
+
+	if( mayorAccountId != 0 && mayorAccountId != p_AccountID[ playerid ] ) {
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" The mayor class is currently full." ), 0;
+	} else {
+		UpdateServerVariable( "mayor_timeout", 0, 0.0, "", GLOBAL_VARTYPE_INT );
+		UpdateServerVariable( "mayor_timestamp", g_iTime, 0.0, "", GLOBAL_VARTYPE_INT );
+		UpdateServerVariable( "mayor", p_AccountID[ playerid ], 0.0, "", GLOBAL_VARTYPE_INT );
+	}
+}*/
+
+stock SecurityModeToString( modeid )
+{
+	static
+		szMode[ 9 ];
+
+	switch ( modeid )
+	{
+		case 0: szMode = "Mild";
+		case 1: szMode = "Paranoid";
+		case 2: szMode = "Disabled";
+		default: szMode = "n/a";
+	}
+	return szMode;
+}
+
+stock ShowPlayerAccountGuard( playerid )
+{
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] != 0 ) {
+		if ( p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] && p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] < g_iTime ) {
+			format( szBigString, sizeof( szBigString ), ""COL_WHITE"Your account email is "COL_GREEN"confirmed\t \nConfirm Email\t"COL_GREEN"%s\nSecurity Mode\t%s\n"COL_RED"Remove Irresistible Guard\t"COL_GREEN"Ready", CensoreString( p_accountSecurityData[ playerid ] [ E_EMAIL ] ), SecurityModeToString( p_accountSecurityData[ playerid ] [ E_MODE ] ) );
+		} else if ( p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] ) {
+			format( szBigString, sizeof( szBigString ), ""COL_WHITE"Your account email is "COL_GREEN"confirmed\t \nConfirm Email\t"COL_GREEN"%s\nSecurity Mode\t%s\n"COL_ORANGE"Stop Pending Removal\t"COL_ORANGE"%s", CensoreString( p_accountSecurityData[ playerid ] [ E_EMAIL ] ), SecurityModeToString( p_accountSecurityData[ playerid ] [ E_MODE ] ), secondstotime( p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] - g_iTime ) );
+		} else {
+			format( szBigString, sizeof( szBigString ), ""COL_WHITE"Your account email is "COL_GREEN"confirmed\t \nConfirm Email\t"COL_GREEN"%s\nSecurity Mode\t%s\n"COL_RED"Remove Irresistible Guard\t"COL_RED"approx. 24h", CensoreString( p_accountSecurityData[ playerid ] [ E_EMAIL ] ), SecurityModeToString( p_accountSecurityData[ playerid ] [ E_MODE ] ) );
+		}
+	} else {
+		szBigString = ""COL_WHITE"Your account email is "COL_RED"unconfirmed\t \nConfirm Email\t"COL_GREY">>>";
+	}
+	return ShowPlayerDialog( playerid, DIALOG_ACC_GUARD, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Irresistible Guard", szBigString, "Select", "Close" );
+}
+
+thread OnQueueEmailVerification( playerid, email[ ] )
+{
+	new
+		verification_id = cache_insert_id( );
+
+	// alert
+	SendServerMessage( playerid, "An email as been sent to "COL_GREY"%s"COL_WHITE" with instructions to confirm your account.", email );
+
+	// sending an email
+	format( szLargeString, sizeof( szLargeString ), "<p>Hello %s, you are receiving this email because you want to add Irresistible Guard to your account.</p><p><a href='http://" # MAILING_URL "/email/verify/%d/%d'>Click here to verify your email</a></p>", ReturnPlayerName( playerid ), p_AccountID[ playerid ], verification_id );
+	SendMail( email, ReturnPlayerName( playerid ), sprintf( "Verify your account, %s", ReturnPlayerName( playerid ) ), szLargeString );
+	return 1;
+}
+
+CMD:verify( playerid, params[ ] )
+{
+	if ( ! p_accountSecurityData[ playerid ] [ E_ID ] )
+		return SendError( playerid, "You do not have an email assigned to your account." );
+
+	if ( p_accountSecurityData[ playerid ] [ E_VERIFIED ] )
+		return SendError( playerid, "You are already verified." );
+
+	if ( p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_DISABLED )
+		return SendError( playerid, "Your security mode is set to disabled." );
+
+	format( szBigString, 196, "SELECT `CONFIRMED`,UNIX_TIMESTAMP(`DATE`) as `DATE` FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ) );
+	mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "d", playerid );
+	return 1;
+}
+
+thread OnAccountGuardVerify( playerid )
+{
+	new
+	    rows, fields;
+
+    cache_get_data( rows, fields );
+
+	if ( rows )
+	{
+		new
+			userConfirmedIpId = cache_get_field_content_int( 0, "ID", dbHandle );
+
+		p_accountSecurityData[ playerid ] [ E_VERIFIED ] = true;
+		mysql_single_query( sprintf( "UPDATE `USER_CONFIRMED_IPS` SET `CONFIRMED`=1 WHERE `ID`=%d", userConfirmedIpId ) );
+
+		// alert
+		SendServerMessage( playerid, "You have confirmed your IP address. Thank you!" );
+	}
+	else
+	{
+		SendError( playerid, "Incorrect verification code has been specified. Please try again." );
+		ShowPlayerAccountVerification( playerid );
+	}
+	return 1;
+}
+
+thread OnAccountEmailVerify( playerid )
+{
+	new
+	    rows, fields, timestamp;
+
+    cache_get_data( rows, fields );
+
+	if ( rows )
+	{
+		new
+			confirmed = cache_get_field_content_int( 0, "CONFIRMED", dbHandle );
+
+		if ( confirmed )
+		{
+			// verify
+	    	p_accountSecurityData[ playerid ] [ E_VERIFIED ] = true;
+
+			// alert
+			return SendServerMessage( playerid, "This account is protected by Irresistible Guard. "COL_GREEN"The IP you are playing with has been already verified." ), 1;
+		}
+
+		// assign last time
+		timestamp = cache_get_field_content_int( 0, "DATE", dbHandle );
+	}
+
+	if ( g_iTime - timestamp >= 300 )
+	{
+		new
+			szRandom[ 8 ];
+
+		randomString( szRandom, 8 );
+
+		// insert into database
+		format( szBigString, sizeof( szBigString ), "INSERT INTO `USER_CONFIRMED_IPS`(`USER_ID`,`IP`,`TOKEN`,`CONFIRMED`) VALUES (%d,'%s','%s',0) ON DUPLICATE KEY UPDATE `TOKEN`='%s',`DATE`=CURRENT_TIMESTAMP", p_AccountID[ playerid ], ReturnPlayerIP( playerid ), szRandom, szRandom );
+		mysql_single_query( szBigString );
+
+		// email
+		format( szLargeString, sizeof( szLargeString ), "<p>Hey %s, you are receiving this email because an unauthorized IP is accessing your account.</p>"\
+														"<p>IP: %s<br>Country: %s</p>"\
+														"<p>Your verification token is <strong>%s</strong> - keep this only to yourself!</p>"\
+														"<p style='color: red'>If you did not authorize this, change your password in-game or contact an administrator!</p>",
+														ReturnPlayerName( playerid ), ReturnPlayerIP( playerid ), GetPlayerCountryName( playerid ), szRandom );
+
+		SendMail( p_accountSecurityData[ playerid ] [ E_EMAIL ], ReturnPlayerName( playerid ), sprintf( "Someones accessing your account, %s", ReturnPlayerName( playerid ) ), szLargeString );
+	}
+	else
+	{
+		SendServerMessage( playerid, "Please check your email for another token. A new code can be generated in %s.", secondstotime( 300 - ( g_iTime - timestamp ) ) );
+	}
+
+	// force verification
+	ShowPlayerAccountVerification( playerid );
+
+	// alert
+	if ( p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_PARANOID ) {
+		SendError( playerid, "This account is protected by Irresistible Guard. "COL_RED"Please verify your IP through your email to play." );
+	} else if ( p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_MILD ) {
+		SendError( playerid, "This account is protected by Irresistible Guard. "COL_RED"Please verify your IP through your email to transact in-game." );
+	}
+	return 1;
+}
+
+stock ShowPlayerAccountVerification( playerid )
+{
+	if ( p_accountSecurityData[ playerid ] [ E_MODE ] == 1 ) {
+		return ShowPlayerDialog( playerid, DIALOG_ACC_GUARD_CONFIRM, DIALOG_STYLE_INPUT, "{FFFFFF}Irresistible Guard", ""COL_WHITE"Please type the verification token that has been emailed to you.", "Confirm", "Quit" ), 1;
+	} else {
+		return ShowPlayerDialog( playerid, DIALOG_ACC_GUARD_CONFIRM, DIALOG_STYLE_INPUT, "{FFFFFF}Irresistible Guard", ""COL_WHITE"Please type the verification token that has been emailed to you.", "Confirm", "Close" ), 1;
+	}
+}
+
+thread OnEmailLoad( playerid )
+{
+	new
+	    rows, fields;
+
+    cache_get_data( rows, fields );
+
+    if ( rows )
+    {
+    	p_accountSecurityData[ playerid ] [ E_VERIFIED ] = false;
+    	p_accountSecurityData[ playerid ] [ E_ID ] = cache_get_field_content_int( 0, "ID", dbHandle );
+    	p_accountSecurityData[ playerid ] [ E_MODE ] = cache_get_field_content_int( 0, "MODE", dbHandle );
+    	p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = cache_get_field_content_int( 0, "LAST_DISABLED", dbHandle );
+    	cache_get_field_content( 0, "EMAIL", p_accountSecurityData[ playerid ] [ E_EMAIL ], dbHandle, 64 );
+
+    	// IP Check
+		format( szBigString, 196, "SELECT `CONFIRMED`,UNIX_TIMESTAMP(`DATE`) as `DATE` FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ) );
+		mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "d", playerid );
+    }
+}
+
+thread OnEmailConfirm( playerid )
+{
+	new
+	    rows, fields;
+
+    cache_get_data( rows, fields );
+
+    if ( rows )
+    {
+    	// fill data
+    	p_accountSecurityData[ playerid ] [ E_VERIFIED ] = true;
+    	p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = 0;
+    	p_accountSecurityData[ playerid ] [ E_ID ] = cache_get_field_content_int( 0, "ID", dbHandle );
+    	p_accountSecurityData[ playerid ] [ E_MODE ] = cache_get_field_content_int( 0, "MODE", dbHandle );
+    	cache_get_field_content( 0, "EMAIL", p_accountSecurityData[ playerid ] [ E_EMAIL ], dbHandle, 64 );
+
+    	// log ip and alert
+    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `USER_CONFIRMED_IPS`(`USER_ID`,`IP`,`CONFIRMED`) VALUES (%d,'%s',1)", p_AccountID[ playerid ], ReturnPlayerIP( playerid ) );
+    	mysql_single_query( szNormalString );
+
+    	// alert
+    	SendServerMessage( playerid, "Your email has been confirmed, %s.", ReturnPlayerName( playerid ) );
+    }
+    else
+    {
+		format( szNormalString, sizeof( szNormalString ), "SELECT `EMAIL`,UNIX_TIMESTAMP(`DATE`) as `DATE` FROM `EMAIL_VERIFY` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
+		mysql_function_query( dbHandle, szNormalString, true, "OnEmailVerifying", "d", playerid );
+    }
+	return 1;
+}
+
+thread OnEmailVerifying( playerid )
+{
+	new
+		rows, fields, email[ 64 ];
+
+	cache_get_data( rows, fields );
+
+	if ( rows )
+	{
+		new
+			timestamp = cache_get_field_content_int( 0, "DATE", dbHandle );
+
+		if ( g_iTime - timestamp < 300 )
+		{
+			cache_get_field_content( 0, "EMAIL", email );
+			return SendError( playerid, "An email has been sent to "COL_GREY"%s"COL_WHITE", please verify it within %s.", email, secondstotime( 300 - ( g_iTime - timestamp ) ) ), 1;
+		}
+	}
+
+	return ShowPlayerDialog( playerid, DIALOG_ACC_GUARD_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Irresistible Guard", ""COL_WHITE"Please type your email below. Your email may be used also to promote in-game and/or community associated events.\n\n"COL_ORANGE"This feature can only be used once every 5 minutes.", "Select", "Cancel" ), 1;
+}
+
+thread OnAccountGuardDelete( playerid )
+{
+
+	new
+		rows, fields;
+
+	cache_get_data( rows, fields );
+
+	if ( !rows ) SendError( playerid, "It appears there is no email associated to your account." );
+	else
+	{
+		new
+			id = cache_get_field_content_int( 0, "ID", dbHandle ),
+			last_disabled = cache_get_field_content_int( 0, "LAST_DISABLED", dbHandle ),
+			last_changed = cache_get_field_content_int( 0, "LAST_CHANGED", dbHandle )
+		;
+
+		if ( id != p_accountSecurityData[ playerid ] [ E_ID ] )
+			return SendError( playerid, "Something is wrong with your email. Talk to Lorenc." ), 1;
+
+		if ( g_iTime - last_changed < 300 ) {
+			return SendError( playerid, "You can use this feature in %s.", secondstotime( 300 - ( g_iTime - last_changed ) ) );
+		}
+
+		if ( ! last_disabled )
+		{
+			// first time disabling
+			SendServerMessage( playerid, "You are now beginning to remove the email from your account. This will take 24 hours." );
+			mysql_single_query( sprintf( "UPDATE `EMAILS` SET `LAST_DISABLED`=%d WHERE `ID`=%d", g_iTime + 86400, id ) );
+
+			// email
+			format( szLargeString, sizeof( szLargeString ), "<p>Hey %s, you are receiving this email because you are removing your Irresistible Guard.</p>"\
+															"<p>IP: %s<br>Country: %s</p>"\
+															"<p style='color: red'>If you did not authorize this, change your password in-game or contact an administrator!</p>",
+															ReturnPlayerName( playerid ), ReturnPlayerIP( playerid ), GetPlayerCountryName( playerid ) );
+
+			SendMail( p_accountSecurityData[ playerid ] [ E_EMAIL ], ReturnPlayerName( playerid ), sprintf( "You are removing Irresistible Guard, %s", ReturnPlayerName( playerid ) ), szLargeString );
+
+			// update variables
+			p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = g_iTime + 86400;
+		}
+		else if ( g_iTime > last_disabled )
+		{
+			// under process of disabling
+			mysql_single_query( sprintf( "DELETE FROM `EMAILS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] ) );
+			mysql_single_query( sprintf( "DELETE FROM `EMAIL_VERIFY` WHERE `USER_ID`=%d", p_AccountID[ playerid ] ) );
+			mysql_single_query( sprintf( "DELETE FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] ) );
+
+			// email
+			format( szLargeString, sizeof( szLargeString ), "<p>Hey %s, you are receiving this email because Irresistible Guard is removed from your account.</p>"\
+															"<p>IP: %s<br>Country: %s</p>"\
+															"<p style='color: red'>If you did not authorize this, change your password in-game or contact an administrator!</p>",
+															ReturnPlayerName( playerid ), ReturnPlayerIP( playerid ), GetPlayerCountryName( playerid ) );
+
+			SendMail( p_accountSecurityData[ playerid ] [ E_EMAIL ], ReturnPlayerName( playerid ), sprintf( "Irresistible Guard is removed, %s", ReturnPlayerName( playerid ) ), szLargeString );
+
+			// reset variables
+			p_accountSecurityData[ playerid ] [ E_VERIFIED ] = false;
+			p_accountSecurityData[ playerid ] [ E_ID ] = 0;
+			p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = 0;
+
+			// alert
+			SendServerMessage( playerid, "You have successfully removed Irresistible Guard from your account." );
+		}
+		else
+		{
+			// update last disabled anyway
+			p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = last_disabled;
+
+			// show dialog
+			format( szNormalString, sizeof( szNormalString ), ""COL_WHITE"You must wait another %s until you can remove your email.\n\nDo you wish to stop this process?", secondstotime( last_disabled - g_iTime ) );
+			ShowPlayerDialog( playerid, DIALOG_ACC_GUARD_DEL_CANCEL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Irresistible Guard - Stop Deletion", szNormalString, "Yes", "No" );
+		}
+	}
 	return 1;
 }
