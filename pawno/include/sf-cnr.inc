@@ -15903,7 +15903,7 @@ stock initializeObjects( )
 	CreateDynamicObject( 3528, -1731.090820, 1084.331909, 50.933048, -0.700002, 20.800003, 91.199996 );
 	CreateDynamicObject( 3524, -1728.305664, 1084.779541, 45.443504, 0.000000, -0.200000, 172.799987 );
 	CreateDynamicObject( 3524, -1734.260131, 1084.917114, 45.375320, 0.000000, 0.000000, -178.899978 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1195.3206, -682.8578, 52.2863, 0.0000, 0.0000, -19.9879 ), 0, "{FF0000}K{0000FF}e{FFFF00}${00FF00}h {FF8000}H{80FF00}o{FF0000}m{FF8000}e", 130, "Arial", 16, 1, -65536, 0, 1);
+	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1195.3206, -682.8578, 52.2863, 0.0000, 0.0000, -19.9879 ), 0, "{FFDC2E}THE BO$$", 130, "Arial", 16, 1, -65536, 0, 1);
 
 	// Wolf Rooftop Extension Downtown
 	CreateDynamicObject( 3524, -2191.291748, 552.037414, 37.415493, 56.399932, 0.000000, 180.000000 );

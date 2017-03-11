@@ -9588,7 +9588,7 @@ CMD:robitems( playerid, params[ ] )
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside the paintball arena." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to tie is using a slot machine." );
+		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to rob is using a slot machine." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
@@ -13506,7 +13506,7 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to tie is using a slot machine." );
+		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to rape is using a slot machine." );
 		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
 		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
@@ -18879,16 +18879,16 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 500000;
+					case 1: iNetWin = 200000;
 
 					// Bells
-					case 2: iNetWin = 250000;
+					case 2: iNetWin = 100000;
 
 					// Cherry
-					case 3: iNetWin = 100000;
+					case 3: iNetWin = 50000;
 
 					// Grapes
-					case 4: iNetWin = 50000;
+					case 4: iNetWin = 25000;
 
 					// 69
 					case 5: iNetWin = 10000;
@@ -18899,16 +18899,16 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 50000;
+					case 1: iNetWin = 20000;
 
 					// Bells
-					case 2: iNetWin = 25000;
+					case 2: iNetWin = 10000;
 
 					// Cherry
-					case 3: iNetWin = 10000;
+					case 3: iNetWin = 5000;
 
 					// Grapes
-					case 4: iNetWin = 5000;
+					case 4: iNetWin = 2000;
 
 					// 69
 					case 5: iNetWin = 1000;
@@ -32560,23 +32560,23 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 1 .. 20:
+			case 1 .. 62:
 				rotation = 40.0;
 
 			// gold bells
-			case 40 .. 80:
+			case 126 .. 252:
 				rotation = 60.0;
 
 			// cherry
-			case 100 .. 200:
+			case 500 .. 750:
 				rotation = 80.0;
 
 			// grapes
-			case 400 .. 700:
+			case 1500 .. 2000:
 				rotation = 100.0;
 
 			// 69s
-			case 5500 .. 11000:
+			case 5000 .. 10000:
 				rotation = 20.0;
 
 			default:
@@ -32598,23 +32598,23 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 1 .. 80:
+			case 300 .. 600:
 				rotation = 40.0;
 
 			// gold bells
-			case 160 .. 320:
+			case 700 .. 1300:
 				rotation = 60.0;
 
 			// cherry
-			case 700 .. 1400:
+			case 1400 .. 2600:
 				rotation = 80.0;
 
 			// grapes
-			case 2000 .. 4000:
+			case 3000 .. 6000:
 				rotation = 100.0;
 
 			// 69s
-			case 5000 .. 30000:
+			case 10000 .. 35000:
 				rotation = 20.0;
 
 			default:
