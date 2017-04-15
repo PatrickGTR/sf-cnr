@@ -156,7 +156,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v10.2.8"
+#define FILE_BUILD                	"v10.4.20"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -305,14 +305,14 @@ const
 #define DIALOG_FLAT_CONFIG          55          + 1000
 #define DIALOG_FLAT_CONTROL         56          + 1000
 #define DIALOG_FLAT_TITLE	        57          + 1000
-#define DIALOG_POLICE_TUTORIAL      58          + 1000
+// #define DIALOG_POLICE_TUTORIAL      58          + 1000
 #define DIALOG_WEAPON_DEAL          59          + 1000
 #define DIALOG_WEAPON_DEAL_BUY      60          + 1000
 #define DIALOG_HOUSE_PW             61          + 1000
 #define DIALOG_HOUSE_SET_PW         62          + 1000
 #define DIALOG_HOUSE_WEAPONS        63          + 1000
 #define DIALOG_HOUSE_WEAPONS_ADD    64          + 1000
-#define DIALOG_VIEW_LEO_TUT         65          + 1000
+//#define DIALOG_VIEW_LEO_TUT         65          + 1000
 #define DIALOG_FURNITURE            66          + 1000
 #define DIALOG_FURNITURE_LIST 		67          + 1000
 #define DIALOG_FURNITURE_OPTION     68          + 1000
@@ -575,6 +575,7 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
+	Text:  g_EasterTD				[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -983,6 +984,8 @@ enum E_GATE_DATA
 
 	Float: E_MOVE_X,	Float: E_MOVE_Y,		Float: E_MOVE_Z,
 	Float: E_MOVE_RX,	Float: E_MOVE_RY,		Float: E_MOVE_RZ,
+
+	E_CLOSE_TIMER
 };
 
 new
@@ -2356,9 +2359,9 @@ new
 #define ENABLED_EASTER_EGG 			( true )
 
 #if ENABLED_EASTER_EGG == true
-	#define EASTEREGG_LABEL 			"[XMAS BOX]" // "[EASTER EGG]"
-	#define EASTEREGG_NAME 				"Christmas Box" // "Easter Egg"
-	#define EASTEREGG_MODEL 			randarg( 19054, 19054, 19056, 19057, 19058 ) // ( 19341 )
+	#define EASTEREGG_LABEL 			"[EASTER EGG]"
+	#define EASTEREGG_NAME 				"Easter Egg"
+	#define EASTEREGG_MODEL 			randarg( 19341, 19342, 19343, 19344, 19345 )
 	#define MAX_EGGS 					( 4 )
 
 	enum E_EASTEREGG_DATA
@@ -2927,7 +2930,7 @@ new
 ;
 
 /* ** Mapping Tax ** */
-#define MAX_MAPPING							( 200 )
+#define MAX_MAPPING							( 5 )
 #define IC_CASH_VALUE						( 17500.0 )
 
 enum E_MAPPING_DATA
@@ -3104,9 +3107,9 @@ new
 	p_AntiSpawnKill                 [ MAX_PLAYERS ],
     bool: p_AntiSpawnKillEnabled	[ MAX_PLAYERS char ],
     p_HitsComplete                  [ MAX_PLAYERS ],
-    p_CopTutorial                   [ MAX_PLAYERS char ],
+    /*p_CopTutorial                   [ MAX_PLAYERS char ],
     p_CopTutorialProgress			[ MAX_PLAYERS char ],
-    p_CopTutorialTick               [ MAX_PLAYERS ],
+    p_CopTutorialTick               [ MAX_PLAYERS ],*/
 	p_WeaponDealTick				[ MAX_PLAYERS ],
 	p_WeaponDealer					[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_WeaponDealMenu				[ MAX_PLAYERS char ],
@@ -3353,7 +3356,7 @@ public OnGameModeInit()
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
-	AddServerVariable( "connectsong", "http://irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
+	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 
 	mysql_function_query( dbHandle, "SELECT * FROM `SERVER`", true, "OnLoadServerVariables", "" );
 
@@ -4487,9 +4490,9 @@ public OnGameModeInit()
 	rl_ServerUpdate = SetTimer( "OnServerUpdate", 960, true );
 	rl_ZoneUpdate = SetTimer( "ZoneTimer", 980, true );
 
-	HTTP( LANGUAGE_EN, HTTP_GET, "irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
-	HTTP( LANGUAGE_ES, HTTP_GET, "irresistiblegaming.com/es_rules.txt", "", "OnRulesHTTPResponse" );
-	HTTP( LANGUAGE_BA, HTTP_GET, "irresistiblegaming.com/ba_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_EN, HTTP_GET, "files.irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_ES, HTTP_GET, "files.irresistiblegaming.com/es_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_BA, HTTP_GET, "files.irresistiblegaming.com/ba_rules.txt", "", "OnRulesHTTPResponse" );
 
 	printf( "[SF-CNR] SF-CnR has been successfully initiaized. (Build: "#FILE_BUILD" | Time: %d)", ( g_ServerUptime = gettime( ) ) );
 	return 1;
@@ -4503,9 +4506,10 @@ public OnDonationRedemptionResponse( index, response_code, data[ ] )
 		else
 		{
 			static aDonation[ E_DONATION_DATA ];
-			sscanf( data, "p<|>e<s[64]s[256]s[11]s[64]d>", aDonation );
+			sscanf( data, "p<|>e<s[17]s[24]s[11]s[64]d>", aDonation );
 
-			if ( strfind( aDonation[ E_PURPOSE ], "San Fierro: Cops and Robbers" ) == -1 )
+			// printf("donation {id:%s, name:%s, amount:%s, purpose:%s, date:%d}", aDonation[ E_TRANSACTION_ID ],aDonation[ E_NAME ],aDonation[ E_AMOUNT ],aDonation[ E_PURPOSE ],aDonation[ E_DATE ]);
+			if ( strfind( aDonation[ E_PURPOSE ], "San Fierro: Cops And Robbers" ) == -1 )
 			{
 				ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"This donation is not specifically for this server thus you are unable to retrieve anything.", "Okay", "" );
 				return 0;
@@ -4540,7 +4544,7 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 	{
 		g_redeemVipWait = g_iTime + 10;
 
-		sscanf( data, "p<|>e<s[64]s[256]s[11]s[64]d>", aDonation );
+		sscanf( data, "p<|>e<s[17]s[24]s[11]s[64]d>", aDonation );
 
 		format( szNormalString, sizeof( szNormalString ), "INSERT INTO `REDEEMED`(`ID`, `REDEEMER`) VALUES (MD5('%s%s'), '%s')", mysql_escape( aDonation[ E_TRANSACTION_ID ] ), szRedemptionSalt, ReturnPlayerName( playerid ) );
 		mysql_single_query( szNormalString );
@@ -4552,7 +4556,7 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 			Float: iCoins = fAmount * ( 1 + GetGVarFloat( "vip_bonus" ) ) * 100.0
 		;
 
-		if ( fAmount < 4.9999 )
+		if ( fAmount < 4.99999 )
 			return SendError( playerid, "Thanks for donating! As this donation was under $5.00 USD, no coins have been issued." );
 
 		p_IrresistibleCoins[ playerid ] += iCoins;
@@ -4560,8 +4564,8 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 
 		SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have received %0.0f Irresistible Coins! Thanks for donating %s!!! :D", iCoins, ReturnPlayerName( playerid ) );
 
-		format( szBigString, 256, ""COL_GREY"Transaction ID:\t"COL_WHITE"%s\n"COL_GREY"E-mail:\t\t"COL_WHITE"%s\n"COL_GREY"Amount:\t"COL_WHITE"$%0.2f\n"COL_GREY"Total Coins:\t"COL_WHITE"%0.0f\n"COL_GREY"Time Ago:\t"COL_WHITE"%s",
-				aDonation[ E_TRANSACTION_ID ], CensoreString( aDonation[ E_EMAIL ] ), floatstr( aDonation[ E_AMOUNT ] ), iCoins, secondstotime( g_iTime - aDonation[ E_DATE ] ) );
+		format( szBigString, 256, ""COL_GREY"Transaction ID:\t"COL_WHITE"%s\n"COL_GREY"Donor Name:\t"COL_WHITE"%s\n"COL_GREY"Amount:\t"COL_WHITE"$%0.2f\n"COL_GREY"Total Coins:\t"COL_WHITE"%0.0f\n"COL_GREY"Time Ago:\t"COL_WHITE"%s",
+				aDonation[ E_TRANSACTION_ID ], aDonation[ E_NAME ], floatstr( aDonation[ E_AMOUNT ] ), iCoins, secondstotime( g_iTime - aDonation[ E_DATE ] ) );
 
 		ShowPlayerDialog( playerid, DIALOG_DONATED, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", szBigString, "Continue", "" );
 	}
@@ -4607,15 +4611,6 @@ public OnDynamicObjectMoved( objectid )
 		GetDynamicObjectPos( g_apartmentElevatorDoor2[ i ], Y, Y, Z );
 		MoveDynamicObject( g_apartmentElevatorDoor2[ i ], -1953.3468, Y, Z, 5.0 );
 		return 1;
-	}
-
-	foreach(new g : gates)
-	{
-		if ( g_gateData[ g ] [ E_OBJECT ] == objectid && !IsGateAtOpenPosition( g ) )
-		{
-			SetTimerEx( "StartGateClose", g_gateData[ g ] [ E_TIME ], false, "d", g );
-			break;
-		}
 	}
 	return 1;
 }
@@ -4669,10 +4664,7 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 		if ( response == EDIT_RESPONSE_FINAL )
 		{
 			new
-				gID = GetPVarInt( playerid, "gate_editing" ),
-				szDigit[ 3 ]
-			;
-			format( szDigit, sizeof( szDigit ), "%d", gID );
+				gID = GetPVarInt( playerid, "gate_editing" );
 
 			switch( gateItem )
 			{
@@ -4698,7 +4690,7 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 				}
 			}
 			UpdateGateData( gID );
-			cmd_editgate( playerid, szDigit );
+			cmd_editgate( playerid, sprintf( "%d", gID ) );
 			SyncObject( playerid );
 		}
 		return 1;
@@ -5166,7 +5158,7 @@ public OnServerUpdate( )
 						if ( IsPlayerInRangeOfPoint( playerid, 2.0, g_EasterEggs[ easterid ] [ E_X ], g_EasterEggs[ easterid ] [ E_Y ], g_EasterEggs[ easterid ] [ E_Z ] ) )
 						{
 						    new
-						    	iMoney, Float: iCoins, szPrize[ 12 ];
+						    	iMoney, Float: iCoins, szPrize[ 16 ];
 
 							switch( random( 4 ) )
 							{
@@ -5189,7 +5181,7 @@ public OnServerUpdate( )
 							    }
 							    case 3:
 							    {
-							    	p_IrresistibleCoins[ playerid ] += ( iCoins = fRandomEx( 50.0, 250.0 ) );
+							    	p_IrresistibleCoins[ playerid ] += ( iCoins = fRandomEx( 75.0, 250.0 ) );
 							    	format( szPrize, sizeof( szPrize ), "%0.2f coins", iCoins );
 							    }
 							}
@@ -5525,7 +5517,7 @@ public ZoneTimer( )
 
 		foreach(new p : Player) {
 			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
-				PlayAudioStreamForPlayer( p, "http://irresistiblegaming.com/game_sounds/pls_donate.mp3" );
+				PlayAudioStreamForPlayer( p, "http://files.irresistiblegaming.com/game_sounds/pls_donate.mp3" );
 			}
 		}
 
@@ -5767,6 +5759,8 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
+	TextDrawHideForPlayer( playerid, g_EasterTD[0] );
+	TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -6217,6 +6211,11 @@ public OnPlayerDisconnect( playerid, reason )
 		}
 	#endif
 
+	// Filter out bots
+	if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
+		return 1;
+
+	// Reset player variables
     SavePlayerData( playerid, true );
 	dischargeVehicles( playerid );
 	CutSpectation( playerid );
@@ -6237,7 +6236,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_PingImmunity  { playerid } = 0;
 	p_Robberies     [ playerid ] = 0;
 	p_HitsComplete  [ playerid ] = 0;
-	p_CopTutorial   { playerid } = 0;
+	//p_CopTutorial   { playerid } = 0;
 	p_Class			[ playerid ] = 0;
 	p_isMining		{ playerid } = false;
 	p_drillStrength [ playerid ] = 0;
@@ -6359,7 +6358,7 @@ public OnPlayerDisconnect( playerid, reason )
 	DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
 	p_WeedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_AntiSpawnKillEnabled{ playerid } = false;
-	p_CopTutorialProgress{ playerid } = 0;
+	//p_CopTutorialProgress{ playerid } = 0;
     DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
 	p_LumberjackReturn[ playerid ] = 0xFFFF;
 	DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
@@ -6457,6 +6456,8 @@ public OnPlayerSpawn( playerid )
 		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
+		TextDrawShowForPlayer( playerid, g_EasterTD[0] );
+		TextDrawShowForPlayer( playerid, g_EasterTD[1] );
 		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -6673,7 +6674,7 @@ public OnPlayerSpawn( playerid )
 		}
 	}
 
-    if ( p_Class[ playerid ] == CLASS_POLICE && p_CopTutorial{ playerid } == 0 ) // False value means they haven't passed it.
+    /*if ( p_Class[ playerid ] == CLASS_POLICE && p_CopTutorial{ playerid } == 0 ) // False value means they haven't passed it.
 	{
 		TogglePlayerSpectating( playerid, 1 );
 		p_inMovieMode{ playerid } = false;
@@ -6687,7 +6688,7 @@ public OnPlayerSpawn( playerid )
 		InterpolateCameraPos( playerid, -1495.9056, 1025.5458, 60.0000, -1557.7552, 620.3210, 30.0000, 20000 );
 		InterpolateCameraLookAt( playerid, -1496.0648, 1024.5542, 60.0000, -1558.4092, 621.0837, 30.0000, 10000 );
         return 1;
-    }
+    }*/
 
     new
     	bSpectated = ( IsPlayerAdmin( playerid ) && p_LastPlayerState{ playerid } == PLAYER_STATE_SPECTATING );
@@ -6784,17 +6785,17 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 		p_RapidFireTickCount[ playerid ] = GetTickCount( );
 	}
 
-	// Cop shoots innocent, they /q - so jail
-	if ( p_Class[ playerid ] == CLASS_POLICE )
-		p_QuitToAvoidTimestamp[ playerid ] = g_iTime + 3;
-
 	if ( hittype == BULLET_HIT_TYPE_PLAYER )
 	{
 		if ( IsPlayerNPC( hitid ) )
 			return 1; // fcnpc
 
-		//if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED )
-		// 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
+		// Cop shoots innocent, they /q - so jail
+		if ( p_Class[ playerid ] == CLASS_POLICE && p_WantedLevel[ hitid ] > 2 )
+			p_QuitToAvoidTimestamp[ hitid ] = g_iTime + 3;
+
+		if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( playerid ) )
+		 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
 
 		// CIA Exposure when weapon is shot
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_inFBI{ playerid } && p_inCIA{ playerid } && !p_inArmy{ playerid } )
@@ -7009,7 +7010,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( IsPlayerJailed( playerid ) || IsPlayerJailed( issuerid ) )
 		return 0;
 
-	/*if ( weaponid == WEAPON_KNIFE && amount > 256.0 && IsRandomDeathmatch( issuerid, playerid ) )
+	if ( weaponid == WEAPON_KNIFE && amount > 256.0 && IsRandomDeathmatch( issuerid, playerid ) )
 	{
 		new
 			iSeconds;
@@ -7020,7 +7021,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		JailPlayer( issuerid, iSeconds, 1 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by the server "COL_GREEN"[REASON: Random Deathmatch]", ReturnPlayerName( issuerid ), issuerid, iSeconds );
 		return 1; // Need damage to pass through
-	}*/
+	}
 
 	if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) {
 		ShowPlayerHelpDialog( issuerid, 2000, "You should not hurt innocent civilians, you're a ~b~cop~w~~h~!" );
@@ -7061,7 +7062,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 		// Anti Random Deathmatch
 		if ( IsRandomDeathmatch( issuerid, playerid ) )
-			return ShowPlayerHelpDialog( issuerid, 2000, "You cannot ~r~~h~randomly deathmatch~w~~h~ innocent players!" ), 0;
+			return ShowPlayerHelpDialog( issuerid, 2000, "You cannot ~r~~h~random deathmatch~w~~h~ in this location!" ), 0;
 	}
 
 	// No passenger, no bullets
@@ -7244,6 +7245,8 @@ public OnPlayerDeath(playerid, killerid, reason)
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
+	TextDrawHideForPlayer( playerid, g_EasterTD[0] );
+	TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
@@ -8234,7 +8237,7 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 					AttachDynamicObjectToVehicle( GetGVarInt( "meth_smoke", vehicleid ), vehicleid, -0.524999, -0.974999, -0.375000, 0.000000, 0.000000, 0.000000 );
 
 					ShowPlayerHelpDialog( playerid, 5000, "Okay, okay, everything seems to be cooking fine. Wait till for the next chemical to be added." );
-	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://irresistiblegaming.com/game_sounds/cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
+	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.irresistiblegaming.com/game_sounds/cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
 					SetGVarInt( "meth_cooktimer", SetTimerEx( "OnMethamphetamineCooking", 20000, false, "ddd", playerid, vehicleid, chemical ), vehicleid );
 				}
 			}
@@ -8487,13 +8490,13 @@ CMD:disposeweapon(playerid, params[]) {
 
 	new
 	    iCurrentWeapon = GetPlayerWeapon( playerid ),
-	    iWeaponID[ 12 ],
-	    iWeaponAmmo[ 12 ]
+	    iWeaponID[ 13 ],
+	    iWeaponAmmo[ 13 ]
 	;
 
 	if ( iCurrentWeapon != 0 )
 	{
-		for( new iSlot = 0; iSlot != 12; iSlot++ )
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
 		{
 		    new
 				iWeapon,
@@ -8508,7 +8511,7 @@ CMD:disposeweapon(playerid, params[]) {
 
 		ResetPlayerWeapons( playerid );
 
-		for( new iSlot = 0; iSlot != 12; iSlot++ ) {
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
 		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
 		}
 
@@ -9390,12 +9393,13 @@ CMD:gate( playerid, params[ ] )
 			if ( strcmp( szPassword, g_gateData[ g ] [ E_PASS ], false ) )
 				continue; // return SendError( playerid, "Incorrect password. Please try again." );
 
-			if ( !IsGateAtOpenPosition( g ) || IsDynamicObjectMoving( g_gateData[ g ] [ E_OBJECT ] ) )
+			if ( g_gateData[ g ] [ E_CLOSE_TIMER ] != -1 )
 				continue; // return SendError( playerid, "This gate is currently in operation. Please wait." );
 
 			if ( !strmatch( g_gateData[ g ] [ E_NAME ], "N/A" ) )
 				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GATE]"COL_WHITE" You've opened "COL_GREY"%s"COL_WHITE".", g_gateData[ g ] [ E_NAME ] );
 
+			g_gateData[ g ] [ E_CLOSE_TIMER ] = SetTimerEx( "StartGateClose", floatround( g_gateData[ g ] [ E_SPEED ] * 1000.0 ) + g_gateData[ g ] [ E_TIME ], false, "d", g );
 			MoveDynamicObject( g_gateData[ g ] [ E_OBJECT ], g_gateData[ g ] [ E_MOVE_X ], g_gateData[ g ] [ E_MOVE_Y ], g_gateData[ g ] [ E_MOVE_Z ], g_gateData[ g ] [ E_SPEED ], g_gateData[ g ] [ E_MOVE_RX ], g_gateData[ g ] [ E_MOVE_RY ], g_gateData[ g ] [ E_MOVE_RZ ] );
 			gates++;
 		}
@@ -9841,12 +9845,12 @@ CMD:gettaxrate( playerid, params[ ] )
 	return 1;
 }
 
-CMD:policetutorial( playerid, params[ ] )
+/*CMD:policetutorial( playerid, params[ ] )
 {
 	if ( p_CopTutorial{ playerid } == 0 ) return SendError( playerid, "You have already enabled the law enforcement officer tutorial." );
   	ShowPlayerDialog( playerid, DIALOG_VIEW_LEO_TUT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Law Enforcement Officer Tutorial", "{FFFFFF}Are you sure you would like to view the law enforcement officer tutorial again?", "Yes", "No" );
 	return 1;
-}
+}*/
 
 CMD:ransompay( playerid, params[ ] )
 {
@@ -10322,7 +10326,7 @@ CMD:changes( playerid, params[ ] ) return cmd_updates( playerid, params );
 CMD:updates( playerid, params[ ] )
 {
     SendServerMessage( playerid, "Reading latest changes from {00CCFF}www.revctrl.com/IrresistibleDev/SF-CNR/latest{FFFFFF}, please wait!" );
-	HTTP( playerid, HTTP_GET, "irresistiblegaming.com/cnr_updates.php", "", "OnRevCTRLHTTPResponse" );
+	HTTP( playerid, HTTP_GET, "files.irresistiblegaming.com/cnr_updates.php", "", "OnRevCTRLHTTPResponse" );
 	return 1;
 }
 
@@ -10330,7 +10334,7 @@ CMD:tweets( playerid, params[ ] ) return cmd_twitter( playerid, params );
 CMD:twitter( playerid, params[ ] )
 {
     SendServerMessage( playerid, "Reading latest tweets from {00CCFF}www.twitter.com/IrresistibleDev{FFFFFF}, please wait!" );
-	HTTP( playerid, HTTP_GET, "irresistiblegaming.com/cnr_twitter.php", "", "OnTwitterHTTPResponse" );
+	HTTP( playerid, HTTP_GET, "files.irresistiblegaming.com/cnr_twitter.php", "", "OnTwitterHTTPResponse" );
 	return 1;
 }
 
@@ -11309,6 +11313,8 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
 			ShowPlayerIrresistibleRank( playerid );
+			TextDrawShowForPlayer( playerid, g_EasterTD[0] );
+			TextDrawShowForPlayer( playerid, g_EasterTD[1] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
 		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
@@ -11317,6 +11323,8 @@ CMD:moviemode( playerid, params[ ] )
 		{
 			HidePlayerTogglableTextdraws( playerid );
 			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
+			TextDrawHideForPlayer( playerid, g_EasterTD[0] );
+			TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 			TextDrawHideForPlayer( playerid, g_currentXPTD );
 			PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 			PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
@@ -11622,10 +11630,48 @@ CMD:eject( playerid, params[ ] )
 	{
 	    if ( p_Kidnapped{ pID } == true ) p_Kidnapped{ pID } = false;
 	    RemovePlayerFromVehicle( pID );
+		SyncObject( pID, 0.0, 2.0, 2.0 );
     	GameTextForPlayer( pID, "~r~EJECTED~w~!", 3500, 3 );
     	SendServerMessage( playerid, "Player has been ejected from your vehicle." );
 	}
 	return 1;
+}
+
+CMD:ejectall( playerid, params[ ] )
+{
+	new
+	    iEjectCounter = 0,
+		iPlayerSeat = GetPlayerVehicleSeat( playerid ),
+		iPlayerVehicle = GetPlayerVehicleID( playerid )
+	;
+
+	if ( !IsPlayerInAnyVehicle( playerid ) ) {
+		return SendError( playerid, "You're not in a vehicle." );
+	}
+
+	if ( iPlayerSeat != 0 ) {
+		return SendError( playerid, "You're not the driver of this vehicle." );
+	}
+
+	foreach(new i : Player)
+	{
+		new
+			iTargetVehicle = GetPlayerVehicleID( i ),
+			iTargetSeat = GetPlayerVehicleSeat( i )
+		;
+
+		if ( iTargetVehicle == iPlayerVehicle && iTargetSeat >= 1 && iTargetSeat <= 3 ) {
+			iEjectCounter++;
+			RemovePlayerFromVehicle( i );
+			SyncObject( i, 0.0, 2.0, 2.0 );
+			GameTextForPlayer( i, "~r~EJECTED~w~!", 3500, 3 );
+		}
+	}
+
+	if ( ! iEjectCounter )
+		return SendError( playerid, "You do not have any passengers to eject." );
+
+	return SendServerMessage( playerid, "You have ejected %d player%s from your vehicle.", iEjectCounter, iEjectCounter > 1 ? ( "s" ) : ( "" ) );
 }
 
 CMD:bail( playerid, params[ ] )
@@ -12906,7 +12952,7 @@ CMD:kidnap( playerid, params[ ] )
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside the paintball arena." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ playerid ] - g_iTime ) );
+		if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ victimid ] - g_iTime ) );
 		if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
 		SendClientMessageFormatted( victimid, -1, ""COL_RED"[KIDNAPPED]{FFFFFF} You have been kidnapped by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[KIDNAPPED]{FFFFFF} You have kidnapped %s(%d), he has been thrown in your previous entered vehicle!", ReturnPlayerName( victimid ), victimid );
@@ -12949,6 +12995,9 @@ CMD:tie( playerid, params[ ] )
 	/* ** End of Anti Tie Spam ** */
 
 	new victimid = GetClosestPlayer( playerid );
+	new robbery_npcid = GetClosestRobberyNPC( getClosestRobberySafe( playerid ) );
+	printf("You're %f far from the NPC\n", GetDistanceBetweenPlayers( playerid, robbery_npcid ) );
+
 	//if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/tie [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot tie yourself." );
 	//else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
@@ -13029,6 +13078,7 @@ CMD:pullover( playerid, params[ ] )
 }
 
 CMD:loc( playerid, params[ ] ) return cmd_location( playerid, params );
+CMD:locate( playerid, params[ ] ) return cmd_location( playerid, params );
 CMD:location( playerid, params[ ] )
 {
    	new
@@ -13037,7 +13087,7 @@ CMD:location( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is not accessible by civilians." );
 	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
-	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected!" );
+	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
 	//else if ( GetPlayerInterior( playerid ) != GetPlayerInterior( pID ) ) return SendError( playerid, "This player is inside a interior, the location is not viewable." );
 	else if ( p_AdminOnDuty{ pID } == true ) return SendError( playerid, "This is an admin on duty! You cannot track their proximity." );
@@ -13119,6 +13169,7 @@ stock TicketPlayer( pID, playerid )
 	{
 		if ( p_AdminOnDuty{ pID } == true ) return SendError( playerid, "This is an admin on duty!" );
 		if ( IsPlayerJailed( pID ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( IsPlayerTied( pID ) ) return SendError( playerid, "This player is tied, you cannot ticket him unless he is untied." );
 		if ( GetPlayerState( pID ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot ticket wasted players." );
 
 	    p_TicketTimestamp[ pID ] = g_iTime + 15;
@@ -15174,7 +15225,7 @@ CMD:rarmywarn( playerid, params [ ] )
 	return 1;
 }
 
-CMD:forcecoptutorial( playerid, params[ ] )
+/*CMD:forcecoptutorial( playerid, params[ ] )
 {
 	new pID;
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
@@ -15189,7 +15240,7 @@ CMD:forcecoptutorial( playerid, params[ ] )
 		if ( p_Class[ pID ] == CLASS_POLICE ) SpawnPlayer( pID );
 	}
 	return 1;
-}
+}*/
 
 CMD:ann( playerid, params[ ] ) return cmd_announce( playerid, params );
 CMD:announce( playerid, params[ ] )
@@ -16873,9 +16924,9 @@ CMD:updaterules( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 6 )
 		return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	HTTP( LANGUAGE_EN, HTTP_GET, "irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
-	HTTP( LANGUAGE_ES, HTTP_GET, "irresistiblegaming.com/es_rules.txt", "", "OnRulesHTTPResponse" );
-	HTTP( LANGUAGE_BA, HTTP_GET, "irresistiblegaming.com/ba_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_EN, HTTP_GET, "files.irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_ES, HTTP_GET, "files.irresistiblegaming.com/es_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( LANGUAGE_BA, HTTP_GET, "files.irresistiblegaming.com/ba_rules.txt", "", "OnRulesHTTPResponse" );
 	SendServerMessage( playerid, "Rules should be updated now." );
 	return 1;
 }
@@ -17199,15 +17250,20 @@ thread OnQueryServerViaRCON( playerid )
 
 	CMD:treasurehunt( playerid, params[ ] )
 	{
-		if ( !IsPlayerAdmin( playerid ) ) return 0;
-		if ( Iter_Count(eastereggs) < 1 ) return SendError( playerid, "There are not enough " #EASTEREGG_NAME "s planted to start the treasure hunt." );
-	    g_EasterHunt = ( g_EasterHunt == true ? (false) : (true) );
+		if ( !IsPlayerAdmin( playerid ) )
+			return 0;
 
-	    if ( !g_EasterHunt )
+		if ( Iter_Count(eastereggs) < 1 )
+			return SendError( playerid, "There are not enough " #EASTEREGG_NAME "s planted to start the treasure hunt." );
+
+		// if its false, destroy all egs
+		if ( ( g_EasterHunt = ! g_EasterHunt ) == false )
 	    {
-			foreach(new i : eastereggs)
+			for ( new i = 0; i < MAX_EGGS; i ++)
 				DestroyEasterEgg( i );
 	    }
+
+	    // alert admin log
 		AddAdminLogLineFormatted( "%s(%d) has started a treasurehunt", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_GOLD" Treasure Hunt has been %s", g_EasterHunt == true ? ("activated, look around for " #EASTEREGG_NAME "s and get a free gift.") : ("de-activated.") );
 		return 1;
@@ -18302,9 +18358,6 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	aPlayer[ 0 ] = playerid;
 
-	new
-		bDropoff = ( CP_DROP_OFF_COP <= checkpointid <= CP_DROP_OFF_HELI );
-
 	/* ** Checkpoint Denials ** */
 	if ( p_Spectating{ playerid } == true )
 		return 1;
@@ -18314,6 +18367,14 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( IsPlayerTied( playerid ) )
 		return SendError( playerid, "You can't do anything as you are tied." );
+
+	/* ** Dropoff check ** */
+	new
+		bDropoff = false;
+
+	for ( new i = CP_DROP_OFF_COP; i < CP_DROP_OFF_HELI; i ++ )
+		if ( checkpointid == g_Checkpoints[ i ] )
+			bDropoff = true;
 
 	if ( IsPlayerJailed( playerid ) && !bDropoff )
 	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), 1;
@@ -18634,7 +18695,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 
 			// Check if it is really quick to finish
 			if ( iTimeElapsed < iTheoreticalFinish ) {
-		    	SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking." );
+		    	SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC)." );
 		    	KickPlayerTimed( playerid );
 		    	return 1;
 			}
@@ -20306,7 +20367,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_PingImmunity{ playerid } 		= cache_get_field_content_int( 0, "PING_IMMUNE", dbHandle );
 			p_HitsComplete[ playerid ] 		= cache_get_field_content_int( 0, "CONTRACTS", dbHandle );
 			p_TruckedCargo[ playerid ] 		= cache_get_field_content_int( 0, "TRUCKED", dbHandle );
-			p_CopTutorial{ playerid } 		= cache_get_field_content_int( 0, "COP_TUTORIAL", dbHandle );
+			//p_CopTutorial{ playerid } 		= cache_get_field_content_int( 0, "COP_TUTORIAL", dbHandle );
 			p_Job{ playerid } 				= cache_get_field_content_int( 0, "JOB", dbHandle );
 			p_VIPJob{ playerid } 			= cache_get_field_content_int( 0, "VIP_JOB", dbHandle );
 			p_AdminJailed{ playerid } 		= cache_get_field_content_int( 0, "JAIL_ADMIN", dbHandle );
@@ -20528,7 +20589,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				p_Kills[ playerid ] = 1;
 				p_Deaths[ playerid ] = 1;
 				p_XP[ playerid ] = 0;
-				p_CopTutorial{ playerid } = 0;
+				//p_CopTutorial{ playerid } = 0;
 				p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
 				p_OwnedHouses[ playerid ] = 0;
 				p_OwnedVehicles[ playerid ] = 0;
@@ -23187,7 +23248,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
  		SendServerMessage( playerid, "You have successfully changed the name of your apartment." );
   		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
 	}
-	if ( ( dialogid == DIALOG_POLICE_TUTORIAL ) )
+	/*if ( ( dialogid == DIALOG_POLICE_TUTORIAL ) )
 	{
 	    if ( response )
 	    {
@@ -23241,7 +23302,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SendServerMessage( playerid, "You have finished the law enforcement officer tutorial. You can view it again by typing "COL_GREY"/policetutorial" );
 			}
 		}
-	}
+	}*/
 	if ( ( dialogid == DIALOG_HOUSE_PW ) && response )
 	{
 		new i = p_PasswordedHouse[ playerid ];
@@ -23257,7 +23318,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
 		}
 	}
-	if ( ( dialogid == DIALOG_VIEW_LEO_TUT ) && response )
+	/*if ( ( dialogid == DIALOG_VIEW_LEO_TUT ) && response )
 	{
 		format( szNormalString, 100, "UPDATE `USERS` SET `COP_TUTORIAL`=0 WHERE `ID`=%d'", p_AccountID[ playerid ] );
 		mysql_single_query( szNormalString );
@@ -23267,7 +23328,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			SendServerMessage( playerid, "The law enforcement tutorial will be shown as soon as you spawn with a police class." );
 		else
 			SpawnPlayer( playerid );
-	}
+	}*/
 	if ( dialogid == DIALOG_FURNITURE )
 	{
         if ( p_InHouse[ playerid ] != -1 ) {
@@ -23716,7 +23777,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( ( dialogid == DIALOG_VIP ) && response )
 	{
-		if ( strlen( inputtext ) != 17 )
+		if ( strlen( inputtext ) != 16 )
 		{
 			cmd_donated( playerid, "" );
 			return SendError( playerid, "The transaction ID you entered is invalid." );
@@ -23728,7 +23789,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			return SendServerMessage( playerid, "Our anti-exploit system requires you to wait another %d seconds before redeeming.", g_redeemVipWait - g_iTime );
 		}
 
-		HTTP( playerid, HTTP_GET, sprintf( "donate.irresistiblegaming.com/igcheck_code.php?transaction_id=%s", inputtext ), "", "OnDonationRedemptionResponse" );
+		HTTP( playerid, HTTP_GET, sprintf( "irresistiblegaming.com/donate/validate_code/%s", inputtext ), "", "OnDonationRedemptionResponse" );
 		SendServerMessage( playerid, "We're now looking up this transaction. Please wait." );
 	}
 	if ( dialogid == DIALOG_DONATED )
@@ -23737,7 +23798,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		strcat( szLargeString,	""COL_WHITE"Thank you a lot for donating! :D In return for your dignity, you have received Irresistible Coins.\n\n"\
 								""COL_GREY" * What do I do with Irresistible Coins?"COL_WHITE" You can claim the V.I.P of your choice via "COL_GREY"/irresistiblecoins market"COL_WHITE".\n" );
 		strcat( szLargeString,	""COL_GREY" * How many do I have?"COL_WHITE" You can see how many Irresistible Coins you have via "COL_GREY"/irresistiblecoins"COL_WHITE".\n" \
-								""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThank you once again for your contribution to the community! :P"  );
+								""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThank you once again for your contribution to our community! :P"  );
 		return ShowPlayerDialog( playerid, DIALOG_FINISHED_DONATING, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", szLargeString, "Got it!", "" );
 	}
 	if ( dialogid == DIALOG_FINISHED_DONATING ) {
@@ -24991,6 +25052,30 @@ stock SavePlayerData( playerid, bool: logout = false )
 
 stock initializeTextDraws( )
 {
+	g_EasterTD[0] = TextDrawCreate(529.000000, 330.000000, "~r~~h~H~b~~h~a~g~~h~p~p~~h~p~y~~h~y_~r~~h~E~b~~h~a~g~~h~s~p~~h~t~y~~h~e~r~~h~r");
+	TextDrawBackgroundColor(g_EasterTD[0], 255);
+	TextDrawFont(g_EasterTD[0], 3);
+	TextDrawLetterSize(g_EasterTD[0], 0.300000, 1.200000);
+	TextDrawColor(g_EasterTD[0], -1);
+	TextDrawSetOutline(g_EasterTD[0], 1);
+	TextDrawSetProportional(g_EasterTD[0], 1);
+	TextDrawSetSelectable(g_EasterTD[0], 0);
+
+	g_EasterTD[1] = TextDrawCreate(598.000000, 319.000000, "New Textdraw");
+	TextDrawBackgroundColor(g_EasterTD[1], 0);
+	TextDrawFont(g_EasterTD[1], 5);
+	TextDrawLetterSize(g_EasterTD[1], 0.500000, 1.000000);
+	TextDrawColor(g_EasterTD[1], -1);
+	TextDrawSetOutline(g_EasterTD[1], 0);
+	TextDrawSetProportional(g_EasterTD[1], 1);
+	TextDrawSetShadow(g_EasterTD[1], 1);
+	TextDrawUseBox(g_EasterTD[1], 1);
+	TextDrawBoxColor(g_EasterTD[1], 0);
+	TextDrawTextSize(g_EasterTD[1], 31.000000, 34.000000);
+	TextDrawSetPreviewModel(g_EasterTD[1], 19341);
+	TextDrawSetPreviewRot(g_EasterTD[1], -16.000000, 0.000000, -55.000000, 1.000000);
+	TextDrawSetSelectable(g_EasterTD[1], 0);
+
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -30048,6 +30133,7 @@ thread OnGatesLoad( )
 			cache_get_field_content( i, "MOVE_RY", Field ),    	g_gateData[ gID ] [ E_MOVE_RY ] = floatstr( Field );
 			cache_get_field_content( i, "MOVE_RZ", Field ),  	g_gateData[ gID ] [ E_MOVE_RZ ] = floatstr( Field );
 
+			g_gateData[ gID ] [ E_CLOSE_TIMER ] = -1;
 			g_gateData[ gID ] [ E_OBJECT ] = CreateDynamicObject( g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
 
 	    	Iter_Add(gates, gID);
@@ -30071,6 +30157,7 @@ stock CreateGate( playerid, password[ 8 ], model, Float: speed, Float: range, Fl
 		g_gateData[ gID ] [ E_MODEL ] = model;
 		g_gateData[ gID ] [ E_SPEED ] = speed;
 		g_gateData[ gID ] [ E_TIME ] = 2000;
+		g_gateData[ gID ] [ E_CLOSE_TIMER ] = -1;
 		g_gateData[ gID ] [ E_RANGE ] = range;
 		g_gateData[ gID ] [ E_X ] = x;
 		g_gateData[ gID ] [ E_Y ] = y;
@@ -30092,15 +30179,6 @@ stock CreateGate( playerid, password[ 8 ], model, Float: speed, Float: range, Fl
 		Iter_Add(gates, gID);
 	}
 	return gID;
-}
-
-stock IsGateAtOpenPosition( gID )
-{
-	static
-		Float: X, Float: Y, Float: Z;
-
-	GetDynamicObjectPos( g_gateData[ gID ] [ E_OBJECT ], X, Y, Z );
-	return IsPointToPoint( 1.0, X, Y, Z, g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ] );
 }
 
 stock getClosestGate( playerid, &Float: dis = 99999.99 )
@@ -30137,8 +30215,10 @@ stock UpdateGateData( gID )
 	}
 }
 
-function StartGateClose( gID )
+function StartGateClose( gID ) {
+	g_gateData[ gID ] [ E_CLOSE_TIMER ] = -1;
 	return MoveDynamicObject( g_gateData[ gID ] [ E_OBJECT ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_SPEED ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] ), 1;
+}
 
 stock CreatePaintballLobby( pid, playerid, const szLobbyName[ 16 ], iPlayerCap, iArena, Float: fHealth = 100.0, Float: fArmour = 100.0 )
 {
@@ -30642,7 +30722,7 @@ stock ShowPlayerShopMenu( playerid )
 #if ENABLED_EASTER_EGG == true
 	stock DestroyEasterEgg( id )
 	{
-		if ( id >= MAX_EGGS || id < 0 )
+		if ( !( 0 <= id < MAX_EGGS ) )
 			return 0;
 
 		Iter_Remove(eastereggs, id);
@@ -31989,18 +32069,23 @@ stock WarnPlayerClass( playerid, bool: bArmy = false, iPoints = 1 )
 
 stock IsRandomDeathmatch( issuerid, damagedid )
 {
-	/*if ( issuerid != INVALID_PLAYER_ID && damagedid != INVALID_PLAYER_ID )
+	if ( issuerid != INVALID_PLAYER_ID && damagedid != INVALID_PLAYER_ID )
 	{
 		new
 			iW = p_WantedLevel[ issuerid ], 	iC = p_Class[ issuerid ],
 			dW = p_WantedLevel[ damagedid ], 	dC = p_Class[ damagedid ]
 		;
+
+		if ( !IsPlayerInCasino( issuerid ) || !IsPlayerInCasino( damagedid ) )
+			return false; // applies only to casinos
+
 		return ( !iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dC == CLASS_POLICE );
-	}*/
-	#pragma unused issuerid
-	#pragma unused damagedid
+	}
 	return false;
 }
+
+stock IsPlayerInCasino( playerid )
+	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
 
 //function RespawnVehicle( vehicleid )
 //	return SetVehicleToRespawn( vehicleid );
@@ -32287,12 +32372,7 @@ stock initializeActors( )
 			{ 221, -2656.4712, 1413.2327, 906.2734, 232.1765, "PAULNMAC", "wank_loop", 18 },
 
 		// Hobo
-			{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 },
-
-		// Gal Diamond
-			{ 163, -2038.4918, 263.2710, 904.9886, 9.3693, "DEALER", "DEALER_IDLE", 0 },
-			{ 164, -2041.7032, 263.2434, 904.9886, 358.71, "DEALER", "DEALER_IDLE", 0 },
-			{ 124, -2042.2169, 244.6347, 29.05720, 63.890, "DEALER", "DEALER_IDLE", 0 }
+			{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 }
 		}
 	;
 
@@ -32549,8 +32629,8 @@ stock RollSlotMachine( playerid, id )
 
 	if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == 10000 )
 	{
-		// 1 in 20000 odds
-		randomChance = random( 20001 );
+		// 1 in 10000 odds
+		randomChance = random( 10001 );
 
 		// let's see where they landed
 		switch ( randomChance )
@@ -32560,35 +32640,33 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 1 .. 62:
+			case 1 .. 55:
 				rotation = 40.0;
 
 			// gold bells
-			case 126 .. 252:
+			case 100 .. 210:
 				rotation = 60.0;
 
 			// cherry
-			case 500 .. 750:
+			case 220 .. 440:
 				rotation = 80.0;
 
 			// grapes
-			case 1500 .. 2000:
+			case 500 .. 1050:
 				rotation = 100.0;
 
 			// 69s
-			case 5000 .. 10000:
+			case 1100 .. 2200:
 				rotation = 20.0;
 
 			default:
 				loss = true;
 		}
-
-		printf( "%s %d/20000 chance", ReturnPlayerName( playerid ), randomChance );
 	}
 	else
 	{
-		// 1 in 100000 odds
-		randomChance = random( 100001 );
+		// 1 in 35000 odds
+		randomChance = random( 35001 );
 
 		// let's see where they landed
 		switch ( randomChance )
@@ -32598,30 +32676,28 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 300 .. 600:
+			case 192 .. 384:
 				rotation = 40.0;
 
 			// gold bells
-			case 700 .. 1300:
+			case 385 .. 770:
 				rotation = 60.0;
 
 			// cherry
-			case 1400 .. 2600:
+			case 771 .. 1541:
 				rotation = 80.0;
 
 			// grapes
-			case 3000 .. 6000:
+			case 1925 .. 3850:
 				rotation = 100.0;
 
 			// 69s
-			case 10000 .. 35000:
+			case 3851 .. 7701:
 				rotation = 20.0;
 
 			default:
 				loss = true;
 		}
-
-		printf( "%s %d/100000 chance", ReturnPlayerName( playerid ), randomChance );
 	}
 	if ( loss )
 	{
@@ -32637,7 +32713,6 @@ stock RollSlotMachine( playerid, id )
 		}
 		else
 		{
-			print("reversed rotation");
 			// assign random rotation (must be <= 16)
 			rotation = float( RandomEx( 2, 18 ) ) * 20.0;
 
@@ -33224,7 +33299,7 @@ thread OnGrabLatestDonor( hidden )
 
 		// Play sound
 		foreach(new p : Player) if ( !IsPlayerUsingRadio( p ) ) {
-			PlayAudioStreamForPlayer( p, "http://irresistiblegaming.com/game_sounds/donated.mp3" );
+			PlayAudioStreamForPlayer( p, "http://files.irresistiblegaming.com/game_sounds/donated.mp3" );
 		}
 
 		TextDrawSetString( g_TopDonorTD, sprintf( "Le Latest Donor %s - $%0.2f", szName, fAmount ) );
@@ -33701,7 +33776,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~r~~h~~h~Clerk is getting ideas" );
 
 			// Shoot player
-			if ( random( 101 ) < 20 ) {
+			if ( random( 101 ) < 20 && p_Robberies[ playerid ] > 10 ) {
 				g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
 				return StopPlayerNpcRobbery( playerid ), FCNPC_ShootAtPlayer( playerid, npcid, .weaponid = 25, .clerkid = clerkid );
 			}

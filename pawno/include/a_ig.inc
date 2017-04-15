@@ -70,8 +70,8 @@ new
 #define szRedemptionSalt 			"7resta#ecacakumedeM=yespawr!d@et"
 enum E_DONATION_DATA
 {
-	E_TRANSACTION_ID[ 64 ],
-	E_EMAIL[ 256 ],
+	E_TRANSACTION_ID[ 17 ],
+	E_NAME[ 24 ],
 	E_AMOUNT[ 11 ],
 	E_PURPOSE[ 64 ],
 	E_DATE
