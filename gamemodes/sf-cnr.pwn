@@ -69,6 +69,7 @@ native gpci 						( playerid, serial[ ], len );
 
 /* ** Useful macros ** */
 #define function%1(%2)              forward%1(%2); public%1(%2)
+#define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
 #define RandomEx(%0,%1)  			(random((%1) - (%0)) + (%0))
 #define HOLDING(%0)             	((newkeys & (%0)) == (%0))
 #define PRESSED(%0)					(((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
@@ -146,10 +147,8 @@ new bool: False = false, szNormalString[ 144 ];
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_MEDIC)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToPaintball(%0,%1,%2,%3)\
 	do{foreach(new fI : Player){if (p_inPaintBall{fI}&&p_PaintBallArena{fI}==(%0))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-/*#define IRC_GroupSayFormatted(%0,%1,%2,%3)\
-	do{format(szNormalString,sizeof(szNormalString),(%2),%3),IRC_GroupSay(%0,%1,szNormalString);}while(False)
-#define IRC_NoticeFormatted(%0,%1,%2,%3)\
-	do{format(szNormalString,sizeof(szNormalString),(%2),%3),IRC_Notice(%0,%1,szNormalString);}while(False)*/
+#define Discord_SayFormatted(%0,%1,%2)\
+	do{format(szNormalString,sizeof(szNormalString),(%1),%2),Discord_Say(%0,szNormalString);}while(False)
 
 #define mysql_single_query(%0) mysql_function_query(dbHandle,(%0),true,"","")
 #define SetPlayerPosEx(%0,%1,%2,%3,%4) SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
@@ -455,21 +454,16 @@ const
 #define CP_DROP_OFF_FBI             ( 37 )
 #define CP_DROP_OFF_HELI         	( 38 )
 
-/* ** IRC **
-#define IRC_PORT 					(6667)
-#define IRC_CHANNEL 				"#sf-cnr"
-#define IRC_BOT_PW 					"UDP64PT2rURdXBv"
-#define MAX_BOTS 					(2)
+/* ** Discord ** */
+#include <socket>
 
-#define BOT_1_NICKNAME 				"ig_a"
-#define BOT_1_REALNAME 				"ig_a"
-#define BOT_1_USERNAME 				"bot"
+#define DISCORD_GENERAL				"191078670360641536"
+#define DISCORD_ADMINISTRATION		"191133046194438144"
 
-#define BOT_2_NICKNAME 				"ig_b"
-#define BOT_2_REALNAME 				"ig_b"
-#define BOT_2_USERNAME 				"bot"
-
-new gBotID							[MAX_BOTS], gGroupID;*/
+new
+	Socket: discordListener,
+	Socket: discord
+;
 
 /* ** Random Messages ** */
 stock const
@@ -575,7 +569,6 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
-	Text:  g_EasterTD				[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -2356,7 +2349,7 @@ new
 ;
 
 /* ** Easter Eggs ** */
-#define ENABLED_EASTER_EGG 			( true )
+#define ENABLED_EASTER_EGG 			( false )
 
 #if ENABLED_EASTER_EGG == true
 	#define EASTEREGG_LABEL 			"[EASTER EGG]"
@@ -3350,9 +3343,6 @@ public OnGameModeInit()
 	AddServerVariable( "doublexp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventbank", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventhost", "0", GLOBAL_VARTYPE_INT );
-	// AddServerVariable( "mayor", "0", GLOBAL_VARTYPE_INT );
-	// AddServerVariable( "mayor_timeout", "0", GLOBAL_VARTYPE_INT );
-	// AddServerVariable( "mayor_timestamp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
@@ -3451,12 +3441,20 @@ public OnGameModeInit()
 	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 72
 	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
- 	/* ** IRC configuration **
- 	gBotID[ 0 ] = IRC_Connect( IRC_SERVER, IRC_PORT, BOT_1_NICKNAME, BOT_1_REALNAME, BOT_1_USERNAME );
-	IRC_SetIntData( gBotID[ 0 ], E_IRC_CONNECT_DELAY, 40 );
-	gBotID[ 1 ] = IRC_Connect( IRC_SERVER, IRC_PORT, BOT_2_NICKNAME, BOT_2_REALNAME, BOT_2_USERNAME );
-	IRC_SetIntData( gBotID[ 0 ], E_IRC_CONNECT_DELAY, 60 );
-	gGroupID = IRC_CreateGroup( );*/
+ 	/* ** Discord configuration ** */
+	if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
+		socket_connect(discord, "127.0.0.1", 8000);
+		print( "Discord TCP has successfully connected!" );
+	}
+
+	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
+		socket_set_max_connections(discordListener, 10);
+		socket_bind(discordListener, "127.0.0.1");
+		socket_listen(discordListener, 3939);
+		print( "Discord listener has successfully started listening!" );
+	}
+
+	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );
 
 	/* ** Robbery Points ** */
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 1", 5000, -1400.84180, 862.85895, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -4886,6 +4884,9 @@ public OnGameModeExit( )
 	KillTimer( rl_ZoneUpdate );
     for( new t; t != MAX_TEXT_DRAWS; t++ ) TextDrawDestroy( Text: t );
 	//SendRconCommand( "exit" );
+	socket_stop_listen(discordListener);
+	socket_destroy(discordListener);
+	socket_destroy(discord);
 	return 1;
 }
 
@@ -5759,8 +5760,6 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	TextDrawHideForPlayer( playerid, g_EasterTD[0] );
-	TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -6185,12 +6184,14 @@ thread OnPlayerMegaBanCheck( playerid )
 			format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server!", ReturnPlayerName( playerid ), playerid );
 		}
 
-		// IRC_GroupSay( gGroupID, IRC_CHANNEL, szNormalString );
 		foreach(new i : Player)
 		{
 			if ( p_PlayerSettings[ i ] { SETTING_CONNECTION_LOG } )
 				SendClientMessage( i, COLOR_CONNECT, szNormalString );
 		}
+
+		format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
+		Discord_Say( DISCORD_GENERAL, szNormalString );
 	}
 	return 1;
 }
@@ -6408,7 +6409,6 @@ public OnPlayerDisconnect( playerid, reason )
 	    case 2: color = COLOR_KICK, 		format( string, sizeof( string ), "%s(%d) has been kicked from the server!", ReturnPlayerName( playerid ), playerid );
 	}
 
-	//IRC_GroupSay( gGroupID, IRC_CHANNEL, string );
 
 	for( new i; i < MAX_PLAYERS; i++ )
 	{
@@ -6424,6 +6424,9 @@ public OnPlayerDisconnect( playerid, reason )
 
 		p_BlockedPM[ playerid ] [ i ] = false;
 	}
+
+	format( string, sizeof( string ), "*%s*", string );
+	Discord_Say( DISCORD_GENERAL, string );
 	return 1;
 }
 
@@ -6456,8 +6459,6 @@ public OnPlayerSpawn( playerid )
 		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
-		TextDrawShowForPlayer( playerid, g_EasterTD[0] );
-		TextDrawShowForPlayer( playerid, g_EasterTD[1] );
 		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -7023,9 +7024,11 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 1; // Need damage to pass through
 	}
 
-	if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) {
+	/*if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) {
 		ShowPlayerHelpDialog( issuerid, 2000, "You should not hurt innocent civilians, you're a ~b~cop~w~~h~!" );
-	}
+	}*/
+	if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( issuerid ) )
+	 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
 
 	// Heal player (paramedic)
 	if ( p_Class[ issuerid ] == CLASS_MEDIC && weaponid == WEAPON_SPRAYCAN )
@@ -7245,8 +7248,6 @@ public OnPlayerDeath(playerid, killerid, reason)
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
-	TextDrawHideForPlayer( playerid, g_EasterTD[0] );
-	TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
@@ -7336,7 +7337,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 			return 1;
 		}
 
-		//IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "7%s(%d) has killed %s(%d) - %s!", ReturnPlayerName( killerid ), killerid,  ReturnPlayerName( playerid ), playerid, ReturnWeaponName( reason ) );
+		Discord_SayFormatted( DISCORD_GENERAL, "*%s(%d) has killed %s(%d) - %s!*", ReturnPlayerName( killerid ), killerid,  ReturnPlayerName( playerid ), playerid, ReturnWeaponName( reason ) );
 
 		if ( !IsPlayerAdminOnDuty( killerid ) )
 		{
@@ -7456,7 +7457,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 	else if ( IsPlayerNPC( killerid ) ) SendDeathMessage( killerid, playerid, reason );
 	else
 	{
-		//IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "7%s(%d) has committed suicide!", ReturnPlayerName( playerid ), playerid );
+		Discord_SayFormatted( DISCORD_GENERAL, "*%s(%d) has committed suicide!*", ReturnPlayerName( playerid ), playerid );
 	    SendDeathMessage( INVALID_PLAYER_ID, playerid, 53 );
 	    DeletePVar( playerid, "used_cmd_kill" );
 	}
@@ -7535,101 +7536,6 @@ public OnPlayerUnjailed( playerid, reasonid )
     ClearPlayerWantedLevel	( playerid );
 	return 1;
 }
-
-/*public IRC_OnConnect(botid, ip[], port)
-{
-	//printf("IRC_OnConnect(%d, %s, %d)", botid, ip, port);
-	IRC_JoinChannel(botid, IRC_CHANNEL);
-	IRC_AddToGroup(gGroupID, botid);
-	return 1;
-}
-
-public IRC_OnDisconnect(botid, ip[], port, reason[])
-{
-	//printf("IRC_OnDisconnect(%d, %s, %d, %s)", botid, ip, port, reason);
-	IRC_RemoveFromGroup(gGroupID, botid);
-	return 1;
-}
-
-public IRC_OnConnectAttempt(botid, ip[], port)
-{
-	//printf("IRC_OnConnectAttempt(%d, %s, %d)", botid, ip, port);
-	return 1;
-}
-
-public IRC_OnJoinChannel(botid, channel[])
-{
-    IRC_SendRaw( botid, "ns identify " #IRC_BOT_PW ); // CHANGE THIS IF NEEDED!
-	return 1;
-}
-
-public IRC_OnLeaveChannel(botid, channel[], message[])
-{
-	IRC_JoinChannel(botid, channel);
-	return 1;
-}
-
-public IRC_OnKickedFromChannel(botid, channel[], oppeduser[], oppedhost[], message[])
-{
-	IRC_JoinChannel(botid, channel);
-	return 1;
-}
-
-public IRC_OnUserDisconnect(botid, user[], host[], message[])
-{
-	return 1;
-}
-
-public IRC_OnUserJoinChannel(botid, channel[], user[], host[])
-{
-	return 1;
-}
-
-public IRC_OnUserLeaveChannel(botid, channel[], user[], host[], message[])
-{
-	return 1;
-}
-
-public IRC_OnUserKickedFromChannel(botid, channel[], kickeduser[], oppeduser[], oppedhost[], message[])
-{
-	return 1;
-}
-
-public IRC_OnUserNickChange(botid, oldnick[], newnick[], host[])
-{
-	return 1;
-}
-
-public IRC_OnUserSetChannelMode(botid, channel[], user[], host[], mode[])
-{
-	return 1;
-}
-
-public IRC_OnUserSetChannelTopic(botid, channel[], user[], host[], topic[])
-{
-	return 1;
-}
-
-public IRC_OnUserSay(botid, recipient[], user[], host[], message[])
-{
-	return 1;
-}
-
-public IRC_OnUserNotice(botid, recipient[], user[], host[], message[])
-{
-	return 1;
-}
-
-public IRC_OnUserReplyCTCP(botid, user[], host[], message[])
-{
-	return 1;
-}
-
-public IRC_OnReceiveRaw( botid, message[ ] )
-{
-	//printf("IRC_OnReceiveRaw( %d, %s )", botid, message );
-	return 1;
-}*/
 
 public OnPlayerText( playerid, text[ ] )
 {
@@ -7740,7 +7646,7 @@ public OnPlayerText( playerid, text[ ] )
 			{
 			    if ( p_VIPLevel[ playerid ] > 0 )
 			    {
-					//IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "9(VIP) %s(%d):3 %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
+					Discord_SayFormatted( DISCORD_GENERAL, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
 					SendClientMessageToAllFormatted( 0x3eff3eff, "[VIP] %s(%d):{9ec34f} %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
 			        return 0;
 			    }
@@ -7755,7 +7661,7 @@ public OnPlayerText( playerid, text[ ] )
 			}
 		}
 	}
-	//IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "%d%s(%d): %s", p_Class[ playerid ] == CLASS_POLICE ? 12 : 4, ReturnPlayerName( playerid ), playerid, text );
+	Discord_SayFormatted( DISCORD_GENERAL, "**%s(%d):** %s", ReturnPlayerName( playerid ), playerid, text ); // p_Class[ playerid ] == CLASS_POLICE ? 12 : 4
 	return 1;
 }
 
@@ -10153,7 +10059,7 @@ CMD:vsay( playerid, params[ ] )
 		   		return SendError( playerid, "You cannot speak as you are muted for %s.", secondstotime( p_MutedTime[ playerid ] - time ) );
 		}
 
-		//IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "9(VIP) %s(%d):3 %s", ReturnPlayerName( playerid ), playerid, msg );
+		Discord_SayFormatted( DISCORD_GENERAL, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, msg );
 		SendClientMessageToAllFormatted( 0x3eff3eff, "[VIP] %s(%d):{9ec34f} %s", ReturnPlayerName( playerid ), playerid, msg );
 	}
 	return 1;
@@ -11079,7 +10985,7 @@ thread OnPlayerLastLogged( playerid, irc, player[ ] )
 		if ( !irc ) SendClientMessageFormatted( playerid, COLOR_GREY, "[SERVER]"COL_RED" %s:"COL_WHITE" Last Logged: %s", player, Field );
 		else {
 			format( szNormalString, sizeof( szNormalString ),"7LAST LOGGED OF '%s': %s", player, Field );
-			//IRC_GroupSay( gGroupID, IRC_CHANNEL, szNormalString );
+			Discord_Say( DISCORD_GENERAL, szNormalString );
 		}
 	}
 	else {
@@ -11119,7 +11025,7 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 		else
 		{
 			format( szNormalString, sizeof( szNormalString ),"7WEEKLY TIME OF '%s': %s", player, secondstotime( iCurrentUptime - iLastUptime ) );
-			//IRC_GroupSay( gGroupID, IRC_CHANNEL, szNormalString );
+			Discord_Say( DISCORD_GENERAL, szNormalString );
 		}
 	}
 	else
@@ -11313,8 +11219,6 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
 			ShowPlayerIrresistibleRank( playerid );
-			TextDrawShowForPlayer( playerid, g_EasterTD[0] );
-			TextDrawShowForPlayer( playerid, g_EasterTD[1] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
 		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
@@ -11323,8 +11227,6 @@ CMD:moviemode( playerid, params[ ] )
 		{
 			HidePlayerTogglableTextdraws( playerid );
 			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
-			TextDrawHideForPlayer( playerid, g_EasterTD[0] );
-			TextDrawHideForPlayer( playerid, g_EasterTD[1] );
 			TextDrawHideForPlayer( playerid, g_currentXPTD );
 			PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 			PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
@@ -11536,27 +11438,21 @@ CMD:rules( playerid, params[ ] )
 	return 1;
 }
 
-/*CMD:irc( playerid, params[ ] )
-{
-	SendServerMessage( playerid, "Our IRC server IP is {C0C0C0}" #IRC_SERVER "{FFFFFF} and our channel is {C0C0C0}" #IRC_CHANNEL "{FFFFFF}." );
-	return 1;
-}
-
-CMD:ircpm( playerid, params[ ] )
+CMD:discordpm( playerid, params[ ] )
 {
 	new
 		msg[ 128 ];
 
-	if ( sscanf( params, "s[100]", msg ) ) SendUsage( playerid, "/ircpm [message]" );
+	if ( sscanf( params, "s[100]", msg ) ) SendUsage( playerid, "/discordpm [message]" );
 	else
 	{
  		Beep( playerid );
- 		format( msg, sizeof( msg ), "10[IRC PM]5%s(%d): %s", ReturnPlayerName( playerid ), playerid, msg );
-    	IRC_GroupSay( gGroupID, IRC_CHANNEL, msg );
-		SendServerMessage( playerid, "Your typed message has been sent to the IRC channel!" );
+ 		format( msg, sizeof( msg ), "__[Discord PM]__ **%s(%d):** %s", ReturnPlayerName( playerid ), playerid, msg );
+    	Discord_Say( DISCORD_GENERAL, msg );
+		SendServerMessage( playerid, "Your typed message has been sent to the Discord #general channel!" );
 	}
 	return 1;
-}*/
+}
 
 CMD:perks( playerid, params[ ] )
 {
@@ -11625,10 +11521,11 @@ CMD:eject( playerid, params[ ] )
 	else if ( pID == playerid ) return SendError( playerid, "This command is created for ejecting passengers only." );
 	else if ( GetPlayerVehicleID( pID ) != GetPlayerVehicleID( playerid ) ) return SendError( playerid, "This player isn't inside your vehicle" );
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You are not the driver of this vehicle." );
-	else if ( p_Detained{ pID } ) return SendError( playerid, "This player has his cuffs locked onto his seat. You can't eject him." );
+	//else if ( p_Detained{ pID } ) return SendError( playerid, "This player has his cuffs locked onto his seat. You can't eject him." );
 	else
 	{
 	    if ( p_Kidnapped{ pID } == true ) p_Kidnapped{ pID } = false;
+	    if ( p_Detained{ pID } == true ) p_Detained{ pID } = false;
 	    RemovePlayerFromVehicle( pID );
 		SyncObject( pID, 0.0, 2.0, 2.0 );
     	GameTextForPlayer( pID, "~r~EJECTED~w~!", 3500, 3 );
@@ -11661,10 +11558,17 @@ CMD:ejectall( playerid, params[ ] )
 		;
 
 		if ( iTargetVehicle == iPlayerVehicle && iTargetSeat >= 1 && iTargetSeat <= 3 ) {
-			iEjectCounter++;
+			// change variables
+		    if ( p_Kidnapped{ i } == true ) p_Kidnapped{ i } = false;
+		    if ( p_Detained{ i } == true ) p_Detained{ i } = false;
+
+		    // remove from vehicle
 			RemovePlayerFromVehicle( i );
 			SyncObject( i, 0.0, 2.0, 2.0 );
 			GameTextForPlayer( i, "~r~EJECTED~w~!", 3500, 3 );
+
+			// increment players ejected
+			iEjectCounter++;
 		}
 	}
 
@@ -12756,7 +12660,7 @@ CMD:me( playerid, params[ ] )
 	else if ( sscanf( params, "s[70]", action ) ) return SendUsage( playerid, "/me [ACTION]" );
 	else
 	{
-		// IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "6*** %s(%d) %s", ReturnPlayerName( playerid ), playerid, action );
+    	Discord_SayFormatted( DISCORD_GENERAL, "** * * * %s(%d) %s **", ReturnPlayerName( playerid ), playerid, action );
 		SendClientMessageToAllFormatted( GetPlayerColor( playerid ), "*** %s(%d) %s", ReturnPlayerName( playerid ), playerid, action );
 	}
 	return 1;
@@ -12995,8 +12899,8 @@ CMD:tie( playerid, params[ ] )
 	/* ** End of Anti Tie Spam ** */
 
 	new victimid = GetClosestPlayer( playerid );
-	new robbery_npcid = GetClosestRobberyNPC( getClosestRobberySafe( playerid ) );
-	printf("You're %f far from the NPC\n", GetDistanceBetweenPlayers( playerid, robbery_npcid ) );
+	/*new robbery_npcid = GetClosestRobberyNPC( getClosestRobberySafe( playerid ) );
+	printf("You're %f far from the NPC\n", GetDistanceBetweenPlayers( playerid, robbery_npcid ) );*/
 
 	//if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/tie [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot tie yourself." );
@@ -16311,6 +16215,10 @@ thread OnPlayerUnbanIP( playerid, irc, address[ ] )
     		AddAdminLogLineFormatted( "%s(%d) has un-banned IP %s", ReturnPlayerName( playerid ), playerid, address );
 	 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} IP %s has been un-banned from the server.", address );
 		}
+		else
+		{
+    		Discord_SayFormatted( DISCORD_GENERAL, "**(UNBANNED)** IP %s has been un-banned from the server.", address );
+		}
 		format( szNormalString, sizeof( szNormalString ), "DELETE FROM `BANS` WHERE `IP` = '%s'", mysql_escape( address ) );
 		mysql_single_query( szNormalString );
 	}
@@ -16346,11 +16254,11 @@ thread OnPlayerUnbanPlayer( playerid, irc, player[ ] )
 	if ( rows )
 	{
    	 	if ( !irc ) AddAdminLogLineFormatted( "%s(%d) has un-banned %s", ReturnPlayerName( playerid ), playerid, player );
-		/*else
+		else
 		{
-			format(szNormalString, sizeof(szNormalString),"(UNBANNED) %s has been un-banned from the server.", player);
-			IRC_GroupSay(gGroupID, IRC_CHANNEL, szNormalString);
-		}*/
+			format(szNormalString, sizeof(szNormalString),"**(UNBANNED)** %s has been un-banned from the server.", player);
+    		Discord_Say( DISCORD_GENERAL, szNormalString );
+		}
 		format(szNormalString, sizeof(szNormalString), "DELETE FROM `BANS` WHERE `NAME` = '%s'", mysql_escape( player ) );
 		mysql_single_query( szNormalString );
 
@@ -16610,6 +16518,34 @@ CMD:hadminsell( playerid, params[ ] )
 }
 
 /* Level 6 */
+CMD:reloaddiscord( playerid, params[ ] )
+{
+	socket_stop_listen(discordListener);
+	socket_destroy(discordListener);
+	socket_destroy(discord);
+
+	if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
+		socket_connect(discord, "127.0.0.1", 8000);
+		print( "Discord TCP has successfully connected!" );
+	}
+
+	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
+		socket_set_max_connections(discordListener, 10);
+		socket_bind(discordListener, "127.0.0.1");
+		socket_listen(discordListener, 3939);
+		print( "Discord listener has successfully started listening!" );
+	}
+
+	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );
+	return 1;
+}
+CMD:reloadeditor( playerid, params[ ] )
+{
+	SetServerRule( "reloadfs", "objecteditor" );
+	SendClientMessage( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have successfully reloaded the object editor." );
+	return 1;
+}
+
 CMD:createentrance( playerid, params[ ] )
 {
     new
@@ -16761,26 +16697,6 @@ CMD:broadcast( playerid, params[ ] )
 	}
 	return 1;
 }
-
-/*CMD:setirc( playerid, params[ ] )
-{
-	new
-		szRank[ 4 ],
-		szUser[ 32 ],
-		botid = gBotID[ random( sizeof( gBotID ) ) ]
-	;
-
-	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, "s[4]s[32]", szRank, szUser ) ) return SendUsage( playerid, "/setirc [RANK] [NAME]");
-	//else if ( IRC_IsUserOnChannel( botid, IRC_CHANNEL, szUser ) ) return SendError( playerid, "This user is not connected!" );
-	else
-	{
-		format( szNormalString, sizeof( szNormalString ), "cs access #sf-cnr set %s %s", szUser, szRank );
-		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You've queried "COL_GREY"%s"COL_WHITE"!", szNormalString );
-    	IRC_SendRaw( botid, szNormalString );
-	}
-	return 1;
-}*/
 
 CMD:seteventhost( playerid, params[ ] )
 {
@@ -17152,20 +17068,6 @@ CMD:vipbonus( playerid, params[ ] )
     }
 	return 1;
 }
-
-/*CMD:ircnotworking( playerid, params[ ] ) {
-	if ( !IsPlayerAdmin( playerid ) )
-		return 0;
-
- 	gBotID[ 0 ] = IRC_Connect( IRC_SERVER, IRC_PORT, BOT_1_NICKNAME, BOT_1_REALNAME, BOT_1_USERNAME );
-	IRC_SetIntData( gBotID[ 0 ], E_IRC_CONNECT_DELAY, 20 );
-	gBotID[ 1 ] = IRC_Connect( IRC_SERVER, IRC_PORT, BOT_2_NICKNAME, BOT_2_REALNAME, BOT_2_USERNAME );
-	IRC_SetIntData( gBotID[ 0 ], E_IRC_CONNECT_DELAY, 30 );
-	gGroupID = IRC_CreateGroup( );
-
-	SendServerMessage( playerid, "Trying now." );
-	return 1;
-}*/
 
 CMD:blockip( playerid, params[ ] )
 {
@@ -17564,10 +17466,16 @@ CMD:kickall( playerid, params[ ] )
 
 /* End of admin commands */
 
+#define DISCORD_LEVEL_VOICE 1
+#define DISCORD_LEVEL_VIP 	2
+#define DISCORD_LEVEL_MOD 3
+#define DISCORD_LEVEL_ADMIN 4
+#define DISCORD_LEVEL_SUPER 4
+
 /* ** IRC ** */
-/*IRCCMD:lastlogged(botid, channel[], user[], host[], params[])
+DQCMD:lastlogged( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		static
 		    player[ MAX_PLAYER_NAME ]
@@ -17577,16 +17485,16 @@ CMD:kickall( playerid, params[ ] )
 		else
 		{
 			format( szNormalString, sizeof( szNormalString ), "SELECT `LASTLOGGED` FROM `USERS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( player ) );
-	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerLastLogged", "iis", botid, 1, player );
+	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerLastLogged", "iis", INVALID_PLAYER_ID, 1, player );
 		}
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
 }
 
-IRCCMD:weeklytime(botid, channel[], user[], host[], params[])
+DQCMD:weeklytime( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		static
 		    player[ MAX_PLAYER_NAME ]
@@ -17596,56 +17504,53 @@ IRCCMD:weeklytime(botid, channel[], user[], host[], params[])
 		else
 		{
 			format( szNormalString, sizeof( szNormalString ), "SELECT `UPTIME`,`WEEKEND_UPTIME` FROM `USERS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( player ) );
-	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerWeeklyTime", "iis", botid, 1, player );
+	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerWeeklyTime", "iis", INVALID_PLAYER_ID, 1, player );
 		}
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
 }
 
-IRCCMD:idof(botid, channel[], user[], host[], params[])
+DQCMD:idof( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		new pID;
 		if ( sscanf( params, ""#sscanf_u"", pID ) ) return 0;
-		if ( !IsPlayerConnected( pID ) ) return 0;
-		format( szNormalString, sizeof( szNormalString ),"3ID OF '%s': %d", ReturnPlayerName( pID ), pID );
-		IRC_GroupSay( gGroupID, IRC_CHANNEL, szNormalString );
+		if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return 0;
+		format( szNormalString, sizeof( szNormalString ), "**In-game ID of %s:** %d", ReturnPlayerName( pID ), pID );
+		Discord_Say( DISCORD_GENERAL, szNormalString );
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
 }
 
-IRCCMD:say(botid, channel[], user[], host[], params[])
+DQCMD:say( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		new
-			szAntispam[ 64 ],
-			szMode[ 2 ]
-		;
-		IRC_GetUserChannelMode( botid, channel, user, szMode );
+			szAntispam[ 64 ];
 
 		if ( !isnull( params ) && !textContainsIP( params ) )
 		{
 			format( szAntispam, 64, "!say_%s", user );
 			if ( GetGVarInt( szAntispam ) < g_iTime )
 			{
-				if ( !IRC_IsOp( botid, channel, user ) ) SetGVarInt( szAntispam, g_iTime + 2 );
-				SendClientMessageToAllFormatted(-1, "{00CD45}(IRC) {4DFF88}%s{00CD45}%s:{FFFFFF} %s", szMode, user, params );
-				IRC_GroupSayFormatted( gGroupID, IRC_CHANNEL, "(IRC) %s%s: %s", szMode, user, params );
+				if ( level > DISCORD_LEVEL_ADMIN ) SetGVarInt( szAntispam, g_iTime + 2 );
+				SendClientMessageToAllFormatted(-1, "{4DFF88}(Discord %s) {00CD45}%s:{FFFFFF} %s", discordLevelToString( level ), user, params );
+				Discord_SayFormatted( DISCORD_GENERAL, "**(Discord %s) %s:** %s", discordLevelToString( level ), user, params );
 			}
-			else IRC_GroupSay( gGroupID, user,"You must wait 2 seconds before speaking again." );
+			else Discord_Say( userID,"You must wait 2 seconds before speaking again." );
 		}
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
 }
 
-IRCCMD:players(botid, channel[], user[], host[], params[])
+DQCMD:players( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		new
 			iPlayers = Iter_Count(Player);
@@ -17660,15 +17565,15 @@ IRCCMD:players(botid, channel[], user[], host[], params[])
 			}
 		}
 		format( szLargeString, sizeof( szLargeString ), "%sThere are %d player(s) online.", szLargeString, iPlayers );
-		IRC_GroupSay( gGroupID, IRC_CHANNEL, szLargeString );
+		Discord_Say( DISCORD_GENERAL, szLargeString );
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
 }
 
-IRCCMD:admins(botid, channel[], user[], host[], params[])
+DQCMD:admins( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsVoice(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_VOICE )
 	{
 		new count = 0;
 		szBigString[ 0 ] = '\0';
@@ -17681,88 +17586,88 @@ IRCCMD:admins(botid, channel[], user[], host[], params[])
 		}
 
 		format( szBigString, sizeof( szBigString ), "%sThere are %d admin(s) online.", szBigString, count );
-		IRC_GroupSay( gGroupID, IRC_CHANNEL, szBigString );
+		Discord_Say( DISCORD_GENERAL, szBigString );
 	}
-	else IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This command requires voice (+v)." );
+	else Discord_Say( userID, "**Error:** This command requires voice." );
 	return 1;
-}*/
+}
 
-/* HALF OP
-IRCCMD:acmds(botid, channel[], user[], host[], params[])
+/* HALF OP */
+DQCMD:acmds( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsHalfop(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
- 		IRC_Notice( gGroupID, user,"HALF-OP: !akick, !aban, !asuspend, !awarn, !ajail, !agetip, !a(un)mute" );
- 		IRC_Notice( gGroupID, user,"OP: !aunban, !aunbanip, !amegaban" );
+ 		Discord_Say( userID, "__**Mod:**__ !kick, !ban, !suspend, !warn, !jail, !getip, !(un)mute\n"\
+ 							 "__**Admin:**__ !unban, !unbanip, !megaban" );
 	}
 	return 1;
 }
 
-IRCCMD:akick(botid, channel[], user[], host[], params[])
+DQCMD:kick( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsHalfop(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !kick [PLAYER_ID] [REASON]" );
+		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return Discord_Say( userID, "**Usage:** !kick [PLAYER_ID] [REASON]" );
 		if (IsPlayerConnected(pID))
 		{
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
 		    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s(%d) has been kicked by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName(pID), pID, user, reason);
 			KickPlayerTimed(pID);
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-IRCCMD:aban(botid, channel[], user[], host[], params[])
+DQCMD:ban( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !ban [PLAYER_ID] [REASON]" );
+		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return Discord_Say( userID, "**Usage:** !ban [PLAYER_ID] [REASON]" );
 		if (IsPlayerConnected(pID))
 		{
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
 		    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
 			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ) );
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-IRCCMD:asuspend(botid, channel[], user[], host[], params[])
+DQCMD:suspend( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID, reason[50], hours, days;
-		if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
-		if ( hours < 0 || hours > 24 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Please specify an hour between 0 and 24." );
-		if ( days < 0 || days > 60 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Please specifiy the amount of days between 0 and 60." );
-		if ( days == 0 && hours == 0 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Invalid time specified." );
+		if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) return Discord_Say( userID, "**Usage:** !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
+		if ( hours < 0 || hours > 24 ) return Discord_Say( userID, "**Command Error:** Please specify an hour between 0 and 24." );
+		if ( days < 0 || days > 60 ) return Discord_Say( userID, "**Command Error:** Please specifiy the amount of days between 0 and 60." );
+		if ( days == 0 && hours == 0 ) return Discord_Say( userID, "**Command Error:** Invalid time specified." );
 		if ( IsPlayerConnected( pID ) )
 		{
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d) has been suspended for %d hour(s) and %d day(s).", ReturnPlayerName( pID ), pID, hours, days );
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been suspended for %d hour(s) and %d day(s).", ReturnPlayerName( pID ), pID, hours, days );
 			SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has suspended %s(%d) for %d hour(s) and %d day(s) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, hours, days, reason );
 			new time = g_iTime + ( hours * 3600 ) + ( days * 86400 );
 			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ), time );
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-IRCCMD:awarn(botid, channel[], user[], host[], params[])
+DQCMD:warn( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID, reason[50];
-		if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return Discord_Say( userID, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
 	    	p_Warns[ pID ] ++;
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d) has been warned [%d/3].", ReturnPlayerName( pID ), pID, p_Warns[ pID ] );
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been warned [%d/3].", ReturnPlayerName( pID ), pID, p_Warns[ pID ] );
         	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has been warned by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, user, reason );
 
 			if ( p_Warns[ pID ] >= 3 )
@@ -17773,39 +17678,39 @@ IRCCMD:awarn(botid, channel[], user[], host[], params[])
 		        return 1;
 		    }
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-IRCCMD:ajail(botid, channel[], user[], host[], params[])
+DQCMD:jail( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID, reason[50], Seconds;
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, Seconds, reason ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !jail [PLAYER_ID] [SECONDS] [REASON]" );
-		if ( Seconds > 20000 || Seconds < 1 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 You're misleading the seconds limit! ( 0 - 20000 )");
+		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, Seconds, reason ) ) return Discord_Say( userID, "**Usage:** !jail [PLAYER_ID] [SECONDS] [REASON]" );
+		if ( Seconds > 20000 || Seconds < 1 ) return Discord_Say( userID, "**Command Error:** You're misleading the seconds limit! ( 0 - 20000 )");
 		if ( IsPlayerConnected( pID ) )
 		{
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d) has been jailed for %d seconds.", ReturnPlayerName( pID ), pID, Seconds );
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been jailed for %d seconds.", ReturnPlayerName( pID ), pID, Seconds );
 	    	SendGlobalMessage( -1, ""COL_GOLD"[IRC JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, user, reason );
         	JailPlayer( pID, Seconds, 1 );
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-IRCCMD:amute(botid, channel[], user[], host[], params[])
+DQCMD:mute( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 	    new pID, seconds, reason[ 32 ];
 
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !amute [PLAYER_ID] [SECONDS] [REASON]");
-	    else if ( !IsPlayerConnected( pID ) ) IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Invalid Player ID.");
-		else if ( p_AdminLevel[ pID ] > 4 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 No sexy head admin targetting!");
-	    else if ( seconds < 0 || seconds > 10000000 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Specify the amount of seconds from 1 - 10000000." );
+		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return Discord_Say( userID, "**Usage:** !amute [PLAYER_ID] [SECONDS] [REASON]");
+	    else if ( !IsPlayerConnected( pID ) ) Discord_Say( userID, "**Command Error:** Invalid Player ID.");
+		else if ( p_AdminLevel[ pID ] > 4 ) return Discord_Say( userID, "**Command Error:** No sexy head admin targetting!");
+	    else if ( seconds < 0 || seconds > 10000000 ) return Discord_Say( userID, "**Command Error:** Specify the amount of seconds from 1 - 10000000." );
 	    else
 		{
 	        SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has been muted by %s for %d seconds "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), user, seconds, reason );
@@ -17817,14 +17722,14 @@ IRCCMD:amute(botid, channel[], user[], host[], params[])
 	return 1;
 }
 
-IRCCMD:aunmute(botid, channel[], user[], host[], params[])
+DQCMD:unmute( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
     	new pID;
-	    if ( sscanf( params, ""#sscanf_u"", pID )) return IRC_Notice( gGroupID, user,"/mute [PLAYER_ID]");
-	    else if ( !IsPlayerConnected( pID ) ) return IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 Invalid Player ID");
-	    else if ( !p_Muted{ pID } ) return IRC_Notice( gGroupID, user, "4COMMAND ERROR:1 This player isn't muted" );
+	    if ( sscanf( params, ""#sscanf_u"", pID )) return Discord_Say( userID, "/mute [PLAYER_ID]");
+	    else if ( !IsPlayerConnected( pID ) ) return Discord_Say( userID,  "**Command Error:** Invalid Player ID");
+	    else if ( !p_Muted{ pID } ) return Discord_Say( userID,  "**Command Error:** This player isn't muted" );
 	    else
 		{
 	        SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has been un-muted by %s.", ReturnPlayerName(pID), user);
@@ -17836,27 +17741,26 @@ IRCCMD:aunmute(botid, channel[], user[], host[], params[])
     return 1;
 }
 
-
-IRCCMD:agetip(botid, channel[], user[], host[], params[])
+DQCMD:getip( userID[ ], user[ ], level, params[ ] )
 {
-	if ( IRC_IsHalfop( botid, channel, user ) )
+	if ( level >= DISCORD_LEVEL_MOD )
 	{
 		new pID;
-		if ( sscanf( params, ""#sscanf_u"", pID ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, ""#sscanf_u"", pID ) ) return Discord_Say( userID, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
-			if ( p_AdminLevel[ pID ] > 4 ) return IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 No sexy head admin targetting!");
-			IRC_NoticeFormatted( gGroupID, user, "3COMMAND SUCCESS1 %s(%d)'s IP is 14%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
+			if ( p_AdminLevel[ pID ] > 4 ) return Discord_Say( userID, "**Command Error:** No sexy head admin targetting!");
+			Discord_SayFormatted( userID, "**Command Success:** %s(%d)'s IP is 14%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
 		}
-		else IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
-}*/
+}
 
-/* OP
-IRCCMD:akickall(botid, channel[], user[], host[], params[])
+/* OP */
+DQCMD:akickall( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsOwner(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_SUPER )
 	{
 		SendClientMessageToAll( -1, ""COL_PINK"[ADMIN]"COL_WHITE" Everyone has been kicked from the server due to a server update." );
 		for( new i, g = GetMaxPlayers( ); i < g; i++ )
@@ -17866,20 +17770,20 @@ IRCCMD:akickall(botid, channel[], user[], host[], params[])
 		        Kick( i );
 		    }
 		}
-		IRC_Notice( gGroupID, user,"3COMMAND SUCCESS1 All users have been kicked from the server." );
+		Discord_Say( userID, "**Command Success:** All users have been kicked from the server." );
 	}
 	return 1;
 }
 
-IRCCMD:amegaban(botid, channel[], user[], host[], params[])
+DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
 {
     new
 	    pID,
 		reason[ 50 ]
 	;
-	if (!IRC_IsOp(botid, channel, user)) return 0;
-	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[50]", pID, reason ) ) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !amegaban [PLAYER_ID] [REASON]" );
-	else if ( !IsPlayerConnected( pID ) ) IRC_Notice( gGroupID, user,"4COMMAND ERROR:1 Player is not connected!" );
+	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
+	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[50]", pID, reason ) ) return Discord_Say( userID, "**Usage:** !amegaban [PLAYER_ID] [REASON]" );
+	else if ( !IsPlayerConnected( pID ) ) Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	else
 	{
 	    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has mega-banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
@@ -17888,57 +17792,55 @@ IRCCMD:amegaban(botid, channel[], user[], host[], params[])
 	return 1;
 }
 
-IRCCMD:aunban(botid, channel[], user[], host[], params[])
+DQCMD:aunban( userID[ ], user[ ], level, params[ ] )
 {
 	new
 		player[24],
 		Query[70]
 	;
 
-	if (!IRC_IsOp(botid, channel, user)) return 0;
-	else if (sscanf(params, "s[24]", player)) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !unban [PLAYER]" );
+	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
+	else if (sscanf(params, "s[24]", player)) return Discord_Say( userID, "**Usage:** !unban [PLAYER]" );
 	else
 	{
 		format( Query, sizeof( Query ), "SELECT `NAME` FROM `BANS` WHERE `NAME` = '%s'", mysql_escape( player ) );
-		mysql_function_query( dbHandle, Query, true, "OnPlayerUnbanPlayer", "dds", botid, 1, player );
+		mysql_function_query( dbHandle, Query, true, "OnPlayerUnbanPlayer", "dds", INVALID_PLAYER_ID, 1, player );
 	}
 	return 1;
 }
 
-IRCCMD:aunbanip(botid, channel[], user[], host[], params[])
+DQCMD:aunbanip( userID[ ], user[ ], level, params[ ] )
 {
 	new
 		address[16],
 		Query[70]
 	;
 
-	if (!IRC_IsOp(botid, channel, user)) return 0;
-	else if (sscanf(params, "s[16]", address)) return IRC_Notice( gGroupID, user,"7COMMAND USAGE:1 !unbanip [IP]" );
+	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
+	else if (sscanf(params, "s[16]", address)) return Discord_Say( userID, "**Usage:** !unbanip [IP]" );
 	else
 	{
 		format( Query, sizeof( Query ), "SELECT `IP` FROM `BANS` WHERE `IP` = '%s'", mysql_escape( address ) );
-		mysql_function_query( dbHandle, Query, true, "OnPlayerUnbanIP", "dds", botid, 0, address );
+		mysql_function_query( dbHandle, Query, true, "OnPlayerUnbanIP", "dds", INVALID_PLAYER_ID, 0, address );
 	}
 	return 1;
 }
 
-IRCCMD:rcon(botid, channel[], user[], host[], params[])
+DQCMD:rcon( userID[ ], user[ ], level, params[ ] )
 {
-	if (IRC_IsOwner(botid, channel, user))
+	if ( level >= DISCORD_LEVEL_SUPER )
 	{
 		if (!isnull(params))
 		{
 			if (strcmp(params, "exit", true) != 0)
 			{
-				new msg[128];
-				format(msg, sizeof(msg), "RCON command %s has been executed.", params);
-				IRC_Notice(gGroupID, channel, msg);
-				SendRconCommand(params);
+				Discord_SayFormatted( DISCORD_GENERAL, "RCON command %s has been executed.", params );
+				SendRconCommand( params );
 			}
 		}
 	}
 	return 1;
-}*/
+}
 
 /* ** End of Commands ** */
 
@@ -25052,30 +24954,6 @@ stock SavePlayerData( playerid, bool: logout = false )
 
 stock initializeTextDraws( )
 {
-	g_EasterTD[0] = TextDrawCreate(529.000000, 330.000000, "~r~~h~H~b~~h~a~g~~h~p~p~~h~p~y~~h~y_~r~~h~E~b~~h~a~g~~h~s~p~~h~t~y~~h~e~r~~h~r");
-	TextDrawBackgroundColor(g_EasterTD[0], 255);
-	TextDrawFont(g_EasterTD[0], 3);
-	TextDrawLetterSize(g_EasterTD[0], 0.300000, 1.200000);
-	TextDrawColor(g_EasterTD[0], -1);
-	TextDrawSetOutline(g_EasterTD[0], 1);
-	TextDrawSetProportional(g_EasterTD[0], 1);
-	TextDrawSetSelectable(g_EasterTD[0], 0);
-
-	g_EasterTD[1] = TextDrawCreate(598.000000, 319.000000, "New Textdraw");
-	TextDrawBackgroundColor(g_EasterTD[1], 0);
-	TextDrawFont(g_EasterTD[1], 5);
-	TextDrawLetterSize(g_EasterTD[1], 0.500000, 1.000000);
-	TextDrawColor(g_EasterTD[1], -1);
-	TextDrawSetOutline(g_EasterTD[1], 0);
-	TextDrawSetProportional(g_EasterTD[1], 1);
-	TextDrawSetShadow(g_EasterTD[1], 1);
-	TextDrawUseBox(g_EasterTD[1], 1);
-	TextDrawBoxColor(g_EasterTD[1], 0);
-	TextDrawTextSize(g_EasterTD[1], 31.000000, 34.000000);
-	TextDrawSetPreviewModel(g_EasterTD[1], 19341);
-	TextDrawSetPreviewRot(g_EasterTD[1], -16.000000, 0.000000, -55.000000, 1.000000);
-	TextDrawSetSelectable(g_EasterTD[1], 0);
-
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -25728,15 +25606,15 @@ stock SendGlobalMessage( colour, format[ ], va_args<> )
     va_format( out, sizeof( out ), format, va_start<2> );
 	SendClientMessageToAll( colour, out );
 
-	/*strreplace( out, #COL_LRED, 	"4" );
-	strreplace( out, #COL_ORANGE,	"7" );
-	strreplace( out, #COL_GOLD, 	"8" );
-	strreplace( out, #COL_GREEN, 	"9" );
-	strreplace( out, #COL_BLUE, 	"11" );
-	strreplace( out, #COL_PINK, 	"13" );
-	strreplace( out, #COL_GREY,		"14" );
-	strreplace( out, #COL_WHITE, 	"" );
-	IRC_GroupSay( gGroupID, IRC_CHANNEL, out );*/
+	strreplace( out, #COL_LRED, 	"" );
+	strreplace( out, #COL_ORANGE,	"" );
+	strreplace( out, #COL_GOLD, 	"" );
+	strreplace( out, #COL_GREEN, 	"" );
+	strreplace( out, #COL_BLUE, 	"" );
+	strreplace( out, #COL_PINK, 	"" );
+	strreplace( out, #COL_GREY,		"" );
+	strreplace( out, #COL_WHITE, 	"" );
+	Discord_Say( DISCORD_GENERAL, out );
 	return 1;
 }
 
@@ -28853,6 +28731,7 @@ stock AddAdminLogLine( szMessage[ sizeof( log__Text[ ] ) ] )
 		memcpy( log__Text[ iPos ], log__Text[ iPos + 1 ], 0, sizeof( log__Text[ ] ) * 4 );
 
 	strcpy( log__Text[ 4 ], szMessage );
+	Discord_Say( DISCORD_ADMINISTRATION, szMessage );
 
 	format( szLargeString, 500,	"%s~n~%s~n~%s~n~%s~n~%s", log__Text[ 0 ], log__Text[ 1 ], log__Text[ 2 ], log__Text[ 3 ], log__Text[ 4 ] );
 	return TextDrawSetString( g_AdminLogTD, szLargeString );
@@ -32630,7 +32509,9 @@ stock RollSlotMachine( playerid, id )
 	if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == 10000 )
 	{
 		// 1 in 10000 odds
-		randomChance = random( 10001 );
+		randomChance = random( 50001 );
+
+		printf("random chance %d", randomChance );
 
 		// let's see where they landed
 		switch ( randomChance )
@@ -32640,23 +32521,23 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 1 .. 55:
+			case 1 .. 275:
 				rotation = 40.0;
 
 			// gold bells
-			case 100 .. 210:
+			case 550 .. 1100:
 				rotation = 60.0;
 
 			// cherry
-			case 220 .. 440:
+			case 1101 .. 2201:
 				rotation = 80.0;
 
 			// grapes
-			case 500 .. 1050:
+			case 2750 .. 5500:
 				rotation = 100.0;
 
 			// 69s
-			case 1100 .. 2200:
+			case 5501 .. 11001:
 				rotation = 20.0;
 
 			default:
@@ -32666,7 +32547,7 @@ stock RollSlotMachine( playerid, id )
 	else
 	{
 		// 1 in 35000 odds
-		randomChance = random( 35001 );
+		randomChance = random( 100001 );
 
 		// let's see where they landed
 		switch ( randomChance )
@@ -32676,23 +32557,23 @@ stock RollSlotMachine( playerid, id )
 				rotation = 0.0;
 
 			// single brick
-			case 192 .. 384:
+			case 550 .. 1100:
 				rotation = 40.0;
 
 			// gold bells
-			case 385 .. 770:
+			case 1101 .. 2201:
 				rotation = 60.0;
 
 			// cherry
-			case 771 .. 1541:
+			case 2202 .. 4402:
 				rotation = 80.0;
 
 			// grapes
-			case 1925 .. 3850:
+			case 5500 .. 11000:
 				rotation = 100.0;
 
 			// 69s
-			case 3851 .. 7701:
+			case 11001 .. 22001:
 				rotation = 20.0;
 
 			default:
@@ -34393,7 +34274,7 @@ CMD:verify( playerid, params[ ] )
 		return SendError( playerid, "Your security mode is set to disabled." );
 
 	format( szBigString, 196, "SELECT `CONFIRMED`,UNIX_TIMESTAMP(`DATE`) as `DATE` FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ) );
-	mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "d", playerid );
+	mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "dd", playerid, 0 );
 	return 1;
 }
 
@@ -34423,7 +34304,7 @@ thread OnAccountGuardVerify( playerid )
 	return 1;
 }
 
-thread OnAccountEmailVerify( playerid )
+thread OnAccountEmailVerify( playerid, login_force )
 {
 	new
 	    rows, fields, timestamp;
@@ -34447,6 +34328,10 @@ thread OnAccountEmailVerify( playerid )
 		// assign last time
 		timestamp = cache_get_field_content_int( 0, "DATE", dbHandle );
 	}
+
+	// No point forcing a mild mode user to validate
+	if ( login_force && p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_MILD )
+		return SendError( playerid, "This account is protected by Irresistible Guard. "COL_RED"Please verify your IP through your email to transact in-game." );
 
 	if ( g_iTime - timestamp >= 300 )
 	{
@@ -34509,7 +34394,7 @@ thread OnEmailLoad( playerid )
 
     	// IP Check
 		format( szBigString, 196, "SELECT `CONFIRMED`,UNIX_TIMESTAMP(`DATE`) as `DATE` FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ) );
-		mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "d", playerid );
+		mysql_function_query( dbHandle, szBigString, true, "OnAccountEmailVerify", "dd", playerid, 1 );
     }
 }
 
@@ -34641,4 +34526,77 @@ thread OnAccountGuardDelete( playerid )
 		}
 	}
 	return 1;
+}
+
+/**
+ * Read all incoming UDP data from discord users that fire commands
+ * @return true
+ */
+
+public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
+{
+	printf("len : %d, data: %s, remote client id %d", data_len, data, remote_clientid);
+	if ( id == discordListener )
+	{
+		static
+			szID[ 19 ], szUser[ 24 ], szMessage[ 32 ], iLevel;
+
+		if ( ! sscanf( data, "s[19]s[24]ds[32]", szID, szUser, iLevel, szMessage ) )
+		{
+			if ( szMessage[ 0 ] == '!' )
+			{
+				new
+					functiona[ 32 ], posi = 0;
+
+				while ( szMessage[ ++posi ] > ' ' ) {
+					functiona[ posi - 1 ] = tolower( szMessage[ posi ] );
+				}
+
+				format( functiona, sizeof( functiona ), "discord_%s", functiona );
+
+				while ( szMessage[ posi ] == ' ' ) {
+					posi++;
+				}
+
+				if ( ! szMessage[ posi ] )
+				{
+					CallLocalFunction( functiona, "ssds", szID, szUser, iLevel, "\1" );
+				} else {
+					CallLocalFunction( functiona, "ssds", szID, szUser, iLevel, szMessage[ posi ] );
+				}
+			}
+		}
+	}
+	socket_close_remote_client( id, remote_clientid ); // test
+	return 1;
+}
+
+/**
+ * Sends a message to a channel
+ * @return true
+ */
+stock Discord_Say( channel_id[ ], text[ ] )
+{
+	static
+		buffer[ 256 ];
+
+	format( buffer, sizeof( buffer ), "%s %s\r\n", channel_id, text);
+	return socket_send( discord, buffer, strlen( buffer ) );
+}
+
+stock discordLevelToString( level )
+{
+	static
+		rank[ 12 ];
+
+    switch (level)
+    {
+        case 1: rank = "Voice";
+        case 2: rank = "V.I.P";
+        case 3: rank = "Moderator";
+        case 4: rank = "Admin";
+        case 5: rank = "Super Admin";
+        default: rank = "N/A";
+    }
+    return rank;
 }
