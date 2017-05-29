@@ -9,6 +9,7 @@
  *
  *  Codes:
  *      8hska7082bmahu -> Money Farming Checks
+ *      plugins mysql crashdetect sscanf streamer socket Whirlpool regex gvar FileManager profiler FCNPC
 */
 
 #pragma dynamic 					7200000
@@ -34,6 +35,7 @@
 #include                            < gvar >
 #include                            < lookupffs >
 #include 							< FloodControl >
+#include 							< color >
 #include 							< mailer >
 #include 							< a_weapondata >
 #include 							< MathParser > // has emit
@@ -88,6 +90,7 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerUsingRadio(%0)		(p_UsingRadio{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerOnSlotMachine(%0)	(p_usingSlotMachine[%0]!=-1)
+#define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)
 #define IsPlayerRobbing(%0)			IsPlayerAttachedObjectSlotUsed(%0,0)
 #define IsPlayerAdminJailed(%0) 	(p_AdminJailed{%0}&&p_JailTime[%0])
 #define IsPlayerInMethlab(%0)		(GetPVarInt(%0,"inMethLab")==1&&GetPlayerInterior(%0)==VW_METH)
@@ -120,6 +123,8 @@ native gpci 						( playerid, serial[ ], len );
 #define INVALID_TIMER_ID			(-1)
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
+#define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
+
 
 /* Dynamic Macros */
 #define GetTaxRate()				(GetGVarFloat("taxrate"))
@@ -155,7 +160,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v10.4.20"
+#define FILE_BUILD                	"v10.8.32"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -165,6 +170,7 @@ new bool: False = false, szNormalString[ 144 ];
 
 //#define MAX_WEAPONS                 54
 #define MAX_MACHINES 				35 // Placed top because of textdraws
+#define MAX_ROULETTE_TABLES 		12
 #define MAX_CLASS_BAN_WARNS			3
 #define MAX_CAR_MODS                15
 #define MAX_BURGLARY_SLOTS          8
@@ -455,19 +461,19 @@ const
 #define CP_DROP_OFF_HELI         	( 38 )
 
 /* ** Discord ** */
-#include <socket>
+//#include <socket>
 
 #define DISCORD_GENERAL				"191078670360641536"
 #define DISCORD_ADMINISTRATION		"191133046194438144"
 
-new
+new stock
 	Socket: discordListener,
 	Socket: discord
 ;
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ 49 ] [ 137 ] =
+	g_randomMessages[ 50 ] [ 137 ] =
 	{
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
@@ -517,7 +523,8 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for strong security features!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
-		{ "SLOT_MACHINES" }
+		{ "SLOT_MACHINES" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a Casino and win up to 35x on the money you place on a single number!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -569,6 +576,8 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
+	Text: g_rouletteNumberBG		[ MAX_ROULETTE_TABLES ],
+	Text: g_rouletteNumberTD		[ MAX_ROULETTE_TABLES ],
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -1456,7 +1465,7 @@ enum E_ATM_DATA
 };
 
 new
-	g_atmData						[ 42 ] [ E_ATM_DATA ]
+	g_atmData						[ 46 ] [ E_ATM_DATA ]
 ;
 
 /* ** Invalid Mod Array ** */
@@ -1581,9 +1590,9 @@ new
 	p_MiningOre						[ MAX_PLAYERS char ],
 	bool: p_isMining				[ MAX_PLAYERS char ],
 
-	g_orePrices						[ ] = { 450, 600, 400, 1800, 2000, 2500, 3000, 1450, 1500, 800 },
+	g_orePrices                		[ ] = { 675, 900, 600, 2750, 3000, 3500, 4000, 2200, 2300, 1200 },
 	g_oreMiningTime					[ ] = { 250, 350, 200, 0850, 0900, 0950, 1000, 0800, 0820, 500 },
-	g_oreQuanities					[ ] = { 8, 8, 8, 8, 4, 3, 2, 4, 4, 6 },
+	g_oreQuanities					[ ] = { 8, 8, 8, 8, 5, 3, 3, 5, 5, 6 },
 
 	// Iterator
 	Iterator:miningrock<MAX_ROCKS>
@@ -2150,7 +2159,7 @@ new
 #define MENU_PISTOLS				( 3 )
 #define MENU_RIFLES					( 4 )
 #define MENU_SHOTGUNS				( 5 )
-#define MENU_SMG					( 6 )
+#define MENU_THROWN					( 6 )
 
 enum E_WEAPONS_DATA
 {
@@ -2162,7 +2171,7 @@ new
 	g_AmmunitionCategory[ ] [ ] =
 	{
 		{ "Assault" },  { "Melee" }, { "Submachine Guns" }, { "Pistols" },
-		{ "Rifles" }, { "Shotguns" }
+		{ "Rifles" }, { "Shotguns" }, { "Thrown" }
 	},
 	g_AmmunationWeapons[ ][ E_WEAPONS_DATA ] =
 	{
@@ -2194,7 +2203,11 @@ new
 		{ MENU_ASSAULT,		"M4", 				31,		100,	1000 },
 
 		{ MENU_RIFLES,		"Rifle", 			33,		100, 	300  },
-		{ MENU_RIFLES,		"Sniper", 			34,		75, 	1000 }
+		{ MENU_RIFLES,		"Sniper", 			34,		75, 	1000 },
+
+		{ MENU_THROWN, 		"Teargas",			17,		5,		500 },
+		{ MENU_THROWN, 		"Grenade",			16,		1,		1200 },
+		{ MENU_THROWN, 		"Molotov Cocktail",	18,		4,		1400 }
 	},
  	p_AmmunationMenu               [ MAX_PLAYERS char ]
 ;
@@ -2652,7 +2665,9 @@ new
 		{ -1497.1375, 914.6858, 7.18750, 0xFFFF, "{FFFFFF}All civilians should bank their money, for their own protection and to save some money from tax!" }, 						// Bank
 		{ -2450.2261, 752.2170, 35.1719, 0xFFFF, "{FFFFFF}Buy materials that can help you complete missions such as meth production, or buy other neccessary items!" }, 			// Supa
 		{ -1589.4668, 115.8173, 3.54950, 0xFFFF, "{FFFFFF}Dirty Mechanics can export vehicles and receive money based on the material that can be taken from a vehicle!" },	 		// Car Jacker
-		{ -2767.3765, 1257.077, 11.7703, 0xFFFF, "{FFFFFF}You can mine ores and store your ores in dunes for exportation! Use the /ore command to see its usage!" }					// Mining
+		{ -2767.3765, 1257.077, 11.7703, 0xFFFF, "{FFFFFF}You can mine ores and store your ores in dunes for exportation! Use the /ore command to see its usage!" },				// Mining
+		{ 1954.71890, 1038.251, 992.859, 0xFFFF, "{FFFFFF}Test your luck on the slot machines, maybe you might win the mega jackpot!" },											// Slots
+		{ 1955.69070, 1005.167, 992.468, 0xFFFF, "{FFFFFF}Roulette can payout up to $3.5M! Single bets return 35x your money whereas outside bets can return 2x to 3x!" }			// Roulette
 	}
 ;
 
@@ -2953,6 +2968,152 @@ new
 	p_accountSecurityData		[ MAX_PLAYERS ] [ E_IRRESISTIBLE_GUARD ]
 ;
 
+/* ** Roulette ** */
+enum E_ROULETTE_OFFSET_DATA
+{
+	E_VALUE, Float: E_OFFSET, Float: E_ANGLE
+};
+
+new
+	Float: g_rouletteOffsets[ ] [ E_ROULETTE_OFFSET_DATA ] = {
+
+		{ 0, 0.6, 85.0 }, // 0
+
+		// 1, 2, 3
+		{ 1, 0.50, 110.0 }, { 2, 0.44, 85.0 }, { 3, 0.55, 55.0 },
+
+		// 4, 5, 6
+		{ 4, 0.31, 120.0 }, { 5, 0.3, 75.0 }, { 6, 0.43, 40.0 },
+
+		// 7, 8, 9
+		{ 7, 0.20, 147.0 }, { 8, 0.13, 55.0 }, { 9, 0.32, 18.0 },
+
+		// 10, 11, 12
+		{ 10, 0.17, 195.0 }, { 11, 0.08, -25.0 }, { 12, 0.32, -10.0 },
+
+		// 13, 14, 15
+		{ 13, 0.25, 230.0 }, { 14, 0.22, -70.0 }, { 15, 0.38, -33.0 },
+
+		// 16, 17, 18
+		{ 16, 0.39, 244.0 }, { 17, -0.35, 103.0 }, { 18, 0.48, -48.0 },
+
+		// 19, 20, 21
+		{ 19, 0.53, 251.0 }, { 20, 0.51, 278.0 }, { 21, 0.6, -58.0 },
+
+		// 22, 23, 24
+		{ 22, 0.68, 256.0 }, { 23, 0.66, 276.0 }, { 24, 0.73, 295.0 },
+
+		// 25, 26, 27
+		{ 25, 0.82, 259.0 }, { 26, 0.81, 275.0 }, { 27, 0.87, 292.0 },
+
+		// 28, 29, 30
+		{ 28, 0.97, 261.0 }, { 29, 0.96, 275.0 }, { 30, 1.01, 289.0 },
+
+		// 31, 32, 33
+		{ 31, 1.12, 264.0 }, { 32, 1.12, 274.0 }, { 33, 1.17, 286.0 },
+
+		// 34, 35, 36
+		{ 34, 1.28, 264.0 }, { 35, 1.27, 274.0 }, { 36, 1.31, 284.0 },
+
+		// 3to1, 3to1, 3to1
+		{ 3211, 1.43, 264.0 }, { 3212, 1.42, 273.0 }, { 3213, 1.45, 283.0 },
+
+		// 1-18, even, 1st to 12
+		{ 118, 0.73, 152.0 },{ 222, 0.65, 178.0 }, { 112, 0.46, 153.0 },
+
+		// red, black, 2nd 12
+		{ 88, 0.7, 202.0 }, { 44, 0.87, 222.0 }, { 212, 0.59, 227.0 },
+
+		// odd, 19 to 36, 3rd 12
+		{ 333, 1.09, 233.0 }, { 1936, 1.35, 241.0 },{ 312, 1.12, 249.0 }
+
+	}
+;
+
+enum E_ROULETTE_DATA
+{
+	E_OBJECT, 					E_SPINNER_OBJECT, 				E_SPINNING_TIMER,
+	bool: E_NO_MORE_BETS,
+
+	Float: E_X, 				Float: E_Y, 					Float: E_Z,
+	Float: E_ROTATION
+};
+
+
+new
+	g_rouletteTableData			[ MAX_ROULETTE_TABLES ] [ E_ROULETTE_DATA ],
+	Iterator:roulettetables<MAX_ROULETTE_TABLES>,
+
+	g_rouletteChipColor			[ MAX_PLAYERS ],
+	g_rouletteChip				[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
+	g_rouletteChipValue			[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
+	Text3D: g_rouletteChipLabel	[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
+	p_rouletteBetValue			[ MAX_PLAYERS ],
+
+	p_RouletteMarkerTimer 		[ MAX_PLAYERS ] = { -1, ... },
+	p_RouletteMarker 			[ MAX_PLAYERS ] = { -1, ... },
+	p_RouletteTable 			[ MAX_PLAYERS ] = { -1, ... },
+	p_RouletteMarkerColumn 		[ MAX_PLAYERS char ],
+	bool: p_rouletteBetLocked 	[ MAX_PLAYERS char ]
+;
+
+/* ** Feature Boost ** */
+#define MAX_CONTRACTS 						( 14 )
+#define INVALID_CONTRACT_ID 				( 0 )
+
+#define CONTRACT_ROB_STORES					( 1 )
+#define CONTRACT_FIRES						( 2 )
+#define CONTRACT_WOOD_CUTTING				( 3 )
+#define CONTRACT_BLOW_UP					( 4 )
+#define CONTRACT_BURGLAR					( 5 )
+#define CONTRACT_MINING						( 6 )
+#define CONTRACT_METH						( 7 )
+#define CONTRACT_ROB_SECURITY				( 8 )
+#define CONTRACT_ROB_BANK					( 9 )
+#define CONTRACT_EXPORT_CARS				( 10 )
+#define CONTRACT_ROB_ATMS					( 11 )
+#define CONTRACT_TRUCKING 					( 12 )
+#define CONTRACT_SLOT_MACHINES				( 13 )
+
+enum E_CONTRACT_DATA
+{
+	E_ID,
+	E_COST,						E_REQUIRED_POINTS,			E_REQUIRED_INTERVAL,
+	Float: E_PAYOUT,
+
+	E_CONTRACT_NAME[ 24 ],		E_DESCRIPTION[ 64 ]
+};
+
+new stock
+	g_contractData[ MAX_CONTRACTS ] [ E_CONTRACT_DATA ] =
+	{
+		{ CONTRACT_ROB_STORES,		10000, 10, 10, 1.0, 	"Store Robbery Frenzy",		"Rob %d stores" },
+		{ CONTRACT_FIRES,			10000, 10, 10, 1.0, 	"Firebuster",				"Extinguish %d fires" },
+		{ CONTRACT_WOOD_CUTTING,	10000, 10, 10, 1.0, 	"Lumberjack",				"Chop down %d trees" },
+		{ CONTRACT_BLOW_UP,			10000, 10, 10, 1.0, 	"The Terrorist",			"Blow up %d police or bank locations" },
+		{ CONTRACT_BURGLAR, 		10000, 10, 10, 1.0, 	"Ghost",					"Rob %d furniture items" },
+		{ CONTRACT_MINING,			10000, 10, 10, 1.0,		"Miner 69er",				"Mine %d ores" },
+		{ CONTRACT_METH,			10000, 10, 10, 1.0,		"Heisenberg",				"Yield %d meth bags" },
+		{ CONTRACT_ROB_SECURITY,	10000, 10, 10, 1.0, 	"ChuffSec's Coffee Break",	"Rob ChuffSec's security truck %d times" },
+		{ CONTRACT_ROB_BANK,		10000, 10, 10, 1.0,		"The Bank Job",				"Rob %d bank safes" },
+		{ CONTRACT_EXPORT_CARS,		10000, 10, 10, 1.0,		"Grand Theft Auto",			"Export %d vehicles to the shipyard" },
+		{ CONTRACT_ROB_ATMS,		10000, 10, 10, 1.0,		"ATM Frenzy",				"Rob %d ATMs" },
+		{ CONTRACT_TRUCKING,		10000, 10, 10, 1.0,		"Ill Trucker",				"Export %d truck loads on hard" },
+		{ CONTRACT_SLOT_MACHINES,	10000, 10, 10, 1.0,		"Banging7Chances",			"Use a slot machine %d times with 2x chance" }
+	},
+
+	p_ContractSelected[ MAX_PLAYERS char ],
+	p_ContractTimestamp[ MAX_PLAYERS ]
+;
+
+CreateContract( playerid, contractid )
+{
+	if ( 0 < contractid < MAX_CONTRACTS )
+		return;
+
+	p_ContractSelected{ playerid } = contractid;
+}
+
 /* ** Player Data ** */
 new
     bool: p_Spawned    				[ MAX_PLAYERS char ],
@@ -3193,7 +3354,9 @@ new
 	p_AdminCommandPause 			[ MAX_PLAYERS ],
 	p_VipPackageName				[ MAX_PLAYERS ] [ 16 ],
 	p_WeaponKills					[ MAX_PLAYERS ] [ MAX_WEAPONS ],
-	p_ExtraAssetSlots 				[ MAX_PLAYERS char ]
+	p_ExtraAssetSlots 				[ MAX_PLAYERS char ],
+	p_TiedAtTimestamp 				[ MAX_PLAYERS ],
+	bool: p_AutoSpin				[ MAX_PLAYERS char ]
 ;
 
 /* ** Server Data ** */
@@ -3263,6 +3426,9 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical );
 public VendingMachineUsed( playerid, Float: fHealthGiven );
 public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, third_combo );
 public OnPlayerHoldupStore( playerid, clerkid, step );
+public OnRouletteWheelStop( rouletteid, winner );
+public OnSpinRouletteTable( rouletteid, elapsed, steps );
+public OnRouletteMarkerUpdate( playerid );
 
 /* ** Functions ** */
 stock Float: distanceFromSafe( iPlayer, iRobbery, &Float: fDistance = Float: 0x7F800000 )
@@ -3325,9 +3491,13 @@ public OnGameModeInit()
 	    format( g_RadioStations, sizeof( g_RadioStations ), "%s%s\n", g_RadioStations, g_RadioData[ i ] [ E_NAME ] );
 	}
 
-	for( new i = 0; i < sizeof( g_informationPickupsData ); i++ ) {
+	for( new i = 0; i < sizeof( g_informationPickupsData ); i++ )
+	{
 		g_informationPickupsData[ i ] [ E_PICKUP_ID ] = CreateDynamicPickup( 1239, 2, g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ] );
-		CreateDynamicMapIcon( g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ], 37, 0, -1, -1, -1, 50.0 );
+
+		// dont need map icons for interior infos
+		if ( g_informationPickupsData[ i ] [ E_Z ] < 800.0 )
+			CreateDynamicMapIcon( g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ], 37, 0, -1, -1, -1, 50.0 );
 	}
 
 	/* ** Database Configuration ** */
@@ -3346,6 +3516,8 @@ public OnGameModeInit()
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
+	AddServerVariable( "roulette_bets", "0", GLOBAL_VARTYPE_INT );
+	AddServerVariable( "roulette_wins", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 
 	mysql_function_query( dbHandle, "SELECT * FROM `SERVER`", true, "OnLoadServerVariables", "" );
@@ -3442,19 +3614,19 @@ public OnGameModeInit()
 	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
  	/* ** Discord configuration ** */
-	if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
+	/*if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
 		socket_connect(discord, "127.0.0.1", 8000);
 		print( "Discord TCP has successfully connected!" );
 	}
 
 	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
-		socket_set_max_connections(discordListener, 10);
+		socket_set_max_connections(discordListener, 100);
 		socket_bind(discordListener, "127.0.0.1");
 		socket_listen(discordListener, 3939);
 		print( "Discord listener has successfully started listening!" );
 	}
 
-	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );
+	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );*/
 
 	/* ** Robbery Points ** */
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 1", 5000, -1400.84180, 862.85895, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -3611,41 +3783,19 @@ public OnGameModeInit()
 	#endif
 	/* ** Entrances/Exits ** */
 
-	// Create slot machine (the order matters a lot)
-	/*CreateSlotMachine( 2255.193115, 1618.082885, 1006.77026, 180.0000, 100 );
-	CreateSlotMachine( 2255.153076, 1617.552368, 1006.77026, 0.000000, 100 );
-	CreateSlotMachine( 2255.193115, 1614.192504, 1006.77026, 180.0000, 100 );
-	CreateSlotMachine( 2255.153076, 1613.633300, 1006.77026, 0.000000, 100 );
-	CreateSlotMachine( 2255.193115, 1610.141845, 1006.77026, 180.0000, 100 );
-	CreateSlotMachine( 2255.153076, 1609.591918, 1006.77026, 0.000000, 100 );
-	CreateSlotMachine( 2269.235351, 1606.682250, 1006.77026, -90.0000, 100 );
-	CreateSlotMachine( 2269.795898, 1606.652221, 1006.77026, 90.00000, 500 );
-	CreateSlotMachine( 2273.275878, 1606.682250, 1006.77026, -90.0000, 500 );
-	CreateSlotMachine( 2273.847900, 1606.652221, 1006.77026, 90.00000, 500 );
-	CreateSlotMachine( 2220.659667, 1603.931152, 1006.77026, -90.0000, 500 );
-	CreateSlotMachine( 2221.220214, 1603.901123, 1006.77026, 90.00000, 500 );
-	CreateSlotMachine( 2217.008789, 1603.931152, 1006.77026, -90.0000, 500 );
-	CreateSlotMachine( 2217.569091, 1603.901123, 1006.77026, 90.00000, 500 );
-	CreateSlotMachine( 2218.629882, 1614.203125, 1006.77026, 0.000000, 500 );
-	CreateSlotMachine( 2218.659912, 1614.763671, 1006.77026, 180.0000, 1000 );
-	CreateSlotMachine( 2218.629882, 1618.553588, 1006.77026, 0.000000, 1000 );
-	CreateSlotMachine( 2218.659912, 1619.102172, 1006.77026, 180.0000, 1000 );
-	CreateSlotMachine( 2218.659912, 1592.922607, 1006.77026, 180.0000, 1000 );
-	CreateSlotMachine( 2218.629882, 1592.362915, 1006.77026, 0.000000, 1000 );
-	CreateSlotMachine( 2218.659912, 1588.621582, 1006.77026, 180.0000, 1000 );
-	CreateSlotMachine( 2218.629882, 1588.062255, 1006.77026, 0.000000, 1000 );
-	CreateSlotMachine( 1965.084350, 998.3050530, 992.980957, 79.19996, 10000 );
-	CreateSlotMachine( 1964.582641, 998.4484860, 992.980957, -100.900, 10000 );
-	CreateSlotMachine( 1962.408203, 991.8693230, 992.980957, 55.39995, 10000 );
-	CreateSlotMachine( 1961.992065, 992.2153320, 992.980957, -124.800, 10000 );
-	CreateSlotMachine( 1957.448486, 987.6643670, 992.980957, -146.399, 10000 );
-	CreateSlotMachine( 1957.721923, 987.1983640, 992.980957, 33.89999, 10000 );
-	CreateSlotMachine( 1965.099609, 1037.349487, 992.980957, 101.7999, 10000 );
-	CreateSlotMachine( 1964.561279, 1037.281005, 992.980957, -77.6999, 100000 );
-	CreateSlotMachine( 1961.921386, 1043.368896, 992.980957, -56.2999, 100000 );
-	CreateSlotMachine( 1962.391967, 1043.637573, 992.980957, 124.1999, 100000 );
-	CreateSlotMachine( 1957.328613, 1047.975830, 992.980957, -34.5998, 100000 );
-	CreateSlotMachine( 1957.652954, 1048.407348, 992.980957, 145.3997, 100000 );*/
+	// Create roulette machine
+	CreateRouletteTable( 2242.36719, 1589.18750, 1006.22662, -90.0000 );
+	CreateRouletteTable( 2242.36719, 1594.75781, 1006.22662, 90.00000 );
+	CreateRouletteTable( 2230.57031, 1589.18750, 1006.22662, -90.0000 );
+	CreateRouletteTable( 2230.57031, 1594.75781, 1006.22662, 90.00000 );
+	CreateRouletteTable( 2230.57031, 1614.59375, 1006.22662, -90.0000 );
+	CreateRouletteTable( 2230.57031, 1619.65625, 1006.22662, 90.00000 );
+	CreateRouletteTable( 2241.44531, 1614.55469, 1006.22662, -90.0000 );
+	CreateRouletteTable( 2241.44531, 1619.60938, 1006.22662, 90.00000 );
+	CreateRouletteTable( 1963.71094, 1025.69531, 992.507810, 0.000000 );
+	CreateRouletteTable( 1959.39844, 1025.69531, 992.507810, 0.000000 );
+	CreateRouletteTable( 1963.71094, 1010.11719, 992.507810, 0.000000 );
+	CreateRouletteTable( 1959.39844, 1010.11719, 992.507810, 0.000000 );
 
 	// Houses
 	/*CreateEntrance( "[ROOFTOP]", 			-2440.5149, 820.9702, 35.1838, -2438.1204, 819.7362, 65.5078, 			0,   0, false, true ); // Jendral
@@ -4004,18 +4154,18 @@ public OnGameModeInit()
 	CreateNavigation( "Bank",					2442.1279, 2376.0293, 11.5376, CITY_LV ); // 6
 	CreateNavigation( "Autobahn", 				1948.6851, 2068.7463, 11.0610, CITY_LV ); // 7
 	CreateNavigation( "Police Department", 		2288.0063, 2429.8960, 10.8203, CITY_LV ); // 8
-	CreateNavigation( "Caligula's Casino", 		2191.3186, 1677.9497, 11.9736, CITY_LV ); // 9
-	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 10
-	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 11
-	CreateNavigation( "Bike School", 			1168.4342, 1365.5526, 10.8125, CITY_LV ); // 12
+	CreateNavigation( "Four Dragons Casino",	2025.3047, 1008.4356, 10.3846, CITY_LV ); // 8
+	CreateNavigation( "Caligula's Casino", 		2191.3186, 1677.9497, 11.9736, CITY_LV ); // 10
+	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 11
+	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 12
 	CreateNavigation( "Quarry", 				343.09180, 877.98650, 20.4063, CITY_LV ); // 13
 	CreateNavigation( "V.I.P Lounge", 			1966.8428, 1623.2175, 12.8621, CITY_LV ); // 14
-	CreateNavigation( "Pawnshop",				2482.4395, 1326.4077, 10.8203, CITY_LV ); // 16
-	CreateNavigation( "Fort Carson", 			-135.5214, 1148.3502, 19.5938, CITY_LV ); // 17
-	CreateNavigation( "Ammu-Nation F.C.", 		-311.6576, 830.07060, 14.2422, CITY_LV ); // 18
-	CreateNavigation( "Las Payasadas", 			-233.0320, 2700.0896, 62.5391, CITY_LV ); // 19
-	CreateNavigation( "El Quebrados", 			-1491.172, 2603.0425, 55.6897, CITY_LV ); // 20
-	CreateNavigation( "Las Barrancas",          -805.4283, 1539.6168, 26.9609, CITY_LV ); // 21
+	CreateNavigation( "Pawnshop",				2482.4395, 1326.4077, 10.8203, CITY_LV ); // 15
+	CreateNavigation( "Fort Carson", 			-135.5214, 1148.3502, 19.5938, CITY_LV ); // 16
+	CreateNavigation( "Ammu-Nation F.C.", 		-311.6576, 830.07060, 14.2422, CITY_LV ); // 17
+	CreateNavigation( "Las Payasadas", 			-233.0320, 2700.0896, 62.5391, CITY_LV ); // 18
+	CreateNavigation( "El Quebrados", 			-1491.172, 2603.0425, 55.6897, CITY_LV ); // 19
+	CreateNavigation( "Las Barrancas",          -805.4283, 1539.6168, 26.9609, CITY_LV ); // 20
 	#endif
 
 	#if ENABLE_CITY_LS == true
@@ -4098,6 +4248,12 @@ public OnGameModeInit()
 	CreateATM( 1808.732177, -1567.267822, 13.063967, 37.00000, 0.0 ); // 13
 	CreateATM( 2412.541259, -1492.666992, 23.628126, -180.000, 0.0 ); // 14
 	CreateATM( 2431.131347, -1219.477539, 25.022165, 0.000000, 0.0 ); // 15
+
+	// Casinos
+	CreateATM( 1985.135253, 1003.277404, 994.097290, 180.000 ); // 4 Drags
+	CreateATM( 1986.635253, 1032.391113, 994.097290, 0.00000 ); // 4 Drags
+	CreateATM( 2230.132324, 1647.986816, 1007.97900, 90.0000 ); // Caligs
+	CreateATM( 2241.676269, 1649.486816, 1007.97900, -90.000 ); // Caligs
 
 	/* ** Lumberjack ** */
 	CreateLumberjackTree( -2358.10000000, -84.60000000, 34.10000000 );
@@ -4884,9 +5040,9 @@ public OnGameModeExit( )
 	KillTimer( rl_ZoneUpdate );
     for( new t; t != MAX_TEXT_DRAWS; t++ ) TextDrawDestroy( Text: t );
 	//SendRconCommand( "exit" );
-	socket_stop_listen(discordListener);
+	/*socket_stop_listen(discordListener);
 	socket_destroy(discordListener);
-	socket_destroy(discord);
+	socket_destroy(discord);*/
 	return 1;
 }
 
@@ -4973,11 +5129,11 @@ public OnServerUpdate( )
 				UpdateDynamic3DTextLabelText( p_WeedLabel[ playerid ], setAlpha( COLOR_GREEN, floatround( ( float( GetPlayerDrunkLevel( playerid ) ) / 5000.0 ) * 255.0 ) ), "Blazed W33D Recently!" );
 
 			// Not near kidnapper then untie
-			if ( IsPlayerTied( playerid ) && isNotNearPlayer( playerid, p_TiedBy[ playerid ] ) )
+			if ( IsPlayerTied( playerid ) && isNotNearPlayer( playerid, p_TiedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
 				UntiePlayer( playerid );
 
 			// Not near detained player then uncuff
-			if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) )
+			if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
 				Uncuff( playerid );
 
 			// Trucking Trailers
@@ -5672,7 +5828,7 @@ public ZoneTimer( )
 				}
 
 				// Increment Variables Whilst Not AFK
-				if ( !IsPlayerAFK( playerid ) ) // New addition
+				if ( !IsPlayerAFK( playerid ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) ) // New addition
 				{
 					// Increase Time Online
 					p_Uptime[ playerid ]++;
@@ -6036,7 +6192,16 @@ public OnPlayerConnect( playerid )
 	p_FPS 				[ playerid ] = 0;
 	p_UsingRobberySafe	[ playerid ] = -1;
 
+	// reset roullete chips incase
+	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
+		g_rouletteChip[ playerid ] [ i ] = -1;
+		g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
+		g_rouletteChipValue[ playerid ] [ i ] = 0;
+	}
+
+	// reset jails
 	jailDoors( playerid, false, false );
+
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[WARNING]{a9c4e4} The concept in this server and GTA in general may be considered explicit material." );
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version " # FILE_BUILD "." );
 
@@ -6224,6 +6389,7 @@ public OnPlayerDisconnect( playerid, reason )
 	LeavePlayerPaintball( playerid );
 	resetPlayerStreaks( playerid );
 	StopPlayerTruckingCourier( playerid );
+	RemovePlayerFromRoulette( playerid );
 	p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
@@ -7028,7 +7194,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		ShowPlayerHelpDialog( issuerid, 2000, "You should not hurt innocent civilians, you're a ~b~cop~w~~h~!" );
 	}*/
 	if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( issuerid ) )
-	 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
+	 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
 
 	// Heal player (paramedic)
 	if ( p_Class[ issuerid ] == CLASS_MEDIC && weaponid == WEAPON_SPRAYCAN )
@@ -7210,6 +7376,7 @@ public OnPlayerDeath(playerid, killerid, reason)
     StopPlayerUsingSlotMachine( playerid );
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
+    RemovePlayerFromRoulette( playerid );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
@@ -9305,8 +9472,10 @@ CMD:gate( playerid, params[ ] )
 			if ( !strmatch( g_gateData[ g ] [ E_NAME ], "N/A" ) )
 				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GATE]"COL_WHITE" You've opened "COL_GREY"%s"COL_WHITE".", g_gateData[ g ] [ E_NAME ] );
 
-			g_gateData[ g ] [ E_CLOSE_TIMER ] = SetTimerEx( "StartGateClose", floatround( g_gateData[ g ] [ E_SPEED ] * 1000.0 ) + g_gateData[ g ] [ E_TIME ], false, "d", g );
-			MoveDynamicObject( g_gateData[ g ] [ E_OBJECT ], g_gateData[ g ] [ E_MOVE_X ], g_gateData[ g ] [ E_MOVE_Y ], g_gateData[ g ] [ E_MOVE_Z ], g_gateData[ g ] [ E_SPEED ], g_gateData[ g ] [ E_MOVE_RX ], g_gateData[ g ] [ E_MOVE_RY ], g_gateData[ g ] [ E_MOVE_RZ ] );
+			new
+				travelInterval = MoveDynamicObject( g_gateData[ g ] [ E_OBJECT ], g_gateData[ g ] [ E_MOVE_X ], g_gateData[ g ] [ E_MOVE_Y ], g_gateData[ g ] [ E_MOVE_Z ], g_gateData[ g ] [ E_SPEED ], g_gateData[ g ] [ E_MOVE_RX ], g_gateData[ g ] [ E_MOVE_RY ], g_gateData[ g ] [ E_MOVE_RZ ] );
+
+			g_gateData[ g ] [ E_CLOSE_TIMER ] = SetTimerEx( "StartGateClose", travelInterval + g_gateData[ g ] [ E_TIME ], false, "d", g );
 			gates++;
 		}
 		return !gates ? SendError( playerid, "Either a gate is in operation, not in range or simply incorrect password." ) : 1;
@@ -9498,7 +9667,7 @@ CMD:robitems( playerid, params[ ] )
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside the paintball arena." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to rob is using a slot machine." );
+		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rob is in a casino." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
@@ -9681,6 +9850,13 @@ CMD:burglar( playerid, params[ ] )
 		if ( distance > 3.0 ) return SendError( playerid, "You are not close to any furniture." );
 		if ( g_houseFurniture[ GetGVarInt( "fur_f", furnitureID ) ] [ E_CATEGORY ] != FC_ELECTRONIC ) return SendError( playerid, "The furniture you're near is not an electronic." );
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return SendError( playerid, "Your hands are busy at the moment." );
+
+		new
+			houseid = p_InHouse[ playerid ];
+
+		if ( IsPointToPoint( 150.0, g_houseData[ houseid ] [ E_EX ], g_houseData[ houseid ] [ E_EY ], g_houseData[ houseid ] [ E_EZ ], -2480.1426, 5.5302, 25.6172 ) )
+			return SendError( playerid, "This house is prohibited from burglarly features as it is too close to the Pawn Store." );
+
 		SendServerMessage( playerid, "You have stolen a "COL_GREY"%s"COL_WHITE". Store it in a Boxville to transport the item.", g_houseFurniture[ GetGVarInt( "fur_f", furnitureID ) ] [ E_NAME ] );
 		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
 		SetPVarInt( playerid, "stolen_fid", GetGVarInt( "fur_f", furnitureID ) );
@@ -10657,7 +10833,7 @@ CMD:weed( playerid, params[ ] )
 	    		iTaxed = floatround( iCost * 0.8 )
 	    	;
 
-			if ( GetPlayerMoney( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
+			if ( GetPlayerCash( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
 
 			p_WeedDealer[ pID ] = playerid;
 			p_WeedTick[ pID ] = GetTickCount( );
@@ -11066,7 +11242,7 @@ CMD:breakcuff( playerid, params[ ] )
 		if ( p_BobbyPins[ playerid ]-- <= 3 )
 			ShowPlayerHelpDialog( playerid, 2500, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
 
-	    if ( iRandom < 40 )
+	    if ( iRandom < 50 )
 	    	return SendError( playerid, "You snapped the bobby pin and failed to get break out of your cuffs." );
 
 		TogglePlayerControllable( playerid, 1 );
@@ -11840,7 +12016,7 @@ CMD:h( playerid, params[ ] )
 
 					GivePlayerCash( playerid, -( g_houseData[ i ] [ E_COST ] ), .force_save = true );
 					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", ConvertPrice( g_houseData[ i ] [ E_COST ] ) );
-                    SetHouseOwner( i, playerid );
+                    SetHouseOwner( i, ReturnPlayerName( playerid ) );
 
 					p_OwnedHouses[ playerid ] ++;
 					return 1;
@@ -11931,7 +12107,7 @@ CMD:h( playerid, params[ ] )
 			p_OwnedHouses[ playerid ] ++;
 
 		    destroyAllFurniture( houseid );
-			SetHouseOwner( houseid, playerid );
+			SetHouseOwner( houseid, ReturnPlayerName( playerid ) );
 
 			GivePlayerCash( playerid, -sellingprice );
 			GivePlayerCash( sellerid, sellingprice );
@@ -12919,6 +13095,7 @@ CMD:tie( playerid, params[ ] )
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot tie while you're tazed." );
 		if ( IsPlayerTazed( victimid ) ) return SendError( playerid, "The person you're trying to tie is tazed." );
 		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to tie is using a slot machine." );
+		if ( IsPlayerOnRoulette( victimid ) ) return SendError( playerid, "The person you're trying to tie is using roulette." );
 		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "The person you're trying to tie is cuffed." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
@@ -12946,6 +13123,7 @@ CMD:tie( playerid, params[ ] )
 		    format( szNormalString, 48, "Tied by %s!", ReturnPlayerName( playerid ) );
 		    p_TiedLabel[ victimid ] = Create3DTextLabel( szNormalString, 0xDAB583FF, 0.0, 0.0, 0.0, 15.0, 0 );
 		    Attach3DTextLabelToPlayer( p_TiedLabel[ victimid ], victimid, 0.0, 0.0, 0.6 );
+		    p_TiedAtTimestamp[ victimid ] = g_iTime;
 
 			if ( p_Ropes[ victimid ] )
 				ShowPlayerHelpDialog( victimid, 4000, "You can cut your ties with ~p~/cuttie." );
@@ -13289,6 +13467,7 @@ CMD:detain( playerid, params[ ] )
 		p_Detained{ victimid } = true;
 		p_Tazed{ victimid } = false;
 		p_DetainedBy[ victimid ] = playerid;
+		p_TiedAtTimestamp[ victimid ] = g_iTime;
 	    Delete3DTextLabel( p_DetainedLabel[ victimid ] );
 	    p_DetainedLabel[ victimid ] = Create3DTextLabel( "Detained Criminal", COLOR_BLUE, 0.0, 0.0, 0.0, 15.0, 0 );
 	    Attach3DTextLabelToPlayer( p_DetainedLabel[ victimid ], victimid, 0.0, 0.0, 0.6 );
@@ -13300,23 +13479,14 @@ CMD:detain( playerid, params[ ] )
 
 CMD:taze( playerid, params[ ] )
 {
-   	new
-   		victimid = GetClosestPlayer( playerid );
-
-	TazePlayer( playerid, victimid );
-	SendServerMessage( playerid, "You can use your middle mouse button to easily taze individuals that are near to you." );
-	return 1;
-}
-
-stock TazePlayer( playerid, victimid )
-{
 	/* ** ANTI TAZE SPAM ** */
     if ( p_AntiTazeSpam[ playerid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before tazing someone again.", p_AntiTazeSpam[ playerid ] - g_iTime );
     /* ** END OF ANTI SPAM ** */
 
+   	new victimid; // = GetClosestPlayer( playerid );
    	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	// else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
-	// else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
+	else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
+	else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "There are no players around to taze." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
  	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 5.0 && IsPlayerConnected( victimid ) )
@@ -13461,7 +13631,7 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to rape is using a slot machine." );
+		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rape is in a casino." );
 		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
 		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
@@ -15003,16 +15173,34 @@ CMD:geolocate( playerid, params[ ] )
  	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
  	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/geolocate [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	else if ( !IsProxyEnabledForPlayer( pID ) || IsPlayerUnderCover( pID ) ) return SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
+	else if ( !IsProxyEnabledForPlayer( pID ) ) return SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
 	else if ( p_AdminLevel[ pID ] >= 5 || strmatch( ReturnPlayerName( pID ), "Lorenc" ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
  	else
  	{
- 		SendClientMessageFormatted( playerid, COLOR_GOLD, "Geographical Data of %s(%d) - "COL_WHITE" %s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
- 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Country: "COL_WHITE" %s (%s)", GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ) );
- 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Region: "COL_WHITE" %s", GetPlayerCountryRegion( pID ) );
- 		SendClientMessageFormatted( playerid, COLOR_GREY, "> ISP: "COL_WHITE" %s", GetPlayerISP( pID ) );
- 		SendClientMessageFormatted( playerid, COLOR_GREY, "> HOST: "COL_WHITE" %d", GetPlayerHost( pID ) );
- 		SendClientMessageFormatted( playerid, COLOR_GREY, "> PROXY: "COL_WHITE" %s", IsProxyUser( pID ) ? ("Yes") : ("No") );
+ 		if ( IsPlayerUnderCover( pID ) )
+ 		{
+			if ( strmatch( GetPlayerISP( pID ), "AS812 Rogers Cable Communications Inc." ) ) {
+		 		SendClientMessageFormatted( playerid, COLOR_GOLD, "Geographical Data of %s(%d) - "COL_WHITE" %s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
+		 		SendClientMessage( playerid, COLOR_GREY, "> Country: "COL_WHITE" United States (US)" );
+		 		SendClientMessage( playerid, COLOR_GREY, "> Region: "COL_WHITE" undefined" );
+		 		SendClientMessage( playerid, COLOR_GREY, "> ISP: "COL_WHITE" AS14061 Digital Ocean, Inc." );
+		 		SendClientMessageFormatted( playerid, COLOR_GREY, "> HOST: "COL_WHITE" %s", ReturnPlayerIP( pID ) );
+		 		SendClientMessage( playerid, COLOR_GREY, "> PROXY: "COL_WHITE" Yes" );
+			}
+
+			else {
+				SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
+			}
+		}
+		else
+		{
+	 		SendClientMessageFormatted( playerid, COLOR_GOLD, "Geographical Data of %s(%d) - "COL_WHITE" %s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
+	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Country: "COL_WHITE" %s (%s)", GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ) );
+	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Region: "COL_WHITE" %s", GetPlayerCountryRegion( pID ) );
+	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> ISP: "COL_WHITE" %s", GetPlayerISP( pID ) );
+	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> HOST: "COL_WHITE" %d", GetPlayerHost( pID ) );
+	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> PROXY: "COL_WHITE" %s", IsProxyUser( pID ) ? ("Yes") : ("No") );
+ 		}
 	}
 	return 1;
 }
@@ -16518,11 +16706,25 @@ CMD:hadminsell( playerid, params[ ] )
 }
 
 /* Level 6 */
+/*CMD:destroysockets( playerid, params[ ] )
+{
+	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+
+	socket_destroy( discord );
+	socket_stop_listen( discordListener );
+	socket_destroy( discordListener );
+
+	print( "Destroyed all sockets" );
+	return 1;
+}
+
 CMD:reloaddiscord( playerid, params[ ] )
 {
-	socket_stop_listen(discordListener);
-	socket_destroy(discordListener);
-	socket_destroy(discord);
+	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+
+	socket_destroy( discord );
+	socket_stop_listen( discordListener );
+	socket_destroy( discordListener );
 
 	if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
 		socket_connect(discord, "127.0.0.1", 8000);
@@ -16530,7 +16732,7 @@ CMD:reloaddiscord( playerid, params[ ] )
 	}
 
 	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
-		socket_set_max_connections(discordListener, 10);
+		socket_set_max_connections(discordListener, 100);
 		socket_bind(discordListener, "127.0.0.1");
 		socket_listen(discordListener, 3939);
 		print( "Discord listener has successfully started listening!" );
@@ -16538,9 +16740,10 @@ CMD:reloaddiscord( playerid, params[ ] )
 
 	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );
 	return 1;
-}
+}*/
 CMD:reloadeditor( playerid, params[ ] )
 {
+	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	SetServerRule( "reloadfs", "objecteditor" );
 	SendClientMessage( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have successfully reloaded the object editor." );
 	return 1;
@@ -17612,7 +17815,7 @@ DQCMD:kick( userID[ ], user[ ], level, params[ ] )
 		if (IsPlayerConnected(pID))
 		{
 			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
-		    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s(%d) has been kicked by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName(pID), pID, user, reason);
+		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s(%d) has been kicked by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName(pID), pID, user, reason);
 			KickPlayerTimed(pID);
 		}
 		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
@@ -17629,7 +17832,7 @@ DQCMD:ban( userID[ ], user[ ], level, params[ ] )
 		if (IsPlayerConnected(pID))
 		{
 			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
-		    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
+		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
 			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ) );
 		}
 		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
@@ -17649,7 +17852,7 @@ DQCMD:suspend( userID[ ], user[ ], level, params[ ] )
 		if ( IsPlayerConnected( pID ) )
 		{
 			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been suspended for %d hour(s) and %d day(s).", ReturnPlayerName( pID ), pID, hours, days );
-			SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has suspended %s(%d) for %d hour(s) and %d day(s) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, hours, days, reason );
+			SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has suspended %s(%d) for %d hour(s) and %d day(s) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, hours, days, reason );
 			new time = g_iTime + ( hours * 3600 ) + ( days * 86400 );
 			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ), time );
 		}
@@ -17693,7 +17896,7 @@ DQCMD:jail( userID[ ], user[ ], level, params[ ] )
 		if ( IsPlayerConnected( pID ) )
 		{
 			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been jailed for %d seconds.", ReturnPlayerName( pID ), pID, Seconds );
-	    	SendGlobalMessage( -1, ""COL_GOLD"[IRC JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, user, reason );
+	    	SendGlobalMessage( -1, ""COL_GOLD"[DISCORD JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, user, reason );
         	JailPlayer( pID, Seconds, 1 );
 		}
 		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
@@ -17713,7 +17916,7 @@ DQCMD:mute( userID[ ], user[ ], level, params[ ] )
 	    else if ( seconds < 0 || seconds > 10000000 ) return Discord_Say( userID, "**Command Error:** Specify the amount of seconds from 1 - 10000000." );
 	    else
 		{
-	        SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has been muted by %s for %d seconds "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), user, seconds, reason );
+	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been muted by %s for %d seconds "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), user, seconds, reason );
 			GameTextForPlayer( pID, "~r~Muted!", 4000, 4 );
 	        p_Muted{ pID } = true;
 	        p_MutedTime[ pID ] = g_iTime + seconds;
@@ -17732,7 +17935,7 @@ DQCMD:unmute( userID[ ], user[ ], level, params[ ] )
 	    else if ( !p_Muted{ pID } ) return Discord_Say( userID,  "**Command Error:** This player isn't muted" );
 	    else
 		{
-	        SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has been un-muted by %s.", ReturnPlayerName(pID), user);
+	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been un-muted by %s.", ReturnPlayerName(pID), user);
 			GameTextForPlayer( pID, "~g~Un-Muted!", 4000, 4 );
 	        p_Muted{ pID } = false;
 	        p_MutedTime[ pID ] = 0;
@@ -17786,7 +17989,7 @@ DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
 	else if ( !IsPlayerConnected( pID ) ) Discord_Say( userID, "**Command Error:** Player is not connected!" );
 	else
 	{
-	    SendGlobalMessage( -1, ""COL_PINK"[IRC ADMIN]{FFFFFF} %s has mega-banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
+	    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has mega-banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
 		BanPlayerISP( pID );
 	}
 	return 1;
@@ -18640,7 +18843,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			{
 				format( szSmallString, sizeof( szSmallString ), "vburg_%d_%d", vehicleid, i );
 				if ( GetGVarInt( szSmallString ) != 0 )
-				    cashEarned += floatround( g_houseFurniture[ GetGVarInt( szSmallString ) ] [ E_COST ] / 4 ), DeleteGVar( szSmallString );
+				    cashEarned += floatround( g_houseFurniture[ GetGVarInt( szSmallString ) ] [ E_COST ] / 3 ), DeleteGVar( szSmallString );
 			}
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
@@ -18827,6 +19030,10 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 	if ( ! Iter_Contains( CasinoPool, poolid ) )
 		return SendError( playerid, "This machine has an invalid casino pool! (0xFF33)" );
 
+	// autospin
+	if ( p_AutoSpin{ playerid } )
+		TriggerPlayerSlotMachine( playerid, slotid );
+
 	// check combinations
 	printf("%s (%d, %d, %d)", ReturnPlayerName( playerid ), first_combo, second_combo, third_combo);
 	if ( first_combo == second_combo && first_combo == third_combo )
@@ -18851,7 +19058,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 					case 3: iNetWin = 50000;
 
 					// Grapes
-					case 4: iNetWin = 25000;
+					case 4: iNetWin = 20000;
 
 					// 69
 					case 5: iNetWin = 10000;
@@ -19467,85 +19674,305 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	    return 1;
 	}
 
-	// Gambling
-	if ( machineid != -1 )
+	if ( IsPlayerInCasino( playerid ) )
 	{
-		if ( GetDistanceFromPlayerSquared( playerid, g_slotmachineData[ machineid ] [ E_X ], g_slotmachineData[ machineid ] [ E_Y ], g_slotmachineData[ machineid ] [ E_Z ] ) > 4.0 ) // Squared
-			return StopPlayerUsingSlotMachine( playerid );
-
-		if ( PRESSED( KEY_SECONDARY_ATTACK ) )
+		// Roulette
+		if ( p_RouletteMarkerTimer[ playerid ] != -1 )
 		{
-			if ( !g_slotmachineData[ machineid ] [ E_ROLLING ] )
+			new
+				rouletteid = p_RouletteTable[ playerid ];
+
+			if ( ! Iter_Contains( roulettetables, rouletteid ) )
+				return SendServerMessage( playerid, "Invalid Roulette Table." );
+
+			if ( GetDistanceFromPlayerSquared( playerid, g_rouletteTableData[ rouletteid ] [ E_X ], g_rouletteTableData[ rouletteid ] [ E_Y ], g_rouletteTableData[ rouletteid ] [ E_Z ] ) > 16.0 ) // Squared
+				return RemovePlayerFromRoulette( playerid );
+
+			// confirm bet
+			if ( PRESSED( KEY_SPRINT ) )
 			{
+				if ( g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] )
+					return SendError( playerid, "This roulette table must finish its spin before you can bet again." );
+
+				if ( p_rouletteBetLocked{ playerid } )
+					return SendError( playerid, "You have already locked in your bet. Wait for the spin to finish." );
+
 				new
-					entryFee = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ],
-					poolContribute = floatround( float( entryFee ) * 0.6 );
+					totalBet = GetPlayerTotalRouletteBet( playerid );
 
-				if ( GetPlayerCash( playerid ) < entryFee )
-					return SendError( playerid, "You must have at least %s to use this slot machine.", ConvertPrice( entryFee ) );
+				if ( totalBet <= 0 )
+					return SendError( playerid, "You cannot spin the roulette without having placed any bets." );
 
-				// Update casino pool
-				UpdateCasinoPoolData( g_slotmachineData[ machineid ] [ E_POOL_ID ], .pool_increment = poolContribute, .total_win = 0, .total_gambled = entryFee );
+				if ( totalBet > GetPlayerCash( playerid ) )
+					return SendError( playerid, "You do not have enough money to make this bet." );
 
-				// Charge the player
-				RollSlotMachine( playerid, machineid );
-				PlayerPlaySound( playerid, 4202, 0.0, 0.0, 0.0 );
-				ApplyAnimation( playerid, "CASINO", "slot_plyr", 2.0, 0, 1, 1, 0, 0 );
-				GivePlayerCash( playerid, -entryFee );
+				// deduct money
+				GivePlayerCash( playerid, -totalBet );
+
+				// lock the player in
+				p_rouletteBetLocked{ playerid } = true;
+
+				if ( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] == -1 )
+				{
+					// randomize string
+					GenerateRandomRouletteNumber( rouletteid );
+
+					foreach (new i : Player) if ( p_RouletteTable[ i ] == rouletteid )
+					{
+						TextDrawShowForPlayer( i, g_rouletteNumberBG[ rouletteid ] );
+						TextDrawShowForPlayer( i, g_rouletteNumberTD[ rouletteid ] );
+
+						if ( ! p_rouletteBetLocked{ i } ) {
+							SendServerMessage( i, "%s(%d) has waged %s with this spin, press SPACE to join the spin!", ReturnPlayerName( playerid ), playerid, ConvertPrice( totalBet ) );
+						}
+					}
+
+					// allow bets
+					g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
+
+					// fire the spin table
+					g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, 0, 1 );
+
+					// inform other players
+					SendServerMessage( playerid, "You have begun the spin with a wager of %s. Good luck!", ConvertPrice( totalBet ) );
+				}
+				else SendServerMessage( playerid, "You have joined the spin. Good luck!" );
+			}
+			// decrease bet
+			if ( PRESSED( KEY_WALK ) )
+			{
+				if ( ( p_rouletteBetValue[ playerid ] /= 2 ) < 1000 )
+					p_rouletteBetValue[ playerid ] = 1000;
+
+				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
+			}
+
+			// increase bet
+			if ( PRESSED( KEY_JUMP  ) )
+			{
+				if ( ( p_rouletteBetValue[ playerid ] *= 2 ) > 100000 )
+					p_rouletteBetValue[ playerid ] = 100000;
+
+				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
+			}
+
+			// Cancel Bets
+			if ( PRESSED( KEY_CROUCH ) )
+			{
+				if ( p_rouletteBetLocked{ playerid } )
+					return SendError( playerid, "You cannot cancel your bet once you have entered a spin." );
+
+				for ( new column = 0; column < sizeof( g_rouletteOffsets ); column ++ )
+				{
+					g_rouletteChipValue[ playerid ] [ column ] = 0;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
+					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: INVALID_3DTEXT_ID;
+				}
+			}
+
+			// Place bet
+			if ( PRESSED( KEY_FIRE ) || PRESSED( KEY_AIM ) )
+			{
+				if ( p_rouletteBetLocked{ playerid } )
+					return SendError( playerid, "You cannot change your bet once you have entered a spin." );
+
+				new
+					column = p_RouletteMarkerColumn{ playerid };
+
+				new Float: offsetX = g_rouletteTableData[ rouletteid ] [ E_X ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatcos( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
+				new Float: offsetY = g_rouletteTableData[ rouletteid ] [ E_Y ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatsin( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
+
+				if ( PRESSED( KEY_FIRE ) )
+				{
+					new
+						totalBet = GetPlayerTotalRouletteBet( playerid );
+
+					// Check if the player has even money
+					if ( totalBet > GetPlayerCash( playerid ) ) {
+						return SendError( playerid, "You cannot afford to wager any more money!" );
+					}
+
+					// Exceeded The Maximum
+					if ( totalBet + p_rouletteBetValue[ playerid ] > 100000 ) {
+						return SendError( playerid, "You are only allowed to bet a total of $100,000 per spin on this table." );
+					}
+
+					PlayerPlaySound( playerid, 1083, 0.0, 0.0, 5.0 );
+					g_rouletteChipValue[ playerid ] [ column ] += p_rouletteBetValue[ playerid ];
+				}
+				else
+				{
+					PlayerPlaySound( playerid, 1084, 0.0, 0.0, 5.0 );
+					g_rouletteChipValue[ playerid ] [ column ] -= p_rouletteBetValue[ playerid ];
+				}
+
+				//printf("COLUMN : %d", column);
+				if ( g_rouletteChipValue[ playerid ] [ column ] <= 0 )
+				{
+					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: -1;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
+					g_rouletteChipValue[ playerid ] [ column ] = 0;
+					//printf("removed");
+				}
+				else
+				{
+					// Calculate chip height
+					new
+						Float: height = 0.295 - float( g_rouletteChipValue[ playerid ] [ column ] / 1000 ) * 0.005;
+
+					if ( height < 0.18 )
+						height = 0.18;
+
+					//printf("g_rouletteChip[%s][%d] = %d", ReturnPlayerName( playerid ), column, g_rouletteChip[ playerid ] [ column ] );
+					if ( g_rouletteChip[ playerid ] [ column ] == -1 )
+					{
+						g_rouletteChip[ playerid ] [ column ] = CreateDynamicObject( 1902, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height, 0.00000, 0.00000, 0.0 ); // 2992
+						SetDynamicObjectMaterial( g_rouletteChip[ playerid ] [ column ], 0, 1902, "chip_stack08", "chip_stck6", ( ( g_rouletteChipColor[ playerid ] >> 8 ) | 0x99000000 ) );
+						g_rouletteChipLabel[ playerid ] [ column ] = CreateDynamic3DTextLabel( sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ), g_rouletteChipColor[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.15 + ( float( playerid ) / 100 ), 5.0 ); //INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, playerid );
+						//printf("(%s) CREATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
+					}
+					else
+					{
+						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height );
+						UpdateDynamic3DTextLabelText( g_rouletteChipLabel[ playerid ] [ column ], g_rouletteChipColor[ playerid ], sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ) );
+						//printf("(%s) UPDATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
+					}
+				}
+
+				// sometimes it doesnt show up
+				SyncObject( playerid, 0.005, 0.005, 0.005 );
+				ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
 			}
 		}
 
-		if ( PRESSED( KEY_CROUCH ) )
-		{
-			if ( g_slotmachineData[ machineid ] [ E_ROLLING ] )
-				return SendError( playerid, "Please wait for the slot machine to finish spinning." );
-
-			return StopPlayerUsingSlotMachine( playerid );
-		}
-	}
-	else
-	{
 		if ( PRESSED( KEY_SECONDARY_ATTACK ) )
 		{
-			new
-				id = GetClosestSlotMachine( playerid );
+			if ( p_rouletteBetLocked{ playerid } )
+				return SendError( playerid, "Please wait until the spin is completed before leaving the table." );
 
-			if ( id != -1 )
+			if ( p_RouletteTable[ playerid ] != -1 )
+				return RemovePlayerFromRoulette( playerid );
+
+			foreach(new id : roulettetables)
 			{
-				X = g_slotmachineData[ id ] [ E_X ] + floatcos( g_slotmachineData[ id ] [ E_A ] - 90, degrees );
-				Y = g_slotmachineData[ id ] [ E_Y ] + floatsin( g_slotmachineData[ id ] [ E_A ] - 90, degrees );
+				if ( IsPlayerInRangeOfPoint( playerid, 3.1, g_rouletteTableData[ id ] [ E_X ], g_rouletteTableData[ id ] [ E_Y ], g_rouletteTableData[ id ] [ E_Z ] ) ) {
 
-				if ( IsPlayerInRangeOfPoint( playerid, 1.0, X, Y, g_slotmachineData[ id ] [ E_Z ] ) && GetPlayerPos( playerid, Z, Z, Z ) )
+					static
+						Float: lookatX, Float: lookatY, Float: lookatZ,
+						Float: tmpX, Float: tmpY, Float: tmpZ
+					;
+
+					GetPlayerCameraPos( playerid, X, Y, Z );
+					GetPlayerCameraFrontVector( playerid, lookatX, lookatY, lookatZ );
+
+					tmpX = g_rouletteTableData[ id ] [ E_X ] + -1.8 * floatcos( g_rouletteTableData[ id ] [ E_ROTATION ] + 74.0, degrees );
+					tmpY = g_rouletteTableData[ id ] [ E_Y ] + -1.8 * floatsin( g_rouletteTableData[ id ] [ E_ROTATION ] + 74.0, degrees );
+					tmpZ = g_rouletteTableData[ id ] [ E_Z ] + 1.7;
+
+					InterpolateCameraPos( playerid, X, Y, Z, tmpX, tmpY, tmpZ, 1000, CAMERA_MOVE );
+
+					X += floatmul( lookatX, 20.0 );
+					Y += floatmul( lookatY, 20.0 );
+					Z += floatmul( lookatZ, 20.0 );
+
+					InterpolateCameraLookAt( playerid, X, Y, Z, g_rouletteTableData[ id ] [ E_X ], g_rouletteTableData[ id ] [ E_Y ], g_rouletteTableData[ id ] [ E_Z ] - 1.0, 1000, CAMERA_MOVE );
+
+					p_RouletteTable[ playerid ] = id;
+					p_RouletteMarkerColumn{ playerid } = 0;
+
+					new Float: offsetX = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatcos( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
+					new Float: offsetY = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatsin( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
+					DestroyDynamicObject( p_RouletteMarker[ playerid ] );
+					p_RouletteMarker[ playerid ] = CreateDynamicObject( 2992, X + offsetX, Y + offsetY, Z - 0.17, 0.00000, 0.00000, 0.0, -1, -1, playerid );
+
+					// starting bet
+					p_rouletteBetValue[ playerid ] = 1000;
+					g_rouletteChipColor[ playerid ] = makeColor( RandomEx( 128, 255 ), RandomEx( 128, 255 ), RandomEx( 128, 255 ), 0xFF );
+					SendServerMessage( playerid, "Your starting bet is $1,000 for this table. {%06x}This is your chip color.", g_rouletteChipColor[ playerid ] >>> 8 );
+
+					ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
+
+					szBigString = "~y~~k~~PED_SPRINT~~w~ - Spin Wheel~n~~y~~k~~PED_FIREWEAPON~/~k~~PED_LOCK_TARGET~~w~ - Place/Remove Bet~n~~y~~k~~PED_JUMPING~/~k~~SNEAK_ABOUT~~w~ - Increase/Decrease Bet~n~~y~~k~~PED_DUCK~~w~ - Cancel Bets~n~~y~~k~~VEHICLE_ENTER_EXIT~~w~ - Exit";
+					ShowPlayerHelpDialog( playerid, 0, szBigString );
+
+					printf("(%s) BEFORE TIMER %d", ReturnPlayerName( playerid ), p_RouletteMarkerTimer[ playerid ] );
+					KillTimer( p_RouletteMarkerTimer[ playerid ] );
+					p_RouletteMarkerTimer[ playerid ] = SetTimerEx( "OnRouletteMarkerUpdate", 100, true, "d", playerid );
+					return 1;
+				}
+			}
+		}
+
+		// Gambling Slots
+		if ( machineid != -1 )
+		{
+			if ( GetDistanceFromPlayerSquared( playerid, g_slotmachineData[ machineid ] [ E_X ], g_slotmachineData[ machineid ] [ E_Y ], g_slotmachineData[ machineid ] [ E_Z ] ) > 4.0 ) // Squared
+				return StopPlayerUsingSlotMachine( playerid );
+
+			if ( PRESSED( KEY_JUMP ) ) {
+				if ( ( p_AutoSpin{ playerid } = ! p_AutoSpin{ playerid } ) == true )
+					TriggerPlayerSlotMachine( playerid, machineid );
+
+				return SendServerMessage( playerid, "You have %s autospin for this slot machine.", p_AutoSpin{ playerid } ? ( "enabled" ) : ( "disabled" ) );
+			}
+
+			if ( PRESSED( KEY_SPRINT ) ) {
+				TriggerPlayerSlotMachine( playerid, machineid );
+			}
+
+			if ( PRESSED( KEY_SECONDARY_ATTACK ) )
+			{
+				if ( g_slotmachineData[ machineid ] [ E_ROLLING ] )
+					return SendError( playerid, "Please wait for the slot machine to finish spinning." );
+
+				return StopPlayerUsingSlotMachine( playerid );
+			}
+		}
+		else
+		{
+			if ( PRESSED( KEY_SECONDARY_ATTACK ) )
+			{
+				new
+					id = GetClosestSlotMachine( playerid );
+
+				if ( id != -1 )
 				{
-					if ( GetPlayerCash( playerid ) < 100 )
+					X = g_slotmachineData[ id ] [ E_X ] + floatcos( g_slotmachineData[ id ] [ E_A ] - 90, degrees );
+					Y = g_slotmachineData[ id ] [ E_Y ] + floatsin( g_slotmachineData[ id ] [ E_A ] - 90, degrees );
+
+					if ( IsPlayerInRangeOfPoint( playerid, 1.0, X, Y, g_slotmachineData[ id ] [ E_Z ] ) && GetPlayerPos( playerid, Z, Z, Z ) )
 					{
-						PlayerPlaySound( playerid, 1055, 0.0, 0.0, 0.0 );
-						return 1;
+						if ( GetPlayerCash( playerid ) < 100 )
+						{
+							PlayerPlaySound( playerid, 1055, 0.0, 0.0, 0.0 );
+							return 1;
+						}
+
+						p_AutoSpin{ playerid } = false;
+						p_usingSlotMachine[ playerid ] = id;
+
+						SetPlayerPos( playerid, X, Y, Z );
+						TogglePlayerControllable( playerid, 0 );
+						SetPlayerFacingAngle( playerid, g_slotmachineData[ id ] [ E_A ] );
+
+						TextDrawSetString( g_SlotMachineOneTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 0 ] / 360 ) * 18 ) ] );
+						TextDrawShowForPlayer( playerid, g_SlotMachineOneTD[ id ] );
+
+						TextDrawSetString( g_SlotMachineTwoTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 1 ] / 360 ) * 18 ) ] );
+						TextDrawShowForPlayer( playerid, g_SlotMachineTwoTD[ id ] );
+
+						TextDrawSetString( g_SlotMachineThreeTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ] / 360 ) * 18 ) ] );
+						TextDrawShowForPlayer( playerid, g_SlotMachineThreeTD[ id ] );
+
+						TextDrawSetString( p_SlotMachineFigureTD[ id ], sprintf( "~y~~h~%s", ConvertPrice( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ) );
+						TextDrawShowForPlayer( playerid, p_SlotMachineFigureTD[ id ] );
+
+						TextDrawShowForPlayer( playerid, g_SlotMachineBoxTD[ 0 ] );
+						TextDrawShowForPlayer( playerid, g_SlotMachineBoxTD[ 1 ] );
+
+						KillTimer( p_SafeHelperTimer[ playerid ] ), p_SafeHelperTimer[ playerid ] = -1; // Stop safe helper
+						return ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_SPRINT~~w~ - Spin The Wheels~n~~y~~h~~k~~PED_JUMPING~~w~ - Toggle Autospin~n~~y~~h~~k~~VEHICLE_ENTER_EXIT~~w~ - Exit" );
 					}
-
-					p_usingSlotMachine[ playerid ] = id;
-
-					SetPlayerPos( playerid, X, Y, Z );
-					TogglePlayerControllable( playerid, 0 );
-					SetPlayerFacingAngle( playerid, g_slotmachineData[ id ] [ E_A ] );
-
-					TextDrawSetString( g_SlotMachineOneTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 0 ] / 360 ) * 18 ) ] );
-					TextDrawShowForPlayer( playerid, g_SlotMachineOneTD[ id ] );
-
-					TextDrawSetString( g_SlotMachineTwoTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 1 ] / 360 ) * 18 ) ] );
-					TextDrawShowForPlayer( playerid, g_SlotMachineTwoTD[ id ] );
-
-					TextDrawSetString( g_SlotMachineThreeTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ] / 360 ) * 18 ) ] );
-					TextDrawShowForPlayer( playerid, g_SlotMachineThreeTD[ id ] );
-
-					TextDrawSetString( p_SlotMachineFigureTD[ id ], sprintf( "~y~~h~%s", ConvertPrice( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ) );
-					TextDrawShowForPlayer( playerid, p_SlotMachineFigureTD[ id ] );
-
-					TextDrawShowForPlayer( playerid, g_SlotMachineBoxTD[ 0 ] );
-					TextDrawShowForPlayer( playerid, g_SlotMachineBoxTD[ 1 ] );
-
-					KillTimer( p_SafeHelperTimer[ playerid ] ), p_SafeHelperTimer[ playerid ] = -1; // Stop safe helper
-					return ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~VEHICLE_ENTER_EXIT~~w~ - Spin the wheels~n~~y~~h~~k~~PED_DUCK~~w~ - Exit" );
 				}
 			}
 		}
@@ -19945,15 +20372,16 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	 		RemovePlayerAttachedObject( playerid, 1 );
 	}
 
+	// taze mechanism
 	else if ( PRESSED( KEY_LOOK_BEHIND ) )
 	{
 		if ( p_Class[ playerid ] == CLASS_POLICE ) {
 			new
 				closestid = GetClosestPlayer( playerid );
 
-			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE ) {
+			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE && ! ( GetDistanceBetweenPlayers( playerid, closestid ) > 10.0 || !IsPlayerConnected( closestid ) ) ) {
 				if ( p_WantedLevel[ closestid ] > 5 )
-					TazePlayer( playerid, closestid );
+					GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/taze %d", closestid ), 2000, 4 ); // TazePlayer( playerid, closestid );
 				else {
 					TicketPlayer( closestid, playerid );
 				}
@@ -20350,11 +20778,14 @@ thread OnPlayerLogin( playerid, password[ ] )
 		  	if ( IsPlayerUnderCover( playerid ) )
 		  	{
 				if ( strmatch( GetPlayerISP( playerid ), "AS812 Rogers Cable Communications Inc." ) )
-					format( p_PlayerIP[ playerid ], 16, "72.229.%d.%d", random( 255 ), random( 255 ) );
+					format( p_PlayerIP[ playerid ], 16, "104.131.%d.%d", random( 255 ), random( 255 ) );
 
 				if ( strmatch( GetPlayerISP( playerid ), "AS9443 Primus Telecommunications" ) )
 					format( p_PlayerIP[ playerid ], 16, "124.106.%d.%d", random( 255 ), random( 255 ) );
 		  	}
+
+		  	// Reset gang id just incase
+		  	p_GangID[ playerid ] = INVALID_GANG_ID;
 
 		  	// Gang create
 		  	new
@@ -21394,7 +21825,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	                GivePlayerXP( playerid, -100 );
 	                for( new i; i < MAX_WEAPONS; i++ )
 					{
-					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && i != 16 && i != 47 && i != WEAPON_BOMB )
+					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && !( 16 <= i <= 18 ) && i != 47 && i != WEAPON_BOMB )
 					    {
 					        GivePlayerWeapon( playerid, i, 15000 );
 					    }
@@ -22893,7 +23324,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		            if ( x == listitem )
 		            {
 		                new price = floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * 0.75 ); // Change the discount here!!
-					 	if ( price > GetPlayerMoney( playerid ) )
+					 	if ( price > GetPlayerCash( playerid ) )
 						{
 						    SendError( playerid, "You don't have enough money for this." );
       						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
@@ -22947,7 +23378,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								new
 									iCostPrice = floatround( float( g_AmmunationWeapons[ i ] [ E_PRICE ] ) * 1.25 );
 
-							 	if ( iCostPrice > GetPlayerMoney( playerid ) )
+							 	if ( iCostPrice > GetPlayerCash( playerid ) )
 								{
 								    SendError( playerid, "You don't have enough money for this." );
 								    RedirectAmmunation( playerid, p_WeaponLockerMenu{ playerid }, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
@@ -22985,7 +23416,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		        {
 		            if ( x == listitem )
 		            {
-					 	if ( g_AmmunationWeapons[ i ] [ E_PRICE ] > GetPlayerMoney( playerid ) )
+					 	if ( g_AmmunationWeapons[ i ] [ E_PRICE ] > GetPlayerCash( playerid ) )
 						{
 						    SendError( playerid, "You don't have enough money for this." );
 						    RedirectAmmunation( playerid, p_AmmunationMenu{ playerid } );
@@ -25280,6 +25711,30 @@ stock initializeTextDraws( )
 	/* ** Player TextDraws ** */
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
 	{
+		if ( playerid < MAX_ROULETTE_TABLES )
+		{
+			g_rouletteNumberBG[ playerid ] = TextDrawCreate(285.000000, 23.000000, "ld_roul:roulbla");
+			TextDrawBackgroundColor(g_rouletteNumberBG[ playerid ], 255);
+			TextDrawFont(g_rouletteNumberBG[ playerid ], 4);
+			TextDrawLetterSize(g_rouletteNumberBG[ playerid ], 0.500000, 1.000000);
+			TextDrawColor(g_rouletteNumberBG[ playerid ], -1);
+			TextDrawSetOutline(g_rouletteNumberBG[ playerid ], 0);
+			TextDrawSetProportional(g_rouletteNumberBG[ playerid ], 1);
+			TextDrawSetShadow(g_rouletteNumberBG[ playerid ], 1);
+			TextDrawUseBox(g_rouletteNumberBG[ playerid ], 1);
+			TextDrawBoxColor(g_rouletteNumberBG[ playerid ], 255);
+			TextDrawTextSize(g_rouletteNumberBG[ playerid ], 60.000000, 60.000000);
+
+			g_rouletteNumberTD[ playerid ] = TextDrawCreate(314.000000, 25.000000, "35");
+			TextDrawAlignment(g_rouletteNumberTD[ playerid ], 2);
+			TextDrawBackgroundColor(g_rouletteNumberTD[ playerid ], 255);
+			TextDrawFont(g_rouletteNumberTD[ playerid ], 1);
+			TextDrawLetterSize(g_rouletteNumberTD[ playerid ], 0.800000, 4.000000);
+			TextDrawColor(g_rouletteNumberTD[ playerid ], -1);
+			TextDrawSetOutline(g_rouletteNumberTD[ playerid ], 0);
+			TextDrawSetProportional(g_rouletteNumberTD[ playerid ], 1);
+			TextDrawSetShadow(g_rouletteNumberTD[ playerid ], 1);
+		}
 		if ( playerid < MAX_MACHINES )
 		{
 			p_SlotMachineFigureTD[ playerid ] = TextDrawCreate(324.000000, 307.000000, "$20,000");
@@ -25606,14 +26061,14 @@ stock SendGlobalMessage( colour, format[ ], va_args<> )
     va_format( out, sizeof( out ), format, va_start<2> );
 	SendClientMessageToAll( colour, out );
 
-	strreplace( out, #COL_LRED, 	"" );
-	strreplace( out, #COL_ORANGE,	"" );
-	strreplace( out, #COL_GOLD, 	"" );
+	strreplace( out, #COL_LRED, 	"**" );
+	strreplace( out, #COL_ORANGE,	"**" );
+	strreplace( out, #COL_GOLD, 	"**" );
 	strreplace( out, #COL_GREEN, 	"" );
-	strreplace( out, #COL_BLUE, 	"" );
-	strreplace( out, #COL_PINK, 	"" );
-	strreplace( out, #COL_GREY,		"" );
-	strreplace( out, #COL_WHITE, 	"" );
+	strreplace( out, #COL_BLUE, 	"**" );
+	strreplace( out, #COL_PINK, 	"**" );
+	strreplace( out, #COL_GREY,		"**" );
+	strreplace( out, #COL_WHITE, 	"**" );
 	Discord_Say( DISCORD_GENERAL, out );
 	return 1;
 }
@@ -26028,7 +26483,7 @@ stock ResetPlayerCash( playerid )
 }
 
 stock IsWeaponBanned( weaponid ) {
-	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 17 || weaponid == 35 || weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
+	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 35 || weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
 }
 
 stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
@@ -26199,7 +26654,14 @@ thread OnHouseLoad( )
 	}
 	printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 
-	CreateFire( ); // The server crashes when the fires aren't correctly loaded.
+	// Make Lorenc the owner of unowned VIP houses
+	for( new houseid = 0; houseid < MAX_HOUSES; houseid ++ ) if ( g_houseData[ houseid ] [ E_CREATED ] ) {
+		if ( strmatch( g_houseData[ houseid ] [ E_OWNER ], "No-one" ) && g_houseData[ houseid ] [ E_COST ] < 10000 )
+			SetHouseOwner( houseid, "Lorenc" );
+	}
+
+	// The server crashes when the fires aren't correctly loaded.
+	CreateFire( );
 	return 1;
 }
 
@@ -26325,17 +26787,17 @@ stock SetHouseForAuction( ID )
 	return 1;
 }
 
-stock SetHouseOwner( houseid, playerid )
+stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ] )
 {
-	if ( houseid == -1 || g_houseData[ houseid ] [ E_CREATED ] == false || playerid == INVALID_PLAYER_ID )
+	if ( houseid == -1 || g_houseData[ houseid ] [ E_CREATED ] == false || isnull( szOwner ) )
 		return 0;
 
 	new
 		query[ 128 ]
 	;
-	format( g_houseData[ houseid ] [ E_OWNER ], 24, "%s", ReturnPlayerName( playerid ) );
+	format( g_houseData[ houseid ] [ E_OWNER ], 24, "%s", szOwner );
 
-	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='%s' WHERE ID=%d", mysql_escape( ReturnPlayerName( playerid ) ), houseid );
+	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='%s' WHERE ID=%d", mysql_escape( szOwner ), houseid );
 	mysql_single_query( query );
 
 	DestroyDynamicMapIcon( g_houseData[ houseid ] [ E_MAP_ICON ] );
@@ -27927,6 +28389,7 @@ thread OnGangLoad( playerid, gang_sql_id )
 		// Check again if the gang exists
 		foreach (new g : gangs) if ( gang_sql_id == g_gangData[ g ] [ E_SQL_ID ] ) {
 			p_GangID[ playerid ] = g;
+			printf( "[gang debug] found duplicate gang for gang id %d (User : %s)", g, ReturnPlayerName( playerid ) );
 			return InformGangConnectMessage( playerid, g ), 1;
 		}
 
@@ -28069,6 +28532,8 @@ stock DisconnectFromGang( playerid )
 	new
 		gangid = p_GangID[ playerid ];
 
+	p_GangID[ playerid ] = INVALID_GANG_ID;
+
 	if ( gangid == INVALID_GANG_ID )
 		return 0;
 
@@ -28078,9 +28543,7 @@ stock DisconnectFromGang( playerid )
 	// if ( !g_gangData[ gangid ] [ E_SAVED ] )
 	// 	return RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
 
-	p_GangID[ playerid ] = INVALID_GANG_ID;
-
-	if ( GetOnlineGangMembers( gangid ) < 1 )
+	if ( ! GetOnlineGangMembers( gangid ) )
 	{
 	 	// Free iterator id
 	 	Iter_Remove( gangs, gangid );
@@ -28104,10 +28567,10 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
 	new
 		gangid = p_GangID[ playerid ];
 
+ 	p_GangID[ playerid ] = INVALID_GANG_ID;
+
 	if ( !Iter_Contains( gangs, gangid ) )
 		return 0;
-
- 	p_GangID[ playerid ] = INVALID_GANG_ID;
 
 	SetPlayerColorToTeam( playerid );
 
@@ -28252,16 +28715,6 @@ stock SetGangColorsToGang( gangid )
 	        SetPlayerColor( i, g_gangData[ gangid ] [ E_COLOR ] );
 	    }
 	}
-}
-
-stock setAlpha( color, alpha )
-{
-	if ( alpha > 0xFF )
-	    alpha	= 0xFF;
-	else if ( alpha < 0x00 )
-	    alpha	= 0x00;
-
-	return ( color & 0xFFFFFF00 ) | alpha;
 }
 
 stock isHex(str[])
@@ -30801,7 +31254,7 @@ stock calculateVehicleSellPrice( vehicleid )
 	if ( fHealth < 0.0 )
 		fHealth = 0.0;
 
-	return floatround( g_aVehicleSellingPrice[ iModel - 400 ] * ( fHealth / 1000.0 ) * 0.5 );
+	return floatround( float( g_aVehicleSellingPrice[ iModel - 400 ] ) * ( fHealth / 1000.0 ) );
 }
 
 stock ArePlayersInHouse( houseid, owner )
@@ -32251,7 +32704,21 @@ stock initializeActors( )
 			{ 221, -2656.4712, 1413.2327, 906.2734, 232.1765, "PAULNMAC", "wank_loop", 18 },
 
 		// Hobo
-			{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 }
+			{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 },
+
+		// Casinos
+			{ 11, 2229.9373, 1620.7489, 1006.1771, 180.2492, "PED", "null", 82 },
+			{ 172, 2231.1843, 1613.5005, 1006.1860, 4.177600, "PED", "null", 82 },
+			{ 11, 2229.9492, 1595.8494, 1006.1850, 181.8158, "PED", "null", 82 },
+			{ 11, 2231.1948, 1588.0958, 1006.1812, 2.297500, "PED", "null", 82 },
+			{ 172, 2243.0002, 1588.0959, 1006.1812, 357.9109, "PED", "null", 82 },
+			{ 11, 2241.7341, 1595.8494, 1006.1850, 180.5860, "PED", "null", 82 },
+			{ 172, 2242.0784, 1613.4631, 1006.1797, 353.8611, "PED", "null", 82 },
+			{ 172, 2240.8123, 1620.7012, 1006.1772, 178.7061, "PED", "null", 82 },
+			{ 172, 1964.8026, 1026.3284, 992.4688, 88.1672, "PED", "null", 23 },
+			{ 11, 1960.4900, 1026.3281, 992.4688, 90.0472, "PED", "null", 23 },
+			{ 172, 1960.4900, 1010.7502, 992.4688, 82.8407, "PED", "null", 23 },
+			{ 11, 1964.8025, 1010.7502, 992.4688, 85.3708, "PED", "null", 23 }
 		}
 	;
 
@@ -32508,77 +32975,70 @@ stock RollSlotMachine( playerid, id )
 
 	if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == 10000 )
 	{
-		// 1 in 10000 odds
-		randomChance = random( 50001 );
-
+		// 1 in 200k odds
+		randomChance = random( 200001 );
 		printf("random chance %d", randomChance );
 
-		// let's see where they landed
-		switch ( randomChance )
-		{
-			// double brick
-			case 0:
-				rotation = 0.0;
+		// double brick
+		if ( randomChance == -1 ) // rigged
+			rotation = 0.0;
 
-			// single brick
-			case 1 .. 275:
-				rotation = 40.0;
+		// single brick
+		else if ( 1780 <= randomChance <= 3560 )
+			rotation = 40.0;
 
-			// gold bells
-			case 550 .. 1100:
-				rotation = 60.0;
+		// gold bells
+		else if ( 3561 <= randomChance <= 7121 )
+			rotation = 60.0;
 
-			// cherry
-			case 1101 .. 2201:
-				rotation = 80.0;
+		// cherry
+		else if ( 7122 <= randomChance <= 14242 )
+			rotation = 80.0;
 
-			// grapes
-			case 2750 .. 5500:
-				rotation = 100.0;
+		// grapes
+		else if ( 17800 <= randomChance <= 35600 )
+			rotation = 100.0;
 
-			// 69s
-			case 5501 .. 11001:
-				rotation = 20.0;
+		// 69s
+		else if ( 35601 <= randomChance <= 71201 )
+			rotation = 20.0;
 
-			default:
-				loss = true;
-		}
+		// loss otherwise
+		else
+			loss = true;
 	}
 	else
 	{
-		// 1 in 35000 odds
-		randomChance = random( 100001 );
+		// 1 in 400k odds
+		randomChance = random( 400001 );
 
-		// let's see where they landed
-		switch ( randomChance )
-		{
-			// double brick
-			case 0:
-				rotation = 0.0;
+		// double brick
+		if ( randomChance == 0 )
+			rotation = 0.0;
 
-			// single brick
-			case 550 .. 1100:
-				rotation = 40.0;
+		// single brick
+		else if ( 3560 <= randomChance <= 7120 )
+			rotation = 40.0;
 
-			// gold bells
-			case 1101 .. 2201:
-				rotation = 60.0;
+		// gold bells
+		else if ( 7121 <= randomChance <= 14241 )
+			rotation = 60.0;
 
-			// cherry
-			case 2202 .. 4402:
-				rotation = 80.0;
+		// cherry
+		else if ( 14240 <= randomChance <= 28480 )
+			rotation = 80.0;
 
-			// grapes
-			case 5500 .. 11000:
-				rotation = 100.0;
+		// grapes
+		else if ( 35600 <= randomChance <= 71200 )
+			rotation = 100.0;
 
-			// 69s
-			case 11001 .. 22001:
-				rotation = 20.0;
+		// 69s
+		else if ( 71201 <= randomChance <= 142401 )
+			rotation = 20.0;
 
-			default:
-				loss = true;
-		}
+		// loss otherwise
+		else
+			loss = true;
 	}
 	if ( loss )
 	{
@@ -32744,6 +33204,7 @@ stock StopPlayerUsingSlotMachine( playerid )
 	TextDrawHideForPlayer( playerid, g_SlotMachineBoxTD[ 0 ] );
 	TextDrawHideForPlayer( playerid, g_SlotMachineBoxTD[ 1 ] );
 
+	p_AutoSpin{ playerid } = false;
 	p_usingSlotMachine[ playerid ] = -1;
 
 	HidePlayerHelpDialog( playerid );
@@ -34344,7 +34805,7 @@ thread OnAccountEmailVerify( playerid, login_force )
 
 		// email
 		format( szLargeString, sizeof( szLargeString ), "<p>Hey %s, you are receiving this email because an unauthorized IP is accessing your account.</p>"\
-														"<p>IP: %s<br>Country: %s</p>"\
+														"<p>IP: %s<br>Country: %s (may be inaccurate)</p>"\
 														"<p>Your verification token is <strong>%d</strong> - keep this only to yourself!</p>"\
 														"<p style='color: red'>If you did not authorize this, change your password in-game or contact an administrator!</p>",
 														ReturnPlayerName( playerid ), ReturnPlayerIP( playerid ), GetPlayerCountryName( playerid ), iRandom );
@@ -34533,7 +34994,7 @@ thread OnAccountGuardDelete( playerid )
  * @return true
  */
 
-public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
+/*public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
 {
 	printf("len : %d, data: %s, remote client id %d", data_len, data, remote_clientid);
 	if ( id == discordListener )
@@ -34567,9 +35028,9 @@ public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
 			}
 		}
 	}
-	socket_close_remote_client( id, remote_clientid ); // test
+	//socket_close_remote_client( id, remote_clientid ); // test
 	return 1;
-}
+}*/
 
 /**
  * Sends a message to a channel
@@ -34577,11 +35038,14 @@ public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
  */
 stock Discord_Say( channel_id[ ], text[ ] )
 {
-	static
-		buffer[ 256 ];
+	#pragma unused channel_id
+	#pragma unused text
+	return 1;
+	/*static
+		buffer[ 512 ];
 
 	format( buffer, sizeof( buffer ), "%s %s\r\n", channel_id, text);
-	return socket_send( discord, buffer, strlen( buffer ) );
+	return socket_send( discord, buffer, strlen( buffer ) );*/
 }
 
 stock discordLevelToString( level )
@@ -34599,4 +35063,455 @@ stock discordLevelToString( level )
         default: rank = "N/A";
     }
     return rank;
+}
+
+stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
+{
+	new
+		id = Iter_Free(roulettetables);
+
+	if ( id != -1 )
+	{
+		g_rouletteTableData[ id ] [ E_X ] = X;
+		g_rouletteTableData[ id ] [ E_Y ] = Y;
+		g_rouletteTableData[ id ] [ E_Z ] = Z;
+		g_rouletteTableData[ id ] [ E_ROTATION ] = Angle;
+
+		g_rouletteTableData[ id ] [ E_SPINNING_TIMER ] = -1;
+
+		g_rouletteTableData[ id ] [ E_OBJECT ] = CreateDynamicObject( 1978, X, Y, Z, 0.00000, 0.00000, Angle );
+
+		X += 1.365 * floatcos( Angle + 98.0, degrees );
+		Y += 1.365 * floatsin( Angle + 98.0, degrees );
+
+		CreateDynamic3DTextLabel( "Press ENTER to use\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z - 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+
+		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0 );
+		Iter_Add( roulettetables, id );
+	}
+	return 1;
+}
+
+stock GenerateRandomRouletteNumber( rouletteid ) {
+
+	new
+		iRandom = random( 37 );
+
+	if ( iRandom == 0 )
+		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulgre" );
+
+	else if ( ! IsRedRouletteNumber( iRandom ) )
+		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulbla" );
+
+	else
+		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulred" );
+
+	TextDrawSetString( g_rouletteNumberTD[ rouletteid ], sprintf( "%d", iRandom ) );
+	return iRandom;
+}
+
+public OnSpinRouletteTable( rouletteid, elapsed, steps )
+{
+	new
+		Float: fElapsed = float( ( elapsed += 25 ) ),
+		Float: rotation = -0.0001 * ( fElapsed * fElapsed ) + 0.8162 * fElapsed
+	;
+
+	// update it every 50 ms
+	if ( elapsed % 50 == 0 && elapsed != 4000 )
+		GenerateRandomRouletteNumber( rouletteid );
+
+	SetDynamicObjectRot( g_rouletteTableData[ rouletteid ] [ E_SPINNER_OBJECT ], 0.0, 0.0, rotation );
+
+	if ( elapsed >= 3250 )
+		g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = true;
+
+	if ( elapsed >= 4000 )
+	{
+		new
+			iWinning = GenerateRandomRouletteNumber( rouletteid );
+
+		// Kill the timer just incase
+		KillTimer( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] );
+		g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = -1;
+	 	g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
+
+		// Call a win
+		CallLocalFunction( "OnRouletteWheelStop", "dd", rouletteid, iWinning );
+		return 1;
+	}
+
+	return ( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, elapsed, steps ) );
+}
+
+stock GetPlayerTotalRouletteBet( playerid ) {
+	new
+		bet = 0;
+
+	for ( new chipid = 0; chipid < sizeof( g_rouletteChipValue[ ] ); chipid ++ ) if ( g_rouletteChipValue[ playerid ] [ chipid ] >= 100 ) {
+		bet += g_rouletteChipValue[ playerid ] [ chipid ];
+	}
+	return bet;
+}
+
+public OnRouletteWheelStop( rouletteid, winner )
+{
+	new
+		globalWaged = 0, globalWon = 0;
+
+	printf ( "OnRouletteWheelStop( %d, %d )", rouletteid, winner );
+	foreach(new playerid : Player) if ( p_RouletteTable[ playerid ] == rouletteid && p_rouletteBetLocked{ playerid } )
+	{
+		new
+			waged = 0, won = 0;
+
+		for( new chipid = 0; chipid < sizeof( g_rouletteOffsets ); chipid ++ ) if ( g_rouletteChipValue[ playerid ] [ chipid ] > 0 )
+		{
+			// store chip value here
+			new
+				beforeWin = won,
+				winValue = g_rouletteChipValue[ playerid ] [ chipid ];
+
+			// increment the amount waged
+			waged += g_rouletteChipValue[ playerid ] [ chipid ];
+
+			// calculate wins
+			switch ( g_rouletteOffsets[ chipid ] [ E_VALUE ] )
+			{
+				// 1st 3to1
+				case 3211: {
+					if ( winner == 1 || winner == 4 || winner == 7 || winner == 10 || winner == 13 || winner == 16 || winner == 19 || winner == 22 || winner == 25 || winner == 28 || winner == 31 || winner == 34 )
+						won += winValue * 3;
+				}
+
+				// 2nd 3to1
+				case 3212: {
+					if ( winner == 2 || winner == 5 || winner == 8 || winner == 11 || winner == 14 || winner == 17 || winner == 20 || winner == 23 || winner == 26 || winner == 29 || winner == 32 || winner == 35 )
+						won += winValue * 3;
+				}
+
+				// 2nd 3to1
+				case 3213: {
+					if ( winner == 3 || winner == 6 || winner == 9 || winner == 12 || winner == 15 || winner == 18 || winner == 21 || winner == 24 || winner == 27 || winner == 30 || winner == 33 || winner == 36 )
+						won += winValue * 3;
+				}
+
+				// 1st 18
+				case 118: {
+					if ( 1 <= winner <= 18 )
+						won += winValue * 2;
+				}
+
+				// even
+				case 222: {
+					if ( winner % 2 == 0 )
+						won += winValue * 2;
+				}
+
+				// 1st to 12
+				case 112: {
+					if ( 1 <= winner <= 12 )
+						won += winValue * 3;
+				}
+
+				// black
+				case 44: {
+					if ( ! IsRedRouletteNumber( winner ) && winner != 0 )
+						won += winValue * 2;
+				}
+
+				// red
+				case 88: {
+					if ( IsRedRouletteNumber( winner ) )
+						won += winValue * 2;
+				}
+
+				// 2nd 12
+				case 212: {
+					if ( 13 <= winner <= 24 )
+						won += winValue * 3;
+				}
+
+				// odd
+				case 333: {
+					if ( winner % 2 == 1 && winner != 0 )
+						won += winValue * 2;
+				}
+
+				// 19-36
+				case 1936: {
+					if ( 19 <= winner <= 36 )
+						won += winValue * 2;
+				}
+
+				// 3rd 12
+				case 312: {
+					if ( 25 <= winner <= 36 )
+						won += winValue * 3;
+				}
+
+				// check if its a single
+				default:
+				{
+					if ( winner == g_rouletteOffsets[ chipid ] [ E_VALUE ] )
+						won += winValue * 36;
+				}
+			}
+
+			if ( beforeWin >= won ) {
+				g_rouletteChipValue[ playerid ] [ chipid ] = 0;
+				DestroyDynamicObject( g_rouletteChip[ playerid ] [ chipid ] ), g_rouletteChip[ playerid ] [ chipid ] = -1;
+				DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ chipid ] ), g_rouletteChipLabel[ playerid ] [ chipid ] = Text3D: -1;
+			}
+
+			// track
+			globalWaged += waged;
+			globalWon += won;
+		}
+
+		// bet unlocked and paid
+		GivePlayerCash( playerid, won );
+		p_rouletteBetLocked{ playerid } = false;
+
+		new
+			profit = won - waged;
+
+		// inform users
+		if ( profit >= 10000 ) {
+			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from roulette!", ReturnPlayerName( playerid ), playerid, ConvertPrice( profit ) );
+		}
+
+		// gametext
+		if ( profit > 0 )  {
+		 	GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( profit ) ), 4000, 3 );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
+		} else {
+			profit *= -1; // to improve the client message
+		 	GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
+		}
+	}
+
+	// log wins/losses
+	UpdateServerVariable( "roulette_bets", GetGVarInt( "roulette_bets" ) + globalWaged, 0.0, "", GLOBAL_VARTYPE_INT );
+	UpdateServerVariable( "roulette_wins", GetGVarInt( "roulette_wins" ) + globalWon, 0.0, "", GLOBAL_VARTYPE_INT );
+	return 1;
+}
+
+public OnRouletteMarkerUpdate( playerid )
+{
+	new
+		rouletteid = p_RouletteTable[ playerid ], column = p_RouletteMarkerColumn{ playerid };
+
+	if ( rouletteid == -1 || ! Iter_Contains( roulettetables, rouletteid ) )
+		return RemovePlayerFromRoulette( playerid );
+
+	if ( IsValidDynamicObject( p_RouletteMarker[ playerid ] ) )
+	{
+	    new ud, lr;
+	    GetPlayerKeys( playerid, ud, ud, lr );
+
+	    if ( ud == KEY_UP )
+	    {
+	    	// up on 0
+	    	if ( column == 0 )
+	    		column = 38;
+
+	    	// up on 1,2,3
+	    	else if ( 1 <= column <= 3 )
+	    		column = 0;
+
+	    	// up 1st 12
+	    	else if ( column == 42 )
+	    		column = 48;
+
+	    	// up 3rd 12
+	    	else if ( column == 48 )
+	    		column = 45;
+
+	    	// up 2nd 12
+	    	else if ( column == 45 )
+	    		column = 42;
+
+	    	// up 1-to-18
+	    	else if ( column == 40 )
+	    		column = 47;
+
+	    	else if ( column == 41 || column == 44 || column == 47 )
+	    		column --;
+
+	    	else if ( column == 43 || column == 46 )
+	    		column -= 2;
+
+	    	else
+	    		column -= 3;
+	    }
+	    else if ( ud == KEY_DOWN )
+	    {
+	    	// pressed down on 3to1s
+	    	if ( 36 < column < 40 )
+	    		column = 0;
+
+	    	// down on 1st 12
+	    	else if ( column == 42 )
+	    		column = 45;
+
+	    	// down on 2nd 12
+	    	else if ( column == 45 )
+	    		column = 48;
+
+	    	// down 19-to-36
+	    	else if ( column == 47 )
+	    		column = 40;
+
+	    	// down on 3rd 12
+	    	else if ( column == 48 )
+	    		column = 42;
+
+	    	// if pressed down on zero, go to previous
+	    	else if ( column == 0 )
+	    		column = 2;
+
+	    	else if ( column == 40 || column == 43 || column == 46 )
+	    		column ++;
+
+	    	else if ( column == 41 || column == 44 )
+	    		column += 2;
+
+	    	else
+	    		column += 3;
+	    }
+	    else if ( lr == KEY_LEFT )
+	    {
+	    	// right on 0
+	    	if ( column == 0 )
+	    		column = 0;
+
+	    	else if ( column == 1 || column == 4 || column == 7 || column == 10 )
+	    		column = 42;
+
+	    	else if ( column == 13 || column == 16 || column == 19 || column == 22 )
+	    		column = 45;
+
+	    	else if ( column == 25 || column == 28 || column == 31 || column == 34 )
+	    		column = 48;
+
+	    	// left 1 to 18
+	    	else if ( column == 40 )
+	    		column = 0;
+
+	    	else
+	    		column --;
+
+	    }
+	    else if ( lr == KEY_RIGHT )
+	    {
+	    	// left on 0
+	    	if ( column == 0 )
+	    		column = 0;
+
+	    	// right 39
+	    	if ( column == 39 )
+	    		column = 0;
+
+	    	// right red black
+	    	else if ( 43 <= column <= 44 )
+	    		column = 45;
+
+	    	// right 1-18,even
+	    	else if ( 40 <= column <= 41 )
+	    		column = 42;
+
+	    	// right odd,19-36
+	    	else if ( 46 <= column <= 47 )
+	    		column = 48;
+
+	    	// right on 3rd 12
+	    	else if ( column == 48 )
+	    		column = 25;
+
+	   		// right on 2nd 12
+	    	else if ( column == 45 )
+	    		column = 13;
+
+	    	// right on 1st 12
+	    	else if ( column == 42 )
+	    		column = 1;
+
+	    	else
+	    		column ++;
+	    }
+
+	    // update object pos
+		new Float: offsetX = g_rouletteTableData[ rouletteid ] [ E_X ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatcos( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
+		new Float: offsetY = g_rouletteTableData[ rouletteid ] [ E_Y ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatsin( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
+		SetDynamicObjectPos( p_RouletteMarker[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.17 );
+
+		// update player column
+	    p_RouletteMarkerColumn{ playerid } = column;
+	}
+	return 1;
+}
+
+stock RemovePlayerFromRoulette( playerid )
+{
+	// remove chips
+	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
+		DestroyDynamicObject( g_rouletteChip[ playerid ] [ i ] ), g_rouletteChip[ playerid ] [ i ] = -1;
+		DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ i ] ), g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
+		g_rouletteChipValue[ playerid ] [ i ] = 0;
+	}
+
+	// hide textdraws
+	if ( p_RouletteTable[ playerid ] != -1 ) {
+		TextDrawHideForPlayer( playerid, g_rouletteNumberBG[ p_RouletteTable[ playerid ] ] );
+		TextDrawHideForPlayer( playerid, g_rouletteNumberTD[ p_RouletteTable[ playerid ] ] );
+	}
+
+	// reset user variables
+	HidePlayerHelpDialog( playerid );
+	p_RouletteTable[ playerid ] = -1;
+	p_RouletteMarkerColumn{ playerid } = 0;
+	p_rouletteBetLocked{ playerid } = false;
+
+	// close timers
+	KillTimer( p_RouletteMarkerTimer[ playerid ] ), p_RouletteMarkerTimer[ playerid ] = -1;
+	DestroyDynamicObject( p_RouletteMarker[ playerid ] ), p_RouletteMarker[ playerid ] = -1;
+
+	// clear animations if spawned
+	if ( IsPlayerSpawned( playerid ) ) {
+		SetCameraBehindPlayer( playerid );
+		ClearAnimations( playerid );
+	}
+	return 1;
+}
+
+stock TriggerPlayerSlotMachine( playerid, machineid )
+{
+	if ( p_usingSlotMachine[ playerid ] != machineid )
+		return 1;
+
+	if ( GetDistanceFromPlayerSquared( playerid, g_slotmachineData[ machineid ] [ E_X ], g_slotmachineData[ machineid ] [ E_Y ], g_slotmachineData[ machineid ] [ E_Z ] ) > 4.0 ) // Squared
+		return StopPlayerUsingSlotMachine( playerid );
+
+	if ( !g_slotmachineData[ machineid ] [ E_ROLLING ] )
+	{
+		new
+			entryFee = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ],
+			poolContribute = floatround( float( entryFee ) * 0.9 );
+
+		if ( GetPlayerCash( playerid ) < entryFee )
+			return SendError( playerid, "You must have at least %s to use this slot machine.", ConvertPrice( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
+
+		// Update casino pool
+		UpdateCasinoPoolData( g_slotmachineData[ machineid ] [ E_POOL_ID ], .pool_increment = poolContribute, .total_win = 0, .total_gambled = entryFee );
+
+		// Charge the player
+		RollSlotMachine( playerid, machineid );
+		PlayerPlaySound( playerid, 4202, 0.0, 0.0, 0.0 );
+		ApplyAnimation( playerid, "CASINO", "slot_plyr", 2.0, 0, 1, 1, 0, 0 );
+		GivePlayerCash( playerid, -entryFee );
+		return 1;
+	}
+	return 1;
 }
