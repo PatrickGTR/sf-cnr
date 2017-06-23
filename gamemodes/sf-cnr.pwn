@@ -13,7 +13,7 @@
 */
 
 #pragma dynamic 					7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -506,7 +506,7 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can change your spawning city at the "COL_GREY"City Hall{FFFFFF}!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy fancy toys at a "COL_GREY"Pawnshop{FFFFFF}!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Never share your password, not even with the server owner!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Teamspeak 3 server with "COL_GREY"svr.irresistiblegaming.com"COL_WHITE"!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Discord server at {7289da}discord.gg/Q7BkUd" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Locate ChuffSec's security truck with "COL_GREY"/chuffloc{FFFFFF} and rob his security truck for cash!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a "COL_GREY"Money Case{FFFFFF} to double up your robbery loot from Supa Save or a 24/7 store! " },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Grab a truck, connect it to a trailer then begin to "COL_GREY"/work{FFFFFF}! It's rewarding!" },
@@ -2666,7 +2666,7 @@ new
 		{ -2450.2261, 752.2170, 35.1719, 0xFFFF, "{FFFFFF}Buy materials that can help you complete missions such as meth production, or buy other neccessary items!" }, 			// Supa
 		{ -1589.4668, 115.8173, 3.54950, 0xFFFF, "{FFFFFF}Dirty Mechanics can export vehicles and receive money based on the material that can be taken from a vehicle!" },	 		// Car Jacker
 		{ -2767.3765, 1257.077, 11.7703, 0xFFFF, "{FFFFFF}You can mine ores and store your ores in dunes for exportation! Use the /ore command to see its usage!" },				// Mining
-		{ 1954.71890, 1038.251, 992.859, 0xFFFF, "{FFFFFF}Test your luck on the slot machines, maybe you might win the mega jackpot!" },											// Slots
+		{ 1954.71890, 1038.251, 992.859, 0xFFFF, "{FFFFFF}Test out your luck on the slot machines, maybe you might win the mega jackpot!" },										// Slots
 		{ 1955.69070, 1005.167, 992.468, 0xFFFF, "{FFFFFF}Roulette can payout up to $3.5M! Single bets return 35x your money whereas outside bets can return 2x to 3x!" }			// Roulette
 	}
 ;
@@ -4154,7 +4154,7 @@ public OnGameModeInit()
 	CreateNavigation( "Bank",					2442.1279, 2376.0293, 11.5376, CITY_LV ); // 6
 	CreateNavigation( "Autobahn", 				1948.6851, 2068.7463, 11.0610, CITY_LV ); // 7
 	CreateNavigation( "Police Department", 		2288.0063, 2429.8960, 10.8203, CITY_LV ); // 8
-	CreateNavigation( "Four Dragons Casino",	2025.3047, 1008.4356, 10.3846, CITY_LV ); // 8
+	CreateNavigation( "4 Dragons Casino",		2025.3047, 1008.4356, 10.3846, CITY_LV ); // 8
 	CreateNavigation( "Caligula's Casino", 		2191.3186, 1677.9497, 11.9736, CITY_LV ); // 10
 	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 11
 	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 12
@@ -4250,10 +4250,10 @@ public OnGameModeInit()
 	CreateATM( 2431.131347, -1219.477539, 25.022165, 0.000000, 0.0 ); // 15
 
 	// Casinos
-	CreateATM( 1985.135253, 1003.277404, 994.097290, 180.000 ); // 4 Drags
-	CreateATM( 1986.635253, 1032.391113, 994.097290, 0.00000 ); // 4 Drags
-	CreateATM( 2230.132324, 1647.986816, 1007.97900, 90.0000 ); // Caligs
-	CreateATM( 2241.676269, 1649.486816, 1007.97900, -90.000 ); // Caligs
+	CreateATM( 1985.135253, 1003.277404, 994.097290, 0.000 ); // 4 Drags
+	CreateATM( 1986.635253, 1032.391113, 994.097290, 180.0 ); // 4 Drags
+	CreateATM( 2230.132324, 1647.986816, 1007.97900, -90.0 ); // Caligs
+	CreateATM( 2241.676269, 1649.486816, 1007.97900, 90.00 ); // Caligs
 
 	/* ** Lumberjack ** */
 	CreateLumberjackTree( -2358.10000000, -84.60000000, 34.10000000 );
@@ -5828,13 +5828,13 @@ public ZoneTimer( )
 				}
 
 				// Increment Variables Whilst Not AFK
-				if ( !IsPlayerAFK( playerid ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) ) // New addition
+				if ( !IsPlayerAFK( playerid ) ) // New addition
 				{
 					// Increase Time Online
 					p_Uptime[ playerid ]++;
 
 					// Increase Irresistible Coins (1/20 = cred/min)
-   					if ( GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) )
+   					if ( GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 )
 					{
 						if ( iKeys != 0 || iUpDownKeys != 0 || iLeftRightKeys != 0 ) { // GetPlayerScore( playerid ) > 10 &&
 
@@ -8556,6 +8556,436 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
+/* RACE SYSTEM*/
+#define MAX_RACES 20
+
+#define DIALOG_RACE 30002
+#define DIALOG_RACE_MODE 30003
+#define DIALOG_RACE_FEE 30004
+#define DIALOG_RACE_POS 30005
+#define RACE_STREET_RACE 0
+#define RACE_OUTRUN 1
+
+enum E_RACE_DATA
+{
+	E_LOBBY_HOST,
+	E_MODE,
+	E_ENTRY_FEE,
+	E_POOL,
+	E_RACE_FINISH_SET,
+	Float: E_FINISH_POS[ 3 ],
+	Float: E_POSITION_PRIZE[ 3 ],
+	E_LAST_ACTIVE,
+	E_FINISH_MAP_ICON,
+	E_START_CHECKPOINT,
+	E_FINISH_CHECKPOINT,
+	E_CD_TIMER,
+	E_FINISHED_COUNT
+};
+
+new
+	g_raceData[ MAX_RACES ] [ E_RACE_DATA ],
+	Iterator:races<MAX_RACES>,
+	p_raceLobbyId[ MAX_PLAYERS ],
+	p_raceInvited[ MAX_PLAYERS ] [ MAX_RACES ]
+;
+
+CMD:race( playerid, params[ ] )
+{
+	if ( ! IsPlayerInAnyVehicle( playerid ) )
+		return SendError( playerid, "You must be in a vehicle to use this command" );
+
+	if ( !strcmp( params, "create", false, 6 ) )
+	{
+		new
+			prizePool;
+
+		if ( sscanf( params[ 7 ], "d", prizePool ) )
+			return SendUsage( playerid, "/race create [INITIAL PRIZE]" );
+
+		if ( prizePool > GetPlayerCash( playerid ) )
+			return SendError( playerid, "You don't have this amount of money." );
+
+		if ( prizePool < 1 )
+			return SendError( playerid, "Invalid amount of money." );
+
+		new
+			id = Iter_Free(races);
+
+		// TODO: remove inactive races
+
+		if ( id != -1 )
+		{
+			// default race lobby data
+			g_raceData[ id ] [ E_LOBBY_HOST ] = playerid;
+			g_raceData[ id ] [ E_MODE ] = RACE_STREET_RACE;
+			g_raceData[ id ] [ E_ENTRY_FEE ] = 1000;
+			g_raceData[ id ] [ E_POOL ] = prizePool;
+			g_raceData[ id ] [ E_RACE_FINISH_SET ] = 0;
+			g_raceData[ id ] [ E_POSITION_PRIZE ] [ 0 ] = 1.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 1 ] = 0.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 2 ] = 0.0;
+			g_raceData[ id ] [ E_FINISH_POS ] [ 0 ] = 1.0, g_raceData[ id ] [ E_FINISH_POS ] [ 1 ] = 0.0, g_raceData[ id ] [ E_FINISH_POS ] [ 2 ] = 0.0;
+
+			// reset user cash
+			p_raceLobbyId[ playerid ] = id;
+			GivePlayerCash( playerid, -prizePool );
+
+			// config
+			ShowRaceConfiguration( playerid, id );
+
+			// iter
+			Iter_Add( races, id );
+		}
+		else return SendError( playerid, "Unable to create a race as there are too many currently on-going." );
+	}
+	else if ( !strcmp( params, "invite", false, 6 ) )
+	{
+		new
+			inviteid;
+
+		if ( sscanf( params[ 7 ], #sscanf_u, inviteid ) )
+			return SendUsage( playerid, "/race invite [PLAYER]" );
+
+		if ( ! IsPlayerConnected( inviteid ) )
+			return SendServerMessage( playerid, "This player is not connected" );
+
+		if ( GetDistanceBetweenPlayers( inviteid, playerid ) > 50.0 )
+			return SendError( playerid, "This player must be within 50 meters to you." );
+
+		if ( p_raceLobbyId[ inviteid ] != -1 )
+			return SendError( playerid, "This player is currently already in a race lobby." );
+
+		new
+			raceid = p_raceLobbyId[ playerid ];
+
+		p_raceInvited[ inviteid ] [ raceid ] = true;
+
+	    SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid, raceid );
+		SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} You have invited %s(%d) to join your race.", ReturnPlayerName( inviteid ), inviteid );
+		return 1;
+	}
+	else if ( !strcmp( params, "join", false, 4 ) )
+	{
+		new
+			raceid;
+
+		if ( sscanf( params, "d", raceid ) ) return SendUsage( playerid, "/race join [RACE_ID]" );
+		else if ( ! Iter_Contains( races, raceid ) ) return SendError( playerid, "This race lobby does not exist." );
+		else if ( ! p_raceInvited[ playerid ] [ raceid ] ) return SendError( playerid, "You have not been invited to this race lobby." );
+		else if( GetDistanceBetweenPlayers( playerid, g_raceData[ raceid ] [ E_LOBBY_HOST ] ) > 50.0 ) return SendError( playerid, "This player must be within 50 meters to you." );
+		else
+		{
+			// enter race lobby
+			p_raceLobbyId[ playerid ] = raceid;
+			p_raceInvited[ playerid ] [ raceid ] = false;
+
+			// alert race players
+			foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+				SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has joined the race.", ReturnPlayerName( i ), i );
+			}
+		}
+		return 1;
+	}
+	else if ( strmatch( params, "config" ) )
+	{
+		new
+			raceid = p_raceLobbyId[ playerid ];
+
+		if ( ! Iter_Contains( races, raceid ) )
+			return SendError( playerid, "You are not in any race." );
+
+		if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] != playerid )
+			return SendError( playerid, "Only the host of the race lobby can configure the race." );
+
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	else if ( strmatch( params, "start" ) )
+	{
+		new
+			raceid = p_raceLobbyId[ playerid ],
+			vehicleid = GetPlayerVehicleID( playerid ),
+			Float: X, Float: Y, Float: Z, Float: A
+		;
+
+		if ( IsRaceHost( playerid, raceid ) )
+			return SendServerMessage( playerid, "You must be a race lobby host in order to use this command." );
+
+		// if ( E_RACE_FINISH_SET )
+
+		GetVehiclePos( vehicleid, X, Y, Z );
+		GetVehicleZAngle( vehicleid, A );
+
+		// destroy checkpoint/icon again
+		DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
+
+		// place checkpoint
+		g_raceData[ raceid ] [ E_START_CHECKPOINT ] = CreateDynamicRaceCP( 0, X, Y, Z, X + 20.0 * floatsin( -A, degrees ), Y + 20.0 * floatsin( -A, degrees ), Z, 5.0, -1, -1, 0 );
+
+	  	// reset players in map icon/cp
+	  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, 0 );
+
+	  	// stream to players
+		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+  			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
+		}
+
+		// restart timer
+		KillTimer( g_raceData[ raceid ] [ E_CD_TIMER ] );
+		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, 15 );
+	}
+	else if ( strmatch( params, "stop" ) )
+	{
+
+	}
+	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/CONFIG/START]" );
+}
+
+
+stock SendClientMessageToRace( raceid, colour, format[ ], va_args<> )
+{
+    va_format( szNormalString, sizeof( szNormalString ), format, va_start<3> );
+
+	foreach(new i : Player)
+	{
+	    if ( p_raceLobbyId[ i ] == raceid )
+			SendClientMessage( i, colour, szNormalString );
+	}
+	return 1;
+}
+
+function OnRaceCountdown( raceid, time )
+{
+	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
+		return;
+
+	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
+		if ( ! IsPlayerInDynamicRaceCP( playerid, g_raceData[ raceid ] [ E_START_CHECKPOINT ] ) ) {
+			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The race cannot be started as %s(%d) is not in the starting checkpoint.", ReturnPlayerName( playerid ), playerid );
+			g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
+			return;
+		}
+	}
+
+	if ( ! time )
+	{
+	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
+	    {
+    		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
+			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
+		}
+		g_raceData[ raceid ] [ E_CD_TIMER ] = -1;
+	}
+	else
+	{
+	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
+	    {
+    		GameTextForPlayer( playerid, sprintf( "~y~%d", time ), 2000, 3 );
+    		PlayerPlaySound( playerid, 1056, 0.0, 0.0, 0.0 );
+	    }
+		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
+	}
+}
+
+
+stock ShowRaceConfiguration( playerid, raceid )
+{
+	format( szLargeString, sizeof( szLargeString ), ""COL_WHITE"The current prize pool is %s\t \n"COL_GREY"Race Mode\t%s\n"COL_GREY"Entry Fee\t%s\n"COL_GREY"Finish Destination\t%s\n"COL_GREY"Prize Distribution\t%0.0f-%0.0f-%0.0f",
+
+								ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ), g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ), ConvertPrice( g_raceData[ raceid ] [ E_ENTRY_FEE ] ),
+
+								g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 1 ? ( ""COL_GREEN"ACTIVE" ) : ( ""COL_ORANGE"NOT SET" ) ) : ( ""COL_RED"DISABLED" ),
+
+								100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ]
+							);
+
+	SetPVarInt( playerid, "editing_race", raceid );
+	ShowPlayerDialog( playerid, DIALOG_RACE, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration", szLargeString, "Select", "Close" );
+	return 1;
+}
+
+#define positionToString(%0) (%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
+
+// public
+raceOnPlayerEnterDynamicRaceCP( playerid, checkpointid )
+{
+	new
+		raceid = p_raceLobbyId[ playerid ];
+
+	if( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] == checkpointid )
+	{
+		new
+			position = g_raceData[ raceid ] [ E_FINISHED_COUNT ] ++;
+
+		// give prize and alert
+		if ( 1 <= position <= 3 )
+		{
+			new
+				prizeMoney = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ ( g_raceData[ raceid ] [ E_FINISHED_COUNT ] - 1 ) ] );
+
+			GivePlayerCash( playerid, prizeMoney );
+			SendClientMessageToRace( raceid, -1, ""COL_WHITE"[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", position, positionToString( position ) );
+		}
+
+		// close race after members finished
+		new
+			members = GetRaceMemberCount( raceid );
+
+		if ( position >= 3 || position >= members ) {
+			// TODO: close race
+			print ("Shut race");
+		}
+	}
+}
+
+stock GetRaceMemberCount( raceid ) {
+	new
+		count = 0;
+
+	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
+		count ++;
+	}
+	return count;
+}
+
+rOnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+	if ( ( dialogid == DIALOG_RACE ) && response )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		switch ( listitem )
+		{
+			case 0: ShowPlayerDialog( playerid, DIALOG_RACE_MODE, DIALOG_STYLE_TABLIST, ""COL_GOLD"Race Configuration - Race Mode", ""COL_GREY"Street Race\t"COL_WHITE"Racers must meet the final destination\n"COL_GREY"Outrun"COL_WHITE"\tRacer must outrun everyone by 100 metres", "Select", "Close" );
+			case 1: ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", "Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Select", "Close" );
+			case 2:
+			{
+				if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN ) {
+					ShowRaceConfiguration( playerid, raceid );
+					return SendError( playerid, "The race does not require a final destination as the race mode is Outrun." );
+				}
+
+				g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 2;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = 0.0;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = 0.0;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = 0.0;
+				return SendServerMessage( playerid, "You are now setting the race destination. Use the MINIMAP to pick the finish position." );
+			}
+			case 3 .. 5: ShowPlayerDialog( playerid, DIALOG_RACE_POS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Prize Distribution", ""COL_WHITE"1st Position\t"COL_WHITE"2nd Position\t"COL_WHITE"3rd Position\n100%\t0%\t0%\n90%\t5%\t5%\n80%\t10%\t10%\n70%\t15%\t15%\n60%\t20%\t20%\n", "Select", "Close" );
+		}
+	}
+	if ( dialogid == DIALOG_RACE_MODE )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( response )
+		{
+			g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = listitem;
+			SendServerMessage( playerid, "You have set the race mode to "COL_GREY"%s"COL_WHITE".", g_raceData[ raceid ] [ E_POOL ], g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ) );
+		}
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( dialogid == DIALOG_RACE_FEE )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! response )
+			return ShowRaceConfiguration( playerid, raceid );
+
+		new
+			fee;
+
+		if ( sscanf( inputtext, "d", fee ) || ! ( 1000 < fee < 10000000 ) ) {
+			SendError( playerid, "Please specify an entry fee between $1,000 and $10,000,000." );
+			return ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", "Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Select", "Close" );
+		}
+
+		g_raceData[ raceid ] [ E_ENTRY_FEE ] = fee;
+		SendServerMessage( playerid, "You have set the entry fee of the race to %s.", ConvertPrice( fee ) );
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( dialogid == DIALOG_RACE_POS )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( response )
+		{
+			static const
+				Float: g_prizePoolDistribution[ ] [ 3 ] =
+				{
+					{ 1.0, 0.0, 0.0 },
+					{ 0.9, 0.05, 0.05 },
+					{ 0.8, 0.1, 0.1 },
+					{ 0.7, 0.15, 0.15 },
+					{ 0.6, 0.2, 0.2 }
+				}
+			;
+
+			// position prize
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] = g_prizePoolDistribution[ listitem ] [ 0 ];
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ] = g_prizePoolDistribution[ listitem ] [ 1 ];
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ] = g_prizePoolDistribution[ listitem ] [ 2 ];
+
+			// alert
+			SendServerMessage( playerid, "The prize pool distribution is now %0.0f%% for 1st, %0.0f%% for 2nd and %0.0f%% for 3rd place.", 100.0 * g_prizePoolDistribution[ listitem ] [ 0 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 1 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 2 ] );
+		}
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	return 1;
+}
+
+public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
+{
+	new
+		raceid = GetPVarInt( playerid, "editing_race" );
+
+	if ( IsRaceHost( playerid, raceid ) )
+	{
+		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 2 )
+		{
+			// set race position
+			g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = fX;
+			g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = fY;
+			g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = fZ;
+			g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 1;
+
+			// destroy checkpoint/icon again
+			DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] );
+			DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] );
+
+			// place checkpoint
+			g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = CreateDynamicMapIcon( fX, fY, fZ, 53, -1, -1, -1, 0, 1000.0, MAPICON_GLOBAL );
+			g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = CreateDynamicRaceCP( 0, g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
+
+		  	// reset players in map icon/cp
+		  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
+		  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, 0 );
+
+		  	// stream to players
+			foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+	  			Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, i );
+	  			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
+			}
+
+			// alert user
+			SendServerMessage( playerid, "You have selected the final destination for the race, use "COL_GREY"/race start"COL_WHITE" to begin." );
+			ShowRaceConfiguration( playerid, raceid );
+		}
+	}
+	return 1;
+}
+
+stock IsRaceHost( playerid, raceid ) {
+	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
+		return false;
+
+	return g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid;
+}
+
+/* end race system */
+
 CMD:dw( playerid, params[ ] ) return cmd_disposeweapon( playerid, params );
 CMD:disposeweapon(playerid, params[]) {
 
@@ -9667,7 +10097,6 @@ CMD:robitems( playerid, params[ ] )
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside the paintball arena." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rob is in a casino." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
@@ -13562,6 +13991,7 @@ CMD:rob( playerid, params[ ] )
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rob is in a casino." );
 		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
@@ -15482,8 +15912,7 @@ CMD:cc( playerid, params[ ] ) return cmd_clearchat( playerid, params );
 CMD:clearchat( playerid, params[ ] )
 {
 	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	for( new i; i < 50; i++ )
-	{
+	for( new i = 0; i < 50; i++ ) {
 	    SendClientMessageToAll( -1, " " );
 	}
     SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s cleared the chat.", ReturnPlayerName( playerid ) );
@@ -15560,7 +15989,7 @@ CMD:vforce( playerid, params[ ] )
 	    SetPlayerVirtualWorld( pID, GetVehicleVirtualWorld( vID ) );
 	    PutPlayerInVehicle( pID, vID, 0 );
 
-	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), vID );
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have forced %s(%d) to enter the vehicle id %d.", ReturnPlayerName( pID ), pID, vID );
 	  	AddAdminLogLineFormatted( "%s(%d) has forced %s to enter the vehicle id %d.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), vID );
     }
 	return 1;
@@ -15956,6 +16385,7 @@ CMD:vcreate( playerid, params [ ] )
 				LinkVehicleToInterior( vCar, GetPlayerInterior( playerid ) );
 				SetVehicleVirtualWorld( vCar, GetPlayerVirtualWorld( playerid ) );
 				PutPlayerInVehicle( playerid, vCar, 0 );
+ 				SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have spawned an "COL_GREY"%s"COL_WHITE".", GetVehicleName( iCarModel ) );
 			}
 		}
 		else SendError( playerid, "Invalid vehicle name written." );
@@ -18722,7 +19152,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 						g_containerData		[ i ] [ E_CLOSED ] = true;
 						g_LastExportModel	[ playerid ] = vModel;
-						p_AntiExportCarSpam [ playerid ] = g_iTime + 180;
+						p_AntiExportCarSpam [ playerid ] = g_iTime + 120;
 
 						MoveDynamicObject( g_containerData[ i ] [ E_DOOR ] [ 0 ], g_containerData[ i ] [ E_DOOR1_CORDS ] [ 0 ] + 0.05, g_containerData[ i ] [ E_DOOR1_CORDS ] [ 1 ] + 0.05, g_containerData[ i ] [ E_DOOR1_CORDS ] [ 2 ], ( 0.1 ), 0.0, 0.0, g_containerData[ i ] [ E_CLOSE_ANGLE ] [ 0 ] );
 						MoveDynamicObject( g_containerData[ i ] [ E_DOOR ] [ 1 ], g_containerData[ i ] [ E_DOOR2_CORDS ] [ 0 ] + 0.05, g_containerData[ i ] [ E_DOOR2_CORDS ] [ 1 ] + 0.05, g_containerData[ i ] [ E_DOOR2_CORDS ] [ 2 ], ( 0.1 ), 0.0, 0.0, g_containerData[ i ] [ E_CLOSE_ANGLE ] [ 1 ] );
@@ -18764,6 +19194,7 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 {
 	static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
+	raceOnPlayerEnterDynamicRaceCP( playerid, checkpointid );
 
 	if ( checkpointid == p_TruckingCheckPoint[ playerid ] )
 	{
@@ -20862,6 +21293,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( g_DialogLogging ) printf( "[DIALOG_LOG] %s(%d) - %d, %d, %d, %s", ReturnPlayerName( playerid ), playerid, dialogid, response, listitem, inputtext );
 
 	if ( strlen( inputtext ) ) strreplacechar( inputtext, '%', '#' ); // The percentage injection crasher (critical)
+	rOnDialogResponse(playerid, dialogid, response, listitem, inputtext);
 
     if ( dialogid == DIALOG_LOGIN )
     {
@@ -31254,7 +31686,7 @@ stock calculateVehicleSellPrice( vehicleid )
 	if ( fHealth < 0.0 )
 		fHealth = 0.0;
 
-	return floatround( float( g_aVehicleSellingPrice[ iModel - 400 ] ) * ( fHealth / 1000.0 ) );
+	return floatround( float( g_aVehicleSellingPrice[ iModel - 400 ] ) * ( fHealth / 1000.0 ) * 0.75 );
 }
 
 stock ArePlayersInHouse( houseid, owner )
