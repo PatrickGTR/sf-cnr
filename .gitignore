@@ -49,3 +49,7 @@ npcmodes/**/*
 !npcmodes/secureguard.pwn
 !npcmodes/recordings/
 !npcmodes/recordings/*.rec
+npcmodes/recordings/mission_4.rec
+npcmodes/recordings/mission_3.rec
+npcmodes/recordings/mission_2.rec
+npcmodes/recordings/mission_1.rec
