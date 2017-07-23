@@ -8566,6 +8566,8 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 #define RACE_STREET_RACE 0
 #define RACE_OUTRUN 1
 
+#define OUTRUN_DIST 20.0
+
 enum E_RACE_DATA
 {
 	E_LOBBY_HOST,
@@ -8580,7 +8582,10 @@ enum E_RACE_DATA
 	E_START_CHECKPOINT,
 	E_FINISH_CHECKPOINT,
 	E_CD_TIMER,
-	E_FINISHED_COUNT
+	E_FINISHED_COUNT,
+	bool: E_STARTED,
+	E_OUTRUN_SPHERE,
+	E_OUTRUN_LEAD
 };
 
 new
@@ -8616,12 +8621,17 @@ CMD:race( playerid, params[ ] )
 
 		if ( id != -1 )
 		{
+			// clear race
+			DestroyDynamicMapIcon( g_raceData[ id ] [ E_FINISH_MAP_ICON ] );
+			DestroyDynamicRaceCP( g_raceData[ id ] [ E_FINISH_CHECKPOINT ] );
+
 			// default race lobby data
 			g_raceData[ id ] [ E_LOBBY_HOST ] = playerid;
 			g_raceData[ id ] [ E_MODE ] = RACE_STREET_RACE;
 			g_raceData[ id ] [ E_ENTRY_FEE ] = 1000;
 			g_raceData[ id ] [ E_POOL ] = prizePool;
 			g_raceData[ id ] [ E_RACE_FINISH_SET ] = 0;
+			g_raceData[ id ] [ E_STARTED ] = false;
 			g_raceData[ id ] [ E_POSITION_PRIZE ] [ 0 ] = 1.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 1 ] = 0.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 2 ] = 0.0;
 			g_raceData[ id ] [ E_FINISH_POS ] [ 0 ] = 1.0, g_raceData[ id ] [ E_FINISH_POS ] [ 1 ] = 0.0, g_raceData[ id ] [ E_FINISH_POS ] [ 2 ] = 0.0;
 
@@ -8657,9 +8667,12 @@ CMD:race( playerid, params[ ] )
 		new
 			raceid = p_raceLobbyId[ playerid ];
 
+		if( g_raceData[ raceid ] [ E_STARTED ] )
+			return SendError( playerid, "You cannot invite players once you start the race." );
+
 		p_raceInvited[ inviteid ] [ raceid ] = true;
 
-	    SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid, raceid );
+	    SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race for %s, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ), raceid );
 		SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} You have invited %s(%d) to join your race.", ReturnPlayerName( inviteid ), inviteid );
 		return 1;
 	}
@@ -8672,6 +8685,8 @@ CMD:race( playerid, params[ ] )
 		else if ( ! Iter_Contains( races, raceid ) ) return SendError( playerid, "This race lobby does not exist." );
 		else if ( ! p_raceInvited[ playerid ] [ raceid ] ) return SendError( playerid, "You have not been invited to this race lobby." );
 		else if( GetDistanceBetweenPlayers( playerid, g_raceData[ raceid ] [ E_LOBBY_HOST ] ) > 50.0 ) return SendError( playerid, "This player must be within 50 meters to you." );
+		else if ( g_raceData[ raceid ] [ E_STARTED ] ) return SendError( playerid, "The race has already started." );
+		else if ( g_raceData[ raceid ] [ E_ENTRY_FEE ] > GetPlayerCash( playerid ) ) return SendError( playerid, "You need at least %s to join the race.", ConvertPrice( g_raceData[ raceid ] [ E_ENTRY_FEE ] - GetPlayerCash( playerid ) ) );
 		else
 		{
 			// enter race lobby
@@ -8682,6 +8697,10 @@ CMD:race( playerid, params[ ] )
 			foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
 				SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has joined the race.", ReturnPlayerName( i ), i );
 			}
+
+			// remove entry fee
+			GivePlayerCash( playerid, -g_raceData[ raceid ] [ E_ENTRY_FEE ] );
+			g_raceData[ raceid ] [ E_POOL ] += g_raceData[ raceid ] [ E_ENTRY_FEE ];
 		}
 		return 1;
 	}
@@ -8706,10 +8725,14 @@ CMD:race( playerid, params[ ] )
 			Float: X, Float: Y, Float: Z, Float: A
 		;
 
-		if ( IsRaceHost( playerid, raceid ) )
-			return SendServerMessage( playerid, "You must be a race lobby host in order to use this command." );
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You must be a race lobby host in order to use this command." );
 
-		// if ( E_RACE_FINISH_SET )
+		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] != 1 )
+			return SendError( playerid, "You must set a finishing location for the race." );
+
+		if ( g_raceData[ raceid ] [ E_STARTED ] )
+			return SendError( playerid, "The race has already started." );
 
 		GetVehiclePos( vehicleid, X, Y, Z );
 		GetVehicleZAngle( vehicleid, A );
@@ -8719,6 +8742,9 @@ CMD:race( playerid, params[ ] )
 
 		// place checkpoint
 		g_raceData[ raceid ] [ E_START_CHECKPOINT ] = CreateDynamicRaceCP( 0, X, Y, Z, X + 20.0 * floatsin( -A, degrees ), Y + 20.0 * floatsin( -A, degrees ), Z, 5.0, -1, -1, 0 );
+
+		// trigger started
+		g_raceData[ raceid ] [ E_STARTED ] = true;
 
 	  	// reset players in map icon/cp
 	  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, 0 );
@@ -8734,11 +8760,47 @@ CMD:race( playerid, params[ ] )
 	}
 	else if ( strmatch( params, "stop" ) )
 	{
+		new
+			raceid = p_raceLobbyId[ playerid ];
 
+		if ( g_raceData[ raceid ] [ E_STARTED ] )
+			return SendError( playerid, "The race has not started." );
+
+		g_raceData[ raceid ] [ E_STARTED ] = false;
+
+		// clear race
+		DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] ), g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = -1;
+		DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] ), g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = -1;
+		DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] ), g_raceData[ raceid ] [ E_START_CHECKPOINT ] = -1;
+
+		// alert
+		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has ended the race." );
 	}
-	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/CONFIG/START]" );
-}
+	else if ( ! strcmp( params, "kick", false, 4 ) )
+	{
+		new
+			raceid = p_raceLobbyId[ playerid ], kickid;
 
+		if ( ! IsRaceHost( playerid, raceid ) ) return SendError( playerid, "You are not a lobby host for any race." );
+		else if ( sscanf( params, #sscanf_u, kickid ) ) return SendUsage( playerid, "/race kick [PLAYER]" );
+		else if ( ! IsPlayerConnected( kickid ) || IsPlayerNPC( kickid ) ) return SendError( playerid, "This player is not connected." );
+		else if ( p_raceLobbyId[ kickid ] != raceid ) return SendError( playerid, "This player is not in your race." );
+		else
+		{
+			// kick player out
+			p_raceLobbyId[ kickid ] = -1;
+
+			// hide checkpoints
+	  		Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, kickid );
+	  		Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, kickid );
+	  		Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, kickid );
+
+	  		// alert
+	  		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has been kiced from the race.", ReturnPlayerName( kickid ), kickid );
+		}
+	}
+	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/CONFIG/START/STOP]" );
+}
 
 stock SendClientMessageToRace( raceid, colour, format[ ], va_args<> )
 {
@@ -8769,6 +8831,21 @@ function OnRaceCountdown( raceid, time )
 	{
 	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
 	    {
+	    	// create sphere ahead of leader
+	    	if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid && g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
+	    	{
+	    		new
+	    			vehicleid = GetPlayerVehicleID( playerid ), Float: A;
+
+	    		GetVehicleZAngle( vehicleid, A );
+
+	    		// create sphere obj
+	    		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
+	    		g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = CreateDynamicCircle( 0.0, 0.0, 0.0, 5.0 );
+	    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, OUTRUN_DIST * floatsin( -A, degrees ), OUTRUN_DIST * floatsin( -A, degrees ) );
+	    	}
+
+	    	// show gametext
     		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
 			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
 		}
@@ -8784,7 +8861,6 @@ function OnRaceCountdown( raceid, time )
 		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
 	}
 }
-
 
 stock ShowRaceConfiguration( playerid, raceid )
 {
@@ -8819,10 +8895,10 @@ raceOnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 		if ( 1 <= position <= 3 )
 		{
 			new
-				prizeMoney = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ ( g_raceData[ raceid ] [ E_FINISHED_COUNT ] - 1 ) ] );
+				prizeMoney = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ ( position - 1 ) ] );
 
 			GivePlayerCash( playerid, prizeMoney );
-			SendClientMessageToRace( raceid, -1, ""COL_WHITE"[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", position, positionToString( position ) );
+			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", ReturnPlayerName( playerid ), playerid, position, positionToString( position ), ConvertPrice( prizeMoney ) );
 		}
 
 		// close race after members finished
@@ -19179,6 +19255,7 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 		iState = GetPlayerState( playerid )
 	;
 
+	// spikes
     if ( iState == PLAYER_STATE_DRIVER && iVehicle != 0 )
     {
 		foreach(new i : SpikeStrip) if ( g_spikestripData[ i ] [ E_SPHERE ] == areaid ) {
@@ -19188,6 +19265,24 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 			break;
 		}
     }
+
+    // races
+   	new
+   		raceid = p_raceLobbyId[ playerid ];
+
+	if ( Iter_Contains( races, raceid ) && g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] == areaid )
+	{
+		new
+			Float: A;
+
+		// new leader
+		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
+		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has taken the lead for the race.", ReturnPlayerName( playerid ), playerid );
+
+		// see if ahead
+		GetVehicleZAngle( iVehicle, A );
+		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, OUTRUN_DIST * floatsin( -A, degrees ), OUTRUN_DIST * floatsin( -A, degrees ) );
+	}
     return 1;
 }
 
