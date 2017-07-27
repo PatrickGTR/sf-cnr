@@ -19637,4 +19637,19 @@ stock removeExcessiveBuildings( playerid )
 	// Remove all roulette tables
 	RemoveBuildingForPlayer(playerid, 1978, 2241.4453, 1619.6094, 1006.2266, 10000.0);
 
+	// TDK HQ
+	RemoveBuildingForPlayer(playerid, 6937, 2572.2422, 2703.9609, 19.0234, 0.25);
+	RemoveBuildingForPlayer(playerid, 7038, 2527.8203, 2703.9609, 10.8203, 0.25);
+	RemoveBuildingForPlayer(playerid, 7169, 2514.5859, 2822.9531, 13.2500, 0.25);
+	RemoveBuildingForPlayer(playerid, 7170, 2706.4531, 2762.9141, 13.2500, 0.25);
+	RemoveBuildingForPlayer(playerid, 7201, 2615.5000, 2740.6719, 85.7188, 0.25);
+	RemoveBuildingForPlayer(playerid, 7102, 2514.5859, 2822.9531, 13.2500, 0.25);
+	RemoveBuildingForPlayer(playerid, 3474, 2523.9688, 2818.4922, 16.7422, 0.25);
+	RemoveBuildingForPlayer(playerid, 6929, 2572.2422, 2703.9609, 19.0234, 0.25);
+	RemoveBuildingForPlayer(playerid, 7172, 2546.0313, 2828.7344, 11.5391, 0.25);
+	RemoveBuildingForPlayer(playerid, 7040, 2594.3750, 2680.0234, 13.2500, 0.25);
+	RemoveBuildingForPlayer(playerid, 7229, 2629.2188, 2742.9922, 14.8906, 0.25);
+	RemoveBuildingForPlayer(playerid, 7104, 2706.4531, 2762.9141, 13.2500, 0.25);
+	RemoveBuildingForPlayer(playerid, 961, 2564.9922, 2822.7500, 10.2109, 100.0);
+	RemoveBuildingForPlayer(playerid, 960, 2564.9922, 2822.7500, 10.2031, 100.0);
 }
