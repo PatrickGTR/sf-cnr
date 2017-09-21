@@ -13,6 +13,7 @@
 */
 
 #pragma dynamic 					7200000
+
 #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
@@ -35,6 +36,9 @@
 #include                            < gvar >
 #include                            < lookupffs >
 #include 							< FloodControl >
+#include 							< RouteConnector >
+#include 							< mapandreas >
+//#include 							< sampac >
 #include 							< color >
 #include 							< mailer >
 #include 							< a_weapondata >
@@ -124,13 +128,15 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
-
+#define positionToString(%0) 		(%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
 
 /* Dynamic Macros */
 #define GetTaxRate()				(GetGVarFloat("taxrate"))
 #define IsDoubleXP()				(GetGVarInt("doublexp")!=0)
 #define IsProxiesBanned()			(GetGVarInt("proxyban")!=0)
 
+#define UpdateBusinessTitle(%0) \
+	 mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `BUSINESSES` m ON m.`OWNER_ID`=f.`ID` WHERE m.`ID`=%d",%0),true,"OnUpdateBusinessTitle","i",%0)
 #define UpdateGarageTitle(%0) \
 	mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `GARAGES` m ON m.`OWNER`=f.`ID` WHERE m.`ID`=%d",(%0)),true,"OnUpdateGarageTitle","i",(%0))
 #define UpdateGarageData(%0) \
@@ -160,7 +166,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v10.8.32"
+#define FILE_BUILD                	"v10.10.32"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -310,14 +316,14 @@ const
 #define DIALOG_FLAT_CONFIG          55          + 1000
 #define DIALOG_FLAT_CONTROL         56          + 1000
 #define DIALOG_FLAT_TITLE	        57          + 1000
-// #define DIALOG_POLICE_TUTORIAL      58          + 1000
+#define DIALOG_BUSINESS_TERMINAL	58          + 1000
 #define DIALOG_WEAPON_DEAL          59          + 1000
 #define DIALOG_WEAPON_DEAL_BUY      60          + 1000
 #define DIALOG_HOUSE_PW             61          + 1000
 #define DIALOG_HOUSE_SET_PW         62          + 1000
 #define DIALOG_HOUSE_WEAPONS        63          + 1000
 #define DIALOG_HOUSE_WEAPONS_ADD    64          + 1000
-//#define DIALOG_VIEW_LEO_TUT         65          + 1000
+#define DIALOG_BUSINESS_BUY         65          + 1000
 #define DIALOG_FURNITURE            66          + 1000
 #define DIALOG_FURNITURE_LIST 		67          + 1000
 #define DIALOG_FURNITURE_OPTION     68          + 1000
@@ -387,6 +393,19 @@ const
 #define DIALOG_ACC_GUARD_MODE 		133			+ 1000
 #define DIALOG_ACC_GUARD_CONFIRM	134			+ 1000
 #define DIALOG_ACC_GUARD_DEL_CANCEL	135			+ 1000
+#define DIALOG_RACE 				136			+ 1000
+#define DIALOG_RACE_MODE 			137			+ 1000
+#define DIALOG_RACE_FEE 			138			+ 1000
+#define DIALOG_RACE_POS 			139			+ 1000
+#define DIALOG_RACE_DISTANCE 		140			+ 1000
+#define DIALOG_RACE_KICK 			141			+ 1000
+#define DIALOG_RACE_DEST 			142			+ 1000
+#define DIALOG_RACE_PRESELECT 		143			+ 1000
+#define DIALOG_RACE_CUSTOM_DEST 	144			+ 1000
+#define DIALOG_BUSINESS_SELL		145			+ 1000
+#define DIALOG_BUSINESS_NAME 		146 		+ 1000
+#define DIALOG_BUSINESS_ADD_MEMBER	147			+ 1000
+#define DIALOG_BUSINESS_MEMBERS		148			+ 1000
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
@@ -418,7 +437,7 @@ const
 #define CLASS_MEDIC              	( 3 )
 
 /* ** Checkpoints ** */
-#define ALL_CHECKPOINTS             ( 39 )
+#define ALL_CHECKPOINTS             ( 42 )
 
 #define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
@@ -459,6 +478,9 @@ const
 #define CP_DROP_OFF_COP_LV 			( 36 )
 #define CP_DROP_OFF_FBI             ( 37 )
 #define CP_DROP_OFF_HELI         	( 38 )
+#define CP_BIZ_TERMINAL_COKE		( 39 )
+#define CP_BIZ_TERMINAL_METH 		( 40 )
+#define CP_BIZ_TERMINAL_WEED 		( 41 )
 
 /* ** Discord ** */
 //#include <socket>
@@ -473,7 +495,7 @@ new stock
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ 50 ] [ 137 ] =
+	g_randomMessages[ 51 ] [ 137 ] =
 	{
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
@@ -524,7 +546,8 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for strong security features!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
 		{ "SLOT_MACHINES" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a Casino and win up to 35x on the money you place on a single number!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a Casino and win up to 35x on the money you place on a single number!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -693,7 +716,7 @@ stock const
 ;
 
 /* ** House System ** */
-#define MAX_HOUSES                  ( 1500 )
+#define MAX_HOUSES                  ( 2000 )
 #define MAX_HOUSE_WEAPONS           ( 7 ) // Don't change...
 #define HOUSE_MAPICON_RADIUS 		( 25.0 )
 
@@ -1078,8 +1101,8 @@ new
 
 enum E_CAR_MODS
 {
-	E_CATEGORY,			E_MODEL_ID,					E_NAME[ MAX_COMPONENT_NAME ],
-	E_PRICE
+	E_CATEGORY,						E_LIMIT,						E_MODEL_ID,
+	E_NAME[ MAX_COMPONENT_NAME ], 	E_PRICE
 };
 
 enum E_PIMP_DATA
@@ -1097,201 +1120,177 @@ new
 	g_vehicleComponentsData[ ] [ E_CAR_MODS ] =
 	{
 		// Spoilers
-		{ CATEGORY_SPOILERS, 1023, "Fury", 8000 },
-		{ CATEGORY_SPOILERS, 1001, "Win", 9000 },
-		{ CATEGORY_SPOILERS, 1000, "Pro", 10000 },
-		{ CATEGORY_SPOILERS, 1016, "Worx", 10000 },
-		{ CATEGORY_SPOILERS, 1058, "Alien - Stratum", 10000 },
-		{ CATEGORY_SPOILERS, 1014, "Champ", 11000 },
-		{ CATEGORY_SPOILERS, 1003, "Alpha", 12000 },
-		{ CATEGORY_SPOILERS, 1002, "Drag", 13000 },
-		{ CATEGORY_SPOILERS, 1015, "Race", 14000 },
-		{ CATEGORY_SPOILERS, 1060, "X-Flow - Stratum", 14000 },
-		{ CATEGORY_SPOILERS, 1049, "Alien - Flash", 14000 },
-		{ CATEGORY_SPOILERS, 1162, "Alien - Jester", 18000 },
-		{ CATEGORY_SPOILERS, 1164, "Alien - Uranus", 19000 },
-		{ CATEGORY_SPOILERS, 1147, "Alien - Elegy", 22000 },
-		{ CATEGORY_SPOILERS, 1050, "X-Flow - Flash", 23000 },
-		{ CATEGORY_SPOILERS, 1138, "Alien - Sultan", 25000 },
-		{ CATEGORY_SPOILERS, 1158, "X-Flow - Jester", 27000 },
-		{ CATEGORY_SPOILERS, 1163, "X-Flow - Uranus", 28000 },
-		{ CATEGORY_SPOILERS, 1146, "X-Flow - Elegy", 30000 },
-		{ CATEGORY_SPOILERS, 1139, "X-Flow - Sultan", 35000 },
+		{ CATEGORY_SPOILERS, 0, 1023, "Fury", 8000 },
+		{ CATEGORY_SPOILERS, 0, 1001, "Win", 9000 },
+		{ CATEGORY_SPOILERS, 0, 1000, "Pro", 10000 },
+		{ CATEGORY_SPOILERS, 0, 1016, "Worx", 10000 },
+		{ CATEGORY_SPOILERS, 0, 1058, "Alien - Stratum", 10000 },
+		{ CATEGORY_SPOILERS, 0, 1014, "Champ", 11000 },
+		{ CATEGORY_SPOILERS, 0, 1003, "Alpha", 12000 },
+		{ CATEGORY_SPOILERS, 0, 1002, "Drag", 13000 },
+		{ CATEGORY_SPOILERS, 0, 1015, "Race", 14000 },
+		{ CATEGORY_SPOILERS, 0, 1060, "X-Flow - Stratum", 14000 },
+		{ CATEGORY_SPOILERS, 0, 1049, "Alien - Flash", 14000 },
+		{ CATEGORY_SPOILERS, 0, 1162, "Alien - Jester", 18000 },
+		{ CATEGORY_SPOILERS, 0, 1164, "Alien - Uranus", 19000 },
+		{ CATEGORY_SPOILERS, 0, 1147, "Alien - Elegy", 22000 },
+		{ CATEGORY_SPOILERS, 0, 1050, "X-Flow - Flash", 23000 },
+		{ CATEGORY_SPOILERS, 0, 1138, "Alien - Sultan", 25000 },
+		{ CATEGORY_SPOILERS, 0, 1158, "X-Flow - Jester", 27000 },
+		{ CATEGORY_SPOILERS, 0, 1163, "X-Flow - Uranus", 28000 },
+		{ CATEGORY_SPOILERS, 0, 1146, "X-Flow - Elegy", 30000 },
+		{ CATEGORY_SPOILERS, 0, 1139, "X-Flow - Sultan", 35000 },
 
 		// Hood
-		{ CATEGORY_HOOD, 1011, "Race Scoop", 13000 },
-		{ CATEGORY_HOOD, 1004, "Champ Scoop", 15000 },
-		{ CATEGORY_HOOD, 1005, "Fury Scoop", 16000 },
-		{ CATEGORY_HOOD, 1012, "Worx Scoop", 23000 },
+		{ CATEGORY_HOOD, 0, 1011, "Race Scoop", 13000 },
+		{ CATEGORY_HOOD, 0, 1004, "Champ Scoop", 15000 },
+		{ CATEGORY_HOOD, 0, 1005, "Fury Scoop", 16000 },
+		{ CATEGORY_HOOD, 0, 1012, "Worx Scoop", 23000 },
 
 		// Bags
-		{ CATEGORY_BAGS, 11745, "Bag", 15000 },
-		{ CATEGORY_BAGS, 1279, "Tent Pack", 17000 },
-		{ CATEGORY_BAGS, 1550, "Money Bag", 35000 },
-		{ CATEGORY_BAGS, 1210, "Money Case", 25000 },
-		{ CATEGORY_BAGS, 1575, "Grey Drug Bag", 15000 },
-		{ CATEGORY_BAGS, 1576, "Orange Drug Bag", 15000 },
-		{ CATEGORY_BAGS, 1577, "Yellow Drug Bag", 15000 },
-		{ CATEGORY_BAGS, 1578, "Green Drug Bag", 15000 },
-		{ CATEGORY_BAGS, 1579, "Blue Drug Bag", 15000 },
-		{ CATEGORY_BAGS, 1580, "Red Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 11745, "Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1279, "Tent Pack", 17000 },
+		{ CATEGORY_BAGS, 0, 1550, "Money Bag", 35000 },
+		{ CATEGORY_BAGS, 0, 1210, "Money Case", 25000 },
+		{ CATEGORY_BAGS, 0, 1575, "Grey Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1576, "Orange Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1577, "Yellow Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1578, "Green Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1579, "Blue Drug Bag", 15000 },
+		{ CATEGORY_BAGS, 0, 1580, "Red Drug Bag", 15000 },
 
 		// Lamps
-		{ CATEGORY_LAMPS, 1013, "Round Fog", 15000 },
-		{ CATEGORY_LAMPS, 1024, "Square Fog", 25000 },
+		{ CATEGORY_LAMPS, 0, 1013, "Round Fog", 15000 },
+		{ CATEGORY_LAMPS, 0, 1024, "Square Fog", 25000 },
 
 		// Wheels
-		{ CATEGORY_WHEELS, 1025, "Offroad", 25000 },
-		{ CATEGORY_WHEELS, 1080, "Switch", 25000 },
-		{ CATEGORY_WHEELS, 1077, "Classic", 30000 },
-		{ CATEGORY_WHEELS, 1073, "Shadow", 35000 },
-		{ CATEGORY_WHEELS, 1079, "Cutter", 35000 },
-		{ CATEGORY_WHEELS, 1085, "Atomic", 35000 },
-		{ CATEGORY_WHEELS, 1096, "Ahab", 35000 },
-		{ CATEGORY_WHEELS, 1078, "Twist", 40000 },
-		{ CATEGORY_WHEELS, 1081, "Grove", 40000 },
-		{ CATEGORY_WHEELS, 1084, "Trance", 45000 },
-		{ CATEGORY_WHEELS, 1075, "Rimshine", 45000 },
-		{ CATEGORY_WHEELS, 1074, "Mega", 45000 },
-		{ CATEGORY_WHEELS, 1076, "Wires", 50000 },
-		{ CATEGORY_WHEELS, 1098, "Access", 55000 },
-		{ CATEGORY_WHEELS, 1097, "Virtual", 65000 },
-		{ CATEGORY_WHEELS, 1082, "Import", 75000},
-		{ CATEGORY_WHEELS, 1327, "Large Wheel", 80000 },
-		{ CATEGORY_WHEELS, 1083, "Dollar", 100000 },
+		{ CATEGORY_WHEELS, 0, 1025, "Offroad", 25000 },
+		{ CATEGORY_WHEELS, 0, 1080, "Switch", 25000 },
+		{ CATEGORY_WHEELS, 0, 1077, "Classic", 30000 },
+		{ CATEGORY_WHEELS, 0, 1073, "Shadow", 35000 },
+		{ CATEGORY_WHEELS, 0, 1079, "Cutter", 35000 },
+		{ CATEGORY_WHEELS, 0, 1085, "Atomic", 35000 },
+		{ CATEGORY_WHEELS, 0, 1096, "Ahab", 35000 },
+		{ CATEGORY_WHEELS, 0, 1078, "Twist", 40000 },
+		{ CATEGORY_WHEELS, 0, 1081, "Grove", 40000 },
+		{ CATEGORY_WHEELS, 0, 1084, "Trance", 45000 },
+		{ CATEGORY_WHEELS, 0, 1075, "Rimshine", 45000 },
+		{ CATEGORY_WHEELS, 0, 1074, "Mega", 45000 },
+		{ CATEGORY_WHEELS, 0, 1076, "Wires", 50000 },
+		{ CATEGORY_WHEELS, 0, 1098, "Access", 55000 },
+		{ CATEGORY_WHEELS, 0, 1097, "Virtual", 65000 },
+		{ CATEGORY_WHEELS, 0, 1082, "Import", 75000},
+		{ CATEGORY_WHEELS, 0, 1327, "Large Wheel", 80000 },
+		{ CATEGORY_WHEELS, 0, 1083, "Dollar", 100000 },
 
 		// Bullbar
-		{ CATEGORY_BULLBAR, 1123, "Bullbar Chrome Bars", 30000 },
-		{ CATEGORY_BULLBAR, 1100, "Chrome Grill", 35000 },
-		{ CATEGORY_BULLBAR, 1125, "Bullbar Chrome Lights", 37000 },
+		{ CATEGORY_BULLBAR, 0, 1123, "Bullbar Chrome Bars", 30000 },
+		{ CATEGORY_BULLBAR, 0, 1100, "Chrome Grill", 35000 },
+		{ CATEGORY_BULLBAR, 0, 1125, "Bullbar Chrome Lights", 37000 },
 
 		// Front Bumper
-		{ CATEGORY_FRONT_BUMPER, 1155, "Alien - Stratum", 15000 },
-		{ CATEGORY_FRONT_BUMPER, 1160, "Alien - Jester", 20000 },
-		{ CATEGORY_FRONT_BUMPER, 1166, "Alien - Uranus", 20000 },
-		{ CATEGORY_FRONT_BUMPER, 1153, "Alien - Flash", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1157, "X-Flow - Stratum", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1171, "Alien - Elegy", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1181, "Slamin - Blade", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1185, "Slamin - Remington", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1190, "Slamin - Tornado", 25000 },
-		{ CATEGORY_FRONT_BUMPER, 1165, "X-Flow - Uranus", 30000 },
-		{ CATEGORY_FRONT_BUMPER, 1169, "Alien - Sultan", 30000 },
-		{ CATEGORY_FRONT_BUMPER, 1173, "X-Flow - Jester", 30000 },
-		{ CATEGORY_FRONT_BUMPER, 1152, "X-Flow - Flash", 35000 },
-		{ CATEGORY_FRONT_BUMPER, 1172, "X-Flow - Elegy", 35000 },
-		{ CATEGORY_FRONT_BUMPER, 1170, "X-Flow - Sultan", 40000 },
-		{ CATEGORY_FRONT_BUMPER, 1174, "Chrome - Broadway 1", 45000 },
-		{ CATEGORY_FRONT_BUMPER, 1176, "Chrome - Broadway 2", 45000 },
-		{ CATEGORY_FRONT_BUMPER, 1117, "Chrome - Slamvan", 50000 },
-		{ CATEGORY_FRONT_BUMPER, 1182, "Chrome - Blade", 50000 },
-		{ CATEGORY_FRONT_BUMPER, 1188, "Slamin - Savanna", 50000 },
-		{ CATEGORY_FRONT_BUMPER, 1189, "Chrome - Savanna",50000 },
-		{ CATEGORY_FRONT_BUMPER, 1191, "Chrome - Tornado", 50000 },
-		{ CATEGORY_FRONT_BUMPER, 1179, "Chrome - Remington", 55000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1155, "Alien - Stratum", 15000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1160, "Alien - Jester", 20000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1166, "Alien - Uranus", 20000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1153, "Alien - Flash", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1157, "X-Flow - Stratum", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1171, "Alien - Elegy", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1181, "Slamin - Blade", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1185, "Slamin - Remington", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1190, "Slamin - Tornado", 25000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1165, "X-Flow - Uranus", 30000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1169, "Alien - Sultan", 30000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1173, "X-Flow - Jester", 30000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1152, "X-Flow - Flash", 35000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1172, "X-Flow - Elegy", 35000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1170, "X-Flow - Sultan", 40000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1174, "Chrome - Broadway 1", 45000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1176, "Chrome - Broadway 2", 45000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1117, "Chrome - Slamvan", 50000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1182, "Chrome - Blade", 50000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1188, "Slamin - Savanna", 50000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1189, "Chrome - Savanna",50000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1191, "Chrome - Tornado", 50000 },
+		{ CATEGORY_FRONT_BUMPER, 0, 1179, "Chrome - Remington", 55000 },
 
 		// Rear Bumper
-		{ CATEGORY_REAR_BUMPER, 1154, "Alien - Stratum", 15000 },
-		{ CATEGORY_REAR_BUMPER, 1159, "Alien - Jester", 15000 },
-		{ CATEGORY_REAR_BUMPER, 1168, "Alien - Uranus", 15000 },
-		{ CATEGORY_REAR_BUMPER, 1175, "Slamin - Broadway", 15000 },
-		{ CATEGORY_REAR_BUMPER, 1150, "Alien - Flash", 18000 },
-		{ CATEGORY_REAR_BUMPER, 1149, "Alien - Elegy", 19000 },
-		{ CATEGORY_REAR_BUMPER, 1140, "X-Flow - Sultan", 20000 },
-		{ CATEGORY_REAR_BUMPER, 1178, "Slamin - Remington", 23000 },
-		{ CATEGORY_REAR_BUMPER, 1156, "X-Flow Straum", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1161, "X-Flow - Jester", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1183, "Slamin - Blade", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1186, "Slamin - Savanna", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1167, "X-Flow - Uranus", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1193, "Slamin - Tornado", 25000 },
-		{ CATEGORY_REAR_BUMPER, 1151, "X-Flow - Flash", 28000 },
-		{ CATEGORY_REAR_BUMPER, 1148, "X-Flow - Elegy", 29000 },
-		{ CATEGORY_REAR_BUMPER, 1141, "Alien - Sultan", 30000 },
-		{ CATEGORY_REAR_BUMPER, 1177, "Slamin - Broadway", 35000 },
-		{ CATEGORY_REAR_BUMPER, 1180, "Chrome - Remington", 50000 },
-		{ CATEGORY_REAR_BUMPER, 1184, "Chrome - Blade", 50000 },
-		{ CATEGORY_REAR_BUMPER, 1187, "Chrome - Savanna", 50000 },
-		{ CATEGORY_REAR_BUMPER, 1192, "Chrome - Tornado", 50000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1154, "Alien - Stratum", 15000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1159, "Alien - Jester", 15000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1168, "Alien - Uranus", 15000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1175, "Slamin - Broadway", 15000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1150, "Alien - Flash", 18000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1149, "Alien - Elegy", 19000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1140, "X-Flow - Sultan", 20000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1178, "Slamin - Remington", 23000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1156, "X-Flow Straum", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1161, "X-Flow - Jester", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1183, "Slamin - Blade", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1186, "Slamin - Savanna", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1167, "X-Flow - Uranus", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1193, "Slamin - Tornado", 25000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1151, "X-Flow - Flash", 28000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1148, "X-Flow - Elegy", 29000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1141, "Alien - Sultan", 30000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1177, "Slamin - Broadway", 35000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1180, "Chrome - Remington", 50000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1184, "Chrome - Blade", 50000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1187, "Chrome - Savanna", 50000 },
+		{ CATEGORY_REAR_BUMPER, 0, 1192, "Chrome - Tornado", 50000 },
 
 		// Vents
-		{ CATEGORY_VENTS, 1142, "Left Oval Vents", 4000 },
-		{ CATEGORY_VENTS, 1143, "Right Oval Vents", 4000 },
-		{ CATEGORY_VENTS, 1144, "Left Square Vents", 6000 },
-		{ CATEGORY_VENTS, 1145, "Right Square Vents", 6000 },
-		{ CATEGORY_VENTS, 914, "Large Air Vent", 250000 },
+		{ CATEGORY_VENTS, 0, 1142, "Left Oval Vents", 4000 },
+		{ CATEGORY_VENTS, 0, 1143, "Right Oval Vents", 4000 },
+		{ CATEGORY_VENTS, 0, 1144, "Left Square Vents", 6000 },
+		{ CATEGORY_VENTS, 0, 1145, "Right Square Vents", 6000 },
+		{ CATEGORY_VENTS, 3, 914, "Large Air Vent", 250000 },
 
 		// Neon
-		{ CATEGORY_NEON, 18647, "Red Neon", 200000 },
-		{ CATEGORY_NEON, 18648, "Blue Neon", 200000 },
-		{ CATEGORY_NEON, 18649, "Green Neon", 200000 },
-		{ CATEGORY_NEON, 18650, "Yellow Neon", 200000 },
-		{ CATEGORY_NEON, 18651, "Pink Neon", 200000 },
-		{ CATEGORY_NEON, 18652, "White Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18647, "Red Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18648, "Blue Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18649, "Green Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18650, "Yellow Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18651, "Pink Neon", 200000 },
+		{ CATEGORY_NEON, 0, 18652, "White Neon", 200000 },
 
 		// Military Items
-		{ CATEGORY_MILITARY_ITEMS, 1654, "Dynamite", 8000 },
-		{ CATEGORY_MILITARY_ITEMS, 19590, "Knife", 14000 },
-		{ CATEGORY_MILITARY_ITEMS, 19832, "Ammo Box", 20000 },
-		{ CATEGORY_MILITARY_ITEMS, 2040, "Ammo box closed", 20000 },
-		{ CATEGORY_MILITARY_ITEMS, 2041, "Ammo box open", 20000 },
-		{ CATEGORY_MILITARY_ITEMS, 1672, "Fag Grenade", 30069 },
-		{ CATEGORY_MILITARY_ITEMS, 964, "Army crate", 40000 },
-		// { CATEGORY_MILITARY_ITEMS, 1636, "Mini Rocket", 45000 },
-		{ CATEGORY_MILITARY_ITEMS, 11705, "Ancient Telephone", 54000 },
-		// { CATEGORY_MILITARY_ITEMS, 3786, "Small Rocket", 62000 },
-		// { CATEGORY_MILITARY_ITEMS, 3790, "Rocket", 68000 },
-		{ CATEGORY_MILITARY_ITEMS, 11738, "Medikit", 135000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 1654, "Dynamite", 8000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 19590, "Sword", 14000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 19832, "Ammo Box", 20000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 2040, "Ammo box closed", 20000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 2041, "Ammo box open", 20000 },
+		{ CATEGORY_MILITARY_ITEMS, 1, 964, "Army crate", 40000 },
+		{ CATEGORY_MILITARY_ITEMS, 0, 11738, "Medikit", 135000 },
 
 		// Mechanic Items
-		{ CATEGORY_MECHANIC_ITEMS, 18644, "Screwdriver", 1500 },
-		{ CATEGORY_MECHANIC_ITEMS, 18633, "Wrench", 2500 },
-		{ CATEGORY_MECHANIC_ITEMS, 18635, "Hammer", 2500 },
-		{ CATEGORY_MECHANIC_ITEMS, 1650, "Gas Can", 5000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19998, "Dippo!", 6969 },
-		{ CATEGORY_MECHANIC_ITEMS, 19621, "Oil Can", 7500 },
-		{ CATEGORY_MECHANIC_ITEMS, 19918, "Small Box", 15000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19816, "Oxygen Tank", 20000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19921, "Toolbox", 23000 },
-		{ CATEGORY_MECHANIC_ITEMS, 2006, "Starting Motor", 25000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19917, "Engine", 65000 },
-		{ CATEGORY_MECHANIC_ITEMS, 920, "Generator", 80000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19631, "Sledge Hammer", 90000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19893, "Laptop Opened", 95000 },
-		{ CATEGORY_MECHANIC_ITEMS, 19894, "Laptop Closed", 95000 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 18644, "Screwdriver", 1500 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 18633, "Wrench", 2500 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 18635, "Hammer", 2500 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 1650, "Gas Can", 5000 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 19621, "Oil Can", 7500 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 19816, "Oxygen Tank", 20000 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 19921, "Toolbox", 23000 },
+		{ CATEGORY_MECHANIC_ITEMS, 1, 19917, "Engine", 65000 },
+		{ CATEGORY_MECHANIC_ITEMS, 1, 920, "Generator", 80000 },
+		{ CATEGORY_MECHANIC_ITEMS, 0, 19631, "Sledge Hammer", 90000 },
 
 		// Miscellaneous
-		{ CATEGORY_MISCELLANEOUS, 19804, "Lock", 1500 },
-		{ CATEGORY_MISCELLANEOUS, 19309, "Taxi White", 2000 },
-		{ CATEGORY_MISCELLANEOUS, 1933, "Mini Poker Coins Stack", 4000 },
-		{ CATEGORY_MISCELLANEOUS, 19310, "Taxi Black", 4000 },
-		{ CATEGORY_MISCELLANEOUS, 18875, "Pocket Radio", 4000 },
-		{ CATEGORY_MISCELLANEOUS, 19586, "Spatula", 6500 },
-		{ CATEGORY_MISCELLANEOUS, 2485, "Toy Car", 7000 },
-		{ CATEGORY_MISCELLANEOUS, 2484, "Toy Boat", 7000 },
-		{ CATEGORY_MISCELLANEOUS, 18632, "Fishing Rod", 8000 },
-		{ CATEGORY_MISCELLANEOUS, 1486, "Wine bottle", 12000 },
-		{ CATEGORY_MISCELLANEOUS, 19585, "Cooking Pan 1", 14500 },
-		{ CATEGORY_MISCELLANEOUS, 19584, "Cooking Pan 2", 14500 },
-		{ CATEGORY_MISCELLANEOUS, 19581, "Baking Pan", 15000 },
-		{ CATEGORY_MISCELLANEOUS, 19624, "Suitcase", 15000 },
-		{ CATEGORY_MISCELLANEOUS, 19314, "Bullhorn", 15000 },
-		{ CATEGORY_MISCELLANEOUS, 2226, "Radio", 15000 },
-		{ CATEGORY_MISCELLANEOUS, 1955, "Small stick", 20000 },
-		{ CATEGORY_MISCELLANEOUS, 18646, "Police Light", 25000 },
-		{ CATEGORY_MISCELLANEOUS, 1952, "Big stick", 30000 },
-		{ CATEGORY_MISCELLANEOUS, 19280, "Floodlight", 30000 },
-		{ CATEGORY_MISCELLANEOUS, 2192, "Pocket Satellite", 30000 },
-		{ CATEGORY_MISCELLANEOUS, 19419, "Police Light Strip", 45000 },
-		{ CATEGORY_MISCELLANEOUS, 19320, "Pumpkin", 45000 },
-		{ CATEGORY_MISCELLANEOUS, 19306, "Red Flag", 50000 },
-		{ CATEGORY_MISCELLANEOUS, 19307, "Blue Flag", 50000 },
-		{ CATEGORY_MISCELLANEOUS, 19086, "Chainsaw Dildo", 69696},
-		{ CATEGORY_MISCELLANEOUS, 11704, "Devil Mask", 75000 },
-		{ CATEGORY_MISCELLANEOUS, 2985, "Mounted Minigun", 80000 },
-		{ CATEGORY_MISCELLANEOUS, 19315, "Deer", 133769 },
-		{ CATEGORY_MISCELLANEOUS, 1609, "Turtle", 250000 },
-		{ CATEGORY_MISCELLANEOUS, 19601, "Snow Plough", 1500000 }
+		{ CATEGORY_MISCELLANEOUS, 0, 19309, "Taxi White", 2000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19310, "Taxi Black", 4000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 18632, "Fishing Rod", 8000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19624, "Suitcase", 15000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19314, "Bullhorn", 15000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 18646, "Police Light", 25000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19280, "Floodlight", 30000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19419, "Police Light Strip", 45000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19320, "Pumpkin", 45000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19306, "Red Flag", 50000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19307, "Blue Flag", 50000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19086, "Chainsaw Dildo", 69696},
+		{ CATEGORY_MISCELLANEOUS, 0, 11704, "Devil Mask", 75000 },
+		{ CATEGORY_MISCELLANEOUS, 2, 2985, "Mounted Minigun", 80000 },
+		{ CATEGORY_MISCELLANEOUS, 0, 19315, "Deer", 133769 },
+		{ CATEGORY_MISCELLANEOUS, 0, 1609, "Turtle", 250000 },
+		{ CATEGORY_MISCELLANEOUS, 1, 19601, "Snow Plough", 1500000 }
 	},
 
 	g_vehiclePimpData[ MAX_PLAYERS ] [ MAX_BUYABLE_VEHICLES ] [ E_PIMP_DATA ]
@@ -3057,62 +3056,161 @@ new
 	bool: p_rouletteBetLocked 	[ MAX_PLAYERS char ]
 ;
 
-/* ** Feature Boost ** */
-#define MAX_CONTRACTS 						( 14 )
-#define INVALID_CONTRACT_ID 				( 0 )
+/* ** Race System ** */
+#define MAX_RACES 				( 32 )
 
-#define CONTRACT_ROB_STORES					( 1 )
-#define CONTRACT_FIRES						( 2 )
-#define CONTRACT_WOOD_CUTTING				( 3 )
-#define CONTRACT_BLOW_UP					( 4 )
-#define CONTRACT_BURGLAR					( 5 )
-#define CONTRACT_MINING						( 6 )
-#define CONTRACT_METH						( 7 )
-#define CONTRACT_ROB_SECURITY				( 8 )
-#define CONTRACT_ROB_BANK					( 9 )
-#define CONTRACT_EXPORT_CARS				( 10 )
-#define CONTRACT_ROB_ATMS					( 11 )
-#define CONTRACT_TRUCKING 					( 12 )
-#define CONTRACT_SLOT_MACHINES				( 13 )
+#define RACE_STREET_RACE 		0
+#define RACE_OUTRUN 			1
+#define OUTRUN_DIST 			6.0
 
-enum E_CONTRACT_DATA
+enum E_RACE_DATA
 {
-	E_ID,
-	E_COST,						E_REQUIRED_POINTS,			E_REQUIRED_INTERVAL,
-	Float: E_PAYOUT,
-
-	E_CONTRACT_NAME[ 24 ],		E_DESCRIPTION[ 64 ]
+	E_LOBBY_HOST, 				E_MODE, 						E_ENTRY_FEE,
+	E_POOL, 					E_RACE_FINISH_SET, 				Float: E_FINISH_POS[ 3 ],
+	E_CD_TIMER,					E_FINISH_MAP_ICON, 				Float: E_POSITION_PRIZE[ 3 ],
+	E_START_CHECKPOINT,  		E_FINISH_CHECKPOINT, 			E_FINISHED_COUNT,
+	bool: E_STARTED, 			E_OUTRUN_SPHERE, 				E_OUTRUN_OBJECT,
+	E_OUTRUN_LEAD, 				E_OUTRUN_TIMER, 				Float: E_OUTRUN_DISTANCE
 };
 
-new stock
-	g_contractData[ MAX_CONTRACTS ] [ E_CONTRACT_DATA ] =
-	{
-		{ CONTRACT_ROB_STORES,		10000, 10, 10, 1.0, 	"Store Robbery Frenzy",		"Rob %d stores" },
-		{ CONTRACT_FIRES,			10000, 10, 10, 1.0, 	"Firebuster",				"Extinguish %d fires" },
-		{ CONTRACT_WOOD_CUTTING,	10000, 10, 10, 1.0, 	"Lumberjack",				"Chop down %d trees" },
-		{ CONTRACT_BLOW_UP,			10000, 10, 10, 1.0, 	"The Terrorist",			"Blow up %d police or bank locations" },
-		{ CONTRACT_BURGLAR, 		10000, 10, 10, 1.0, 	"Ghost",					"Rob %d furniture items" },
-		{ CONTRACT_MINING,			10000, 10, 10, 1.0,		"Miner 69er",				"Mine %d ores" },
-		{ CONTRACT_METH,			10000, 10, 10, 1.0,		"Heisenberg",				"Yield %d meth bags" },
-		{ CONTRACT_ROB_SECURITY,	10000, 10, 10, 1.0, 	"ChuffSec's Coffee Break",	"Rob ChuffSec's security truck %d times" },
-		{ CONTRACT_ROB_BANK,		10000, 10, 10, 1.0,		"The Bank Job",				"Rob %d bank safes" },
-		{ CONTRACT_EXPORT_CARS,		10000, 10, 10, 1.0,		"Grand Theft Auto",			"Export %d vehicles to the shipyard" },
-		{ CONTRACT_ROB_ATMS,		10000, 10, 10, 1.0,		"ATM Frenzy",				"Rob %d ATMs" },
-		{ CONTRACT_TRUCKING,		10000, 10, 10, 1.0,		"Ill Trucker",				"Export %d truck loads on hard" },
-		{ CONTRACT_SLOT_MACHINES,	10000, 10, 10, 1.0,		"Banging7Chances",			"Use a slot machine %d times with 2x chance" }
-	},
+enum E_RACE_DEST_DATA
+{
+	E_NAME[ 16 ],
+	Float: E_X, 				Float: E_Y, 					Float: E_Z
+};
 
-	p_ContractSelected[ MAX_PLAYERS char ],
-	p_ContractTimestamp[ MAX_PLAYERS ]
+new
+	g_raceFinalDestinations[ ] [ E_RACE_DEST_DATA ] =
+	{
+		{ "LS Airport", 		1487.0245, -2493.751, 13.2720 },
+		{ "LS Pier", 			369.61540, -2011.367, 7.39200 },
+		{ "LS Grove Street", 	2487.9739, -1666.938, 13.0633 },
+		{ "LV Airport", 		1477.6246, 1207.3376, 10.8203 },
+		{ "LV Old Strip", 		2350.5371, 2143.6689, 10.6815 },
+		{ "El Quebrados",		-885.4323, 1660.3818, 27.0871 },
+		{ "SF Airport", 		-1117.212, 375.26310, 14.1484 },
+		{ "Mount Chiliad", 		-2324.256, -1624.915, 483.883 },
+		{ "SF Gant Bridge", 	-2681.314, 1763.9274, 68.4844 },
+		{ "SF Dealership ",		-2422.670, -609.4055, 132.562 }
+	},
+	g_raceData[ MAX_RACES ] [ E_RACE_DATA ],
+	Iterator:races<MAX_RACES>,
+	p_raceLobbyId[ MAX_PLAYERS ] = { -1, ... },
+	p_raceInvited[ MAX_PLAYERS ] [ MAX_RACES ]
 ;
 
-CreateContract( playerid, contractid )
-{
-	if ( 0 < contractid < MAX_CONTRACTS )
-		return;
+/* ** VIP House Display ** */
+#define MAX_BUSINESSES				( 100 )
+#define MAX_DROPS 					( 5 )
+#define MAX_BUSINESS_MEMBERS 		( 4 )
 
-	p_ContractSelected{ playerid } = contractid;
-}
+#define BUSINESS_WEED				( 0 )
+#define BUSINESS_METH				( 1 )
+#define BUSINESS_COKE 				( 2 )
+
+#define MAX_STOCK 					( 30 )
+#define MAX_WEED_AMOUNT				( 30 )
+#define MAX_METH_AMOUNT 			( 20 )
+#define MAX_COKE_AMOUNT 			( 10 )
+
+#define IsBusinessAerialVehicle(%0) (%0 == 417)
+
+enum E_BUSINESS_DATA
+{
+	E_NAME[ 32 ],				E_COST,							E_INTERIOR_ID,
+	E_OWNER_ID,					E_INTERIOR_TYPE,				E_MEMBERS[ MAX_BUSINESS_MEMBERS ],
+
+	E_SUPPLIES,					E_PRODUCT,						Text3D: E_PROD_LABEL,
+	E_EQUIPMENT_LVL,			E_STAFF_LVL,					E_PROD_TIMESTAMP,
+
+	E_EXPORT_CP[ MAX_DROPS ],	E_EXPORT_ICON[ MAX_DROPS ],		E_EXPORT_INDEX[ MAX_DROPS ],
+	E_EXPORT_VALUE,				E_EXPORT_CIRCLE[ MAX_DROPS ],
+	E_EXPORT_CITY,				bool: E_EXPORTED[ MAX_DROPS ],
+
+	Float: E_X, 				Float: E_Y, 					Float: E_Z,
+	E_ENTER_CP,					E_EXIT_CP,						E_VEHICLE_DECOR,
+	Text3D: E_ENTER_LABEL, 		Text3D: E_EXIT_LABEL,
+};
+
+enum E_BUSINESS_INT_DATA
+{
+	E_NAME[ 5 ],
+	Float: E_X, 				Float: E_Y, 				Float: E_Z,
+	Float: E_PROD_X, 			Float: E_PROD_Y, 			Float: E_PROD_Z,
+	E_COST_PRICE,				E_PRODUCTION_TIME, 			E_MAX_SUPPLIES,
+};
+
+new
+	g_businessInteriorData 			[ 3 ] [ E_BUSINESS_INT_DATA ] =
+	{
+		{ "Weed", -1719.1877, -1377.3049, 5874.8721, -1734.094, -1374.4567, 5874.1475, 10000, 4, MAX_WEED_AMOUNT }, // 10 * 30 = 300
+		{ "Meth", 2040.54810, 1011.41470, 1513.2777, 2029.2456, 1003.55200, 1510.2416, 18000, 5, MAX_METH_AMOUNT }, // 25 * 20 = 450
+		{ "Coke", 2566.50070, -1273.2887, 1143.7203, 2558.5261, -1290.6298, 1143.7242, 50000, 6, MAX_COKE_AMOUNT }  // 50 * 10 = 750
+	},
+	Float: g_roadBusinessExportData[ 3 ] [ 20 ] [ 3 ] =
+	{
+		// sf
+		{
+			{ -1955.7727, -859.1984, 31.6437 }, { -1821.7363, -175.0119, 8.97350 }, { -2052.4871, -42.96680, 34.9414 }, { -2474.6616, -128.5411, 25.2988 },
+			{ -2755.9614, -130.8518, 6.41240 }, { -2796.0234, 772.94480, 50.2686 }, { -2471.4382, 786.22140, 35.1719 }, { -2438.4072, 1038.4346, 50.1885 },
+			{ -2513.1267, 1217.6478, 36.9885 }, { -2141.8496, 1217.6788, 47.1079 }, { -2049.0244, 1108.5524, 53.1531 }, { -1822.6821, 1302.3539, 59.2771 },
+			{ -1629.2491, 886.42290, 8.97560 }, { -1808.1614, 781.52560, 30.2879 }, { -1758.9180, 515.09530, 28.1970 }, { -2191.0745, 1031.4736, 79.8809 },
+			{ -2495.9778, 322.49280, 30.3050 }, { -2496.6187, 153.75120, 7.07910 }, { -2278.0718, 0.8677000, 34.9636 }, { -1931.6978, 268.7024, 40.6186 }
+		},
+
+		// lv
+		{
+			{ 2213.5220, 1968.3105, 10.4767 }, { 2636.1663, 1070.0991, 10.5039 }, { 2524.9036, 918.76700, 10.5057 }, { 2452.5000, 697.58150, 11.1406 },
+			{ 2493.1589, 1211.8390, 10.5000 }, { 2810.7197, 2021.3927, 10.5000 }, { 2825.9368, 2602.4082, 10.5000 }, { 2113.6406, 2416.5217, 49.2031 },
+			{ 1747.8733, 2240.5823, 10.5000 }, { 1062.3818, 2071.9485, 10.5000 }, { 1165.3585, 1998.6810, 10.5000 }, { 1091.2410, 1890.5908, 10.5000 },
+			{ 1461.9596, 972.89570, 9.81850 }, { 1696.4849, 918.22110, 10.4934 }, { 1920.3811, 959.92890, 10.4965 }, { 2490.7720, 2397.3308, 3.89006 },
+			{ 423.12482, 2547.1460, 16.2824 }, { -141.1849, 1239.3811, 19.4340 }, { -106.3463, 1373.7528, 10.2663 }, { -830.0345, 1461.5646, 14.3749 }
+		},
+
+		// ls
+		{
+			{ 2473.6917, -1692.1799, 13.0918 }, { 2299.9851, -1796.2080, 13.1327 }, { 2185.0979, -1669.2697, 14.1983 }, { 2087.7139, -1569.9736, 12.7890 },
+			{ 2352.3740, -1159.1722, 27.2014 }, { 1027.1260, -1364.0104, 13.4350 }, { 369.96310, -2043.9053, 7.54070 }, { 1449.2119, -1842.7052, 13.4189 },
+			{ 1859.6608, -1855.0867, 13.4456 }, { 1924.1621, -2124.3977, 13.4511 }, { 2107.5293, -2416.4065, 13.4130 }, { 2174.3906, -2265.9956, 13.2424 },
+			{ 2780.3481, -2494.4780, 13.5250 }, { 2457.3801, -1969.2207, 13.3801 }, { 1826.3085, -1125.9072, 23.8518 }, { 973.43920, -1257.8624, 16.6373 },
+			{ 1344.5089, -1752.9572, 13.0808 }, { 1315.9122, -918.28160, 37.7431 }, { 995.74950, -921.07030, 41.8990 }, { 659.64170, -1417.0704, 13.5658 }
+		}
+	},
+	Float: g_airBusinessExportData[ 3 ] [ 20 ] [ 3 ] =
+	{
+		// SF
+		{
+			// TODO
+			{ 2473.6917, -1692.1799, 13.0918 }, { 2299.9851, -1796.2080, 13.1327 }, { 2185.0979, -1669.2697, 14.1983 }, { 2087.7139, -1569.9736, 12.7890 },
+			{ 2352.3740, -1159.1722, 27.2014 }, { 1027.1260, -1364.0104, 13.4350 }, { 369.96310, -2043.9053, 7.54070 }, { 1449.2119, -1842.7052, 13.4189 },
+			{ 1859.6608, -1855.0867, 13.4456 }, { 1924.1621, -2124.3977, 13.4511 }, { 2107.5293, -2416.4065, 13.4130 }, { 2174.3906, -2265.9956, 13.2424 },
+			{ 2780.3481, -2494.4780, 13.5250 }, { 2457.3801, -1969.2207, 13.3801 }, { 1826.3085, -1125.9072, 23.8518 }, { 973.43920, -1257.8624, 16.6373 },
+			{ 1344.5089, -1752.9572, 13.0808 }, { 1315.9122, -918.28160, 37.7431 }, { 995.74950, -921.07030, 41.8990 }, { 659.64170, -1417.0704, 13.5658 }
+		},
+
+		// LV
+		{
+			{ 1529.8427, 1028.5660, 10.9956 }, { 2586.6440, 1120.3911, 16.9110 }, { 2644.9968, 1771.3281, 18.9883 }, { 2778.0713, 2595.2104, 11.0078 },
+			{ 2555.3167, 2312.9204, 11.3524 }, { 2484.9651, 2342.5156, 10.9972 }, { 2388.4307, 2813.8101, 11.0202 }, { 923.60300, 2164.7764, 11.6780 },
+			{ 1742.3774, 2216.2712, 11.0024 }, { 1141.4895, 1961.2336, 10.9952 }, { 697.58980, 1983.6066, 8.81450 }, { 431.90130, 2544.4658, 22.6280 },
+			{ 1449.7188, 2370.3245, 12.7976 }, { 2046.7288, 2233.2097, 11.2274 }, { 1714.8638, 1795.0941, 11.0988 }, { 2301.5208, 1734.5417, 10.9983 },
+			{ 2436.1479, 716.43300, 11.5811 }, { 1902.6721, 950.40110, 10.9957 }, { -164.0041, 1227.7338, 19.9193 }, { -823.3140, 1454.9871, 14.2841 }
+		},
+
+		// LS
+		{
+			{ 2491.0469, -1669.1971, 13.5086 }, { 2418.0603, -1232.2655, 24.6227 }, { 1211.1519, -1097.1523, 25.6324 }, { 666.42710, -1289.1672, 14.1763 },
+			{ 1289.6339, -787.46360, 96.7151 }, { 656.07680, -1865.7794, 5.63650 }, { 369.99610, -2029.1451, 7.91720 }, { 708.94980, -1430.4326, 13.7140 },
+			{ 1005.2496, -1349.0999, 13.6180 }, { 1480.3268, -1895.1959, 22.4396 }, { 1119.8038, -2037.0354, 78.6172 }, { 1657.9122, -1705.7296, 20.6737 },
+			{ 1923.6810, -1679.9901, 13.6601 }, { 1700.0122, -2146.6257, 13.7366 }, { 1700.0122, -2146.6257, 13.7366 }, { 2746.0486, -2445.2803, 13.8218 },
+			{ 1908.2769, -1319.6750, 14.4599 }, { 1286.0675, 181.429900, 20.4392 }, { 2314.9763, -4.9733000, 32.7214 }, { 665.01440, -614.88020, 16.5338 }
+		}
+	},
+	g_businessData					[ MAX_BUSINESSES ] [ E_BUSINESS_DATA ],
+	g_isBusinessVehicle 			[ MAX_VEHICLES ] = { INVALID_VEHICLE_ID, ... },
+	g_businessVehicle 				[ MAX_BUSINESSES ] = { INVALID_VEHICLE_ID, ... },
+	Iterator:business<MAX_BUSINESSES>
+;
 
 /* ** Player Data ** */
 new
@@ -3151,6 +3249,7 @@ new
 	p_BankMoney               	 	[ MAX_PLAYERS ],
 	p_OwnedHouses                   [ MAX_PLAYERS ],
 	p_OwnedVehicles                 [ MAX_PLAYERS ],
+	p_OwnedBusinesses				[ MAX_PLAYERS ],
 	p_TrackingTimer             	[ MAX_PLAYERS ] = { INVALID_TIMER_ID, ... },
 	p_ContractedAmount          	[ MAX_PLAYERS ],
 	p_MetalMelter                   [ MAX_PLAYERS ],
@@ -3355,8 +3454,10 @@ new
 	p_VipPackageName				[ MAX_PLAYERS ] [ 16 ],
 	p_WeaponKills					[ MAX_PLAYERS ] [ MAX_WEAPONS ],
 	p_ExtraAssetSlots 				[ MAX_PLAYERS char ],
+	//bool: p_forcedAnticheat			[ MAX_PLAYERS char ],
 	p_TiedAtTimestamp 				[ MAX_PLAYERS ],
-	bool: p_AutoSpin				[ MAX_PLAYERS char ]
+	bool: p_AutoSpin				[ MAX_PLAYERS char ],
+	p_InBusiness 					[ MAX_PLAYERS ] = { -1, ... }
 ;
 
 /* ** Server Data ** */
@@ -3402,10 +3503,12 @@ new
  	bool: g_HappyHour				= false,
  	Float: g_HappyHourRate			= 0.0,
  	g_iTime 						= 0,
-	g_ispUnbans 					[ ] =
+ 	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
+ 	g_VehicleLastAttacked 			[ MAX_VEHICLES ]
+	/*g_ispUnbans 					[ ] =
 	{
 		"Hurricane", "Columbus Networks USA", "IP-Only"
-	}
+	}*/
 ;
 
 /* ** Forwards ** */
@@ -3462,6 +3565,7 @@ public OnGameModeInit()
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
 	DisableInteriorEnterExits( );
+	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
 	// mysql_log( LOG_ALL );
 	//SetBannedWeapons( 17, 35, 36, 37, 38, 39, 44, 45 );
@@ -4638,6 +4742,7 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "SELECT * FROM `GARAGES`", true, "OnGaragesLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `CASINO_POOLS`", true, "OnCasinoPoolsLoad", "" );
+	mysql_function_query( dbHandle, "SELECT * FROM `BUSINESSES`", true, "OnBusinessLoad", "" );
 	mysql_function_query( dbHandle, "SELECT `MAP_TAX`.*,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "OnMapTaxLoad", "" );
 
 	/* ** Timers ** */
@@ -5618,6 +5723,30 @@ public OnServerUpdate( )
 			ReplaceObjectModel( g_atmData[ i ] [ E_OBJECT ], 19324 );
  		}
 
+
+ 		// Replenish product
+ 		foreach (new businessid : business)
+ 		{
+ 			if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 && g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] < g_iTime ) {
+
+ 				// update the timestamps and switch stock for product
+ 				g_businessData[ businessid ] [ E_PRODUCT ] += g_businessData[ businessid ] [ E_SUPPLIES ];
+ 				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = 0;
+ 				g_businessData[ businessid ] [ E_SUPPLIES ] = 0;
+
+ 				// alert any associates
+ 				foreach (new p : Player) if ( IsBusinessAssociate( p, businessid ) )  {
+ 					SendClientMessageFormatted( p, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" Production has completed for "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+ 				}
+
+ 				// update db
+ 				UpdateBusinessData( businessid );
+ 			}
+
+ 			// update label anyway
+ 			UpdateBusinessProductionLabel( businessid );
+ 		}
+
     	// Replenish Vaults
 		for( new i = 0; i < MAX_CITIES; i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
 		{
@@ -6218,7 +6347,7 @@ public OnPlayerConnect( playerid )
 
 public OnLookupComplete( playerid, success )
 {
-	if ( IsProxyUser( playerid ) )
+	/*if ( IsProxyUser( playerid ) )
 	{
 		if ( IsProxiesBanned( ) )
 		{
@@ -6234,7 +6363,24 @@ public OnLookupComplete( playerid, success )
 	}
 
 	format( szLargeString, sizeof( szLargeString ), "SELECT * FROM `MEGABAN` WHERE `ISP`='%s' LIMIT 0,1", mysql_escape( GetPlayerISP( playerid ) ) );
-	mysql_function_query( dbHandle, szLargeString, true, "OnPlayerMegaBanCheck", "i", playerid );
+	mysql_function_query( dbHandle, szLargeString, true, "OnPlayerMegaBanCheck", "i", playerid );*/
+
+	SendDeathMessage( INVALID_PLAYER_ID, playerid, 200 );
+
+	if ( IsProxyEnabledForPlayer( playerid ) ) {
+		format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server! (%s)", ReturnPlayerName( playerid ), playerid, GetPlayerCountryName( playerid ) );
+	} else {
+		format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server!", ReturnPlayerName( playerid ), playerid );
+	}
+
+	foreach(new i : Player)
+	{
+		if ( p_PlayerSettings[ i ] { SETTING_CONNECTION_LOG } )
+			SendClientMessage( i, COLOR_CONNECT, szNormalString );
+	}
+
+	format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
+	Discord_Say( DISCORD_GENERAL, szNormalString );
 	return 1;
 }
 
@@ -6313,7 +6459,7 @@ thread OnPlayerBanCheck( playerid )
 	return 1;
 }
 
-thread OnPlayerMegaBanCheck( playerid )
+/*thread OnPlayerMegaBanCheck( playerid )
 {
 	new
 		rows, fields;
@@ -6359,7 +6505,7 @@ thread OnPlayerMegaBanCheck( playerid )
 		Discord_Say( DISCORD_GENERAL, szNormalString );
 	}
 	return 1;
-}
+}*/
 
 public OnPlayerDisconnect( playerid, reason )
 {
@@ -6383,12 +6529,13 @@ public OnPlayerDisconnect( playerid, reason )
 
 	// Reset player variables
     SavePlayerData( playerid, true );
+	DisconnectFromGang( playerid );
 	dischargeVehicles( playerid );
 	CutSpectation( playerid );
-	DisconnectFromGang( playerid );
 	LeavePlayerPaintball( playerid );
 	resetPlayerStreaks( playerid );
 	StopPlayerTruckingCourier( playerid );
+    RemovePlayerFromRace( playerid );
 	RemovePlayerFromRoulette( playerid );
 	p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
@@ -6492,6 +6639,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_TicketTimestamp[ playerid ] = 0;
 	p_ExtraAssetSlots{ playerid } = 0;
 	p_HitmarkerSound{ playerid } = 0;
+	p_OwnedBusinesses[ playerid ] = 0;
 	g_LastExportModel[ playerid ] = 0;
 	p_usingSlotMachine[ playerid ] = -1;
 	p_GangSplitProfits[ playerid ] = 0;
@@ -6584,9 +6732,11 @@ public OnPlayerDisconnect( playerid, reason )
 		}
 
 		if ( i < MAX_GANGS ) 	p_gangInvited[ playerid ] [ i ] = false;
-		if ( i < MAX_SETTINGS ) 	p_PlayerSettings[ playerid ] { i } = false;
-		if ( i < MAX_TOYS ) 		p_ToyUnlocked[ playerid ] { i } = false;
+		if ( i < MAX_SETTINGS ) p_PlayerSettings[ playerid ] { i } = false;
+		if ( i < MAX_TOYS ) 	p_ToyUnlocked[ playerid ] { i } = false;
 		if ( i < MAX_WEAPONS ) 	p_WeaponKills[ playerid ] [ i ] = 0;
+		if ( i < MAX_RACES )	p_raceInvited[ playerid ] [ i ] = false;
+		if ( i < MAX_STREAKS ) 	p_streakData[ playerid ] [ i ] [ E_BEST_STREAK ] = 0, p_streakData[ playerid ] [ i ] [ E_STREAK ] = 0;
 
 		p_BlockedPM[ playerid ] [ i ] = false;
 	}
@@ -6989,6 +7139,9 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 			iModel = GetVehicleModel( hitid )
 		;
 
+		g_VehicleLastAttacker[ hitid ] = playerid;
+		g_VehicleLastAttacked[ hitid ] = g_iTime;
+
 		// BMX, Bike, Mountain Bike, Train, Train Cargo, Train Passenger, Tram, Freight Box
 		if ( iModel != 481 && iModel != 509 && iModel != 510 && iModel != 537 && iModel != 569 && iModel != 570 && iModel != 538 && iModel != 449 && iModel != 590 ) {
 			GetPlayerPos( playerid, X, Y, Z );
@@ -7372,6 +7525,7 @@ public OnPlayerDeath(playerid, killerid, reason)
     p_QuitToAvoidTimestamp[ playerid ] = 0;
     CutSpectation( playerid );
     StopPlayerNpcRobbery( playerid );
+    RemovePlayerFromRace( playerid );
     RemovePlayerStolensFromHands( playerid );
     StopPlayerUsingSlotMachine( playerid );
     RemoveEquippedOre( playerid );
@@ -7655,6 +7809,33 @@ public OnVehicleSpawn( vehicleid )
 
 public OnVehicleDeath( vehicleid, killerid )
 {
+	printf("OnVehicleDeath( %d, %d )\n", vehicleid, killerid );
+	if ( g_isBusinessVehicle[ vehicleid ] && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
+	{
+		new
+			businessid = g_isBusinessVehicle[ vehicleid ],
+			attackerid = g_VehicleLastAttacker[ vehicleid ]
+		;
+
+		printf("attacker id %d, last attacked %d seconds ago\n", attackerid, ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ));
+		if ( IsPlayerConnected( attackerid ) && ! IsBusinessAssociate( attackerid, businessid ) && ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ) < 7 )
+		{
+			new
+				payout = floatround( float( g_businessData[ businessid ] [ E_EXPORT_VALUE ] ) * 0.25 );
+
+			GivePlayerCash( attackerid, payout );
+			SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, ConvertPrice( payout ) );
+		}
+		else
+		{
+			SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] ) );
+		}
+
+		// stop the mission
+		StopBusinessExportMission( businessid );
+	}
+
+
     ResetVehicleBurglaryData( vehicleid );
     KillEveryoneInShamal( vehicleid );
     ResetVehicleMethlabData( vehicleid, true );
@@ -8556,46 +8737,6 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
-/* RACE SYSTEM*/
-#define MAX_RACES 20
-
-#define DIALOG_RACE 30002
-#define DIALOG_RACE_MODE 30003
-#define DIALOG_RACE_FEE 30004
-#define DIALOG_RACE_POS 30005
-#define RACE_STREET_RACE 0
-#define RACE_OUTRUN 1
-
-#define OUTRUN_DIST 12.0
-
-enum E_RACE_DATA
-{
-	E_LOBBY_HOST,
-	E_MODE,
-	E_ENTRY_FEE,
-	E_POOL,
-	E_RACE_FINISH_SET,
-	Float: E_FINISH_POS[ 3 ],
-	Float: E_POSITION_PRIZE[ 3 ],
-	E_LAST_ACTIVE,
-	E_FINISH_MAP_ICON,
-	E_START_CHECKPOINT,
-	E_FINISH_CHECKPOINT,
-	E_CD_TIMER,
-	E_FINISHED_COUNT,
-	bool: E_STARTED,
-	E_OUTRUN_SPHERE,
-	E_OUTRUN_OBJECT,
-	E_OUTRUN_LEAD
-};
-
-new
-	g_raceData[ MAX_RACES ] [ E_RACE_DATA ],
-	Iterator:races<MAX_RACES>,
-	p_raceLobbyId[ MAX_PLAYERS ] = { -1, ... },
-	p_raceInvited[ MAX_PLAYERS ] [ MAX_RACES ]
-;
-
 CMD:race( playerid, params[ ] )
 {
 	if ( ! IsPlayerInAnyVehicle( playerid ) )
@@ -8607,18 +8748,19 @@ CMD:race( playerid, params[ ] )
 			prizePool;
 
 		if ( sscanf( params[ 7 ], "d", prizePool ) )
-			return SendUsage( playerid, "/race create [INITIAL PRIZE]" );
+			return SendUsage( playerid, "/race create [INITIAL PRIZE POOL]" );
+
+		if ( prizePool < 1000 )
+			return SendError( playerid, "The minimum initial prize pool must be $1,000." );
 
 		if ( prizePool > GetPlayerCash( playerid ) )
 			return SendError( playerid, "You don't have this amount of money." );
 
-		if ( prizePool < 1 )
-			return SendError( playerid, "Invalid amount of money." );
+		if ( p_raceLobbyId[ playerid ] != -1 )
+			return SendError( playerid, "You are currently in a race lobby, use "COL_GREY"/race leave"COL_WHITE" to exit." );
 
 		new
 			id = Iter_Free(races);
-
-		// TODO: remove inactive races
 
 		if ( id != -1 )
 		{
@@ -8633,6 +8775,8 @@ CMD:race( playerid, params[ ] )
 			g_raceData[ id ] [ E_POOL ] = prizePool;
 			g_raceData[ id ] [ E_RACE_FINISH_SET ] = 0;
 			g_raceData[ id ] [ E_STARTED ] = false;
+			g_raceData[ id ] [ E_OUTRUN_DISTANCE ] = 50.0;
+			g_raceData[ id ] [ E_FINISHED_COUNT ] = 0;
 			g_raceData[ id ] [ E_POSITION_PRIZE ] [ 0 ] = 1.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 1 ] = 0.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 2 ] = 0.0;
 			g_raceData[ id ] [ E_FINISH_POS ] [ 0 ] = 1.0, g_raceData[ id ] [ E_FINISH_POS ] [ 1 ] = 0.0, g_raceData[ id ] [ E_FINISH_POS ] [ 2 ] = 0.0;
 
@@ -8651,31 +8795,32 @@ CMD:race( playerid, params[ ] )
 	else if ( !strcmp( params, "invite", false, 6 ) )
 	{
 		new
+			raceid = p_raceLobbyId[ playerid ];
+
+		if ( ! Iter_Contains( races, raceid ) )
+			return SendError( playerid, "You are not in any race." );
+
+		new
 			inviteid;
 
 		if ( sscanf( params[ 7 ], #sscanf_u, inviteid ) )
 			return SendUsage( playerid, "/race invite [PLAYER]" );
 
-		if ( ! IsPlayerConnected( inviteid ) )
+		if ( ! IsPlayerConnected( inviteid ) || IsPlayerNPC( inviteid ) )
 			return SendServerMessage( playerid, "This player is not connected" );
 
 		if ( GetDistanceBetweenPlayers( inviteid, playerid ) > 50.0 )
 			return SendError( playerid, "This player must be within 50 meters to you." );
 
-		printf( "invited %d", inviteid );
 		if ( p_raceLobbyId[ inviteid ] != -1 )
 			return SendError( playerid, "This player is currently already in a race lobby." );
-
-		new
-			raceid = p_raceLobbyId[ playerid ];
 
 		if( g_raceData[ raceid ] [ E_STARTED ] )
 			return SendError( playerid, "You cannot invite players once you start the race." );
 
 		p_raceInvited[ inviteid ] [ raceid ] = true;
-
-	    SendClientMessageFormatted( inviteid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race for %s, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ), raceid );
-		SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} You have invited %s(%d) to join your race.", ReturnPlayerName( inviteid ), inviteid );
+		SendClientMessageFormatted( inviteid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race for %s, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid,  g_raceData[ raceid ] [ E_ENTRY_FEE ] <= 0 ? ( "free" ) : ( ConvertPrice( g_raceData[ raceid ] [ E_ENTRY_FEE ] ) ), raceid );
+	    SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} You have invited %s(%d) to join your race.", ReturnPlayerName( inviteid ), inviteid );
 		return 1;
 	}
 	else if ( !strcmp( params, "join", false, 4 ) )
@@ -8696,9 +8841,14 @@ CMD:race( playerid, params[ ] )
 			p_raceInvited[ playerid ] [ raceid ] = false;
 
 			// alert race players
-			foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
-				SendClientMessageFormatted( i, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has joined the race.", ReturnPlayerName( playerid ), playerid );
-			}
+			SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has joined the race.", ReturnPlayerName( playerid ), playerid );
+
+			// show checkpoint
+			if ( g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE && g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 1 )
+			{
+	  			Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid );
+	  			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, playerid );
+		  	}
 
 			// remove entry fee
 			GivePlayerCash( playerid, -g_raceData[ raceid ] [ E_ENTRY_FEE ] );
@@ -8711,30 +8861,46 @@ CMD:race( playerid, params[ ] )
 		new
 			raceid = p_raceLobbyId[ playerid ];
 
-		if ( ! Iter_Contains( races, raceid ) )
-			return SendError( playerid, "You are not in any race." );
-
-		if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] != playerid )
-			return SendError( playerid, "Only the host of the race lobby can configure the race." );
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You must be a race lobby host in order to use this command." );
 
 		return ShowRaceConfiguration( playerid, raceid );
 	}
-	else if ( strmatch( params, "start" ) )
+	else if ( ! strcmp( params, "start", false, 5 ) )
 	{
 		new
 			raceid = p_raceLobbyId[ playerid ],
 			vehicleid = GetPlayerVehicleID( playerid ),
-			Float: X, Float: Y, Float: Z, Float: A
+			Float: X, Float: Y, Float: Z, Float: A,
+			countdown, Float: cpsize
 		;
 
 		if ( ! IsRaceHost( playerid, raceid ) )
 			return SendError( playerid, "You must be a race lobby host in order to use this command." );
+
+		new
+			racers = GetRaceMemberCount( raceid );
+
+		if ( racers < 2 )
+			return SendError( playerid, "You need at least 2 racers to start the race." );
 
 		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] != 1 && g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE )
 			return SendError( playerid, "You must set a finishing location for the race." );
 
 		if ( g_raceData[ raceid ] [ E_STARTED ] )
 			return SendError( playerid, "The race has already started." );
+
+		if ( g_raceData[ raceid ] [ E_POOL ] < 1000 )
+			return SendError( playerid, "The race must have a prize pool of at least $1,000." );
+
+		if ( sscanf( params[ 6 ], "D(15)F(15)", countdown, cpsize ) )
+			return SendUsage( playerid, "/race start [COUNT_DOWN_TIME (15)] [CHECKPOINT_SIZE (15.0)]" );
+
+		if ( ! ( 3 <= countdown <= 60 ) )
+			return SendError( playerid, "Countdown must be between 3 and 60 seconds." );
+
+		if ( !( 3.0 <= cpsize <= 40.0 ) )
+			return SendError( playerid, "The checkpoint size must be between 3.0 and 40.0" );
 
 		GetVehiclePos( vehicleid, X, Y, Z );
 		GetVehicleZAngle( vehicleid, A );
@@ -8743,7 +8909,7 @@ CMD:race( playerid, params[ ] )
 		DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
 
 		// place checkpoint
-		g_raceData[ raceid ] [ E_START_CHECKPOINT ] = CreateDynamicRaceCP( 0, X, Y, Z, X + 20.0 * floatsin( -A, degrees ), Y + 20.0 * floatsin( -A, degrees ), Z, 5.0, -1, -1, 0 );
+		g_raceData[ raceid ] [ E_START_CHECKPOINT ] = CreateDynamicRaceCP( 0, X, Y, Z, X + 20.0 * floatsin( -A, degrees ), Y + 20.0 * floatcos( -A, degrees ), Z, cpsize, -1, -1, 0 );
 
 		// trigger started
 		g_raceData[ raceid ] [ E_STARTED ] = true;
@@ -8756,20 +8922,53 @@ CMD:race( playerid, params[ ] )
   			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
 		}
 
+		// see if racers is 2
+		if ( racers == 2 && g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] != 1.0 )
+		{
+			new
+				Float: finalIncrease = g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ] / 2.0;
+
+			// reset profit ratio
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] += finalIncrease;
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ] += finalIncrease;
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ] = 0.0;
+
+			// alert
+			SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" As this is a two player race, the prize ratio is now %0.1f-%0.1f.", g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] * 100.0, g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ] * 100.0 );
+		}
+
+		// tax races
+		g_raceData[ raceid ] [ E_POOL ] = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * 0.95 );
+
 		// restart timer
 		KillTimer( g_raceData[ raceid ] [ E_CD_TIMER ] );
-		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, 15 );
+		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, countdown );
+		return 1;
 	}
 	else if ( strmatch( params, "stop" ) )
 	{
 		new
 			raceid = p_raceLobbyId[ playerid ];
 
-		if ( g_raceData[ raceid ] [ E_STARTED ] )
-			return SendError( playerid, "The race has not started." );
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You must be a race lobby host in order to use this command." );
 
-		DestroyRace( raceid );
-		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has ended the race." );
+		if ( ! g_raceData[ raceid ] [ E_STARTED ] )
+			return SendError( playerid, "The race must be started." );
+
+		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has ended the race.", ReturnPlayerName( playerid ), playerid );
+		return DestroyRace( raceid );
+	}
+	else if ( strmatch( params, "leave" ) )
+	{
+		new
+			raceid = p_raceLobbyId[ playerid ];
+
+		if ( ! Iter_Contains( races, raceid ) )
+			return SendError( playerid, "You are not in any race." );
+
+		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has left the race.", ReturnPlayerName( playerid ), playerid );
+		return RemovePlayerFromRace( playerid );
 	}
 	else if ( ! strcmp( params, "kick", false, 4 ) )
 	{
@@ -8777,338 +8976,35 @@ CMD:race( playerid, params[ ] )
 			raceid = p_raceLobbyId[ playerid ], kickid;
 
 		if ( ! IsRaceHost( playerid, raceid ) ) return SendError( playerid, "You are not a lobby host for any race." );
-		else if ( sscanf( params, #sscanf_u, kickid ) ) return SendUsage( playerid, "/race kick [PLAYER]" );
+		else if ( sscanf( params[ 5 ], #sscanf_u, kickid ) ) return SendUsage( playerid, "/race kick [PLAYER]" );
 		else if ( ! IsPlayerConnected( kickid ) || IsPlayerNPC( kickid ) ) return SendError( playerid, "This player is not connected." );
 		else if ( p_raceLobbyId[ kickid ] != raceid ) return SendError( playerid, "This player is not in your race." );
 		else
 		{
-			// kick player out
-			p_raceLobbyId[ kickid ] = -1;
-
-			// hide checkpoints
-	  		Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, kickid );
-	  		Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, kickid );
-	  		Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, kickid );
-
-	  		// alert
 	  		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has been kicked from the race.", ReturnPlayerName( kickid ), kickid );
+	  		RemovePlayerFromRace( kickid );
 		}
+		return 1;
 	}
-	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/CONFIG/START/STOP]" );
-}
-
-stock SendClientMessageToRace( raceid, colour, format[ ], va_args<> )
-{
-    va_format( szNormalString, sizeof( szNormalString ), format, va_start<3> );
-
-	foreach(new i : Player)
-	{
-	    if ( p_raceLobbyId[ i ] == raceid )
-			SendClientMessage( i, colour, szNormalString );
-	}
-	return 1;
-}
-
-function OnRaceCountdown( raceid, time )
-{
-	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
-		return;
-
-	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
-		if ( ! IsPlayerInDynamicRaceCP( playerid, g_raceData[ raceid ] [ E_START_CHECKPOINT ] ) ) {
-			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The race cannot be started as %s(%d) is not in the starting checkpoint.", ReturnPlayerName( playerid ), playerid );
-			g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
-			return;
-		}
-	}
-
-	if ( ! time )
-	{
-	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
-	    {
-	    	if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
-	    	{
-		    	// create sphere ahead of leader
-		    	if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid )
-		    	{
-		    		new
-		    			vehicleid = GetPlayerVehicleID( playerid ), Float: A;
-
-		    		GetVehicleZAngle( vehicleid, A );
-
-		    		// create sphere obj
-		    		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
-		    		g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = CreateDynamicCircle( 0.0, 0.0, 10.0 );
-		    		g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] = CreateDynamicObject( 11752, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, -1, 0 );
-
-		    		// attach objects
-					Streamer_RemoveArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, 0 );
-					AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], vehicleid, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-		    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, -OUTRUN_DIST );
-		    	}
-
-		    	// show checkpoint for player
-	  			Streamer_AppendArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, playerid );
-		    }
-
-	    	// destroy starting checkpoint
-	    	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
-
-	    	// show gametext
-    		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
-			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
-		}
-		g_raceData[ raceid ] [ E_CD_TIMER ] = -1;
-	}
-	else
-	{
-	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
-	    {
-    		GameTextForPlayer( playerid, sprintf( "~y~%d", time ), 2000, 3 );
-    		PlayerPlaySound( playerid, 1056, 0.0, 0.0, 0.0 );
-	    }
-		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
-	}
-}
-
-stock ShowRaceConfiguration( playerid, raceid )
-{
-	format( szLargeString, sizeof( szLargeString ), ""COL_WHITE"The current prize pool is %s\t \n"COL_GREY"Race Mode\t%s\n"COL_GREY"Entry Fee\t%s\n"COL_GREY"Finish Destination\t%s\n"COL_GREY"Prize Distribution\t%0.0f-%0.0f-%0.0f",
-
-								ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ), g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ), ConvertPrice( g_raceData[ raceid ] [ E_ENTRY_FEE ] ),
-
-								g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 1 ? ( ""COL_GREEN"ACTIVE" ) : ( ""COL_ORANGE"NOT SET" ) ) : ( ""COL_RED"DISABLED" ),
-
-								100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ]
-							);
-
-	SetPVarInt( playerid, "editing_race", raceid );
-	ShowPlayerDialog( playerid, DIALOG_RACE, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration", szLargeString, "Select", "Close" );
-	return 1;
-}
-
-#define positionToString(%0) (%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
-
-// public
-raceOnPlayerEnterDynamicRaceCP( playerid, checkpointid )
-{
-	new
-		raceid = p_raceLobbyId[ playerid ];
-
-	if( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] == checkpointid )
+	else if ( ! strcmp( params, "contribute", false, 10 ) )
 	{
 		new
-			position = g_raceData[ raceid ] [ E_FINISHED_COUNT ] ++;
+			raceid = p_raceLobbyId[ playerid ], amount;
 
-		// give prize and alert
-		if ( 1 <= position <= 3 )
+		if ( sscanf( params[ 11 ], "d", amount ) ) return SendUsage( playerid, "/race donate [AMOUNT]" );
+		else if ( ! Iter_Contains( races, raceid ) ) return SendError( playerid, "You are not in any race." );
+		else if ( amount < 100 ) return SendError( playerid, "The minimum contribution amount is $100." );
+		else if ( amount > GetPlayerCash( playerid ) ) return SendError( playerid, "You don't have enough money to contribute that amount." );
+		else
 		{
-			new
-				prizeMoney = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ ( position - 1 ) ] );
-
-			GivePlayerCash( playerid, prizeMoney );
-			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", ReturnPlayerName( playerid ), playerid, position, positionToString( position ), ConvertPrice( prizeMoney ) );
-
-			// remove from race
-			RemovePlayerFromRace( playerid );
-		}
-
-		// close race after members finished
-		new
-			members = GetRaceMemberCount( raceid );
-
-		printf ("Position : %d, Members : %d", position, members);
-		if ( position >= 3 || position >= members ) {
-			// TODO: close race
-			DestroyRace( raceid );
-			print ("Shut race");
-
+			GivePlayerCash( playerid, -amount );
+			g_raceData[ raceid ] [ E_POOL ] += amount;
+			SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has contributed %s to the prize pool (total %s).", ReturnPlayerName( playerid ), playerid, ConvertPrice( amount ), ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ) );
+			return 1;
 		}
 	}
+	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/LEAVE/KICK/CONFIG/START/CONTRIBUTE/STOP]" );
 }
-
-stock DestroyRace( raceid )
-{
-	// remove players from race
-	foreach (new playerid : Player) {
-		if ( p_raceLobbyId[ playerid ] == raceid ) {
-			p_raceLobbyId[ playerid ] = -1;
-		}
-	}
-
-	// remove race vars
-	Iter_Remove( races, raceid );
-	g_raceData[ raceid ] [ E_STARTED ] = false;
-
-	// destroy race cps
-	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] ), g_raceData[ raceid ] [ E_START_CHECKPOINT ] = -1;
-	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] ), g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = -1;
-	DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] ), g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = -1;
-}
-
-stock RemovePlayerFromRace( playerid )
-{
-	new
-		raceid = p_raceLobbyId[ playerid ];
-
-	// kick player out
-	p_raceLobbyId[ playerid ] = -1;
-
-	// hide checkpoints
-	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, playerid );
-	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, playerid );
-	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid );
-}
-
-stock GetRaceMemberCount( raceid ) {
-	new
-		count = 0;
-
-	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
-		count ++;
-	}
-	return count;
-}
-
-rOnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
-{
-	if ( ( dialogid == DIALOG_RACE ) && response )
-	{
-		new
-			raceid = GetPVarInt( playerid, "editing_race" );
-
-		switch ( listitem )
-		{
-			case 0: ShowPlayerDialog( playerid, DIALOG_RACE_MODE, DIALOG_STYLE_TABLIST, ""COL_GOLD"Race Configuration - Race Mode", ""COL_GREY"Street Race\t"COL_WHITE"Racers must meet the final destination\n"COL_GREY"Outrun"COL_WHITE"\tRacer must outrun everyone by 100 metres", "Select", "Close" );
-			case 1: ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", "Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Select", "Close" );
-			case 2:
-			{
-				if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN ) {
-					ShowRaceConfiguration( playerid, raceid );
-					return SendError( playerid, "The race does not require a final destination as the race mode is Outrun." );
-				}
-
-				g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 2;
-				g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = 0.0;
-				g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = 0.0;
-				g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = 0.0;
-				return SendServerMessage( playerid, "You are now setting the race destination. Use the MINIMAP to pick the finish position." );
-			}
-			case 3 .. 5: ShowPlayerDialog( playerid, DIALOG_RACE_POS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Prize Distribution", ""COL_WHITE"1st Position\t"COL_WHITE"2nd Position\t"COL_WHITE"3rd Position\n100%\t0%\t0%\n90%\t5%\t5%\n80%\t10%\t10%\n70%\t15%\t15%\n60%\t20%\t20%\n", "Select", "Close" );
-		}
-	}
-	if ( dialogid == DIALOG_RACE_MODE )
-	{
-		new
-			raceid = GetPVarInt( playerid, "editing_race" );
-
-		if ( response )
-		{
-			g_raceData[ raceid ] [ E_MODE ] = listitem;
-			SendServerMessage( playerid, "You have set the race mode to "COL_GREY"%s"COL_WHITE".", g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ) );
-		}
-		return ShowRaceConfiguration( playerid, raceid );
-	}
-	if ( dialogid == DIALOG_RACE_FEE )
-	{
-		new
-			raceid = GetPVarInt( playerid, "editing_race" );
-
-		if ( ! response )
-			return ShowRaceConfiguration( playerid, raceid );
-
-		new
-			fee;
-
-		if ( sscanf( inputtext, "d", fee ) || ! ( 1000 < fee < 10000000 ) ) {
-			SendError( playerid, "Please specify an entry fee between $1,000 and $10,000,000." );
-			return ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", "Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Select", "Close" );
-		}
-
-		g_raceData[ raceid ] [ E_ENTRY_FEE ] = fee;
-		SendServerMessage( playerid, "You have set the entry fee of the race to %s.", ConvertPrice( fee ) );
-		return ShowRaceConfiguration( playerid, raceid );
-	}
-	if ( dialogid == DIALOG_RACE_POS )
-	{
-		new
-			raceid = GetPVarInt( playerid, "editing_race" );
-
-		if ( response )
-		{
-			static const
-				Float: g_prizePoolDistribution[ ] [ 3 ] =
-				{
-					{ 1.0, 0.0, 0.0 },
-					{ 0.9, 0.05, 0.05 },
-					{ 0.8, 0.1, 0.1 },
-					{ 0.7, 0.15, 0.15 },
-					{ 0.6, 0.2, 0.2 }
-				}
-			;
-
-			// position prize
-			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] = g_prizePoolDistribution[ listitem ] [ 0 ];
-			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ] = g_prizePoolDistribution[ listitem ] [ 1 ];
-			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ] = g_prizePoolDistribution[ listitem ] [ 2 ];
-
-			// alert
-			SendServerMessage( playerid, "The prize pool distribution is now %0.0f%% for 1st, %0.0f%% for 2nd and %0.0f%% for 3rd place.", 100.0 * g_prizePoolDistribution[ listitem ] [ 0 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 1 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 2 ] );
-		}
-		return ShowRaceConfiguration( playerid, raceid );
-	}
-	return 1;
-}
-
-public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
-{
-	new
-		raceid = GetPVarInt( playerid, "editing_race" );
-
-	if ( IsRaceHost( playerid, raceid ) )
-	{
-		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 2 )
-		{
-			// set race position
-			g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = fX;
-			g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = fY;
-			g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = fZ;
-			g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 1;
-
-			// destroy checkpoint/icon again
-			DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] );
-			DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] );
-
-			// place checkpoint
-			g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = CreateDynamicMapIcon( fX, fY, fZ, 53, -1, -1, -1, 0, 1000.0, MAPICON_GLOBAL );
-			g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = CreateDynamicRaceCP( 0, g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
-
-		  	// reset players in map icon/cp
-		  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
-		  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, 0 );
-
-		  	// stream to players
-			foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
-	  			Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, i );
-	  			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
-			}
-
-			// alert user
-			SendServerMessage( playerid, "You have selected the final destination for the race, use "COL_GREY"/race start"COL_WHITE" to begin." );
-			ShowRaceConfiguration( playerid, raceid );
-		}
-	}
-	return 1;
-}
-
-stock IsRaceHost( playerid, raceid ) {
-	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
-		return false;
-
-	return g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid;
-}
-
-/* end race system */
 
 CMD:dw( playerid, params[ ] ) return cmd_disposeweapon( playerid, params );
 CMD:disposeweapon(playerid, params[]) {
@@ -10960,8 +10856,58 @@ CMD:toys( playerid, params[ ] )
 CMD:changes( playerid, params[ ] ) return cmd_updates( playerid, params );
 CMD:updates( playerid, params[ ] )
 {
-    SendServerMessage( playerid, "Reading latest changes from {00CCFF}www.revctrl.com/IrresistibleDev/SF-CNR/latest{FFFFFF}, please wait!" );
-	HTTP( playerid, HTTP_GET, "files.irresistiblegaming.com/cnr_updates.php", "", "OnRevCTRLHTTPResponse" );
+    new
+    	File: handle = fopen( "updates.txt", io_read );
+
+    if ( ! handle )
+    	return SendError( playerid, "There are no updates to show." );
+
+    erase( szNormalString );
+    erase( szHugeString );
+
+    while ( fread( handle, szNormalString ) )
+    {
+        new
+        	find = strfind( szNormalString, "(+)" );
+
+        // additions
+        if( find != -1 )
+        {
+            strins( szNormalString, "{23D96F}added{FFFFFF}\t\t", find + 3 );
+            strdel( szNormalString, find, find + 3);
+        }
+
+        // removals
+        find = strfind( szNormalString, "(-)" );
+        if( find != -1 )
+        {
+            strins( szNormalString, "{D92323}removed{FFFFFF}\t", find + 3 );
+            strdel( szNormalString, find, find + 3 );
+        }
+
+        // fixes
+        find = strfind( szNormalString, "(*)" );
+        if ( find != -1 )
+        {
+            strins( szNormalString, "{D9A823}fixed{FFFFFF}\t\t", find + 3 );
+            strdel( szNormalString, find, find + 3 );
+        }
+
+        // fixes
+        find = strfind( szNormalString, "(/)" );
+        if ( find != -1 )
+        {
+            strins( szNormalString, "{c0c0c0}changed{FFFFFF}\t", find + 3 );
+            strdel( szNormalString, find, find + 3 );
+        }
+
+        // append
+        strcat( szHugeString, szNormalString );
+    }
+
+    fclose( handle );
+    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Recent Updates - {C0C0C0}Created by Cloudy & sponyy", szHugeString, "Okay", "" );
+    SendServerMessage( playerid, "You're now viewing the latest changes to the gamemode (version "#FILE_BUILD")." );
 	return 1;
 }
 
@@ -13148,7 +13094,7 @@ CMD:sendmoney( playerid, params[ ] )
 
 		if ( amount > 90000000 ) {
 	   		printf("ISP banned %s for making a 75M transaction", ReturnPlayerName( playerid ));
-	   		BanPlayerISP( playerid );
+	   		BanEx( playerid, "75M Transaction" );
 	   		return 1;
         }
 
@@ -13628,9 +13574,6 @@ CMD:tie( playerid, params[ ] )
 	/* ** End of Anti Tie Spam ** */
 
 	new victimid = GetClosestPlayer( playerid );
-	/*new robbery_npcid = GetClosestRobberyNPC( getClosestRobberySafe( playerid ) );
-	printf("You're %f far from the NPC\n", GetDistanceBetweenPlayers( playerid, robbery_npcid ) );*/
-
 	//if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/tie [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot tie yourself." );
 	//else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
@@ -14818,7 +14761,7 @@ CMD:pinfo( playerid, params[ ] )
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
-		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%0.2f%s packetloss, %d FPS, %d ping, proxy: %s", ReturnPlayerName( pID ), pID, NetStats_PacketLossPercent( pID ), "%%", GetPlayerFPS( pID ), GetPlayerPing( pID ), IsProxyUser( playerid ) ? ("yes") : ("no") );
+		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%0.2f%s packetloss, %d FPS, %d ping, from %s", ReturnPlayerName( pID ), pID, NetStats_PacketLossPercent( pID ), "%%", GetPlayerFPS( pID ), GetPlayerPing( pID ), GetPlayerCountryName( pID ) );
 	}
 	return 1;
 }
@@ -15255,7 +15198,7 @@ CMD:slap( playerid, params[ ] )
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
     else if ( sscanf( params, ""#sscanf_u"F(10.0)", pID, offset ) ) return SendUsage(playerid, "/slap [PLAYER_ID] [OFFSET (= 10.0)]");
-    else if ( !IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError(playerid, "You cannot use this command on admins higher than your level.");
     else
 	{
@@ -15318,7 +15261,7 @@ CMD:spec( playerid, params[ ] )
 
 	if ( p_AdminLevel[ playerid ] < 1 && !IsPlayerUnderCover( playerid ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
     else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage(playerid, "/spec [PLAYER_ID]");
-    else if ( !IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot spectate yourself.");
     else
     {
@@ -15733,27 +15676,11 @@ CMD:geolocate( playerid, params[ ] )
  	{
  		if ( IsPlayerUnderCover( pID ) )
  		{
-			if ( strmatch( GetPlayerISP( pID ), "AS812 Rogers Cable Communications Inc." ) ) {
-		 		SendClientMessageFormatted( playerid, COLOR_GOLD, "Geographical Data of %s(%d) - "COL_WHITE" %s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
-		 		SendClientMessage( playerid, COLOR_GREY, "> Country: "COL_WHITE" United States (US)" );
-		 		SendClientMessage( playerid, COLOR_GREY, "> Region: "COL_WHITE" undefined" );
-		 		SendClientMessage( playerid, COLOR_GREY, "> ISP: "COL_WHITE" AS14061 Digital Ocean, Inc." );
-		 		SendClientMessageFormatted( playerid, COLOR_GREY, "> HOST: "COL_WHITE" %s", ReturnPlayerIP( pID ) );
-		 		SendClientMessage( playerid, COLOR_GREY, "> PROXY: "COL_WHITE" Yes" );
-			}
-
-			else {
-				SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
-			}
+			SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from America (US) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );
 		}
 		else
 		{
-	 		SendClientMessageFormatted( playerid, COLOR_GOLD, "Geographical Data of %s(%d) - "COL_WHITE" %s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
-	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Country: "COL_WHITE" %s (%s)", GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ) );
-	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> Region: "COL_WHITE" %s", GetPlayerCountryRegion( pID ) );
-	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> ISP: "COL_WHITE" %s", GetPlayerISP( pID ) );
-	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> HOST: "COL_WHITE" %d", GetPlayerHost( pID ) );
-	 		SendClientMessageFormatted( playerid, COLOR_GREY, "> PROXY: "COL_WHITE" %s", IsProxyUser( pID ) ? ("Yes") : ("No") );
+	 		SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from %s (%s) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );
  		}
 	}
 	return 1;
@@ -16178,7 +16105,7 @@ CMD:ban( playerid, params [ ] )
 	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[50]", pID, reason ) ) return SendUsage( playerid, "/ban [PLAYER_ID] [REASON]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	else if ( pID == playerid ) return SendError( playerid, "You cannot ban yourself." );
+	// else if ( pID == playerid ) return SendError( playerid, "You cannot ban yourself." );
   	else if ( p_AdminLevel[ playerid ] < p_AdminLevel[ pID ] ) return SendError( playerid, "This player has a higher administration level than you." );
 	else
 	{
@@ -16578,6 +16505,35 @@ CMD:removenote( playerid, params[ ] )
 }
 
 /* Level 5 */
+/*CMD:forceac( playerid, params[ ] )
+{
+    new
+        pID;
+
+	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+    else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+    else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
+    else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
+    else
+	{
+		if ( ( p_forcedAnticheat{ playerid } = ! p_forcedAnticheat{ playerid } ) == true )
+		{
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=1 WHERE `ID`=%d", p_AccountID[ pID ] ) );
+			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s is not required to use an anticheat to play by %s.", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
+	        KickPlayerTimed( pID );
+		}
+		else
+		{
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `ID`=%d", p_AccountID[ pID ] ) );
+			AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has removed the anticheat requirement on %s.", ReturnPlayerName( playerid ), ReturnPlayerName( pID ) );
+		}
+    }
+    return 1;
+}*/
+
 CMD:check( playerid, params[ ] )
 {
 	new
@@ -16856,7 +16812,7 @@ function autoVehicleSpawn( )
 	return 1;
 }
 
-CMD:megaban( playerid, params [ ] )
+/*CMD:megaban( playerid, params [ ] )
 {
     new
 	    pID,
@@ -16875,7 +16831,7 @@ CMD:megaban( playerid, params [ ] )
 		BanPlayerISP( pID );
 	}
 	return 1;
-}
+}*/
 
 CMD:changename( playerid, params[ ] )
 {
@@ -18532,7 +18488,7 @@ DQCMD:akickall( userID[ ], user[ ], level, params[ ] )
 	return 1;
 }
 
-DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
+/*DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
 {
     new
 	    pID,
@@ -18547,7 +18503,7 @@ DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
 		BanPlayerISP( pID );
 	}
 	return 1;
-}
+}*/
 
 DQCMD:aunban( userID[ ], user[ ], level, params[ ] )
 {
@@ -18696,6 +18652,7 @@ public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
 public OnPlayerExitVehicle(playerid, vehicleid)
 {
 	new
+		iRace = p_raceLobbyId[ playerid ],
 		iModel = GetVehicleModel( vehicleid ),
 		iObject = GetGVarInt( "heli_gunner", vehicleid )
 	;
@@ -18709,6 +18666,12 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 		}
 
 		p_LastAttachedVehicle[ playerid ] = INVALID_VEHICLE_ID;
+	}
+
+	if ( Iter_Contains( races, iRace ) )
+	{
+		SendClientMessageToRace( iRace, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has exited their vehicle and left the race.", ReturnPlayerName( playerid ), playerid );
+		RemovePlayerFromRace( playerid );
 	}
 
 #if defined AC_INCLUDED
@@ -18802,6 +18765,59 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 
 	if ( !g_Driveby )
 		SetPlayerArmedWeapon( playerid, 0 );
+
+	if ( g_isBusinessVehicle[ vehicleid ] && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
+	{
+		new
+			businessid = g_isBusinessVehicle[ vehicleid ];
+
+		if ( IsBusinessAssociate( playerid, businessid ) )
+		{
+			if ( IsBusinessAerialVehicle( model ) )
+			{
+				new
+					ignore_drop_ids[ sizeof( g_airBusinessExportData[ ] ) ] = { -1, ... };
+
+				for ( new x = 0; x < MAX_DROPS; x ++ )
+				{
+					new
+						drop_off_index = randomExcept( sizeof( g_airBusinessExportData[ ] ), ignore_drop_ids, sizeof( ignore_drop_ids ) ),
+						city = random( sizeof( g_airBusinessExportData ) )
+					;
+
+					// so we get random drops always
+					ignore_drop_ids[ drop_off_index ] = drop_off_index;
+
+					// clear them incase
+					g_businessData[ businessid ] [ E_EXPORTED ] [ x ] = false;
+					DestroyDynamicMapIcon( g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] );
+					DestroyDynamicRaceCP( g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] );
+					DestroyDynamicArea( g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ x ] );
+
+					// assign indexes (used for dropping the shit off)
+					g_businessData[ businessid ] [ E_EXPORT_CITY ] = city;
+					g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ x ] = drop_off_index;
+
+					// map icons, cp, areas
+					g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ], 19, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+					g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] = CreateDynamicRaceCP( 1, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
+					g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ x ] = CreateDynamicCircle( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], 15.0 );
+
+				  	// reset players in map icon/cp
+				  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ], E_STREAMER_PLAYER_ID, 0 );
+				  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ], E_STREAMER_PLAYER_ID, 0 );
+
+				  	// stream to players
+					foreach (new i : Player) if ( IsBusinessAssociate( i, businessid ) ) {
+						Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ], E_STREAMER_PLAYER_ID, i );
+						Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ], E_STREAMER_PLAYER_ID, i );
+					}
+
+				}
+			}
+			ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
+		}
+	}
 
 	if ( JobEquals( playerid, JOB_DIRTY_MECHANIC ) && p_Class[ playerid ] == CLASS_CIVILIAN && ( iVehiclePrice = calculateVehicleSellPrice( vehicleid ) ) )
 	{
@@ -19031,7 +19047,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 	new
 		bDropoff = false;
 
-	for ( new i = CP_DROP_OFF_COP; i < CP_DROP_OFF_HELI; i ++ )
+	for ( new i = CP_DROP_OFF_COP; i <= CP_DROP_OFF_HELI; i ++ )
 		if ( checkpointid == g_Checkpoints[ i ] )
 			bDropoff = true;
 
@@ -19074,6 +19090,9 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( checkpointid == g_Checkpoints[ CP_VEHDEALER ] || checkpointid == g_Checkpoints[ CP_VEHDEALER_2 ] || checkpointid == g_Checkpoints[ CP_VEHDEALER_3 ] )
 		return ShowBuyableVehiclesList( playerid );
+
+	if ( checkpointid == g_Checkpoints[ CP_BIZ_TERMINAL_COKE ] || checkpointid == g_Checkpoints[ CP_BIZ_TERMINAL_METH ] || checkpointid == g_Checkpoints[ CP_BIZ_TERMINAL_WEED ] )
+		return ShowBusinessTerminal( playerid );
 
 	if ( checkpointid == g_Checkpoints[ CP_247_MENU ] )
 		return cmd_shop( playerid, "" );
@@ -19306,11 +19325,29 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 	// spikes
     if ( iState == PLAYER_STATE_DRIVER && iVehicle != 0 )
     {
+    	new
+    		iModel = GetVehicleModel( iVehicle );
+
+    	// spike strip system
 		foreach(new i : SpikeStrip) if ( g_spikestripData[ i ] [ E_SPHERE ] == areaid ) {
             GetVehicleDamageStatus( iVehicle, panels, doors, lights, tires );
             UpdateVehicleDamageStatus( iVehicle, panels, doors, lights, ( tires = encode_tires( 1, 1, 1, 1 ) ) );
 			destroySpikeStrip( i );
 			break;
+		}
+
+		// alert player if hes near the drugs
+		if ( g_isBusinessVehicle[ iVehicle ] && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) && IsBusinessAerialVehicle( iModel ) )
+		{
+			new
+				businessid = g_isBusinessVehicle[ iVehicle ];
+
+			if ( IsBusinessAssociate( playerid, businessid ) )
+			{
+				for ( new i = 0; i < 2; i ++ ) if ( areaid == g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ i ] ) {
+					ShowPlayerHelpDialog( playerid, 5000, "~y~~h~Press ~k~~PED_FIREWEAPON~ to drop off the drugs!" );
+				}
+			}
 		}
     }
 
@@ -19318,33 +19355,35 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
    	new
    		raceid = p_raceLobbyId[ playerid ];
 
-	if ( Iter_Contains( races, raceid ) && g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] == areaid )
+	if ( Iter_Contains( races, raceid ) && g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] == areaid && g_raceData[ raceid ] [ E_OUTRUN_LEAD ] != playerid )
 	{
-		new
-			Float: A;
-
-		GetVehicleZAngle( iVehicle, A );
-
 		// new leader
 		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
-		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has taken the lead for the race.", ReturnPlayerName( playerid ), playerid );
+
+		// alert
+		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+			PlayerPlaySound( i, 1149, 0.0, 0.0, 0.0 );
+			GameTextForPlayer( i, sprintf( "~b~~h~%s leading", ReturnPlayerName( playerid ) ), 2000, 3 );
+			SendClientMessageFormatted( i, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has taken the lead for the race.", ReturnPlayerName( playerid ), playerid );
+		}
 
 		// see if ahead
 		AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], iVehicle, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST );
+		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST - 5.0 );
 	}
     return 1;
 }
 
 public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 {
-	static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-	raceOnPlayerEnterDynamicRaceCP( playerid, checkpointid );
+	new
+		raceid = p_raceLobbyId[ playerid ],
+		iVehicle = GetPlayerVehicleID( playerid )
+	;
 
+	static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
 	if ( checkpointid == p_TruckingCheckPoint[ playerid ] )
 	{
-		new
-			iVehicle = GetPlayerVehicleID( playerid );
 
 		if ( !IsTrailerAttachedToVehicle( iVehicle ) )
 			return SendError( playerid, "You cannot import/export anything without a trailer!" );
@@ -19402,6 +19441,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			ShowPlayerHelpDialog( playerid, 7500, "You have earned ~y~~h~%s~w~~h~ for exporting %s!", ConvertPrice( iCashEarned ), g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
         	return ( p_TruckingRoute[ playerid ] { 1 } = INVALID_TRUCKING_ROUTE ), 1;
 		}
+		return 1;
 	}
 
 	else if ( checkpointid == p_PawnStoreExport[ playerid ] )
@@ -19512,6 +19552,53 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
         p_LumberjackDeliver[ playerid ] = CreateDynamicRaceCP( 0, g_treeExportLocations[ id ] [ 0 ], g_treeExportLocations[ id ] [ 1 ], g_treeExportLocations[ id ] [ 2 ], -2330.8535, -113.9084, 34.00, 4.0, -1, -1, playerid );
        	Beep( playerid );
 		return 1;
+	}
+
+	else if( raceid != -1 && g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] == checkpointid )
+	{
+		if ( ! g_raceData[ raceid ] [ E_STARTED ] )
+			return SendError( playerid, "The race has not started." );
+
+		new
+			position = ++ g_raceData[ raceid ] [ E_FINISHED_COUNT ];
+
+		// give prize and alert
+		if ( 1 <= position <= 3 )
+			GivePlayerRaceWin( playerid, position, raceid );
+
+		// close race after members finished
+		new
+			members = GetRaceMemberCount( raceid );
+
+		printf ("Position : %d, Members : %d", position, members);
+		if ( position >= 3 || position >= members ) {
+			DestroyRace( raceid );
+			print ("Shut race");
+		}
+		return 1;
+	}
+
+	if ( g_isBusinessVehicle[ iVehicle ] && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) && ! IsBusinessAerialVehicle( GetVehicleModel( iVehicle ) ) )
+	{
+		new
+			businessid = g_isBusinessVehicle[ iVehicle ];
+
+		if ( IsBusinessAssociate( playerid, businessid ) )
+		{
+			for ( new i = 0; i < MAX_DROPS; i ++ )
+			{
+				if ( g_businessData[ businessid ] [ E_EXPORT_CP ] [ i ] == checkpointid )
+				{
+					if ( g_businessData[ businessid ] [ E_EXPORTED ] [ i ] )
+						return SendError( playerid, "This location has already been sold product recently." );
+
+					// count drugs exported
+					SellBusinessProduct( playerid, businessid, i );
+					break;
+				}
+			}
+			return 1;
+		}
 	}
 	return 1;
 }
@@ -20560,6 +20647,56 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return RemovePlayerStolensFromHands( playerid ), SendServerMessage( playerid, "You dropped your stolen good and broke it." ), 1;
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) ) return RemoveEquippedOre( playerid ), SendServerMessage( playerid, "You have disposed of your mined ore." ), 1;
 
+		// business system
+		if ( IsPlayerInAnyVehicle( playerid ) )
+		{
+			new
+				vehicleid = GetPlayerVehicleID( playerid );
+
+			if ( g_isBusinessVehicle[ vehicleid ] && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) && IsBusinessAerialVehicle( GetVehicleModel( vehicleid ) ) )
+			{
+				new
+					businessid = g_isBusinessVehicle[ vehicleid ];
+
+				if ( IsBusinessAssociate( playerid, businessid ) )
+				{
+					static
+						tempObject, moveSpeed;
+
+					for ( new i = 0; i < MAX_DROPS; i ++ ) if ( IsPlayerInDynamicArea( playerid, g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ i ] ) )
+					{
+						new
+							Float: playerZ, Float: finalZ,
+							city = g_businessData[ businessid ] [ E_EXPORT_CITY ],
+							drop_off_index = g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ i ]
+						;
+
+						// mapandreas
+						GetPlayerPos( playerid, playerZ, playerZ, playerZ );
+						MapAndreas_FindZ_For2DCoord( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], finalZ );
+
+						if ( playerZ < finalZ + 20.0 )
+							return SendError( playerid, "You need to be 20 metres above the building to drop off the drugs." );
+
+						if ( playerZ > finalZ + 70.0 )
+							return SendError( playerid, "You need to be 70 metres below the building to drop off the drugs." );
+
+						if ( g_businessData[ businessid ] [ E_EXPORTED ] [ i ] )
+							return SendError( playerid, "This location has already been sold product recently." );
+
+						// create temporary bag object
+						tempObject = CreateDynamicObject( 18849, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], playerZ + 2.0, 0.0, 0.0, 0.0 );
+						moveSpeed = MoveDynamicObject( tempObject, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], finalZ + 7.0, 8.0 );
+						SetTimerEx( "DestroyDrugObject", moveSpeed + 4000, false, "d", tempObject );
+
+						// count drugs exported
+						SellBusinessProduct( playerid, businessid, i );
+						break;
+					}
+				}
+			}
+		}
+
 		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) && IsPlayerInMethlab( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
 		{
 			new
@@ -20836,6 +20973,33 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	                	}
 					}
 					return 1;
+				}
+
+				// Enter Business
+				foreach (new b : business)
+				{
+					if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_ENTER_CP ] ) )
+					{
+						if ( ! IsBusinessAssociate( playerid, b ) )
+							return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+
+						new
+							bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
+
+			        	pauseToLoad( playerid );
+						p_InBusiness[ playerid ] = b;
+						SetPlayerPos( playerid, g_businessInteriorData[ bType ] [ E_X ], g_businessInteriorData[ bType ] [ E_Y ], g_businessInteriorData[ bType ] [ E_Z ] );
+					  	SetPlayerVirtualWorld( playerid, bType + 1 );
+						SetPlayerInterior( playerid, g_businessData[ b ] [ E_INTERIOR_ID ] );
+						return 1;
+					}
+					else if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_EXIT_CP ] ) )
+					{
+						p_InBusiness[ playerid ] = -1;
+						TogglePlayerControllable( playerid, 0 );
+						SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+						SetPlayerPosEx( playerid, g_businessData[ b ] [ E_X ], g_businessData[ b ] [ E_Y ], g_businessData[ b ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+					}
 				}
 
 				// Enter Houses
@@ -21187,15 +21351,26 @@ public OnPlayerStreamOut(playerid, forplayerid)
 	return 1;
 }
 
-public OnVehicleStreamIn(vehicleid, forplayerid)
-{
-    return 1;
-}
-
-public OnVehicleStreamOut(vehicleid, forplayerid)
-{
+/*public AC_OnFileExecuted( playerid, module[ ], md5[ ] ) {
+	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, module );
+	SendClientMessageToAdmins( COLOR_PINK, szNormalString );
 	return 1;
 }
+
+public AC_OnImgFileModifed( playerid, filename[ ], md5[ ] ) {
+	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) modified an img file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
+	SendClientMessageToAdmins( COLOR_PINK, szNormalString );
+	return 1;
+}
+
+public AC_OnFileCalculated( playerid, filename[ ], md5[ ], bool: isCheat )
+{
+	if ( isCheat ) {
+		format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a blacklisted file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
+		SendClientMessageToAdmins( COLOR_PINK, szNormalString );
+	}
+	return 1;
+}*/
 
 thread OnPlayerLogin( playerid, password[ ] )
 {
@@ -21245,6 +21420,8 @@ thread OnPlayerLogin( playerid, password[ ] )
 			new iFightStyle = cache_get_field_content_int( 0, "FIGHTSTYLE", dbHandle );
 			new iWanted 	= cache_get_field_content_int( 0, "WANTEDLVL", dbHandle );
 			new iGang		= cache_get_field_content_int( 0, "GANG_ID", dbHandle );
+
+			printf("[%s] Reading gang id %d", ReturnPlayerName( playerid ), iGang );
 
 			SetPlayerCash			( playerid, iCash );
 			SetPlayerScore			( playerid, iScore );
@@ -21301,18 +21478,26 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_HouseSpawnLocation[ playerid ]= cache_get_field_content_int( 0, "HOUSE_ID", dbHandle );
 			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
+			/*p_forcedAnticheat{ playerid } 	= !!cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
+
+			if ( p_forcedAnticheat{ playerid }  ) {
+				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
+				KickPlayerTimed( playerid );
+				return 1;
+			}*/
 
 			// Gang validation
 			if ( p_HouseSpawnLocation[ playerid ] != -1 && !strmatch( g_houseData[ p_HouseSpawnLocation[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 				p_HouseSpawnLocation[ playerid ] = -1;
 
 			// Load some other variables too
-		   	p_OwnedHouses 	[ playerid ] = GetPlayerOwnedHouses( playerid );
-			p_Muted 		{ playerid } = p_MutedTime[ playerid ] > 0 ? true : false; // Save muting :X
+		   	p_OwnedHouses 		[ playerid ] = GetPlayerOwnedHouses( playerid );
+		   	p_OwnedBusinesses 	[ playerid ] = GetPlayerOwnedBusinesses( playerid );
 
 		    p_PlayerLogged	{ playerid } = true;
 			p_JobSet 		{ playerid } = true;
 			p_CitySet 		{ playerid } = true;
+			p_Muted 		{ playerid } = p_MutedTime[ playerid ] > 0 ? true : false; // Save muting :X
 
 			// Check if vip expired
 			CheckPlayerVipExpiry( playerid );
@@ -21351,13 +21536,10 @@ thread OnPlayerLogin( playerid, password[ ] )
 		  	SendServerMessage( playerid, "You have " COL_GREEN "successfully" COL_WHITE " logged in!" );
 
 		  	// UNDERCOVER USERS
-		  	if ( IsPlayerUnderCover( playerid ) )
+			if ( IsPlayerUnderCover( playerid ) )
 		  	{
-				if ( strmatch( GetPlayerISP( playerid ), "AS812 Rogers Cable Communications Inc." ) )
-					format( p_PlayerIP[ playerid ], 16, "104.131.%d.%d", random( 255 ), random( 255 ) );
-
-				if ( strmatch( GetPlayerISP( playerid ), "AS9443 Primus Telecommunications" ) )
-					format( p_PlayerIP[ playerid ], 16, "124.106.%d.%d", random( 255 ), random( 255 ) );
+		  		// all undercover are american ips
+				format( p_PlayerIP[ playerid ], 16, "104.131.%d.%d", random( 255 ), random( 255 ) );
 		  	}
 
 		  	// Reset gang id just incase
@@ -21367,13 +21549,15 @@ thread OnPlayerLogin( playerid, password[ ] )
 		  	new
 		  		bool: foundGang = false;
 
-			foreach(new g : gangs) if( iGang == g_gangData[ g ] [ E_SQL_ID ] ) {
+			foreach(new g : gangs) if( iGang != INVALID_GANG_ID && iGang == g_gangData[ g ] [ E_SQL_ID ] ) {
 				p_GangID[ playerid ] = g, foundGang = true;
 				break;
 			}
 
+			printf("[%s] Found gang ? %d , id %d, gangid %d", ReturnPlayerName( playerid ), foundGang ? 1 : 0, p_GangID[ playerid ], iGang );
+
 			if ( ! foundGang ) {
-				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `ID`=%d OR `LEADER`=%d LIMIT 0,1", iGang, p_AccountID[ playerid ] );
+				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `LEADER`=%d OR `ID`=%d LIMIT 0,1", p_AccountID[ playerid ], iGang );
 				mysql_function_query( dbHandle, szNormalString, true, "OnGangLoad", "dd", playerid, iGang );
 			}
 
@@ -21438,7 +21622,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( g_DialogLogging ) printf( "[DIALOG_LOG] %s(%d) - %d, %d, %d, %s", ReturnPlayerName( playerid ), playerid, dialogid, response, listitem, inputtext );
 
 	if ( strlen( inputtext ) ) strreplacechar( inputtext, '%', '#' ); // The percentage injection crasher (critical)
-	rOnDialogResponse(playerid, dialogid, response, listitem, inputtext);
 
     if ( dialogid == DIALOG_LOGIN )
     {
@@ -21502,6 +21685,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				//p_CopTutorial{ playerid } = 0;
 				p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
 				p_OwnedHouses[ playerid ] = 0;
+				p_OwnedBusinesses[ playerid ] = 0;
 				p_OwnedVehicles[ playerid ] = 0;
 				p_IrresistibleCoins[ playerid ] = 0;
 				p_Burglaries[ playerid ] = 0;
@@ -22176,10 +22360,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	        if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 				return SendError( playerid, "You are not the owner of this house." );
 
-	        if ( !strlen( inputtext ) )
-				return ShowPlayerDialog( playerid, DIALOG_HOUSE_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Set House Title", ""COL_WHITE"Input the house title you want to change with:\n\n"COL_RED"Must be more than 0 characters.", "Confirm", "Back" );
+	        if ( ! ( 1 <= strlen( inputtext ) <= 30 ) )
+				return ShowPlayerDialog( playerid, DIALOG_HOUSE_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Set House Title", ""COL_WHITE"Input the house title you want to change with:\n\n"COL_RED"Must be between 1 and 30 characters.", "Confirm", "Back" );
 
-			if ( textContainsIP( ReturnPlayerName( playerid ) ) )
+			if ( textContainsIP( inputtext ) )
 				return SendError( playerid, "We do not condone advertising." );
 
 			new houseid = p_InHouse[ playerid ];
@@ -22368,7 +22552,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			case 0: // View statistics
 			{
 				new iPlayers = GetOnlineGangMembers( g );
-				format( szLargeString, 350, ""COL_GREY"Gang ID:"COL_WHITE" %d\n"COL_GREY"Online Members:"COL_WHITE" %d\n"COL_GREY"Score:"COL_WHITE" %d\n"COL_GREY"Kills:"COL_WHITE" %d\n"COL_GREY"Deaths:"COL_WHITE" %d\n"COL_GREY"K/D Ratio:"COL_WHITE" %0.2f\n", g, iPlayers, g_gangData[ g ] [ E_SCORE ], g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ], floatdiv( g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ] ) );
+				format( szLargeString, 350, ""COL_GREY"Gang ID:"COL_WHITE" %d\n"COL_GREY"Online Members:"COL_WHITE" %d\n"COL_GREY"Score:"COL_WHITE" %d\n"COL_GREY"Kills:"COL_WHITE" %d\n"COL_GREY"Deaths:"COL_WHITE" %d\n"COL_GREY"K/D Ratio:"COL_WHITE" %0.2f\n", g_gangData[ g ] [ E_SQL_ID ], iPlayers, g_gangData[ g ] [ E_SCORE ], g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ], floatdiv( g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ] ) );
 				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d", szLargeString, ConvertPrice( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ) );
 				ShowPlayerDialog( playerid, DIALOG_GANG_LIST_RESPONSE, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Statistics", szLargeString, "Close", "Back" );
 			}
@@ -25208,6 +25392,20 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					if ( slotid == -1 )
 						return SendError( playerid, "You cannot add more than %d components to your vehicle.", MAX_PIMPS );
 
+					// make sure the person is above the limit
+					if ( g_vehicleComponentsData[ i ] [ E_LIMIT ] != 0 )
+					{
+						new
+							instances = 0;
+
+						for( new p = 0; p < MAX_PIMPS; p++ )
+							if ( g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_CREATED ] [ p ] && g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_MODEL ] [ p ] == g_vehicleComponentsData[ i ] [ E_MODEL_ID ] )
+								instances ++;
+
+						if ( instances >= g_vehicleComponentsData[ i ] [ E_LIMIT ] )
+							return SendError( playerid, "You can place a %s a maximum of %d time(s).", g_vehicleComponentsData[ i ] [ E_NAME ], g_vehicleComponentsData[ i ] [ E_LIMIT ] );
+					}
+
 					new
 						Float: X, Float: Y, Float: Z;
 
@@ -25523,6 +25721,511 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			ShowMappingTaxOptions( playerid, mappingid );
 		}
 		return 1;
+	}
+	if ( ( dialogid == DIALOG_RACE ) && response )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		switch ( listitem )
+		{
+			case 0: ShowPlayerDialog( playerid, DIALOG_RACE_MODE, DIALOG_STYLE_TABLIST, ""COL_GOLD"Race Configuration - Race Mode", ""COL_GREY"Street Race\t"COL_WHITE"Racers must meet the final destination\n"COL_GREY"Outrun"COL_WHITE"\tRacer must outrun everyone by 100 metres", "Select", "Close" );
+			case 1: ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", ""COL_WHITE"Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Specify", "Close" );
+			case 2: ShowPlayerDialog( playerid, DIALOG_RACE_POS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Prize Distribution", ""COL_WHITE"1st Position\t"COL_WHITE"2nd Position\t"COL_WHITE"3rd Position\n100%\t0%\t0%\n90%\t5%\t5%\n80%\t10%\t10%\n70%\t15%\t15%\n60%\t20%\t20%\n", "Select", "Close" );
+			case 3:
+			{
+				if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
+					return ShowPlayerDialog( playerid, DIALOG_RACE_DISTANCE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Outrun Distance", ""COL_WHITE"Specify the required outrun distance (minimum 10.0m - max 250.0m)", "Specify", "Close" );
+
+				return ShowPlayerDialog( playerid, DIALOG_RACE_DEST, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Destination", ""COL_WHITE""COL_WHITE"How do you want to set the final destination?\nPreset Destinations\nSelect Using Minimap\nUse Coordinates", "Select", "Back" );
+			}
+			case 4:
+			{
+				erase( szLargeString );
+
+				foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid && g_raceData[ raceid ] [ E_LOBBY_HOST ] != i ) {
+					format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\n", szLargeString, ReturnPlayerName( i ), i );
+				}
+
+				if ( strlen( szLargeString ) ) {
+					return ShowPlayerDialog( playerid, DIALOG_RACE_KICK, DIALOG_STYLE_LIST, ""COL_GOLD"Race Configuration - Player Management", szLargeString, "Kick", "Back" );
+				} else {
+					SendError( playerid, "There are no racers to show." );
+					return ShowRaceConfiguration( playerid, raceid );
+				}
+			}
+		}
+	}
+	if ( dialogid == DIALOG_RACE_DEST )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( ! response )
+			return ShowRaceConfiguration( playerid, raceid );
+
+		switch ( listitem )
+		{
+			case 0: ShowPlayerDialog( playerid, DIALOG_RACE_PRESELECT, DIALOG_STYLE_LIST, ""COL_GOLD"Race Configuration - Destination", "LS Airport\nLS Pier\nLS Grove Street\nLV Airport\nLV Old Strip\nEl Quebrados\nSF Airport\nMount Chilliad\nTierra Robada SF Bridge\nSF Dealership", "Select", "Back" );
+			case 1:
+			{
+				g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 2;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = 0.0;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = 0.0;
+				g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = 0.0;
+				return SendServerMessage( playerid, "You are now setting the race destination. Use the MINIMAP to pick the finish position." );
+			}
+			case 2: ShowPlayerDialog( playerid, DIALOG_RACE_CUSTOM_DEST, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Custom Destination", ""COL_WHITE"Please specify the final destination coordinates, seperated by white spaces. E.g 0.0 0.0 0.0", "Set", "Back" );
+		}
+		return 1;
+	}
+	if ( dialogid == DIALOG_RACE_CUSTOM_DEST )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( ! response )
+			return ShowPlayerDialog( playerid, DIALOG_RACE_DEST, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Destination", ""COL_WHITE""COL_WHITE"How do you want to set the final destination?\nPreset Destinations\nSelect Using Minimap\nUse Coordinates", "Select", "Back" );
+
+		new
+			Float: X, Float: Y, Float: Z;
+
+		if ( sscanf( inputtext, "fff", X, Y, Z ) ) {
+			SendError( playerid, "Make sure coordinates are seperated by white spaces and are numbers (e.g 0.0 0.0 0.0)" );
+			return ShowPlayerDialog( playerid, DIALOG_RACE_CUSTOM_DEST, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Custom Destination", ""COL_WHITE"Please specify the final destination coordinates, seperated by white spaces. E.g 0.0 0.0 0.0", "Set", "Back" );
+		}
+
+		SetRaceDestination( raceid, X, Y, Z );
+		SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has set the race final destination to %0.4f %0.4f %0.4f.", ReturnPlayerName( playerid ), playerid, X, Y, Z );
+		return 1;
+	}
+	if ( dialogid == DIALOG_RACE_PRESELECT )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( ! response )
+			return ShowPlayerDialog( playerid, DIALOG_RACE_DEST, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration - Destination", ""COL_WHITE""COL_WHITE"How do you want to set the final destination?\nPreset Destinations\nSelect Using Minimap\nUse Coordinates", "Select", "Back" );
+
+		SetRaceDestination( raceid, g_raceFinalDestinations[ listitem ] [ E_X ], g_raceFinalDestinations[ listitem ] [ E_Y ], g_raceFinalDestinations[ listitem ] [ E_Z ] );
+		SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has set the race final destination to %s.", ReturnPlayerName( playerid ), playerid, g_raceFinalDestinations[ listitem ] [ E_NAME ] );
+		return 1;
+	}
+	if ( dialogid == DIALOG_RACE_KICK )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		ShowRaceConfiguration( playerid, raceid );
+
+		if ( ! response )
+			return 1;
+
+		new
+			x = 0;
+
+		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid && g_raceData[ raceid ] [ E_LOBBY_HOST ] != i )
+		{
+	       	if ( x == listitem )
+	      	{
+		  		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has been kicked from the race.", ReturnPlayerName( i ), i );
+		  		RemovePlayerFromRace( i );
+	      		return 1;
+			}
+	      	x++;
+		}
+		return SendError( playerid, "There was an error trying to remove this player from the race." );
+	}
+	if ( dialogid == DIALOG_RACE_MODE )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( response )
+		{
+			g_raceData[ raceid ] [ E_MODE ] = listitem;
+			SendServerMessage( playerid, "You have set the race mode to "COL_GREY"%s"COL_WHITE".", g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ) );
+		}
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( dialogid == DIALOG_RACE_DISTANCE )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( ! response )
+			return ShowRaceConfiguration( playerid, raceid );
+
+		new
+			Float: distance;
+
+		if ( sscanf( inputtext, "f", distance ) || ! ( 10.0 <= distance <= 300.0 ) ) {
+			SendError( playerid, "Please specify a race distance between 10.0m and 300.0m." );
+			return ShowPlayerDialog( playerid, DIALOG_RACE_DISTANCE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Outrun Distance", ""COL_WHITE"Specify the required outrun distance (minimum 10.0m - max 250.0m)", "Specify", "Close" );
+		}
+
+		g_raceData[ raceid ] [ E_OUTRUN_DISTANCE ] = distance;
+		SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The outrun distance has been set to %0.1f metres.", distance );
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( dialogid == DIALOG_RACE_FEE )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( ! response )
+			return ShowRaceConfiguration( playerid, raceid );
+
+		new
+			fee;
+
+		if ( sscanf( inputtext, "d", fee ) || ! ( 0 <= fee <= 10000000 ) ) {
+			SendError( playerid, "Please specify an entry fee between $0 and $10,000,000." );
+			return ShowPlayerDialog( playerid, DIALOG_RACE_FEE, DIALOG_STYLE_INPUT, ""COL_GOLD"Race Configuration - Entry Fee", ""COL_WHITE"Specify the required entry fee for this race (minimum $1,000 - max $10,000,000)", "Specify", "Close" );
+		}
+
+		g_raceData[ raceid ] [ E_ENTRY_FEE ] = fee;
+		SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" The entry fee for the race has been set to %s.", ConvertPrice( fee ) );
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( dialogid == DIALOG_RACE_POS )
+	{
+		new
+			raceid = GetPVarInt( playerid, "editing_race" );
+
+		if ( ! IsRaceHost( playerid, raceid ) )
+			return SendError( playerid, "You are not the host of this lobby." );
+
+		if ( response )
+		{
+			static const
+				Float: g_prizePoolDistribution[ ] [ 3 ] =
+				{
+					{ 1.0, 0.0, 0.0 },
+					{ 0.9, 0.05, 0.05 },
+					{ 0.8, 0.1, 0.1 },
+					{ 0.7, 0.15, 0.15 },
+					{ 0.6, 0.2, 0.2 }
+				}
+			;
+
+			// position prize
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] = g_prizePoolDistribution[ listitem ] [ 0 ];
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ] = g_prizePoolDistribution[ listitem ] [ 1 ];
+			g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ] = g_prizePoolDistribution[ listitem ] [ 2 ];
+
+			// alert
+			SendServerMessage( playerid, "The prize pool distribution is now %0.0f%% for 1st, %0.0f%% for 2nd and %0.0f%% for 3rd place.", 100.0 * g_prizePoolDistribution[ listitem ] [ 0 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 1 ], 100.0 * g_prizePoolDistribution[ listitem ] [ 2 ] );
+		}
+		return ShowRaceConfiguration( playerid, raceid );
+	}
+	if ( ( dialogid == DIALOG_BUSINESS_TERMINAL ) && response )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+			return SendError( playerid, "You do not have access to this feature." );
+
+		new
+			business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
+
+		switch ( listitem )
+		{
+			// rename business
+			case 0: ShowPlayerDialog( playerid, DIALOG_BUSINESS_NAME, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"The current business name is %s\n\n"COL_WHITE"Enter below the new name for it", g_businessData[ businessid ] [ E_NAME ] ), "Update", "Back" );
+
+			// add members
+			case 1: ShowBusinessMembers( playerid, businessid );
+
+			// sell stock
+			case 2:
+			{
+				new
+					prod = GetProductPrice( business_type ), prod_hardened = GetProductPrice( business_type, true );
+
+				format( szBigString, sizeof( szBigString ),
+					""COL_WHITE"Your business has %d product\t \nSell Product Locally\t%s%s\nSell Product Nationally\t%s%s",
+					g_businessData[ businessid ] [ E_PRODUCT ], prod > g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ? ( COL_GREEN ) : ( COL_RED ),
+					ConvertPrice( prod ), prod_hardened > g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ? ( COL_GREEN ) : ( COL_RED ), ConvertPrice( prod_hardened )
+				);
+				ShowPlayerDialog( playerid, DIALOG_BUSINESS_SELL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", szBigString, "Select", "Back" );
+			}
+
+			// buy stock
+			case 3: ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], ConvertPrice( GetResupplyPrice( business_type ) ) ), "Select", "Back" );
+
+			// upgrade
+			case 4: ShowBusinessTerminal( playerid ), SendError( playerid, "This feature is currently under construction." );
+		}
+		return 1;
+	}
+	if ( dialogid == DIALOG_BUSINESS_MEMBERS )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || g_businessData[ businessid ] [ E_OWNER_ID ] != p_AccountID[ playerid ] )
+			return SendError( playerid, "You must be the owner of the business to use this feature." );
+
+		if ( ! response )
+			return ShowBusinessTerminal( playerid );
+
+		if ( listitem == 0 )
+			return ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
+
+	    for( new i, x = 1; i < MAX_BUSINESS_MEMBERS; i ++ )
+		{
+			if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] )
+		 	{
+		       	if ( x == listitem )
+		      	{
+		      		// null entry
+		      		g_businessData[ businessid ] [ E_MEMBERS ] [ i ] = 0;
+
+		      		// save
+		      		UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
+		      		SendServerMessage( playerid, "You have removed a member from the business." );
+				 	break;
+	      		}
+		      	x ++;
+			}
+		}
+
+		ShowBusinessMembers( playerid, businessid );
+		return 1;
+	}
+	if ( dialogid == DIALOG_BUSINESS_ADD_MEMBER )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || g_businessData[ businessid ] [ E_OWNER_ID ] != p_AccountID[ playerid ] )
+			return SendError( playerid, "You must be the owner of the business to use this feature." );
+
+		if ( ! response )
+			return ShowBusinessTerminal( playerid );
+
+		new
+			memberid;
+
+		if ( sscanf( inputtext, #sscanf_u, memberid ) ) SendError( playerid, "Specify a name or id of the player you wish to add as a business member." );
+		else if ( ! IsPlayerConnected( memberid ) || IsPlayerNPC( memberid ) ) SendError( playerid, "The player specified is not connected." );
+		else if ( p_OwnedBusinesses[ memberid ] >= getPlayerBusinessCapacity( memberid ) )  SendError( playerid, "This player cannot be added to any more businesses." );
+		else
+		{
+			new
+				slotid = -1;
+
+			// get slot for new member anyway
+			for ( new x = 0; x < MAX_BUSINESS_MEMBERS; x ++ ) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ x ] == 0 ) {
+				slotid = x;
+				break;
+			}
+
+			// proceed
+			if ( slotid == -1 ) SendError( playerid, "The business has reached the maximum number of members." );
+			else if ( IsBusinessAssociate( memberid, businessid ) ) SendError( playerid, "This member is already apart of your organization." );
+			else
+			{
+				// add member in
+				g_businessData[ businessid ] [ E_MEMBERS ] [ slotid ] = p_AccountID[ memberid ];
+
+				// alert and save
+				foreach (new i : Player) if ( IsBusinessAssociate( i, businessid ) ) {
+					SendClientMessageFormatted( i, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has been added as a member to "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( memberid ), memberid, g_businessData[ businessid ] [ E_NAME ] );
+				}
+
+		     	UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
+				return ShowBusinessMembers( playerid, businessid );
+			}
+		}
+		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
+	}
+	if ( dialogid == DIALOG_BUSINESS_NAME )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+			return SendError( playerid, "You do not have access to this feature." );
+
+		if ( ! response )
+			return ShowBusinessTerminal( playerid );
+
+		if ( textContainsIP( inputtext ) )
+			return SendError( playerid, "We do not condone advertising." );
+
+		if ( ! ( 3 <= strlen( inputtext ) <= 32 ) ) {
+			SendError( playerid, "Please make sure your business name is between 3 and 32 characters." );
+		} else {
+			format( g_businessData[ businessid ] [ E_NAME ], 32, "%s", inputtext );
+			SendServerMessage( playerid, "The business name has now been set to "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+		}
+		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_NAME, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"The current business name is %s\n\n"COL_WHITE"Enter below the new name for it", g_businessData[ businessid ] [ E_NAME ] ), "Update", "Back" );
+	}
+	if ( dialogid == DIALOG_BUSINESS_SELL )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+			return SendError( playerid, "You do not have access to this feature." );
+
+		if ( ! response )
+			return ShowBusinessTerminal( playerid );
+
+		new
+			current_product_levels = g_businessData[ businessid ] [ E_PRODUCT ];
+
+		if ( current_product_levels - MAX_DROPS < 0 )
+			return SendError( playerid, "Your business needs %d more product to allow for distribution.", MAX_DROPS - current_product_levels );
+
+	   	// destroy preexisting shit incase
+	   	StopBusinessExportMission( businessid );
+
+		// update product levels
+		g_businessData[ businessid ] [ E_PRODUCT ] -= MAX_DROPS;
+		UpdateBusinessProductionLabel( businessid );
+
+	   	// create a new export mission
+		switch ( listitem )
+		{
+			case 0:
+			{
+				// update values
+				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = false );
+				SetRandomDropoffLocation( playerid, businessid, .heli = false );
+				return 1;
+			}
+
+			case 1:
+			{
+				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = true );
+				SetRandomDropoffLocation( playerid, businessid, .heli = true );
+				return 1;
+			}
+		}
+		return 1;
+	}
+	if ( ( dialogid == DIALOG_BUSINESS_BUY ) && response )
+	{
+		new
+			businessid = p_InBusiness[ playerid ];
+
+		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+			return SendError( playerid, "You do not have access to this feature." );
+
+		new
+			business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
+
+		// check we havent breached any limits
+		if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
+			return ShowBusinessTerminal( playerid ), SendError( playerid, "The business met the limit of %d supplies.", g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+
+		if ( g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ] > g_iTime )
+			return ShowBusinessTerminal( playerid ), SendError( playerid, "You cannot resupply the business as it is currently in its production phase." );
+
+		switch ( listitem )
+		{
+			case 0:
+			{
+				// buy with cash
+				new
+					price = GetResupplyPrice( business_type );
+
+				if ( GetPlayerCash( playerid ) < price  )
+					return ShowBusinessTerminal( playerid ), SendError( playerid, "You don't have enough money to resupply your business." );
+
+				// commence
+				GivePlayerCash( playerid, -price );
+				g_businessData[ businessid ] [ E_SUPPLIES ] ++;
+
+				// alert and redirect
+				SendServerMessage( playerid, "You have bought business supplies for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"(%d/%d)", ConvertPrice( price ), g_businessData[ businessid ] [ E_SUPPLIES ],  g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+
+				// start prod if viable
+				StartBusinessDrugProduction( businessid );
+			}
+			case 1:
+			{
+				ShowBusinessTerminal( playerid );
+				SendError( playerid, "This feature is currently under construction." );
+			}
+		}
+		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], ConvertPrice( GetResupplyPrice( business_type ) ) ), "Select", "Back" ), 1;
+	}
+	return 1;
+}
+
+stock StartBusinessDrugProduction( businessid )
+{
+	if ( ! Iter_Contains( business, businessid ) )
+		return;
+
+	new
+		business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
+
+	// only if the stock is maxed
+	if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
+	{
+		g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = g_iTime + 3600 * g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ];
+		UpdateBusinessProductionLabel( businessid );
+		UpdateBusinessData( businessid );
+
+		// alert players
+		foreach (new i : Player) if ( IsBusinessAssociate( i, businessid ) ) {
+			SendClientMessageFormatted( i, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" Supply levels for "COL_GREY"%s"COL_WHITE" have replenished. Production will commence.", g_businessData[ businessid ] [ E_NAME ] );
+		}
+	}
+}
+
+public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
+{
+	new
+		raceid = GetPVarInt( playerid, "editing_race" );
+
+	if ( IsRaceHost( playerid, raceid ) )
+	{
+		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 2 )
+		{
+			new
+				Float: finalZ;
+
+			// mapandreas
+			MapAndreas_FindZ_For2DCoord( fX, fY, finalZ );
+
+			// set destination
+			SetRaceDestination( raceid, fX, fY, finalZ + 0.3 );
+
+			// alert
+			ShowRaceConfiguration( playerid, raceid );
+			SendServerMessage( playerid, "You have selected the final destination for the race, use "COL_GREY"/race start"COL_WHITE" to begin." );
+		}
 	}
 	return 1;
 }
@@ -25921,8 +26624,10 @@ stock SavePlayerData( playerid, bool: logout = false )
 		new
 			gangid = -1;
 
-		if ( 0 <= p_GangID[ playerid ] < MAX_GANGS || Iter_Contains( gangs, p_GangID[ playerid ] ) )
+		printf ("[%s][0] has the gang id of %d", ReturnPlayerName( playerid ), p_GangID[ playerid ] );
+		if ( 0 <= p_GangID[ playerid ] < MAX_GANGS && Iter_Contains( gangs, p_GangID[ playerid ] ) )
 			gangid = g_gangData[ p_GangID[ playerid ] ] [ E_SQL_ID ];
+
 
         format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`XP`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
                                        	GetPlayerScore( playerid ), 	GetPlayerCash( playerid ),		p_AdminLevel[ playerid ],
@@ -25951,6 +26656,9 @@ stock SavePlayerData( playerid, bool: logout = false )
 										gangid,						p_HouseSpawnLocation[ playerid ], 	p_IrresistiblePoints[ playerid ],
 										!logout,					p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
 										p_AccountID[ playerid ] );
+
+
+		printf ("[%s][1] Exited Server With Gang ID, save len %d", ReturnPlayerName( playerid ), gangid, strlen( Query ) );
 
 		mysql_single_query( Query );
 
@@ -26768,6 +27476,9 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_DROP_OFF_DILLIMORE ] = CreateDynamicCP( 614.2876, -588.6716, 17.2330, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_DROP_OFF_DIABLO ] = CreateDynamicCP( -433.3666, 2255.6064, 42.4297, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_DROP_OFF_QUBRADOS ] = CreateDynamicCP( -1400.0497, 2647.2358, 55.6875, 3.0, -1, -1, -1, 100.0 );
+	g_Checkpoints[ CP_BIZ_TERMINAL_COKE ] = CreateDynamicCP( 2563.5728, -1310.5925, 1143.7242, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_BIZ_TERMINAL_METH ] = CreateDynamicCP( 2034.0669, 1001.6073, 1510.2416, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_BIZ_TERMINAL_WEED ] = CreateDynamicCP( -1742.9982, -1377.3049, 5874.1333, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
 	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
@@ -26835,6 +27546,9 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[LUMBERJACK JOB]", COLOR_GOLD, -2323.5676, -97.2582, 35.3078, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 768.2576, -22.8351, 1000.5859, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 8 );
 	CreateDynamic3DTextLabel("[PURCHASE VEHICLE]", COLOR_GOLD, -1867.9092, -646.3469, 1002.1284, 20.0);
+	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2563.5728, -1310.5925, 1143.7242, 20.0);
+	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2034.0669, 1001.6073, 1510.2416, 20.0);
+	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -1742.9982, -1377.3049, 5874.1333, 20.0);
 }
 
 stock DestroyAllPlayerC4s( playerid, bool: resetc4 = false )
@@ -27098,6 +27812,7 @@ thread OnAdvanceBanCheck( playerid, szBannedBy[ ], szReason[ ], szIP[ ], lol_tim
 		fields, rows
 	;
 
+	gpci( playerid, szSerial, sizeof( szSerial ) );
 	GetPlayerName( playerid, szPlayerNameBanned, MAX_PLAYER_NAME );
 	cache_get_data( rows, fields );
 
@@ -27110,17 +27825,20 @@ thread OnAdvanceBanCheck( playerid, szBannedBy[ ], szReason[ ], szIP[ ], lol_tim
 	else
 	{
 		new
-			sensitive = IsProxyEnabledForPlayer( playerid );
+			enabled = IsProxyEnabledForPlayer( playerid );
 
-		if ( !sensitive )
+		if ( !enabled )
 		{
-			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`) VALUES ('%s','%s','%s','%s',%d,%d,0)", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time );
+			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`,`SERIAL`) VALUES ('%s','%s','%s','%s',%d,%d,0,'%s')", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time, mysql_escape( szSerial ) );
+			print( szLargeString );
 		}
 		else
 		{
-			gpci( playerid, szSerial, sizeof( szSerial ) );
-			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`,`SERIAL`,`COUNTRY`,`ISP`) VALUES ('%s','%s','%s','%s',%d,%d,0,'%s','%s','%s')", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time, mysql_escape( szSerial ), mysql_escape( GetPlayerCountryCode( playerid ) ), mysql_escape( GetPlayerISP( playerid ) ) );
+			// include country why not
+			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`,`SERIAL`,`COUNTRY`) VALUES ('%s','%s','%s','%s',%d,%d,0,'%s','%s','%s')", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time, mysql_escape( szSerial ), mysql_escape( GetPlayerCountryCode( playerid ) ) );
+			print( szLargeString );
 		}
+
 		mysql_single_query( szLargeString );
 	}
 	return KickPlayerTimed( playerid ), 1;
@@ -27402,6 +28120,17 @@ stock GetPlayerOwnedHouses( playerid )
 		{
 		    count ++;
 		}
+	}
+	return count;
+}
+
+stock GetPlayerOwnedBusinesses( playerid )
+{
+	new
+		count = 0;
+
+	foreach (new businessid : business) if ( IsBusinessAssociate( playerid, businessid ) ) {
+		count ++;
 	}
 	return count;
 }
@@ -29114,14 +29843,19 @@ stock DisconnectFromGang( playerid )
 	if ( gangid == INVALID_GANG_ID )
 		return 0;
 
-	if ( !Iter_Contains( gangs, gangid ) )
+	if ( ! Iter_Contains( gangs, gangid ) )
 		return 0;
 
 	// if ( !g_gangData[ gangid ] [ E_SAVED ] )
 	// 	return RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
+	new
+		members = GetOnlineGangMembers( gangid );
 
-	if ( ! GetOnlineGangMembers( gangid ) )
+	printf("Gang id %d has currently %d members online", g_gangData[ gangid ] [ E_SQL_ID ], members );
+	if ( members <= 0 )
 	{
+		// print
+		printf("Removed Gang From Cache Gang Id %d Since No Ppl", g_gangData[ gangid ] [ E_SQL_ID ] );
 	 	// Free iterator id
 	 	Iter_Remove( gangs, gangid );
 
@@ -29172,7 +29906,7 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
  		else
  		{
 			// Set invalid player to allow for check
-	 		g_gangData[ gangid ] [ E_LEADER ] = 0;
+	 		g_gangData[ gangid ] [ E_LEADER ] = -1;
 
 	 		// Look for leader substitute
 		 	foreach(new memberid : Player)
@@ -29188,7 +29922,7 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
 		 	}
 
 		 	// Cannot find any leader, so destroy
-		 	if ( !g_gangData[ gangid ] [ E_LEADER ] )
+		 	if ( g_gangData[ gangid ] [ E_LEADER ] == -1 )
 		 	{
 		 		// Warn gang owner about gang
 		 	    SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} There was nobody online that could be a leader for this gang therefore it has been deleted from the server." );
@@ -29206,7 +29940,10 @@ stock RemovePlayerFromGang( playerid, E_GANG_LEAVE_REASON: reason = GANG_LEAVE_U
  	}
 
  	// wouldn't make sense to keep the coleader in any gang
- 	mysql_single_query( "DELETE FROM `GANG_COLEADERS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
+ 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] ) );
+ 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `USER_ID`=%d", p_AccountID[ playerid ] ) );
+
+ 	printf("[%s] Gang ID after leaving is %d", ReturnPlayerName( playerid ), p_GangID[ playerid ] );
 
 	// Alter the gang & players
 	if ( Iter_Contains( gangs, gangid ) )
@@ -29363,7 +30100,7 @@ stock textContainsBadTextdrawLetters( const string[ ] )
 	return false;
 }
 
-stock BanPlayerISP( playerid ) {
+/*stock BanPlayerISP( playerid ) {
 	if ( !IsPlayerConnected( playerid ) )
 	    return;
 
@@ -29372,7 +30109,7 @@ stock BanPlayerISP( playerid ) {
 
 	if ( IsPlayerConnected( playerid ) )
 		Kick( playerid );
-}
+}*/
 
 stock IsValidSkin( skinid )
 {
@@ -30849,6 +31586,34 @@ stock getCurrentTime( )
 	gettime( Hour, Minute, Second );
 	format( szString, sizeof( szString ), "%02d:%02d:%02d", Hour, Minute, Second );
 	return szString;
+}
+
+stock getPlayerBusinessCapacity( playerid )
+{
+	new
+		slots = 2; // Default
+
+	switch( p_VIPLevel[ playerid ] )
+	{
+		case 6:
+			slots = 10;
+
+		case 5:
+			slots = 5;
+
+		case 4:
+			slots = 4;
+
+		case 3:
+			slots = 3;
+
+		case 2:
+			slots = 2;
+
+		case 1:
+			slots = 1;
+	}
+	return slots + p_ExtraAssetSlots{ playerid };
 }
 
 stock getPlayerVehicleCapacity( playerid )
@@ -33061,8 +33826,8 @@ stock GetOnlineGangMembers( gangid )
 	new
 		iPlayers = 0;
 
-	foreach(new playerid : Player)
-		if ( p_GangID[ playerid ] == gangid )
+	foreach (new playerid : Player)
+		if ( p_GangID[ playerid ] != INVALID_GANG_ID && p_GangID[ playerid ] == gangid )
 			iPlayers ++;
 
 	return iPlayers;
@@ -33295,7 +34060,42 @@ stock initializeActors( )
 			{ 172, 1964.8026, 1026.3284, 992.4688, 88.1672, "PED", "null", 23 },
 			{ 11, 1960.4900, 1026.3281, 992.4688, 90.0472, "PED", "null", 23 },
 			{ 172, 1960.4900, 1010.7502, 992.4688, 82.8407, "PED", "null", 23 },
-			{ 11, 1964.8025, 1010.7502, 992.4688, 85.3708, "PED", "null", 23 }
+			{ 11, 1964.8025, 1010.7502, 992.4688, 85.3708, "PED", "null", 23 },
+
+		// Weed lab
+			{ 21, -1747.3533, -1372.9813, 5874.1333, 2.07910, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 22, -1749.7698, -1377.1772, 5874.1333, 87.3066, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 41, -1749.7698, -1378.2697, 5874.1333, 87.9333, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 142, -1746.3673, -1378.2787, 5874.1333, 90.7769, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 143, -1746.3678, -1377.1827, 5874.1333, 89.5236, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 183, -1734.0258, -1359.8907, 5874.1372, 49.1026, "COP_AMBIENT", "Coplook_think", BUSINESS_WEED + 1 },
+			{ 184, -1730.9587, -1370.6337, 5874.1455, 320.139, "INT_SHOP", "shop_pay", BUSINESS_WEED + 1 },
+			{ 195, -1736.9166, -1377.9136, 5874.1475, 162.530, "INT_SHOP", "shop_pay", BUSINESS_WEED + 1 },
+			{ 220, -1734.9357, -1379.7953, 5874.1475, 242.118, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 28, -1719.2006, -1371.2070, 5875.3843, 3.06550, "BEACH", "bather", BUSINESS_WEED + 1 },
+			{ 222, -1727.6835, -1367.3120, 5874.1436, 86.0996, "INT_SHOP", "shop_loop", BUSINESS_WEED + 1 },
+			{ 168, -1743.6840, -1368.3126, 5874.1333, 339.252, "INT_SHOP", "shop_shelf", BUSINESS_WEED + 1 },
+
+		// Meth Lab
+ 			{ 70,2023.7355, 1001.6071, 1510.2416, 182.2146, "INT_SHOP", "shop_loop", BUSINESS_METH + 1 },
+ 			{ 70,2019.7291, 1001.6071, 1510.2416, 179.7077, "INT_SHOP", "shop_loop", BUSINESS_METH + 1 },
+ 			{ 153,2026.5404, 1008.3461, 1510.2416, 178.4305, "COP_AMBIENT", "Coplook_think", BUSINESS_METH + 1 },
+ 			{ 259,2026.3182, 1005.4316, 1510.2416, 359.1620, "COP_AMBIENT", "Copbrowse_loop", BUSINESS_METH + 1 },
+ 			{ 290,2026.3282, 1000.9877, 1510.2416, 177.4259, "INT_SHOP", "shop_pay", BUSINESS_METH + 1 },
+ 			{ 71,2034.8290, 1006.0858, 1510.2416, 88.77530, "COP_AMBIENT", "Coplook_loop", BUSINESS_METH + 1 },
+
+		// Cocaine Lab
+			{ 145, 2560.0005,-1286.3584,1143.7559,271.8058, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2554.8198,-1287.2550,1143.7559,358.8902, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 145, 2552.8896,-1287.2550,1143.7559,358.5769, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2553.5564,-1293.3484,1143.7539,180.9151, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 145, 2555.1589,-1295.2550,1143.7559,0.433400, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2560.0005,-1294.4984,1143.7559,269.8790, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2562.7671,-1293.3485,1143.7539,177.1313, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 145, 2564.3228,-1293.3485,1143.7539,181.2047, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2560.0005,-1286.4615,1143.7559,267.9984, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 145, 2562.6436,-1285.3485,1143.7559,180.8909, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 },
+			{ 146, 2564.1406,-1285.3485,1143.7539,180.8909, "INT_SHOP", "shop_loop", BUSINESS_COKE + 1 }
 		}
 	;
 
@@ -33305,7 +34105,11 @@ stock initializeActors( )
 			actorid = CreateActor( g_actorData[ i ] [ E_SKIN ], g_actorData[ i ] [ E_X ], g_actorData[ i ] [ E_Y ], g_actorData[ i ] [ E_Z ], g_actorData[ i ] [ E_RZ ] );
 
 		SetActorInvulnerable( actorid, true );
-		SetActorVirtualWorld( actorid, g_actorData[ i ] [ E_WORLD ] );
+
+		if ( g_actorData[ i ] [ E_WORLD ] != -1 )
+			SetActorVirtualWorld( actorid, g_actorData[ i ] [ E_WORLD ] );
+
+    	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
     	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
 	}
 }
@@ -34714,9 +35518,21 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 		if ( g_robberyNpcData[ clerkid ] [ E_LOOT ] < 0 )
 		{
+			new
+			    Float: safeDistance = 99999.99,
+				robberyid = getClosestRobberySafe( playerid, safeDistance )
+			;
+
+
 			amount += g_robberyNpcData[ clerkid ] [ E_LOOT ];
 			robbedNpc = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
-			SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+
+			if ( robberyid != INVALID_OBJECT_ID && safeDistance < 100.0 && !g_robberyData[ robberyid ] [ E_STATE ] ) {
+				g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.1;
+				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE". "COL_GREEN"(+10%s safe loot)", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
+			} else {
+				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+			}
 		}
 
 		if ( !( 0 <= amount < 10000 ) )
@@ -34828,8 +35644,6 @@ public FCNPC_OnDeath(npcid, killerid, weaponid)
 		return 1;
 
 	new
-	    Float: distance = 99999.99,
-		robberyid = getClosestRobberySafe( killerid, distance ),
 		clerkid = GetRobberyNpcFromPlayer( npcid )
 	;
 
@@ -34837,24 +35651,20 @@ public FCNPC_OnDeath(npcid, killerid, weaponid)
 	{
 		StopPlayerNpcRobbery( killerid, clerkid, .cower = false );
 
-		if ( robberyid != INVALID_OBJECT_ID && distance < 100.0 && !g_robberyData[ robberyid ] [ E_STATE ] )
-		{
-			if ( g_robberyNpcData[ clerkid ] [ E_PROVOKED ] )
-				return 1;
+		if ( g_robberyNpcData[ clerkid ] [ E_PROVOKED ] )
+			return 1;
 
-		    new
-				Float: percentage = fRandomEx( 50, 75 ), szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+	    new
+			szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
 
-			if ( GetPlayerLocation( killerid, szCity, szLocation ) )
-				SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE" near %s in %s.", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
-			else
-				SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+		if ( GetPlayerLocation( killerid, szCity, szLocation ) )
+			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE" near %s in %s.", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
+		else
+			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 
-			CreateCrimeReport( killerid );
-			GivePlayerWantedLevel( killerid, 6 );
-			g_robberyData[ robberyid ] [ E_MULTIPLIER ] = ( 100.0 - percentage ) / 100.0;
-			SendServerMessage( killerid, "You have killed the clerk! "COL_RED"The cops have been informed and the safe has %0.0f%s less loot.", percentage, "%%" );
-		}
+		CreateCrimeReport( killerid );
+		GivePlayerWantedLevel( killerid, 6 );
+		SendServerMessage( killerid, "You have killed the clerk! "COL_RED"The cops have been informed." );
 	}
 	return 1;
 }
@@ -36091,4 +36901,997 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 		return 1;
 	}
 	return 1;
+}
+
+stock SendClientMessageToRace( raceid, colour, format[ ], va_args<> )
+{
+    va_format( szNormalString, sizeof( szNormalString ), format, va_start<3> );
+
+	foreach(new i : Player)
+	{
+	    if ( p_raceLobbyId[ i ] == raceid )
+			SendClientMessage( i, colour, szNormalString );
+	}
+	return 1;
+}
+
+function OnRaceCountdown( raceid, time )
+{
+	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
+		return;
+
+	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
+		if ( ! IsPlayerInDynamicRaceCP( playerid, g_raceData[ raceid ] [ E_START_CHECKPOINT ] ) ) {
+			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The race cannot be started as %s(%d) is not in the starting checkpoint.", ReturnPlayerName( playerid ), playerid );
+			g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time );
+			return;
+		}
+	}
+
+	if ( time <= 0 )
+	{
+	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
+	    {
+	    	if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
+	    	{
+		    	// create sphere ahead of leader
+		    	if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid )
+		    	{
+		    		new
+		    			vehicleid = GetPlayerVehicleID( playerid ), Float: A;
+
+		    		GetVehicleZAngle( vehicleid, A );
+
+		    		// create sphere obj
+		    		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
+		    		g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = CreateDynamicCircle( 0.0, 0.0, 10.0 );
+		    		g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] = CreateDynamicObject( 11752, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, -1, 0 );
+		    		g_raceData[ raceid ] [ E_OUTRUN_TIMER ] = SetTimerEx( "OnRaceOutrun", 250, true, "d", raceid );
+
+		    		// attach objects
+					Streamer_RemoveArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, 0 );
+					AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], vehicleid, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
+		    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, -OUTRUN_DIST - 4.0 );
+		    	}
+
+		    	// show checkpoint for player
+	  			Streamer_AppendArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, playerid );
+		    }
+
+	    	// destroy starting checkpoint
+	    	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
+
+	    	// show gametext
+    		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
+			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
+		}
+		g_raceData[ raceid ] [ E_CD_TIMER ] = -1;
+	}
+	else
+	{
+	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
+	    {
+    		GameTextForPlayer( playerid, sprintf( "~y~%d", time ), 2000, 3 );
+    		PlayerPlaySound( playerid, 1056, 0.0, 0.0, 0.0 );
+	    }
+		g_raceData[ raceid ] [ E_CD_TIMER ] = SetTimerEx( "OnRaceCountdown", 960, false, "dd", raceid, time - 1 );
+	}
+}
+
+stock ShowRaceConfiguration( playerid, raceid )
+{
+
+	format( szLargeString, sizeof( szLargeString ), ""COL_WHITE"The current prize pool is %s\t \n"COL_GREY"Race Mode\t%s\n"COL_GREY"Entry Fee\t%s\n"COL_GREY"Prize Distribution\t%0.0f-%0.0f-%0.0f\n",
+
+								ConvertPrice( g_raceData[ raceid ] [ E_POOL ] ), g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ), ConvertPrice( g_raceData[ raceid ] [ E_ENTRY_FEE ] ),
+
+								100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ]
+							);
+
+	if ( g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ) {
+		format( szLargeString, sizeof( szLargeString ), "%s"COL_GREY"Finish Destination\t%s\n", szLargeString, g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 1 ? ( ""COL_GREEN"ACTIVE" ) : ( ""COL_ORANGE"NOT SET" ) );
+	} else {
+		format( szLargeString, sizeof( szLargeString ), "%s"COL_GREY"Outrun Distance\t%0.1f meters\n", szLargeString, g_raceData[ raceid ] [ E_OUTRUN_DISTANCE ] );
+	}
+
+	strcat( szLargeString, ""COL_GREY"View Racers\t " );
+
+	SetPVarInt( playerid, "editing_race", raceid );
+	ShowPlayerDialog( playerid, DIALOG_RACE, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Race Configuration", szLargeString, "Select", "Close" );
+	return 1;
+}
+
+function OnRaceOutrun( raceid )
+{
+	new
+		racers = 0, ahead_count = 0, lead = g_raceData[ raceid ] [ E_OUTRUN_LEAD ];
+
+	foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid && lead != i )
+	{
+		// increment racers
+		racers ++;
+
+		// check if racer is ahead
+		if ( GetDistanceBetweenPlayers( lead, i ) > g_raceData[ raceid ] [ E_OUTRUN_DISTANCE ] )
+			ahead_count ++;
+	}
+
+	// player is ahead of all players
+	if ( ahead_count == racers )
+	{
+		new
+			position = ++ g_raceData[ raceid ] [ E_FINISHED_COUNT ];
+
+		// give prize and alert
+		if ( 1 <= position <= 3 )
+			GivePlayerRaceWin( lead, position, raceid );
+
+		// end race if position over 3 or whatever the race count is or only 1 prize
+		printf ("position : %d, Racers : %d", position, racers);
+		if ( position >= 3 || position >= racers ||  g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] == 1.0 )
+		{
+			// incase there is a final player and a remaining prize pool
+			if ( g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ] != 1.0 )
+			{
+				new
+					closestRacer = GetClosestRacer( lead, raceid, .exceptid = lead );
+
+				printf( "Yes we have a pool of %d, closest %d", g_raceData[ raceid ] [ E_POOL ], closestRacer );
+				if ( IsPlayerConnected( closestRacer ) )
+				{
+					new
+						finalPosition = ++ g_raceData[ raceid ] [ E_FINISHED_COUNT ];
+
+					printf( "position %d", finalPosition );
+					if ( 1 <= finalPosition <= 3 )
+						GivePlayerRaceWin( closestRacer, finalPosition, raceid );
+				}
+			}
+			else
+			{
+				SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The race has ended as there can only be one winner." );
+			}
+
+			// destroy race
+			print ("Shut race");
+			return DestroyRace( raceid );
+		}
+
+		// transfer leader
+		else
+		{
+			new
+				closestRacer = GetClosestRacer( lead, raceid, .exceptid = lead );
+
+		    if ( IsPlayerConnected( closestRacer ) )
+		    {
+			    new
+			    	iVehicle = GetPlayerVehicleID( closestRacer );
+
+				// new leader
+				g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = closestRacer;
+				SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has taken the lead for the race.", ReturnPlayerName( closestRacer ), closestRacer );
+
+				// see if ahead
+				AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], iVehicle, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
+	    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST - 4.0 );
+			}
+		}
+	}
+	return 1;
+}
+
+stock GetClosestRacer( playerid, raceid, exceptid = INVALID_PLAYER_ID, &Float: distance = FLOAT_INFINITY ) {
+    new
+    	iCurrent = INVALID_PLAYER_ID,
+        Float: fX, Float: fY,  Float: fZ, Float: fTmp
+    ;
+
+    if ( GetPlayerPos( playerid, fX, fY, fZ ) )
+    {
+		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid && exceptid != i && GetPlayerVehicleSeat( playerid ) == 0 )
+		{
+            if ( 0.0 < ( fTmp = GetPlayerDistanceFromPoint( i, fX, fY, fZ ) ) < distance )
+            {
+                distance = fTmp;
+                iCurrent = i;
+            }
+	    }
+    }
+    return iCurrent;
+}
+
+stock GivePlayerRaceWin( playerid, position, raceid )
+{
+	new
+		prizeMoney = floatround( float( g_raceData[ raceid ] [ E_POOL ] ) * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ ( position - 1 ) ] );
+
+	// give cash & reduce prize pool
+	GivePlayerCash( playerid, prizeMoney );
+
+	// announcement
+	foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+		PlayerPlaySound( i, 1149, 0.0, 0.0, 0.0 );
+		GameTextForPlayer( i, sprintf( "~y~~h~%d%s~w~ %s", position, positionToString( position ), ReturnPlayerName( playerid ) ), 2000, 3 );
+		SendClientMessageFormatted( i, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", ReturnPlayerName( playerid ), playerid, position, positionToString( position ), ConvertPrice( prizeMoney ) );
+	}
+
+	// remove from race
+	RemovePlayerFromRace( playerid );
+}
+
+
+stock DestroyRace( raceid )
+{
+	// remove players from race
+	foreach (new playerid : Player) {
+		if ( p_raceLobbyId[ playerid ] == raceid ) {
+			p_raceLobbyId[ playerid ] = -1;
+		}
+	}
+
+	// remove race vars
+	Iter_Remove( races, raceid );
+	g_raceData[ raceid ] [ E_STARTED ] = false;
+
+	// destroy race cps
+	DestroyDynamicObject( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] ), g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] = -1;
+	DestroyDynamicArea( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] ), g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = -1;
+	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] ), g_raceData[ raceid ] [ E_START_CHECKPOINT ] = -1;
+	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] ), g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = -1;
+	DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] ), g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = -1;
+	KillTimer( g_raceData[ raceid ] [ E_OUTRUN_TIMER ] ), g_raceData[ raceid ] [ E_OUTRUN_TIMER ] = -1;
+	return 1;
+}
+
+stock RemovePlayerFromRace( playerid )
+{
+	new
+		newLeader = INVALID_PLAYER_ID,
+		raceid = p_raceLobbyId[ playerid ]
+	;
+
+	if ( ! Iter_Contains( races, raceid ) )
+		return 0;
+
+	// hide checkpoints
+	Streamer_RemoveArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, playerid );
+	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, playerid );
+	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, playerid );
+	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid );
+
+	// kick player out
+	p_raceLobbyId[ playerid ] = -1;
+
+	// assign new leader if possible
+	if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid )
+	{
+		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+			newLeader = i;
+			break;
+		}
+
+		if ( IsPlayerConnected( newLeader ) )
+		{
+			g_raceData[ raceid ] [ E_LOBBY_HOST ] = newLeader;
+			// SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) is the new lobby host.", ReturnPlayerName( newLeader ), newLeader );
+		}
+		else
+		{
+			printf("Destroyed empty race lobby %d", raceid);
+			DestroyRace( raceid );
+		}
+	}
+
+	// maybe the outrun lead left
+	else if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN && g_raceData[ raceid ] [ E_OUTRUN_LEAD ] == playerid )
+	{
+		new
+			closestRacer = GetClosestRacer( playerid, raceid, .exceptid = playerid );
+
+	    if ( IsPlayerConnected( closestRacer ) )
+	    {
+		    new
+		    	iVehicle = GetPlayerVehicleID( closestRacer );
+
+			// new leader
+			g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = closestRacer;
+			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" %s(%d) has taken the lead for the race.", ReturnPlayerName( closestRacer ), closestRacer );
+
+			// see if ahead
+			AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], iVehicle, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
+    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST - 4.0 );
+		}
+		else
+		{
+			SendClientMessageToRace( raceid, -1, ""COL_GREY"[RACE]"COL_WHITE" The race has ended as a new leader couldn't be set." );
+			DestroyRace( raceid );
+		}
+	}
+	return 1;
+}
+
+stock GetRaceMemberCount( raceid ) {
+	new
+		count = 0;
+
+	foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid ) {
+		count ++;
+	}
+	return count;
+}
+
+stock SetRaceDestination( raceid, Float: fX, Float: fY, Float: fZ)
+{
+	// set race position
+	g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ] = fX;
+	g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ] = fY;
+	g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ] = fZ;
+	g_raceData[ raceid ] [ E_RACE_FINISH_SET ] = 1;
+
+	// destroy checkpoint/icon again
+	DestroyDynamicMapIcon( g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] );
+	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] );
+
+	// place checkpoint
+	g_raceData[ raceid ] [ E_FINISH_MAP_ICON ] = CreateDynamicMapIcon( fX, fY, fZ, 53, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+	g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ] = CreateDynamicRaceCP( 1, g_raceData[ raceid ] [ E_FINISH_POS ] [ 0 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 1 ], g_raceData[ raceid ] [ E_FINISH_POS ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
+
+  	// reset players in map icon/cp
+  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
+  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, 0 );
+
+  	// stream to players
+	foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
+		Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_raceData[ raceid ] [ E_FINISH_MAP_ICON ], E_STREAMER_PLAYER_ID, i );
+		Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_FINISH_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
+	}
+}
+
+stock IsRaceHost( playerid, raceid ) {
+	if ( raceid == -1 || ! Iter_Contains( races, raceid ) )
+		return false;
+
+	return g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid;
+}
+
+
+//biz
+thread OnBusinessLoad( )
+{
+	new
+		rows, fields, i = -1,
+	    loadingTick = GetTickCount( )
+	;
+
+	cache_get_data( rows, fields );
+	if ( rows )
+	{
+		new
+			szName[ 32 ], szMembers[ 96 ];
+
+		// TODO: add members
+		while( ++i < rows )
+		{
+			new
+				businessid = cache_get_field_content_int( i, "ID", dbHandle );
+
+			// get business name
+			cache_get_field_content( i, "NAME", szName, sizeof( szName ) );
+			cache_get_field_content( i, "MEMBERS", szMembers, sizeof( szMembers ) );
+
+			// create business
+			CreateBusiness(
+				cache_get_field_content_int( i, "OWNER_ID", dbHandle ),
+				szName,
+				cache_get_field_content_int( i, "PRICE", dbHandle ),
+				cache_get_field_content_int( i, "TYPE", dbHandle ),
+				cache_get_field_content_float( i, "X", dbHandle ),
+				cache_get_field_content_float( i, "Y", dbHandle ),
+				cache_get_field_content_float( i, "Z", dbHandle ),
+				cache_get_field_content_int( i, "SUPPLIES", dbHandle ),
+				cache_get_field_content_int( i, "PRODUCT", dbHandle ),
+				cache_get_field_content_int( i, "EQUIPMENT_LVL", dbHandle ),
+				cache_get_field_content_int( i, "STAFF_LVL", dbHandle ),
+				cache_get_field_content_int( i, "PROD_TIMESTAMP", dbHandle ),
+				businessid
+			);
+
+			// add members
+			if ( sscanf( szMembers, sprintf( "a<i>[%d]", MAX_BUSINESS_MEMBERS ), g_businessData[ businessid ] [ E_MEMBERS ] ) ) {
+				// must have fucked up, we'll reset members
+				for ( new x = 0; x < MAX_BUSINESS_MEMBERS; x ++ )
+					g_businessData[ businessid ] [ E_MEMBERS ] [ x ] = 0;
+			}
+		}
+	}
+	printf( "[BUSINESSES]: %d businesses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
+	return 1;
+}
+
+CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Float: fY, Float: fZ, iSupply = 0, iProduct = 0, iEquipment = 0, iStaffUpgrade = 0, iProductionTimestamp = 0, iExistingID = -1 )
+{
+	new
+		iBusiness = iExistingID != -1 ? iExistingID : Iter_Free(business);
+
+	if ( Iter_Contains( business, iExistingID ) )
+		iBusiness = -1; // In the unlikelihood...
+
+	if ( iBusiness != -1 )
+	{
+		format( g_businessData[ iBusiness ] [ E_NAME ], 32, "%s", szBusiness );
+
+		g_businessData[ iBusiness ] [ E_OWNER_ID ] 		= iAccountID;
+		g_businessData[ iBusiness ] [ E_COST ] 			= iPrice;
+		g_businessData[ iBusiness ] [ E_INTERIOR_TYPE ] = iType;
+		g_businessData[ iBusiness ] [ E_INTERIOR_ID ] 	= iBusiness + ( MAX_BUSINESSES * 2 ); // Random
+
+		g_businessData[ iBusiness ] [ E_X ] = fX;
+		g_businessData[ iBusiness ] [ E_Y ] = fY;
+		g_businessData[ iBusiness ] [ E_Z ] = fZ;
+
+		g_businessData[ iBusiness ] [ E_PRODUCT ] = iProduct;
+		g_businessData[ iBusiness ] [ E_SUPPLIES ] = iSupply;
+		g_businessData[ iBusiness ] [ E_PROD_TIMESTAMP ] = iProductionTimestamp;
+
+		g_businessData[ iBusiness ] [ E_EQUIPMENT_LVL ] = iEquipment;
+		g_businessData[ iBusiness ] [ E_STAFF_LVL ] = iStaffUpgrade;
+
+		// production label
+		g_businessData[ iBusiness ] [ E_PROD_LABEL ] = CreateDynamic3DTextLabel( "... Loading ...", COLOR_GOLD, g_businessInteriorData[ iType ] [ E_PROD_X ], g_businessInteriorData[ iType ] [ E_PROD_Y ], g_businessInteriorData[ iType ] [ E_PROD_Z ], 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, iType + 1, g_businessData[ iBusiness ] [ E_INTERIOR_ID ] );
+		UpdateBusinessProductionLabel( iBusiness );
+
+		// checkpoints
+		g_businessData[ iBusiness ] [ E_ENTER_CP ] = CreateDynamicCP( fX, fY, fZ, 1.0, -1, 0, -1, 100.0 );
+		g_businessData[ iBusiness ] [ E_EXIT_CP ] = CreateDynamicCP( g_businessInteriorData[ iType ] [ E_X ], g_businessInteriorData[ iType ] [ E_Y ], g_businessInteriorData[ iType ] [ E_Z ], 1.0, iType + 1, g_businessData[ iBusiness ] [ E_INTERIOR_ID ], -1, 100.0 );
+
+		format( szBigString, sizeof( szBigString ), ""COL_GOLD"Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" 0", szBusiness, iBusiness, ConvertPrice( g_businessData[ iBusiness ] [ E_COST ] ) );
+	    g_businessData[ iBusiness ] [ E_ENTER_LABEL ] = CreateDynamic3DTextLabel( szBigString, COLOR_GOLD, fX, fY, fZ, 20.0 );
+		g_businessData[ iBusiness ] [ E_EXIT_LABEL ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_businessInteriorData[ iType ] [ E_X ], g_businessInteriorData[ iType ] [ E_Y ], g_businessInteriorData[ iType ] [ E_Z ], 20.0 );
+
+	    // reset members
+	    for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
+	    	g_businessData[ iBusiness ] [ E_MEMBERS ] [ i ] = 0;
+
+	    // insert or readjust name
+		if ( iExistingID != -1 && iAccountID != 0 ) UpdateBusinessTitle( iBusiness );
+		else if ( iExistingID == -1 )
+		{
+			format( szBigString, 256, "INSERT INTO `BUSINESSES`(`ID`, `OWNER_ID`, `NAME`, `COST`, `TYPE`, `X`, `Y`, `Z`) VALUES (%d,%d,'%s',%d,%d,%f,%f,%f)", iBusiness, iAccountID, szBusiness, iPrice, iType, fX, fY, fZ );
+			mysql_single_query( szBigString );
+		}
+
+		Iter_Add(business, iBusiness);
+	}
+	return iBusiness;
+}
+
+stock GetBusinessAssociates( businessid ) {
+	new
+		members = 0;
+
+    for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
+    	if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] != 0 )
+    		members ++;
+
+    if ( g_businessData[ businessid ] [ E_OWNER_ID ] != 0 )
+    	members ++;
+
+    return members;
+}
+
+thread OnUpdateBusinessTitle( businessid )
+{
+	new
+		rows, szOwner[ MAX_PLAYER_NAME ] = "No-one", associates = GetBusinessAssociates( businessid );
+
+	cache_get_data( rows, tmpVariable );
+
+	if ( rows )
+		cache_get_field_content( 0, "NAME", szOwner );
+
+	format( szBigString, sizeof( szBigString ), ""COL_GOLD"Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" %d", g_businessData[ businessid ] [ E_NAME ], businessid, szOwner, ConvertPrice( g_businessData[ businessid ] [ E_COST ] ), associates );
+	UpdateDynamic3DTextLabelText( g_businessData[ businessid ] [ E_ENTER_LABEL ], COLOR_GOLD, szBigString );
+	return 1;
+}
+
+stock UpdateBusinessProductionLabel( businessid )
+{
+	new
+		prod_price = g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ] ), supply_price = g_businessData[ businessid ] [ E_SUPPLIES ] * GetResupplyPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ] );
+
+	// check if its processing
+	if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 && g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] > g_iTime ) {
+		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_ORANGE"%s until production finishes", g_businessData[ businessid ] [ E_PRODUCT ], ConvertPrice( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], ConvertPrice( supply_price ), secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime ) ); // , ", ", 5, 1
+	} else {
+		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_GREEN"Production finished", g_businessData[ businessid ] [ E_PRODUCT ], ConvertPrice( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], ConvertPrice( supply_price ) );
+	}
+
+	// update label
+	UpdateDynamic3DTextLabelText( g_businessData[ businessid ] [ E_PROD_LABEL ], -1, szBigString );
+}
+
+stock UpdateBusinessData( businessid )
+{
+	new
+		members[ 96 ];
+
+    for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
+    	format( members, sizeof( members ), "%s%d ", members, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
+
+	format( szLargeString, sizeof( szLargeString ), "UPDATE `BUSINESSES` SET `OWNER_ID`=%d,`NAME`='%s',`SUPPLIES`=%d,`PRODUCT`=%d,`EQUIPMENT_LVL`=%d,`STAFF_LVL`=%d,`MEMBERS`='%s',`PROD_TIMESTAMP`=%d WHERE `ID`=%d",
+		g_businessData[ businessid ] [ E_OWNER_ID ], mysql_escape( g_businessData[ businessid ] [ E_NAME ] ), g_businessData[ businessid ] [ E_SUPPLIES ], g_businessData[ businessid ] [ E_PRODUCT ],
+		g_businessData[ businessid ] [ E_EQUIPMENT_LVL ], g_businessData[ businessid ] [ E_STAFF_LVL ], members, g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], businessid );
+
+	mysql_single_query( szLargeString );
+	return 1;
+}
+
+stock DestroyBusiness( businessid )
+{
+	if ( businessid < 0 || businessid >= MAX_GARAGES )
+		return 0;
+
+	if ( !Iter_Contains( business, businessid ) )
+	    return 0;
+
+	new
+		playerid = GetPlayerIDFromAccountID( g_businessData[ businessid ] [ E_OWNER_ID ] );
+
+	if ( IsPlayerConnected( playerid ) ) {
+		p_OwnedBusinesses[ playerid ] --;
+	    SendClientMessage( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" One of your businesses has been destroyed.");
+	}
+
+	mysql_single_query( sprintf( "DELETE FROM `BUSINESSES` WHERE `ID`=%d", businessid ) );
+
+	Iter_Remove(business, businessid);
+	g_businessData[ businessid ] [ E_OWNER_ID ] = 0;
+	DestroyDynamicCP( g_businessData[ businessid ] [ E_ENTER_CP ] );
+	DestroyDynamicCP( g_businessData[ businessid ] [ E_EXIT_CP ] );
+	DestroyDynamic3DTextLabel( g_businessData[ businessid ] [ E_PROD_LABEL ] );
+	DestroyDynamic3DTextLabel( g_businessData[ businessid ] [ E_ENTER_LABEL ] );
+	DestroyDynamic3DTextLabel( g_businessData[ businessid ] [ E_EXIT_LABEL ] );
+	StopBusinessExportMission( businessid );
+	return 1;
+}
+
+stock GetProductPrice( business_type, bool: hardened = false )
+{
+	new
+		Float: price, player_count = Iter_Count(Player);
+
+	// based on formula : https://i.gyazo.com/af5796ce25aee7c871adcddc5eb0a0ac.png
+	// calculate here : https://www.geogebra.org/m/eBHzJyKt
+	switch ( business_type )
+	{
+		case BUSINESS_COKE: price = 43211.0 * floatpower( 1.0147, player_count ); // 43.2117 * 1.0147^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_METH: price = 15757.0 * floatpower( 1.0134, player_count ); // 15757.0 * 1.0134^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_WEED: price = 8909.0 * floatpower( 1.0116, player_count );  // 8.909 * 1.0116^x for x in [25, 50, 75, 100, 125, 150]
+	}
+
+	// hardened with chopper, 25% more profit
+	if ( hardened )
+		price *= 1.25;
+
+	return floatround( price );
+}
+
+stock GetResupplyPrice( business_type )
+{
+	return g_businessInteriorData[ business_type ] [ E_COST_PRICE ];
+}
+
+stock ShowBusinessTerminal( playerid )
+{
+	new
+		businessid = p_InBusiness[ playerid ];
+
+	if ( ! Iter_Contains( business, businessid ) )
+		return SendError( playerid, "The server can't detect what business you're in. Re-enter the facility." );
+
+	if ( ! IsBusinessAssociate( playerid, businessid ) )
+		return SendError( playerid, "You're not an associate of this business." );
+
+	new
+		members = GetBusinessAssociates( businessid );
+
+	format( szBigString, 256, "Rename Business\t"COL_GREY"%s\nManage Members\t"COL_GREY"%d %s\nSell Inventory\t"COL_GREY"%d product\nResupply Business\t"COL_GREY"%d %s",
+			g_businessData[ businessid ] [ E_NAME ],
+			members, members == 1 ? ( "member" ) : ( "members" ),
+			g_businessData[ businessid ] [ E_PRODUCT ],
+			g_businessData[ businessid ] [ E_SUPPLIES ], g_businessData[ businessid ] [ E_SUPPLIES ] == 1 ? ( "supply" ) : ( "supplies" )
+	);
+	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_TERMINAL, DIALOG_STYLE_TABLIST, ""COL_GREY"Business System", szBigString, "Select", "Cancel" );
+}
+
+stock IsBusinessAssociate( playerid, businessid )
+{
+	new
+		accountid = p_AccountID[ playerid ];
+
+    for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
+    	if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] == accountid )
+    		return 1;
+
+    return g_businessData[ businessid ] [ E_OWNER_ID ] == accountid;
+}
+
+CMD:createbusiness( playerid, params[ ] )
+{
+    new
+		Float: X, Float: Y, Float: Z, cost, type
+	;
+
+	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	else if ( sscanf( params, "dd", cost, type ) ) return SendUsage( playerid, "/createbusiness [COST] [TYPE]" );
+	else if ( cost < 100 ) return SendError( playerid, "The price must be located above 100 dollars." );
+	else if ( ! ( 0 <= type <= 2 ) ) return SendError( playerid, "Invalid business type (Weed=0, Meth=1, Coke=2)." );
+	else
+	{
+		GetPlayerPos( playerid, X, Y, Z );
+		AddAdminLogLineFormatted( "%s(%d) has created a business", ReturnPlayerName( playerid ), playerid );
+
+		new
+			iTmp = CreateBusiness( 0, "Business", cost, type, X, Y, Z );
+
+	    if ( iTmp != -1 ) {
+			SaveToAdminLog( playerid, iTmp, "created business" );
+	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" You have created a %s business taking up business id %d.", ConvertPrice( cost ), iTmp );
+	    } else {
+			SendClientMessage( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" Unable to create a business due to a unexpected error." );
+		}
+	}
+	return 1;
+}
+
+CMD:destroybusiness( playerid, params[ ] )
+{
+	new
+	    iBusiness;
+
+	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	else if ( sscanf( params, "d", iBusiness ) ) return SendUsage( playerid, "/destroybusiness [BUSINESS_ID]" );
+	else if ( iBusiness < 0 || iBusiness >= MAX_BUSINESSES ) return SendError( playerid, "Invalid Business ID." );
+	else if ( !Iter_Contains( business, iBusiness ) ) return SendError( playerid, "Invalid Business ID." );
+	else
+	{
+		SaveToAdminLog( playerid, iBusiness, "destroy business" );
+		format( szBigString, sizeof( szBigString ), "[DG] [%s] %s | %d | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_businessData[ iBusiness ] [ E_OWNER_ID ], iBusiness );
+	    AddFileLogLine( "log_business.txt", szBigString );
+		AddAdminLogLineFormatted( "%s(%d) has deleted a business", ReturnPlayerName( playerid ), playerid );
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" You have destroyed the business ID %d.", iBusiness );
+	    DestroyBusiness( iBusiness );
+	}
+	return 1;
+}
+
+CMD:b( playerid, params[ ] ) return cmd_business( playerid, params );
+CMD:business( playerid, params[ ] )
+{
+	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
+	new
+		iBusiness = p_InBusiness[ playerid ];
+
+	if ( strmatch( params, "buy" ) )
+	{
+		if ( p_OwnedBusinesses[ playerid ] >= getPlayerBusinessCapacity( playerid ) ) return SendError( playerid, "You cannot purchase any more businesses, you've reached the limit." );
+		if ( GetPlayerScore( playerid ) < 1000 ) return SendError( playerid, "You need at least 1,000 score to buy a business." );
+
+		foreach(new b : business)
+		{
+			if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_ENTER_CP ] ) )
+			{
+			    if ( ! g_businessData[ b ] [ E_OWNER_ID ] )
+			    {
+			        if ( GetPlayerCash( playerid ) < g_businessData[ b ] [ E_COST ] )
+						return SendError( playerid, "You don't have enough money to purchase this business." );
+
+					p_OwnedBusinesses[ playerid ] ++;
+					g_businessData[ b ] [ E_OWNER_ID ] = p_AccountID[ playerid ];
+					UpdateBusinessData( b );
+					UpdateBusinessTitle( b );
+					GivePlayerCash( playerid, -( g_businessData[ b ] [ E_COST ] ), .force_save = true );
+					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" You have bought this business for "COL_GOLD"%s"COL_WHITE".", ConvertPrice( g_businessData[ b ] [ E_COST ] ) );
+					return 1;
+				}
+			    else return SendError( playerid, "This business isn't for sale." );
+			}
+		}
+		SendError( playerid, "You are not near any business entrances." );
+		return 1;
+	}
+	else if ( strmatch( params, "sell" ) )
+	{
+		if ( iBusiness == -1 ) return SendError( playerid, "You are not in any business." );
+		else if ( g_businessData[ iBusiness ] [ E_OWNER_ID ] != p_AccountID[ playerid ] ) return SendError( playerid, "You are not the owner of this business." );
+		else
+		{
+			new
+				iCashMoney = floatround( g_businessData[ iBusiness ] [ E_COST ] / 2 );
+
+			p_OwnedBusinesses[ playerid ] --;
+			g_businessData[ iBusiness ] [ E_OWNER_ID ] = 0;
+			g_businessData[ iBusiness ] [ E_PRODUCT ] = 0;
+			g_businessData[ iBusiness ] [ E_SUPPLIES ] = 0;
+
+			StopBusinessExportMission( iBusiness );
+			UpdateBusinessData( iBusiness );
+			UpdateBusinessTitle( iBusiness ); // No point querying (add on resale)
+			GivePlayerCash( playerid, iCashMoney );
+
+			SetPlayerPosEx( playerid, g_businessData[ iBusiness ] [ E_X ], g_businessData[ iBusiness ] [ E_Y ], g_businessData[ iBusiness ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+			SendServerMessage( playerid, "You have successfully sold your business for "COL_GOLD"%s"COL_WHITE".", ConvertPrice( iCashMoney ) );
+		}
+		return 1;
+	}
+	return 1;
+}
+
+stock SetRandomDropoffLocation( playerid, businessid, bool: heli = false )
+{
+	static const
+		Float: g_helicopterSpawns[ 3 ] [ 3 ] [ 4 ] =
+		{
+			// san fierro
+			{ { -1279.6904, -8.909900, 14.4117, 113.0514 }, { -1475.6725, -172.7831, 14.3233, 107.4014 }, { -1480.9645, -561.67210, 14.3281, 224.6014 } },
+
+			// las ventuas
+			{ { 1570.4276, 1473.7267, 11.07640, 94.42440 }, { 1551.9801, 1428.9448, 11.03680, 87.83020 }, { 1310.77920, 1400.50050, 11.3766, 214.995 } },
+
+			// los santos
+			{ { 1914.0532, -2339.2131, 13.8111, 162.1368 }, { 2023.2230, -2436.9309, 13.7232, 73.29400 }, { 1828.49350, -2420.6563, 13.9001, 121.6646 } }
+		}
+	;
+
+	static
+		szLocation[ MAX_ZONE_NAME ], city_id;
+
+	// figure the city of the business
+	Get2DCity( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
+
+	// assign index
+	if ( strmatch( szLocation, "Las Venturas" ) )
+		city_id = 1;
+
+	else if ( strmatch( szLocation, "Los Santos" ) )
+		city_id = 2;
+
+	else
+		city_id = 0;
+
+	// create checkpoints etc
+	if ( ! heli )
+	{
+		new
+			Float: nodeX, Float: nodeY, Float: nodeZ, Float: nextX, Float: nextY,
+			nodeid = NearestNodeFromPoint( g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] ),
+			nextNodeid = NearestNodeFromPoint( g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ], 9999.9, nodeid )
+		;
+
+		GetNodePos( nextNodeid, nextX, nextY, nodeZ );
+		GetNodePos( nodeid, nodeX, nodeY, nodeZ );
+
+		new
+			Float: rotation = atan2( nextY - nodeY, nextX - nodeX ) - 90.0;
+
+	   	g_businessVehicle[ businessid ] = CreateVehicle( 554, nodeX, nodeY, nodeZ, rotation, 3, 3, -1 );
+		AttachDynamicObjectToVehicle( ( g_businessData[ businessid ] [ E_VEHICLE_DECOR ] = CreateDynamicObject( 3800, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ) ), g_businessVehicle[ businessid ], 0.000000, -1.200000, 0.000000, 0.000000, 0.000000, 0.000000 );
+
+	   	if ( g_businessVehicle[ businessid ] ) 	{
+	   		g_isBusinessVehicle[ g_businessVehicle[ businessid ] ] = businessid;
+	   	}
+
+	   	// create new drop locations
+		new
+			ignore_drop_ids[ sizeof( g_roadBusinessExportData[ ] ) ] = { -1, ... };
+
+		for ( new x = 0; x < MAX_DROPS; x ++ )
+		{
+			new
+				drop_off_index = randomExcept( sizeof( g_roadBusinessExportData[ ] ), ignore_drop_ids, sizeof( ignore_drop_ids ) );
+
+			// so we get random drops always
+			ignore_drop_ids[ drop_off_index ] = drop_off_index;
+
+			// clear them incase
+			g_businessData[ businessid ] [ E_EXPORTED ] [ x ] = false;
+			DestroyDynamicMapIcon( g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] );
+			DestroyDynamicRaceCP( g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] );
+			DestroyDynamicArea( g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ x ] );
+
+			// assign indexes (used for dropping the shit off)
+			g_businessData[ businessid ] [ E_EXPORT_CITY ] = city_id;
+			g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ x ] = drop_off_index;
+
+			// map icons, cp, areas
+			g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 0 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 1 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 2 ], 19, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+			g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] = CreateDynamicRaceCP( 1, g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 0 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 1 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
+
+		  	// reset players in map icon/cp
+		  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ], E_STREAMER_PLAYER_ID, 0 );
+		  	Streamer_RemoveArrayData( STREAMER_TYPE_RACE_CP, g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ], E_STREAMER_PLAYER_ID, 0 );
+
+		  	// stream to players
+			foreach (new i : Player) if ( IsBusinessAssociate( i, businessid ) ) {
+				Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ], E_STREAMER_PLAYER_ID, i );
+				Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ], E_STREAMER_PLAYER_ID, i );
+			}
+		}
+
+		// alert player
+		ShowPlayerHelpDialog( playerid, 5000, "Exit the facility and enter the business vehicle marked outside." );
+	}
+	else
+	{
+		// create the heli
+		new
+			random_index = random( sizeof( g_helicopterSpawns[ ] ) );
+
+	   	g_businessVehicle[ businessid ] = CreateVehicle( 417, g_helicopterSpawns[ city_id ] [ random_index ] [ 0 ], g_helicopterSpawns[ city_id ] [ random_index ] [ 1 ], g_helicopterSpawns[ city_id ] [ random_index ] [ 2 ],  g_helicopterSpawns[ city_id ] [ random_index ] [ 3 ], -1, -1, -1 );
+
+	   	if ( g_businessVehicle[ businessid ] ) 	{
+	   		g_isBusinessVehicle[ g_businessVehicle[ businessid ] ] = businessid;
+	   	}
+
+		// map icon to heli
+		g_businessData[ businessid ] [ E_EXPORT_ICON ] [ 0 ] = CreateDynamicMapIcon( g_helicopterSpawns[ city_id ] [ random_index ] [ 0 ], g_helicopterSpawns[ city_id ] [ random_index ] [ 1 ], g_helicopterSpawns[ city_id ] [ random_index ] [ 2 ], 5, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+
+		// reset players in map icon/cp
+	  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ 0 ], E_STREAMER_PLAYER_ID, 0 );
+
+	  	// stream to players
+		foreach (new i : Player) if ( IsBusinessAssociate( i, businessid ) ) {
+			Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ 0 ], E_STREAMER_PLAYER_ID, i );
+		}
+
+		// destroy cp, unnused
+		DestroyDynamicRaceCP( g_businessData[ businessid ] [ E_EXPORT_CP ] [ 0 ] ), g_businessData[ businessid ] [ E_EXPORT_CP ] [ 0 ] = -1;
+
+		// alert
+		ShowPlayerHelpDialog( playerid, 5000, "Exit the facility and go to your local airport." );
+	}
+	return 1;
+}
+
+stock StopBusinessExportMission( businessid )
+{
+	new
+		vehicleid = g_businessVehicle[ businessid ], modelid = GetVehicleModel( vehicleid );
+
+	// reset variables
+	for ( new i = 0; i < MAX_DROPS; i ++ ) {
+		g_businessData[ businessid ] [ E_EXPORTED ] [ i ] = false;
+		DestroyDynamicMapIcon( g_businessData[ businessid ] [ E_EXPORT_ICON ] [ i ] ), g_businessData[ businessid ] [ E_EXPORT_ICON ] [ i ] = -1;
+		DestroyDynamicRaceCP( g_businessData[ businessid ] [ E_EXPORT_CP ] [ i ] ), g_businessData[ businessid ] [ E_EXPORT_CP ] [ i ] = -1;
+		DestroyDynamicArea( g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ i ] ), g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ i ] = -1;
+	}
+
+	// destroy vehicle
+	DestroyVehicle( g_businessVehicle[ businessid ] ), g_businessVehicle[ businessid ] = INVALID_VEHICLE_ID;
+	DestroyDynamicObject( g_businessData[ businessid ] [ E_VEHICLE_DECOR ] ), g_businessData[ businessid ] [ E_VEHICLE_DECOR ] = INVALID_OBJECT_ID;
+
+	// reset vehicle variable if needed
+	if ( vehicleid != INVALID_VEHICLE_ID )
+		g_isBusinessVehicle[ vehicleid ] = -1;
+
+	// slap the player in the heli high and stop the mission
+	foreach (new playerid : Player) if ( IsPlayerInVehicle( playerid, vehicleid ) && IsBusinessAerialVehicle( modelid ) ) {
+		SyncObject( playerid, 0.0, 0.0, 250.0 );
+		GivePlayerWeapon( playerid, 46, 1 );
+	}
+}
+
+public OnVehicleStreamIn(vehicleid, forplayerid)
+{
+	if ( g_isBusinessVehicle[ vehicleid ] && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
+	{
+		// new businessid = g_isBusinessVehicle[ vehicleid ];
+		// if ( IsBusinessAssociate( forplayerid, businessid ) )
+		SetVehicleParamsForPlayer( vehicleid, forplayerid, 1, 0 );
+	}
+    return 1;
+}
+
+public OnVehicleStreamOut(vehicleid, forplayerid)
+{
+	return 1;
+}
+
+stock randomExcept( end, except[ ], len = sizeof( except ) ) {
+
+    new
+        random_number = random( end );
+
+    for ( new x = 0; x < len; x ++ ) {
+        if ( random_number == except[ x ] ) {
+            return randomExcept( end, except, len );
+        }
+    }
+    return random_number;
+}
+
+function DestroyDrugObject( objectid )
+	return DestroyDynamicObject( objectid ), 1;
+
+stock SellBusinessProduct( playerid, businessid, locationid )
+{
+	// destroy checkpoint
+	g_businessData[ businessid ] [ E_EXPORTED ] [ locationid ] = true;
+	DestroyDynamicMapIcon( g_businessData[ businessid ] [ E_EXPORT_ICON ] [ locationid ] ), g_businessData[ businessid ] [ E_EXPORT_ICON ] [ locationid ] = -1;
+	DestroyDynamicRaceCP( g_businessData[ businessid ] [ E_EXPORT_CP ] [ locationid ] ), g_businessData[ businessid ] [ E_EXPORT_CP ] [ locationid ] = -1;
+	DestroyDynamicArea( g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ locationid ] ), g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ locationid ] = -1;
+
+	// count drugs exported
+	new
+		drugsSold = 0;
+
+	for ( new x = 0; x < MAX_DROPS; x ++ ) if ( g_businessData[ businessid ] [ E_EXPORTED ] [ x ] ) {
+		drugsSold ++;
+	}
+
+	// award player
+	new
+		product_amount = g_businessData[ businessid ] [ E_EXPORT_VALUE ];
+
+	GivePlayerCash( playerid, product_amount );
+	SendServerMessage( playerid, "You have successfully exported "COL_GOLD"%s"COL_WHITE" worth of product. "COL_ORANGE"(%d/%d)", ConvertPrice( product_amount ), drugsSold, MAX_DROPS );
+
+	// calculate if it was the last batch
+	if ( drugsSold == MAX_DROPS )
+	{
+		new
+			business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ],
+			profit = ( product_amount - g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ) * MAX_DROPS
+		;
+
+		// P&L
+		SendServerMessage( playerid, "You have completed selling all business product. Total profit %s%s"COL_WHITE".", profit > 0 ? ( COL_GREEN ) : ( COL_RED ), ConvertPrice( profit ) );
+
+		// Destroy checkpoint and vehicle
+		StopBusinessExportMission( businessid );
+	}
+}
+
+stock ShowBusinessMembers( playerid, businessid )
+{
+	new
+		szMembers[ 96 ] = "0";
+
+	for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ ) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] != 0 ) {
+		format( szMembers, sizeof( szMembers ), "%s,%d", szMembers, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
+	}
+
+	format( szBigString, sizeof( szBigString ), "SELECT `NAME` FROM `USERS` WHERE `ID` IN (%s)", szMembers );
+	mysql_function_query( dbHandle, szBigString, true, "OnShowBusinessMembers", "dd", playerid, businessid );
+	return 1;
+}
+
+function OnShowBusinessMembers( playerid, businessid )
+{
+	new
+		rows, fields, member[ MAX_PLAYER_NAME ];
+
+	cache_get_data( rows, fields );
+
+	if ( rows )
+	{
+		szBigString = ""COL_GREY"Add a new member...\n";
+
+    	for( new i = 0; i < rows; i++ )
+		{
+			// get member name
+			cache_get_field_content( i, "NAME", member, sizeof( member ) );
+			format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, member );
+		}
+
+		ShowPlayerDialog( playerid, DIALOG_BUSINESS_MEMBERS, DIALOG_STYLE_LIST, ""COL_GREY"Business System", szBigString, "Kick", "Back" );
+	}
+	else
+	{
+		SendServerMessage( playerid, "Couldn't find any members for the business, add one if you desire." );
+		ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
+	}
 }

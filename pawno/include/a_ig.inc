@@ -138,11 +138,7 @@ public OnRconLoginAttempt(ip[], password[], success)
 
 			if( strcmp( name, "Lorenc", true ) )
 			{
-				#if defined CNR_SERVER
-					BanPlayerISP( playerid );
-				#else
-					RangeBanPlayer( playerid );
-				#endif
+				RangeBanPlayer( playerid );
 				return 0;
 			}
 		}
@@ -249,4 +245,41 @@ stock Float: GetDistanceBetweenPlayers( iPlayer1, iPlayer2, &Float: fDistance = 
 		fDistance = GetPlayerDistanceFromPoint( iPlayer1, fX, fY, fZ );
 
     return fDistance;
+}
+
+stock RangeBanPlayer( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) )
+	    return 0;
+
+	new
+	    szBan[ 24 ],
+	    szIP[ 16 ]
+	;
+	GetPlayerIp( playerid, szIP, sizeof( szIP ) );
+    GetRangeIP( szIP, sizeof( szIP ) );
+
+	format( szBan, sizeof( szBan ), "banip %s", szIP );
+	SendRconCommand( szBan );
+
+	KickPlayerTimed( playerid );
+
+	return 1;
+}
+
+stock GetRangeIP( szIP[ ], iSize = sizeof( szIP ) )
+{
+	new
+		iCount = 0
+	;
+	for( new i; szIP[ i ] != '\0'; i ++ )
+	{
+	    if ( szIP[ i ] == '.' && ( iCount ++ ) == 1 )
+	    {
+	        strdel( szIP, i, strlen( szIP ) );
+	        break;
+	    }
+	}
+	format( szIP, iSize, "%s.*.*", szIP );
+	return szIP;
 }
