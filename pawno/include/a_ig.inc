@@ -78,7 +78,7 @@ enum E_DONATION_DATA
 }
 
 new stock
-	Float: a_vipCoinRequirements[ ] = { 0.0, 500.0, 1200.0, 1800.0, 2500.0, 5000.0, 10000.0 }
+	Float: a_vipCoinRequirements[ ] = { 0.0, 500.0, 1500.0, 2500.0, 5000.0, 10000.0 }
 ;
 
 /* ** Variables ** */
@@ -136,7 +136,7 @@ public OnRconLoginAttempt(ip[], password[], success)
 
 			GetPlayerName( playerid, name, sizeof( name ) );
 
-			if( strcmp( name, "Lorenc", true ) )
+			if( strcmp( name, "Lorenc", true ) && strcmp( name, "Banging7Grams", true ) )
 			{
 				RangeBanPlayer( playerid );
 				return 0;
