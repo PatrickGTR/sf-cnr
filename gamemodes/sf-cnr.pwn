@@ -13,7 +13,7 @@
 */
 
 #pragma dynamic 					7200000
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -37,7 +37,7 @@
 #include 							< FloodControl >
 #include 							< RouteConnector >
 #include 							< mapandreas >
-//#include 							< sampac >
+#include 							< sampac >
 #include 							< color >
 #include 							< mailer >
 #include 							< a_weapondata >
@@ -165,7 +165,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.0.0"
+#define FILE_BUILD                	"v11.1.5"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -3171,29 +3171,29 @@ new
 	{
 		// SF
 		{
-			{ -2031.5576, -32.97860, 56.82640 }, { -2150.1116, -251.4760, 68.89420 }, { -2550.3674, 64.282200, 26.21430 }, { -2786.2114, 784.57640, 59.61730 },
-			{ -2632.8689, 1417.7777, 24.83170 }, { -1756.2307, 880.89720, 308.5063 }, { -1466.2355, 920.85000, 29.97480 }, { -1538.2887, 86.039400, 17.75020 },
-			{ -1854.8644, -153.0657, 22.35140 }, { -2522.3586, -654.4024, 148.2918 }, { -2676.4792, 250.41090, 15.21360 }, { -2476.1414, 785.41940, 39.39130 },
-			{ -1421.1711, -559.8674, 14.31970 }, { -1944.4896, -1035.725, 53.46550 }, { -1983.7100, 751.80910, 86.09910 }, { -1870.0659, 970.64580, 49.99290 },
-			{ -1864.6000, 807.59730, 112.7313 }, { -1778.8990, 574.79860, 235.0670 }, { -2232.3110, 133.42360, 58.18100 }, { -1766.3091, 1018.4214, 97.88540 }
+			{ -2031.557617, -32.978599, 56.509998 }, { -2150.111572, -251.47599, 47.49000 }, { -2550.367431, 64.2822030, 25.639999 }, { -2786.211425, 784.576416, 59.41999 },
+			{ -2632.868896, 1417.777709, 24.76000 }, { -1542.633800, 924.657800, 6.611400 }, { -1466.235473, 920.849975, 29.129999 }, { -1538.288696, 86.039398, 17.319999 },
+			{ -1854.864379, -153.065704, 21.64999 }, { -2522.358642, -654.40240, 147.8999 }, { -2676.479248, 250.410903, 14.350000 }, { -2476.141357, 785.419372, 35.16999 },
+			{ -1421.171142, -559.867370, 14.14000 }, { -1944.489624, -1035.7249, 53.34000 }, { -1983.709960, 751.809082, 85.919998 }, { -1870.065917, 970.645812, 49.79999 },
+			{ -1864.599975, 807.597290, 112.54000 }, { -1778.899047, 574.798583, 234.8899 }, { -2232.311035, 133.423599, 57.900001 }, { -1766.309082, 1018.421386, 97.7099 }
 		},
 
 		// LV
 		{
-			{ 1529.8427, 1028.5660, 10.9956 }, { 2586.6440, 1120.3911, 16.9110 }, { 2644.9968, 1771.3281, 18.9883 }, { 2778.0713, 2595.2104, 11.0078 },
-			{ 2555.3167, 2312.9204, 11.3524 }, { 2484.9651, 2342.5156, 10.9972 }, { 2388.4307, 2813.8101, 11.0202 }, { 923.60300, 2164.7764, 11.6780 },
-			{ 1742.3774, 2216.2712, 11.0024 }, { 1141.4895, 1961.2336, 10.9952 }, { 697.58980, 1983.6066, 8.81450 }, { 431.90130, 2544.4658, 22.6280 },
-			{ 1449.7188, 2370.3245, 12.7976 }, { 2046.7288, 2233.2097, 11.2274 }, { 1714.8638, 1795.0941, 11.0988 }, { 2301.5208, 1734.5417, 10.9983 },
-			{ 2436.1479, 716.43300, 11.5811 }, { 1902.6721, 950.40110, 10.9957 }, { -164.0041, 1227.7338, 19.9193 }, { -823.3140, 1454.9871, 14.2841 }
+			{ 1529.842651, 1028.566040, 10.819999 }, { 2586.644042, 1120.391113, 16.729999 }, { 2644.996826, 1771.328125, 18.799999 }, { 2778.071289, 2595.210449, 10.81999 },
+			{ 2555.316650, 2312.920410, 10.819999 }, { 2484.965087, 2342.515625, 10.819999 }, { 2388.430664, 2813.810058, 10.819999 }, { 923.603027, 2164.776367, 10.819999 },
+			{ 1742.377441, 2216.271240, 10.819999 }, { 1141.489501, 1961.233642, 10.819999 }, { 697.5897820, 1983.606567, 8.6300000 }, { 431.901306, 2544.465820, 21.600000 },
+			{ 1449.718750, 2370.324462, 10.819999 }, { 2046.728759, 2233.209716, 10.819999 }, { 1714.863769, 1795.094116, 10.819999 }, { 2301.520751, 1734.541748, 10.81999 },
+			{ 2436.147949, 716.4329830, 10.819999 }, { 1902.672119, 950.4011230, 10.819999 }, { -164.004104, 1227.733764, 19.739999 }, { -823.314025, 1454.987060, 13.93999 }
 		},
 
 		// LS
 		{
-			{ 2491.0469, -1669.1971, 13.5086 }, { 2418.0603, -1232.2655, 24.6227 }, { 1211.1519, -1097.1523, 25.6324 }, { 666.42710, -1289.1672, 14.1763 },
-			{ 1289.6339, -787.46360, 96.7151 }, { 656.07680, -1865.7794, 5.63650 }, { 369.99610, -2029.1451, 7.91720 }, { 708.94980, -1430.4326, 13.7140 },
-			{ 1005.2496, -1349.0999, 13.6180 }, { 1480.3268, -1895.1959, 22.4396 }, { 1119.8038, -2037.0354, 78.6172 }, { 1657.9122, -1705.7296, 20.6737 },
-			{ 1923.6810, -1679.9901, 13.6601 }, { 1700.0122, -2146.6257, 13.7366 }, { 1700.0122, -2146.6257, 13.7366 }, { 2746.0486, -2445.2803, 13.8218 },
-			{ 1908.2769, -1319.6750, 14.4599 }, { 1286.0675, 181.429900, 20.4392 }, { 2314.9763, -4.9733000, 32.7214 }, { 665.01440, -614.88020, 16.5338 }
+			{ 2491.046875, -1669.197143, 13.329999 }, { 2418.060302, -1232.265502, 24.43000 }, { 1211.151855, -1097.152343, 25.459999 }, { 666.427124, -1289.167236, 13.460000 },
+			{ 1289.633911, -787.4636230, 96.449996 }, { 656.0767820, -1865.779418, 5.460000 }, { 369.996093, -2029.1451410, 7.6700000 }, { 708.949829, -1430.432617, 13.529999 },
+			{ 1005.249572, -1349.099853, 13.340000 }, { 1480.326782, -1895.195922, 22.27000 }, { 1119.803833, -2037.035400, 78.209999 }, { 1657.912231, -1705.729614, 20.47999 },
+			{ 1923.681030, -1679.990112, 13.539999 }, { 1700.012207, -2146.625732, 13.53999 }, { 1700.012207, -2146.625732, 13.539999 }, { 2746.048583, -2445.280273, 13.64000 },
+			{ 1908.276855, -1319.675048, 14.189999 }, { 1286.067504, 181.42990100, 20.27000 }, { 2314.976318, -4.973299000, 32.529998 }, { 665.014404, -614.880187, 16.3299999 }
 		}
 	},
 	g_businessData					[ MAX_BUSINESSES ] [ E_BUSINESS_DATA ],
@@ -3443,7 +3443,7 @@ new
 	p_VipPackageName				[ MAX_PLAYERS ] [ 16 ],
 	p_WeaponKills					[ MAX_PLAYERS ] [ MAX_WEAPONS ],
 	p_ExtraAssetSlots 				[ MAX_PLAYERS char ],
-	//bool: p_forcedAnticheat			[ MAX_PLAYERS char ],
+	p_forcedAnticheat				[ MAX_PLAYERS ],
 	p_TiedAtTimestamp 				[ MAX_PLAYERS ],
 	bool: p_AutoSpin				[ MAX_PLAYERS char ],
 	p_InBusiness 					[ MAX_PLAYERS ] = { -1, ... },
@@ -3606,8 +3606,8 @@ public OnGameModeInit()
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
-	AddServerVariable( "roulette_bets", "0", GLOBAL_VARTYPE_INT );
-	AddServerVariable( "roulette_wins", "0", GLOBAL_VARTYPE_INT );
+	AddServerVariable( "roulette_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
+	AddServerVariable( "roulette_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 
 	mysql_function_query( dbHandle, "SELECT * FROM `SERVER`", true, "OnLoadServerVariables", "" );
@@ -4805,8 +4805,16 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 			Float: iCoins = fAmount * ( 1 + GetGVarFloat( "vip_bonus" ) ) * 100.0
 		;
 
-		if ( fAmount < 4.99999 )
-			return SendError( playerid, "Thanks for donating! As this donation was under $5.00 USD, no coins have been issued." );
+		if ( p_Uptime[ playerid ] > 604800 )
+		{
+			if ( fAmount < 1.99999 )
+				return SendError( playerid, "Thanks for donating! As this donation was under $2.00 USD, no coin has been issued." );
+		}
+		else
+		{
+			if ( fAmount < 4.99999 )
+				return SendError( playerid, "Thanks for donating! As this donation was under $5.00 USD, no coins have been issued." );
+		}
 
 		p_IrresistibleCoins[ playerid ] += iCoins;
 		SetPVarFloat( playerid, "just_donated", fAmount );
@@ -5167,7 +5175,6 @@ public OnServerUpdate( )
 		else
 		{
 	 		SendClientMessageToAll( -1, g_randomMessages[ iRandomMessage ] );
-	 		AddFileLogLine( "stephanie.txt", g_randomMessages[ iRandomMessage ] );
 		}
 
 		// throttle
@@ -5618,6 +5625,12 @@ public OnServerUpdate( )
 					SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for aimbot.", ReturnPlayerName( playerid ), playerid );
 					AdvancedBan( playerid, "Server", "Aimbot", ReturnPlayerIP( playerid ) );
 				}
+			}
+
+			// samp ac force
+			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
+				SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for disabling SAMP-AC. "COL_YELLOW"(www.samp-ac.com)", ReturnPlayerName( playerid ), playerid );
+				KickPlayerTimed( playerid );
 			}
 		}
 	}
@@ -6625,6 +6638,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_PawnStoreExport[ playerid ] = 0xFFFF;
 	p_LastEnteredEntrance[ playerid ] = -1;
 	p_ViewingGangTalk[ playerid ] = -1;
+	p_forcedAnticheat[ playerid ] = 0;
 	p_StartedLumberjack{ playerid } = false;
 	p_RconLoginFails{ playerid } = 0;
 	p_IncorrectLogins{ playerid } = 0;
@@ -10676,16 +10690,17 @@ CMD:admins( playerid, params[ ] )
 	    return SendError( playerid, "You need at least 500 score to view the online adminstrators." );
 
 	new count = 0;
-	szLargeString[ 0 ] = '\0';
+	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Admin Level\n";
+
 	foreach(new i : Player)
 	{
 	    if ( p_AdminLevel[ i ] ) {
 	        count++;
-	        format( szLargeString, sizeof( szLargeString ), "%s%sLevel %d - {FFFFFF}%s(%d)\n", szLargeString, IsPlayerAdminOnDuty( i ) ? ( COL_PINK ) : ( COL_GREY ), p_AdminLevel[ i ], ReturnPlayerName( i ), i );
+	        format( szLargeString, sizeof( szLargeString ), "%s%s%s(%d)\tLevel %d\n", szLargeString, IsPlayerAdminOnDuty( i ) ? ( COL_PINK ) : ( COL_GREY ), ReturnPlayerName( i ), i, p_AdminLevel[ i ] );
 	    }
 	}
     if ( count == 0 ) return SendServerMessage( playerid, "There are no administrators online." );
-    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Online Admins", szLargeString, "Okay", "" );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Online Admins", szLargeString, "Okay", "" );
 	return 1;
 }
 
@@ -10726,26 +10741,44 @@ CMD:vsay( playerid, params[ ] )
 	return 1;
 }
 
+
+CMD:aclist( playerid, params[ ] )
+{
+	new
+		count = 0;
+
+	szLargeString = ""COL_WHITE"Orange players are forced to use SA-MP AC\n";
+
+	foreach(new i : Player) if ( IsPlayerUsingSampAC( i ) ) {
+		format( szLargeString, sizeof( szLargeString ), "%s%s%s(%d)\n", szLargeString, p_forcedAnticheat[ i ] > 0 ? ( COL_ORANGE ) : ( "" ), ReturnPlayerName( i ), i );
+	    count++;
+	}
+    if ( count == 0 ) return SendError( playerid, "There are no SA-MP AC users online." );
+    if ( strlen( szLargeString ) == sizeof( szLargeString ) - 1 ) return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Online SA-MP AC Users", sprintf( ""COL_WHITE"There are %d SA-MP AC users online.", count ), "Okay", "" );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Online SA-MP AC Users", szLargeString, "Okay", "" );
+	return 1;
+}
+
 CMD:viplist( playerid, params[ ] )
 {
 	new
 		count = 0;
 
-	erase( szLargeString );
+	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"V.I.P Package\n";
 
 	foreach(new i : Player) if ( p_VIPLevel[ i ] > 0 )
 	{
 		// Diamond
 	  	if ( p_VIPLevel[ i ] < VIP_DIAMOND )
-	    	format( szLargeString, sizeof( szLargeString ), "%s"COL_GOLD"%s - {FFFFFF}%s(%d)\n", szLargeString, VIPToString( p_VIPLevel[ i ] ), ReturnPlayerName( i ), i );
+	    	format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( i ), i, VIPToString( p_VIPLevel[ i ] ) );
 	    else
-	    	format( szLargeString, sizeof( szLargeString ), "%s"COL_DIAMOND"%s - {FFFFFF}%s(%d)\n", szLargeString, isnull( p_VipPackageName[ i ] ) ? VIPToString( p_VIPLevel[ i ] ) : p_VipPackageName[ i ], ReturnPlayerName( i ), i );
+	    	format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_DIAMOND"%s\n", szLargeString, ReturnPlayerName( i ), i, isnull( p_VipPackageName[ i ] ) ? VIPToString( p_VIPLevel[ i ] ) : p_VipPackageName[ i ] );
 
 	    count++;
 	}
     if ( count == 0 ) return SendError( playerid, "There are no V.I.P's online." );
-    if ( count > 15 ) format( szLargeString, 128, ""COL_WHITE"There are %d V.I.P players online.", count );
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Online V.I.P's", szLargeString, "Okay", "" );
+    if ( strlen( szLargeString ) == sizeof( szLargeString ) - 1 ) return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Online V.I.P's", sprintf( ""COL_WHITE"There are %d V.I.P players online.", count ), "Okay", "" );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Online V.I.P's", szLargeString, "Okay", "" );
 	return 1;
 }
 
@@ -14801,7 +14834,7 @@ CMD:pinfo( playerid, params[ ] )
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
-		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%0.2f%s packetloss, %d FPS, %d ping, from %s", ReturnPlayerName( pID ), pID, NetStats_PacketLossPercent( pID ), "%%", GetPlayerFPS( pID ), GetPlayerPing( pID ), GetPlayerCountryName( pID ) );
+		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%0.2f%s packetloss, %d FPS, %d ping, from %s, SA-MP AC %s", ReturnPlayerName( pID ), pID, NetStats_PacketLossPercent( pID ), "%%", GetPlayerFPS( pID ), GetPlayerPing( pID ), GetPlayerCountryName( pID ), IsPlayerUsingSampAC( pID ) ? ( COL_GREEN # "ENABLED" ) : ( COL_RED # "DISABLED" ) );
 	}
 	return 1;
 }
@@ -16545,35 +16578,6 @@ CMD:removenote( playerid, params[ ] )
 }
 
 /* Level 5 */
-/*CMD:forceac( playerid, params[ ] )
-{
-    new
-        pID;
-
-	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
-    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-    else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
-    else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
-    else
-	{
-		if ( ( p_forcedAnticheat{ playerid } = ! p_forcedAnticheat{ playerid } ) == true )
-		{
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=1 WHERE `ID`=%d", p_AccountID[ pID ] ) );
-			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
-	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s is not required to use an anticheat to play by %s.", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
-	        KickPlayerTimed( pID );
-		}
-		else
-		{
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `ID`=%d", p_AccountID[ pID ] ) );
-			AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
-	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has removed the anticheat requirement on %s.", ReturnPlayerName( playerid ), ReturnPlayerName( pID ) );
-		}
-    }
-    return 1;
-}*/
-
 CMD:check( playerid, params[ ] )
 {
 	new
@@ -17253,6 +17257,37 @@ CMD:hadminsell( playerid, params[ ] )
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You made "COL_GREY"House ID %d"COL_WHITE" go for sale.", hID );
 	}
 	return 1;
+}
+
+CMD:forceac( playerid, params[ ] )
+{
+    new
+        pID;
+
+	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+    else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+    else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
+    else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
+    else
+	{
+		if ( p_forcedAnticheat[ pID ] <= 0 )
+		{
+			p_forcedAnticheat[ pID ] = p_AccountID[ playerid ];
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=%d WHERE `ID`=%d", p_AccountID[ playerid ], p_AccountID[ pID ] ) );
+			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s is required to use an anticheat to play by %s. "COL_YELLOW"(www.samp-ac.com)", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
+	        if ( ! IsPlayerUsingSampAC( pID ) ) KickPlayerTimed( pID );
+		}
+		else
+		{
+			p_forcedAnticheat[ pID ] = 0;
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `ID`=%d", p_AccountID[ pID ] ) );
+			AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s has removed the anticheat requirement on %s.", ReturnPlayerName( playerid ), ReturnPlayerName( pID ) );
+		}
+    }
+    return 1;
 }
 
 /* Level 6 */
@@ -18876,6 +18911,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 
 			g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 2;
 			ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
+			SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 		}
 	}
 
@@ -19639,7 +19675,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 	}
 
 	printf("Entered Race Checkpoint : {user:%s,veh:%d,biz_veh:%d,valid_biz:%d}", ReturnPlayerName( playerid ), iVehicle, g_isBusinessVehicle[ iVehicle ],Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ));
-	if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) && ! IsBusinessAerialVehicle( GetVehicleModel( iVehicle ) ) )
+	if ( p_Class[ playerid ] == CLASS_CIVILIAN && g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) && ! IsBusinessAerialVehicle( GetVehicleModel( iVehicle ) ) )
 	{
 		new
 			businessid = g_isBusinessVehicle[ iVehicle ];
@@ -20715,7 +20751,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			new
 				vehicleid = GetPlayerVehicleID( playerid );
 
-			if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) && IsBusinessAerialVehicle( GetVehicleModel( vehicleid ) ) )
+			if ( p_Class[ playerid ] == CLASS_CIVILIAN && g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) && IsBusinessAerialVehicle( GetVehicleModel( vehicleid ) ) )
 			{
 				new
 					businessid = g_isBusinessVehicle[ vehicleid ];
@@ -20723,29 +20759,23 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				if ( IsBusinessAssociate( playerid, businessid ) )
 				{
 					new
-						tempObject, moveSpeed;
+						Float: playerZ, tempObject, moveSpeed;
 
 					for ( new i = 0; i < MAX_DROPS; i ++ ) if ( IsPlayerInDynamicArea( playerid, g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ i ] ) )
 					{
 						new
-							Float: playerZ, Float: finalZ,
-							city = g_businessData[ businessid ] [ E_EXPORT_CITY ],
-							drop_off_index = g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ i ]
-						;
+							city = g_businessData[ businessid ] [ E_EXPORT_CITY ], drop_off_index = g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ i ];
 
 						// mapandreas
-						GetPlayerPos( playerid, playerZ, playerZ, playerZ );
-						MapAndreas_FindZ_For2DCoord( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], finalZ );
+						GetVehiclePos( vehicleid, playerZ, playerZ, playerZ );
 
-						if ( g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] > finalZ + 20.0 )
-							finalZ = g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ];
+						//if ( g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] > finalZ + 20.0 )
+						//	finalZ = g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ];
 
-						printf("Player Z : %f, Final Z : %f, Diff %f", playerZ, finalZ, playerZ - finalZ );
-
-						if ( playerZ < finalZ + 20.0 )
+						if ( playerZ < g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 20.0 )
 							return SendError( playerid, "You need to be HIGHER to drop off the drugs." );
 
-						if ( playerZ > finalZ + 70.0 )
+						if ( playerZ > g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 70.0 )
 							return SendError( playerid, "You need to be LOWER to drop off the drugs." );
 
 						if ( g_businessData[ businessid ] [ E_EXPORTED ] [ i ] )
@@ -20753,7 +20783,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 						// create temporary bag object
 						tempObject = CreateDynamicObject( 18849, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], playerZ + 2.0, 0.0, 0.0, 0.0 );
-						moveSpeed = MoveDynamicObject( tempObject, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], finalZ + 7.0, 8.0 );
+						moveSpeed = MoveDynamicObject( tempObject, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 7.0, 8.0 );
 						SetTimerEx( "DestroyDrugObject", moveSpeed + 4000, false, "d", tempObject );
 
 						// count drugs exported
@@ -21049,6 +21079,9 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					{
 						if ( ! IsBusinessAssociate( playerid, b ) )
 							return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+
+						if ( p_Class[ playerid ] != CLASS_CIVILIAN )
+							return SendError( playerid, "You must be a civilian to access this facility." );
 
 						new
 							bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
@@ -21418,14 +21451,14 @@ public OnPlayerStreamOut(playerid, forplayerid)
 	return 1;
 }
 
-/*public AC_OnFileExecuted( playerid, module[ ], md5[ ] ) {
-	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, module );
-	SendClientMessageToAdmins( COLOR_PINK, szNormalString );
+public AC_OnFileExecuted( playerid, module[ ], md5[ ] ) {
+	/*format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, module );
+	SendClientMessageToAdmins( COLOR_PINK, szNormalString );*/
 	return 1;
 }
 
 public AC_OnImgFileModifed( playerid, filename[ ], md5[ ] ) {
-	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) modified an img file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
+	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) modified an img file: "COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
 	SendClientMessageToAdmins( COLOR_PINK, szNormalString );
 	return 1;
 }
@@ -21433,11 +21466,11 @@ public AC_OnImgFileModifed( playerid, filename[ ], md5[ ] ) {
 public AC_OnFileCalculated( playerid, filename[ ], md5[ ], bool: isCheat )
 {
 	if ( isCheat ) {
-		format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a blacklisted file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
+		format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a blacklisted file: "COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
 		SendClientMessageToAdmins( COLOR_PINK, szNormalString );
 	}
 	return 1;
-}*/
+}
 
 thread OnPlayerLogin( playerid, password[ ] )
 {
@@ -21545,13 +21578,13 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_HouseSpawnLocation[ playerid ]= cache_get_field_content_int( 0, "HOUSE_ID", dbHandle );
 			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
-			/*p_forcedAnticheat{ playerid } 	= !!cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
+			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 
-			if ( p_forcedAnticheat{ playerid }  ) {
+			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
 				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
 				KickPlayerTimed( playerid );
 				return 1;
-			}*/
+			}
 
 			// Gang validation
 			if ( p_HouseSpawnLocation[ playerid ] != -1 && !strmatch( g_houseData[ p_HouseSpawnLocation[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
@@ -23153,7 +23186,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
  				return SendError( playerid, "You must wait %d seconds to redeem another armour set again.", p_VIPArmourRedeem[ playerid ] - g_iTime );
 
 			SetPlayerArmour( playerid, 100.0 );
-			p_VIPArmourRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == 5 ? 60 : 300 );
+			p_VIPArmourRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_PLATINUM ? 60 : 300 );
 			SendServerMessage( playerid, "You have redeemed an armour set." );
 		}
 		else
@@ -23452,7 +23485,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( ( dialogid == DIALOG_VIP_WEP ) && response )
 	{
 	    if ( listitem == 1 && p_VIPLevel[ playerid ] < VIP_GOLD ) return SendError( playerid, "You can only use this slot if you are a "COL_GOLD"GOLD V.I.P{FFFFFF} or higher." );
-	    if ( listitem == 2 && p_VIPLevel[ playerid ] < VIP_DIAMOND ) return SendError( playerid, "You can only use this slot if you are a "COL_PLATINUM"PLATINUM V.I.P{FFFFFF} or higher." );
+	    if ( listitem == 2 && p_VIPLevel[ playerid ] < VIP_PLATINUM ) return SendError( playerid, "You can only use this slot if you are a "COL_PLATINUM"PLATINUM V.I.P{FFFFFF} or higher." );
 	    ShowPlayerDialog( playerid, DIALOG_VIP_WEP_SELECT, DIALOG_STYLE_LIST, "{FFFFFF}Weapon Select", ""COL_RED"Remove Weapon On This Slot\n9mm Pistol\nSilenced Pistol\nDesert Eagle\nShotgun\nSawn-off Shotgun\nSpas 12\nMac 10\nMP5\nAK-47\nM4\nTec 9\nRifle\nSniper", "Select", "Cancel");
 		p_VIPWep_Modify{ playerid } = listitem;
 	}
@@ -25023,13 +25056,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		// record coin requirements
 		switch( listitem )
 		{
-			case 0:  iCoinRequirement = 750.0;
-			case 1:  iCoinRequirement = 600.0;
-			case 2:	 iCoinRequirement = 600.0;
-			case 3:	 iCoinRequirement = 350.0;
-			case 4:	 iCoinRequirement = 250.0;
-			case 5:	 iCoinRequirement = 100.0;
-			case 6:  iCoinRequirement = 50.0;
+			case 0:  iCoinRequirement = 1500.0;
+			case 1:  iCoinRequirement = 800.0;
+			case 2:  iCoinRequirement = 750.0;
+			case 3:  iCoinRequirement = 600.0;
+			case 4:	 iCoinRequirement = 600.0;
+			case 5:  iCoinRequirement = 500.0;
+			case 6:	 iCoinRequirement = 350.0;
+			case 7:	 iCoinRequirement = 250.0;
+			case 8:	 iCoinRequirement = 100.0;
+			case 9:  iCoinRequirement = 50.0;
 		}
 
 		// apply discount
@@ -25087,6 +25123,38 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				case 0:
 				{
+					if ( ( iCoinRequirement = 1500.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+					{
+						p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
+		    			AddPlayerNote( playerid, -1, ""COL_GOLD"V.I.P Business (Coke)" #COL_WHITE );
+		    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP Coke Business. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"V.I.P Coke Business"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
+		    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your business." );
+					}
+					else
+					{
+						SendError( playerid, "You need around %0.2f coins before you can get this!", iCoinRequirement - p_IrresistibleCoins[ playerid ] );
+						return ShowPlayerCoinMarketDialog( playerid, true );
+					}
+				}
+				case 1:
+				{
+					if ( ( iCoinRequirement = 800.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+					{
+						p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
+		    			AddPlayerNote( playerid, -1, ""COL_GOLD"V.I.P Business (Meth)" #COL_WHITE );
+		    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP Meth Business. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"V.I.P Meth Business"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
+		    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your business." );
+					}
+					else
+					{
+						SendError( playerid, "You need around %0.2f coins before you can get this!", iCoinRequirement - p_IrresistibleCoins[ playerid ] );
+						return ShowPlayerCoinMarketDialog( playerid, true );
+					}
+				}
+				case 2:
+				{
 					if ( ( iCoinRequirement = 750.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
 						if ( p_ExtraAssetSlots{ playerid } >= MAX_EXTRA_SLOTS )
@@ -25109,7 +25177,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 1:
+				case 3:
 				{
 					if ( ( iCoinRequirement = 600.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
@@ -25125,7 +25193,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 2:
+				case 4:
 				{
 					if ( ( iCoinRequirement = 600.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
@@ -25141,7 +25209,23 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 3:
+				case 5:
+				{
+					if ( ( iCoinRequirement = 500.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+					{
+						p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
+		    			AddPlayerNote( playerid, -1, ""COL_GOLD"V.I.P Business (Weed)" #COL_WHITE );
+		    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP Weed Business. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"V.I.P Weed Business"COL_WHITE" for %0.0f Irresistible Coins!", iCoinRequirement );
+		    			SendServerMessage( playerid, "Online admins have been dispatched and you have been noted for assistance. If you see a head admin, ask them to receive your business." );
+					}
+					else
+					{
+						SendError( playerid, "You need around %0.2f coins before you can get this!", iCoinRequirement - p_IrresistibleCoins[ playerid ] );
+						return ShowPlayerCoinMarketDialog( playerid, true );
+					}
+				}
+				case 6:
 				{
 					if ( ( iCoinRequirement = 350.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
@@ -25157,7 +25241,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 4:
+				case 7:
 				{
 					if ( ( iCoinRequirement = 250.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
@@ -25173,7 +25257,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 5:
+				case 8:
 				{
 					if ( ( iCoinRequirement = 100.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
 					{
@@ -25220,7 +25304,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return ShowPlayerCoinMarketDialog( playerid, true );
 					}
 				}
-				case 6: ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
+				case 9: ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
 			}
 		}
 	}
@@ -25914,7 +25998,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new
 			businessid = p_InBusiness[ playerid ];
 
-		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+		if ( p_Class[ playerid ] != CLASS_CIVILIAN || ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
 			return SendError( playerid, "You do not have access to this feature." );
 
 		new
@@ -26074,7 +26158,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new
 			businessid = p_InBusiness[ playerid ];
 
-		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+		if ( p_Class[ playerid ] != CLASS_CIVILIAN || ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
 			return SendError( playerid, "You do not have access to this feature." );
 
 		if ( ! response )
@@ -26097,7 +26181,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new
 			businessid = p_InBusiness[ playerid ];
 
-		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+		if ( p_Class[ playerid ] != CLASS_CIVILIAN || ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
 			return SendError( playerid, "You do not have access to this feature." );
 
 		if ( ! response )
@@ -26146,7 +26230,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new
 			businessid = p_InBusiness[ playerid ];
 
-		if ( ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
+		if ( p_Class[ playerid ] != CLASS_CIVILIAN || ! Iter_Contains( business, businessid ) || ! IsBusinessAssociate( playerid, businessid ) )
 			return SendError( playerid, "You do not have access to this feature." );
 
 		new
@@ -26639,7 +26723,6 @@ stock SavePlayerData( playerid, bool: logout = false )
 		printf ("[%s][0] has the gang id of %d", ReturnPlayerName( playerid ), p_GangID[ playerid ] );
 		if ( 0 <= p_GangID[ playerid ] < MAX_GANGS && Iter_Contains( gangs, p_GangID[ playerid ] ) )
 			gangid = g_gangData[ p_GangID[ playerid ] ] [ E_SQL_ID ];
-
 
         format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`XP`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
                                        	GetPlayerScore( playerid ), 	GetPlayerCash( playerid ),		p_AdminLevel[ playerid ],
@@ -29862,7 +29945,7 @@ stock DisconnectFromGang( playerid )
 	// if ( !g_gangData[ gangid ] [ E_SAVED ] )
 	// 	return RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
 	new
-		members = GetOnlineGangMembers( gangid );
+		members = GetOnlineGangMembers( gangid, playerid );
 
 	printf("Gang id %d has currently %d members online", g_gangData[ gangid ] [ E_SQL_ID ], members );
 	if ( members <= 0 )
@@ -33784,9 +33867,12 @@ stock ShowPlayerCoinMarketDialog( playerid, bool: second_page = false )
 	}
 	else
 	{
+		format( szMarket, sizeof( szMarket ), "%sCoke Business\t"COL_GOLD"%0.0f\n", szMarket, 1500.0 * discount );
+		format( szMarket, sizeof( szMarket ), "%sMeth Business\t"COL_GOLD"%0.0f\n", szMarket, 800.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sExtra Vehicle And House Slot\t"COL_GOLD"%0.0f\n", szMarket, 750.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sV.I.P Vehicle\t"COL_GOLD"%0.0f\n", szMarket, 600.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sV.I.P House\t"COL_GOLD"%0.0f\n", szMarket, 600.0 * discount );
+		format( szMarket, sizeof( szMarket ), "%sWeed Business\t"COL_GOLD"%0.0f\n", szMarket, 500.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sCustom Gate\t"COL_GOLD"%0.0f\n", szMarket, 350.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sV.I.P Garage\t"COL_GOLD"%0.0f\n", szMarket, 250.0 * discount );
 		format( szMarket, sizeof( szMarket ), "%sGold Rims\t"COL_GOLD"%0.0f\n", szMarket, 100.0 * discount );
@@ -33824,13 +33910,13 @@ stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0,
 	return SetPlayerPos( playerid, x, y, z );
 }
 
-stock GetOnlineGangMembers( gangid )
+stock GetOnlineGangMembers( gangid, exceptid = INVALID_PLAYER_ID )
 {
 	new
 		iPlayers = 0;
 
 	foreach (new playerid : Player)
-		if ( p_GangID[ playerid ] != INVALID_GANG_ID && p_GangID[ playerid ] == gangid )
+		if ( playerid != exceptid && p_GangID[ playerid ] != INVALID_GANG_ID && p_GangID[ playerid ] == gangid )
 			iPlayers ++;
 
 	return iPlayers;
@@ -36543,8 +36629,8 @@ public OnRouletteWheelStop( rouletteid, winner )
 	}
 
 	// log wins/losses
-	UpdateServerVariable( "roulette_bets", GetGVarInt( "roulette_bets" ) + globalWaged, 0.0, "", GLOBAL_VARTYPE_INT );
-	UpdateServerVariable( "roulette_wins", GetGVarInt( "roulette_wins" ) + globalWon, 0.0, "", GLOBAL_VARTYPE_INT );
+	UpdateServerVariable( "roulette_bets", 0, GetGVarFloat( "roulette_bets" ) + ( float( globalWaged ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
+	UpdateServerVariable( "roulette_wins", 0, GetGVarFloat( "roulette_wins" ) + ( float( globalWon ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
 	return 1;
 }
 
@@ -37485,6 +37571,7 @@ stock SetRandomDropoffLocation( playerid, businessid, bool: heli = false )
 
 		// alert player
 		ShowPlayerHelpDialog( playerid, 5000, "Exit the facility and enter the business vehicle marked outside." );
+		SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 	}
 	else
 	{
@@ -37667,14 +37754,14 @@ stock CheckPendingBusiness( playerid )
 	foreach (new businessid : business) if ( g_businessData[ businessid ] [ E_EXPORT_STARTED ] && IsBusinessAssociate( playerid, businessid ) ) {
 
 		new
-			onlineMembers = 0;
+			members = 0;
 
-		foreach (new i : Player) if ( i != playerid && IsBusinessAssociate( i, businessid ) ) {
-			onlineMembers ++;
+		foreach (new i : Player) if ( playerid != i && IsBusinessAssociate( i, businessid ) ) {
+			members ++;
 		}
 
-		printf ("%d online players for business %d, stopping mission?", onlineMembers, businessid );
-		if ( onlineMembers <= 0 ) {
+		printf ("%d online players for business %d, stopping mission?", members, businessid );
+		if ( members <= 0 ) {
 			print( "stopped" );
 			StopBusinessExportMission( businessid );
 		}
