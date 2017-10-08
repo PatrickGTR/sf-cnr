@@ -13366,24 +13366,21 @@ CMD:help( playerid, params[ ] )
 CMD:features( playerid, params[ ] )
 {
 	SetPVarInt( playerid, "help_category", 1 );
-    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 1 );
-    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 1 );
+    mysql_function_query( dbHandle, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=1 ORDER BY `SUBJECT` ASC", true, "OnFetchCategoryResponse", "dd", playerid, 1 );
    	return 1;
 }
 
 CMD:faq( playerid, params[ ] )
 {
 	SetPVarInt( playerid, "help_category", 3 );
-    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 3 );
-    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 3 );
+    mysql_function_query( dbHandle, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=3 ORDER BY `SUBJECT` ASC", true, "OnFetchCategoryResponse", "dd", playerid, 3 );
    	return 1;
 }
 
 CMD:tips( playerid, params[ ] )
 {
 	SetPVarInt( playerid, "help_category", 5 );
-    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 5 );
-    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 5 );
+    mysql_function_query( dbHandle, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=5 ORDER BY `SUBJECT` ASC", true, "OnFetchCategoryResponse", "dd", playerid, 5 );
    	return 1;
 }
 
@@ -18302,7 +18299,7 @@ CMD:extendvip( playerid, params[ ] )
 CMD:kickall( playerid, params[ ] )
 {
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
-
+	SetServerRule( "password", "updating" );
 	SendClientMessageToAll( -1, ""COL_PINK"[ADMIN]"COL_WHITE" Everyone has been kicked from the server due to a server update." );
 	for( new i, g = GetMaxPlayers( ); i < g; i++ )
 	{
@@ -20887,18 +20884,19 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					GetVehicleZAngle( iVehicle, facingAngle );
 
 					// check if player is facing vehicle
-					if ( floatabs( facingAngle - angle ) < 15.0 ) { // 15m radius
+					if ( floatabs( facingAngle - angle ) < 17.5 ) { // 15m radius
 
 						g_VehicleLastAttacker[ closest_vehicle ] = playerid;
 						g_VehicleLastAttacked[ closest_vehicle ] = g_iTime;
 
 						// anticipate a kill in the vehicle too
 						foreach (new i : Player) if ( GetPlayerVehicleID( i ) == closest_vehicle ) {
+							if ( p_Class[ playerid ] != CLASS_POLICE && p_WantedLevel[ playerid ] < 6 && p_Class[ i ] == CLASS_POLICE ) GivePlayerWantedLevel( playerid, 6 - p_WantedLevel[ playerid ] );
 							AC_UpdateDamageInformation( i, playerid, PRESSED( KEY_FIRE ) ? 51 : 38 );
 						}
 
 						// debug
-						printf("Player is shooting vehicle ... %d (%s)", iVehicle, PRESSED( KEY_FIRE ) ? ("rocket") : ("lmg"));
+						// printf("Player is shooting vehicle ... %d (%s)", iVehicle, PRESSED( KEY_FIRE ) ? ("rocket") : ("lmg"));
 					}
 				}
 			}
@@ -20937,11 +20935,11 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						//if ( g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] > finalZ + 20.0 )
 						//	finalZ = g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ];
 
-						if ( playerZ < g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 20.0 )
-							return SendError( playerid, "You need to be HIGHER to drop off the drugs (%0.1f metres).", g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 20.0 - playerZ );
+						if ( playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] < 20.0 )
+							return SendError( playerid, "You need to be HIGHER to drop off the drugs (%0.1f metres).", 20.0 - ( playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] ) );
 
-						if ( playerZ > g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 100.0 )
-							return SendError( playerid, "You need to be LOWER to drop off the drugs (%0.1f metres).", playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 100.0 );
+						if ( playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] > 100.0 )
+							return SendError( playerid, "You need to be LOWER to drop off the drugs (%0.1f metres).", 100.0 - ( playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] ) );
 
 						if ( g_businessData[ businessid ] [ E_EXPORTED ] [ i ] )
 							return SendError( playerid, "This location has already been sold product recently." );
@@ -24955,7 +24953,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( ( dialogid == DIALOG_HELP ) && response )
 	{
 		SetPVarInt( playerid, "help_category", listitem );
-	    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", GetPVarInt( playerid, "help_category" ) );
+	    format( szNormalString, sizeof( szNormalString ), "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", GetPVarInt( playerid, "help_category" ) );
 	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, GetPVarInt( playerid, "help_category" ) );
 	}
 	if ( dialogid == DIALOG_HELP_CATEGORY )
@@ -24979,7 +24977,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( ( dialogid == DIALOG_HELP_THREAD ) && !response )
 	{
-	    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", GetPVarInt( playerid, "help_category" ) );
+	    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", GetPVarInt( playerid, "help_category" ) );
 	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, GetPVarInt( playerid, "help_category" ) );
 	}
 	if ( ( dialogid == DIALOG_HELP_BACK ) && !response ) return cmd_help( playerid, "" );
