@@ -36,7 +36,7 @@
 #include                            < lookupffs >
 #include 							< FloodControl >
 #include 							< RouteConnector >
-#include 							< mapandreas >
+// #include 							< mapandreas >
 #include 							< sampac >
 #include 							< color >
 #include 							< mailer >
@@ -157,15 +157,15 @@ new bool: False = false, szNormalString[ 144 ];
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_MEDIC)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToPaintball(%0,%1,%2,%3)\
 	do{foreach(new fI : Player){if (p_inPaintBall{fI}&&p_PaintBallArena{fI}==(%0))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-#define Discord_SayFormatted(%0,%1,%2)\
-	do{format(szNormalString,sizeof(szNormalString),(%1),%2),Discord_Say(%0,szNormalString);}while(False)
+#define DCC_SendChannelMessageFormatted(%0,%1,%2)\
+	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
 
 #define mysql_single_query(%0) mysql_function_query(dbHandle,(%0),true,"","")
 #define SetPlayerPosEx(%0,%1,%2,%3,%4) SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.1.5"
+#define FILE_BUILD                	"v11.2.10"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -489,14 +489,30 @@ const
 #define CP_BIZ_TERMINAL_WEED 		( 41 )
 
 /* ** Discord ** */
-//#include <socket>
+//#include <discord-connector>
+#define ENABLE_DISCORD 				false
 
-#define DISCORD_GENERAL				"191078670360641536"
-#define DISCORD_ADMINISTRATION		"191133046194438144"
+#define DISCORD_GENERAL 			"191078670360641536"
+#define DISCORD_ADMINISTRATION 		"191078670360641536"
+#define DISCORD_SPAM 				"364725535256870913"
+
+#define DISCORD_ROLE_EXEC 			"191727949404176384"
+#define DISCORD_ROLE_HEAD 			"191134988354191360"
+#define DISCORD_ROLE_LEAD			"191080382689443841"
+#define DISCORD_ROLE_VIP			"191180697547833344"
+#define DISCORD_ROLE_VOICE			"364678874681966592"
 
 new stock
-	Socket: discordListener,
-	Socket: discord
+	DCC_Guild: discordGuild,
+	DCC_Channel: discordGeneralChan,
+	DCC_Channel: discordAdminChan,
+	DCC_Channel: discordSpamChan,
+
+	DCC_Role: discordRoleExecutive,
+	DCC_Role: discordRoleHead,
+	DCC_Role: discordRoleLead,
+	DCC_Role: discordRoleVIP,
+	DCC_Role: discordRoleVoice
 ;
 
 /* ** Random Messages ** */
@@ -534,7 +550,7 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can change your spawning city at the "COL_GREY"City Hall{FFFFFF}!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy fancy toys at a "COL_GREY"Pawnshop{FFFFFF}!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Never share your password, not even with the server owner!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Discord server at {7289da}discord.gg/Q7BkUd" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Discord server at {7289da}sfcnr.com/discord" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Locate ChuffSec's security truck with "COL_GREY"/chuffloc{FFFFFF} and rob his security truck for cash!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a "COL_GREY"Money Case{FFFFFF} to double up your robbery loot from Supa Save or a 24/7 store! " },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Grab a truck, connect it to a trailer then begin to "COL_GREY"/work{FFFFFF}! It's rewarding!" },
@@ -3171,6 +3187,7 @@ new
 	{
 		// SF
 		{
+			//-1860.0874,801.0096,117.2762
 			{ -2031.557617, -32.978599, 56.509998 }, { -2150.111572, -251.47599, 47.49000 }, { -2550.367431, 64.2822030, 25.639999 }, { -2786.211425, 784.576416, 59.41999 },
 			{ -2632.868896, 1417.777709, 24.76000 }, { -1542.633800, 924.657800, 6.611400 }, { -1466.235473, 920.849975, 29.129999 }, { -1538.288696, 86.039398, 17.319999 },
 			{ -1854.864379, -153.065704, 21.64999 }, { -2522.358642, -654.40240, 147.8999 }, { -2676.479248, 250.410903, 14.350000 }, { -2476.141357, 785.419372, 35.16999 },
@@ -3551,7 +3568,7 @@ public OnGameModeInit()
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
 	DisableInteriorEnterExits( );
-	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
+	// MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
 	// mysql_log( LOG_ALL );
 	//SetBannedWeapons( 17, 35, 36, 37, 38, 39, 44, 45 );
@@ -3564,6 +3581,7 @@ public OnGameModeInit()
  	initializeTextDraws( );
 	initializeCheckpoints( );
 	initializeVehicles( );
+	initializeServerObjects( );
 	initializeObjects( );
 	initializeVendingMachines( );
 	initializeActors( );
@@ -3704,19 +3722,19 @@ public OnGameModeInit()
 	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
  	/* ** Discord configuration ** */
-	/*if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
-		socket_connect(discord, "127.0.0.1", 8000);
-		print( "Discord TCP has successfully connected!" );
-	}
+ 	#if ENABLE_DISCORD == true
+	discordGuild = DCC_FindGuildById( DISCORD_GENERAL );
+	discordGeneralChan = DCC_FindChannelById( DISCORD_GENERAL );
+	discordSpamChan = DCC_FindChannelById( DISCORD_SPAM );
 
-	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
-		socket_set_max_connections(discordListener, 100);
-		socket_bind(discordListener, "127.0.0.1");
-		socket_listen(discordListener, 3939);
-		print( "Discord listener has successfully started listening!" );
-	}
+	discordRoleExecutive = DCC_FindRoleById( DISCORD_ROLE_EXEC );
+	discordRoleHead = DCC_FindRoleById( DISCORD_ROLE_HEAD );
+	discordRoleLead = DCC_FindRoleById( DISCORD_ROLE_LEAD );
+	discordRoleVIP = DCC_FindRoleById( DISCORD_ROLE_VIP );
+	discordRoleVoice = DCC_FindRoleById( DISCORD_ROLE_VOICE );
 
-	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );*/
+	DCC_SendChannelMessage( discordGeneralChan, "**The discord plugin has been initiaized.**" );
+	#endif
 
 	/* ** Robbery Points ** */
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 1", 5000, -1400.84180, 862.85895, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -3735,13 +3753,13 @@ public OnGameModeInit()
 
 	CreateRobberyCheckpoint( "Le Flawless Cafe", 	3000, -1968.0526, 107.814460, 27.09287800, 0.0000000, -1 );
 
-	CreateRobberyCheckpoint( "Hospital", 					4000, -2638.04638, 662.66967, 969.852905, -90.0000, -1 );
+	CreateRobberyCheckpoint( "Hospital", 			4000, -2638.04638, 662.66967, 969.852905, -90.0000, -1 );
 
 	CreateRobberyCheckpoint( "Sex Shop", 			3000, -108.37336, -8.5235140, 1000.188232, 90.000000, 16, 32, 51, 64 );
-	CreateRobberyNPC( "Sex Shop Clerk",					1000, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
+	CreateRobberyNPC( "Sex Shop Clerk",				1000, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
 
 	CreateRobberyCheckpoint( "Off Track Betting", 	3000, 822.189086, 8.22311500, 1004.423278, 169.80003, -1 );
-	CreateRobberyNPC( "Betting Clerk",					1000, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
+	CreateRobberyNPC( "Betting Clerk",				1000, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
 
 	CreateRobberyCheckpoint( "Zero's RC Shop", 		3000, -2221.7243, 133.067214, 1035.223022, 180.00000, 6 );
 	CreateRobberyNPC( "Zero",						1000, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
@@ -3789,10 +3807,10 @@ public OnGameModeInit()
 	CreateRobberyNPC( "Chicken Worker",				1000, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
 
 	CreateRobberyCheckpoint( "Well Stacked Pizza", 	3000, 380.331146, -116.33708, 1000.951721, -90.00000, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
-	CreateRobberyNPC( "Pizza Worker",						1000, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
+	CreateRobberyNPC( "Pizza Worker",				1000, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
 
 	CreateRobberyCheckpoint( "24/7",      			3000, -8.1804670, -180.76544, 1002.996337, 180.00000, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
-	CreateRobberyNPC( "24/7 Worker",						1000, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
+	CreateRobberyNPC( "24/7 Worker",				1000, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
 
 	CreateRobberyCheckpoint( "Barber", 				3000, 408.697540, -56.045413, 1001.337951, 180.00000, 23, 24, 48, 21, 18, 22, 20 );
 	CreateRobberyNPC( "Barber",						1000, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
@@ -4647,6 +4665,7 @@ public OnGameModeInit()
 	CreateDynamicPickup( 337, 2, -2744.6367, 1264.8502, 11.77030 ); // Spade @Mining
 	CreateDynamicPickup( 337, 2, 589.440800, 869.86900, -42.4973 ); // Spade @Mining
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
+	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
 
 	/* ** RDM protection **
 	static const
@@ -5143,9 +5162,6 @@ public OnGameModeExit( )
 	KillTimer( rl_ZoneUpdate );
     for( new t; t != MAX_TEXT_DRAWS; t++ ) TextDrawDestroy( Text: t );
 	//SendRconCommand( "exit" );
-	/*socket_stop_listen(discordListener);
-	socket_destroy(discordListener);
-	socket_destroy(discord);*/
 	return 1;
 }
 
@@ -5242,6 +5258,23 @@ public OnServerUpdate( )
 			// Trucking Trailers
 			if ( iState == PLAYER_STATE_DRIVER && iVehicle && p_hasTruckingJob{ playerid } && !IsTrailerAttachedToVehicle( iVehicle ) && p_TruckingCancelTimer[ playerid ] == 0xFFFF )
 		 		cancelPlayerTruckingCourier( playerid, iVehicle, .ticks = 60 );
+
+		 	// Surfing a criminal vehicle
+		 	if ( p_WantedLevel[ playerid ] < 6 && p_Class[ playerid ] != CLASS_POLICE )
+		 	{
+		 		new
+		 			surfing_vehicle = GetPlayerSurfingVehicleID( playerid );
+
+		 		if ( surfing_vehicle != INVALID_VEHICLE_ID )
+		 		{
+		 			new
+		 				driverid = GetVehicleDriver( surfing_vehicle );
+
+		 			if ( IsPlayerConnected( driverid ) && p_WantedLevel[ driverid ] > 2 && p_Class[ driverid ] != CLASS_POLICE ) {
+		 				GivePlayerWantedLevel( playerid, 6 - p_WantedLevel[ playerid ] );
+		 			}
+		 		}
+		 	}
 
 		 	// Failed to pay ticket
 		 	if ( p_TicketTimestamp[ playerid ] != 0 && g_iTime > p_TicketTimestamp[ playerid ] )
@@ -6363,7 +6396,7 @@ public OnLookupComplete( playerid, success )
 	}
 
 	format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
-	Discord_Say( DISCORD_GENERAL, szNormalString );
+	DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 	return 1;
 }
 
@@ -6485,7 +6518,7 @@ thread OnPlayerBanCheck( playerid )
 		}
 
 		format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
-		Discord_Say( DISCORD_GENERAL, szNormalString );
+		DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 	}
 	return 1;
 }*/
@@ -6725,7 +6758,7 @@ public OnPlayerDisconnect( playerid, reason )
 	}
 
 	format( string, sizeof( string ), "*%s*", string );
-	Discord_Say( DISCORD_GENERAL, string );
+	DCC_SendChannelMessage( discordGeneralChan, string );
 	return 1;
 }
 
@@ -7212,6 +7245,13 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 			}
 		}
 	}
+
+	else if ( hittype == BULLET_HIT_TYPE_NONE )
+	{
+		if ( IsPlayerLorenc( playerid ) && weaponid == 30 ) {
+			CreateExplosion( fX, fY, fZ, 12, 10.0 );
+		}
+	}
     return 1;
 }
 
@@ -7641,7 +7681,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 			return 1;
 		}
 
-		Discord_SayFormatted( DISCORD_GENERAL, "*%s(%d) has killed %s(%d) - %s!*", ReturnPlayerName( killerid ), killerid,  ReturnPlayerName( playerid ), playerid, ReturnWeaponName( reason ) );
+		DCC_SendChannelMessageFormatted( discordGeneralChan, "*%s(%d) has killed %s(%d) - %s!*", ReturnPlayerName( killerid ), killerid,  ReturnPlayerName( playerid ), playerid, ReturnWeaponName( reason ) );
 
 		if ( !IsPlayerAdminOnDuty( killerid ) )
 		{
@@ -7761,7 +7801,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 	else if ( IsPlayerNPC( killerid ) ) SendDeathMessage( killerid, playerid, reason );
 	else
 	{
-		Discord_SayFormatted( DISCORD_GENERAL, "*%s(%d) has committed suicide!*", ReturnPlayerName( playerid ), playerid );
+		DCC_SendChannelMessageFormatted( discordGeneralChan, "*%s(%d) has committed suicide!*", ReturnPlayerName( playerid ), playerid );
 	    SendDeathMessage( INVALID_PLAYER_ID, playerid, 53 );
 	    DeletePVar( playerid, "used_cmd_kill" );
 	}
@@ -7792,32 +7832,32 @@ public OnVehicleSpawn( vehicleid )
 
 public OnVehicleDeath( vehicleid, killerid )
 {
+	printf("1.OnVehicleDeath(%d, %d) -> bus vid %d", vehicleid, killerid,g_isBusinessVehicle[ vehicleid ] );
 	if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
 	{
 		new
-			businessid = g_isBusinessVehicle[ vehicleid ],
-			attackerid = g_VehicleLastAttacker[ vehicleid ]
+			businessid = g_isBusinessVehicle[ vehicleid ], attackerid = g_VehicleLastAttacker[ vehicleid ],
+			payout = floatround( float( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) * ( p_Class[ killerid ] == CLASS_POLICE ? 0.3 : 0.25 ) )
 		;
 
+		printf("2.is associate %d, ticks %d", IsBusinessAssociate( attackerid, businessid ), g_iTime - g_VehicleLastAttacked[ vehicleid ] );
 		if ( IsPlayerConnected( attackerid ) && ! IsBusinessAssociate( attackerid, businessid ) && ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ) < 7 )
 		{
-			new
-				payout = floatround( float( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) * 0.25 );
-
+			GivePlayerScore( attackerid, 2 );
 			GivePlayerCash( attackerid, payout );
+			if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 );
 			SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, ConvertPrice( payout ) );
 		}
 		else
 		{
 			if ( IsPlayerConnected( killerid ) ) {
-				if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] ) );
+				if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 				else
 				{
-					new
-						payout = floatround( float( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) * 0.25 );
-
-					GivePlayerCash( attackerid, payout );
-					SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, ConvertPrice( payout ) );
+					GivePlayerScore( killerid, 2 );
+					GivePlayerCash( killerid, payout );
+					if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 );
+					SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, ConvertPrice( payout ) );
 				}
 			}
 		}
@@ -7985,7 +8025,7 @@ public OnPlayerText( playerid, text[ ] )
 			{
 			    if ( p_VIPLevel[ playerid ] > 0 )
 			    {
-					Discord_SayFormatted( DISCORD_GENERAL, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
+					DCC_SendChannelMessageFormatted( discordGeneralChan, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
 					SendClientMessageToAllFormatted( 0x3eff3eff, "[VIP] %s(%d):{9ec34f} %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
 			        return 0;
 			    }
@@ -8000,7 +8040,7 @@ public OnPlayerText( playerid, text[ ] )
 			}
 		}
 	}
-	Discord_SayFormatted( DISCORD_GENERAL, "**%s(%d):** %s", ReturnPlayerName( playerid ), playerid, text ); // p_Class[ playerid ] == CLASS_POLICE ? 12 : 4
+	DCC_SendChannelMessageFormatted( discordGeneralChan, "**%s(%d):** %s", ReturnPlayerName( playerid ), playerid, text ); // p_Class[ playerid ] == CLASS_POLICE ? 12 : 4
 	return 1;
 }
 
@@ -10735,7 +10775,7 @@ CMD:vsay( playerid, params[ ] )
 		   		return SendError( playerid, "You cannot speak as you are muted for %s.", secondstotime( p_MutedTime[ playerid ] - time ) );
 		}
 
-		Discord_SayFormatted( DISCORD_GENERAL, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, msg );
+		DCC_SendChannelMessageFormatted( discordGeneralChan, "__**(VIP) %s(%d):**__ %s", ReturnPlayerName( playerid ), playerid, msg );
 		SendClientMessageToAllFormatted( 0x3eff3eff, "[VIP] %s(%d):{9ec34f} %s", ReturnPlayerName( playerid ), playerid, msg );
 	}
 	return 1;
@@ -11077,7 +11117,7 @@ CMD:mech( playerid, params[ ] )
 	{
 		new
 			Float: fDistance = Float: 0x7F800000,
-			iClosest = GetClosestVehicle( playerid, fDistance )
+			iClosest = GetClosestVehicle( playerid, INVALID_VEHICLE_ID, fDistance )
 		;
 
 		SendServerMessage( playerid, "The closest vehicle to you is a "COL_GREY"%s"COL_WHITE", which is %0.2fm away.", GetVehicleName( GetVehicleModel( iClosest ) ), fDistance );
@@ -11729,7 +11769,7 @@ thread OnPlayerLastLogged( playerid, irc, player[ ] )
 		if ( !irc ) SendClientMessageFormatted( playerid, COLOR_GREY, "[SERVER]"COL_RED" %s:"COL_WHITE" Last Logged: %s", player, Field );
 		else {
 			format( szNormalString, sizeof( szNormalString ),"7LAST LOGGED OF '%s': %s", player, Field );
-			Discord_Say( DISCORD_GENERAL, szNormalString );
+			DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 		}
 	}
 	else {
@@ -11769,7 +11809,7 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 		else
 		{
 			format( szNormalString, sizeof( szNormalString ),"7WEEKLY TIME OF '%s': %s", player, secondstotime( iCurrentUptime - iLastUptime ) );
-			Discord_Say( DISCORD_GENERAL, szNormalString );
+			DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 		}
 	}
 	else
@@ -12182,6 +12222,7 @@ CMD:rules( playerid, params[ ] )
 	return 1;
 }
 
+#if ENABLE_DISCORD == true
 CMD:discordpm( playerid, params[ ] )
 {
 	new
@@ -12192,11 +12233,12 @@ CMD:discordpm( playerid, params[ ] )
 	{
  		Beep( playerid );
  		format( msg, sizeof( msg ), "__[Discord PM]__ **%s(%d):** %s", ReturnPlayerName( playerid ), playerid, msg );
-    	Discord_Say( DISCORD_GENERAL, msg );
-		SendServerMessage( playerid, "Your typed message has been sent to the Discord #general channel!" );
+    	DCC_SendChannelMessage( discordGeneralChan, msg );
+		SendServerMessage( playerid, "Your typed message has been sent to the Discord #sfcnr channel!" );
 	}
 	return 1;
 }
+#endif
 
 CMD:perks( playerid, params[ ] )
 {
@@ -13317,8 +13359,32 @@ CMD:stats( playerid, params[ ] )
 
 CMD:help( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_HELP, DIALOG_STYLE_LIST, "{FFFFFF}Help", "Server Information\nHelp\nF.A.Q.\nGuides\nTips n' Tricks", "Okay", "" );
+	ShowPlayerDialog( playerid, DIALOG_HELP, DIALOG_STYLE_LIST, "{FFFFFF}Help", "Server Information\nFeatures\nHelp\nF.A.Q.\nGuides\nTips n' Tricks", "Okay", "" );
 	return 1;
+}
+
+CMD:features( playerid, params[ ] )
+{
+	SetPVarInt( playerid, "help_category", 1 );
+    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 1 );
+    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 1 );
+   	return 1;
+}
+
+CMD:faq( playerid, params[ ] )
+{
+	SetPVarInt( playerid, "help_category", 3 );
+    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 3 );
+    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 3 );
+   	return 1;
+}
+
+CMD:tips( playerid, params[ ] )
+{
+	SetPVarInt( playerid, "help_category", 5 );
+    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d", 5 );
+    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, 5 );
+   	return 1;
 }
 
 CMD:commands( playerid, params[ ] ) return cmd_cmds( playerid, params );
@@ -13408,7 +13474,7 @@ CMD:me( playerid, params[ ] )
 	else if ( sscanf( params, "s[70]", action ) ) return SendUsage( playerid, "/me [ACTION]" );
 	else
 	{
-    	Discord_SayFormatted( DISCORD_GENERAL, "** * * * %s(%d) %s **", ReturnPlayerName( playerid ), playerid, action );
+    	DCC_SendChannelMessageFormatted( discordGeneralChan, "** * * * %s(%d) %s **", ReturnPlayerName( playerid ), playerid, action );
 		SendClientMessageToAllFormatted( GetPlayerColor( playerid ), "*** %s(%d) %s", ReturnPlayerName( playerid ), playerid, action );
 	}
 	return 1;
@@ -16135,6 +16201,22 @@ CMD:hgoto( playerid, params[ ] )
 	return 1;
 }
 
+CMD:bgoto( playerid, params[ ] )
+{
+	new bID;
+	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	else if ( sscanf( params, "d", bID ) ) return SendUsage( playerid, "/bgoto [BUSINESS_ID]" );
+	else if ( bID < 0 || bID >= MAX_BUSINESSES ) return SendError( playerid, "Invalid Business ID." );
+	else if ( ! Iter_Contains( business, bID ) ) return SendError( playerid, "Invalid Business ID." );
+	else
+	{
+	    SetPlayerPos( playerid, g_businessData[ bID ] [ E_X ], g_businessData[ bID ] [ E_Y ], g_businessData[ bID ] [ E_Z ] );
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have went to business id %d.", bID );
+	  	AddAdminLogLineFormatted( "%s(%d) has went to business id %d", ReturnPlayerName( playerid ), playerid, bID );
+    }
+	return 1;
+}
+
 CMD:cd( playerid, params[ ] ) return cmd_countdown( playerid, params );
 CMD:countdown( playerid, params[ ] )
 {
@@ -16959,7 +17041,7 @@ thread OnPlayerUnbanIP( playerid, irc, address[ ] )
 		}
 		else
 		{
-    		Discord_SayFormatted( DISCORD_GENERAL, "**(UNBANNED)** IP %s has been un-banned from the server.", address );
+    		DCC_SendChannelMessageFormatted( discordGeneralChan, "**(UNBANNED)** IP %s has been un-banned from the server.", address );
 		}
 		format( szNormalString, sizeof( szNormalString ), "DELETE FROM `BANS` WHERE `IP` = '%s'", mysql_escape( address ) );
 		mysql_single_query( szNormalString );
@@ -16999,7 +17081,7 @@ thread OnPlayerUnbanPlayer( playerid, irc, player[ ] )
 		else
 		{
 			format(szNormalString, sizeof(szNormalString),"**(UNBANNED)** %s has been un-banned from the server.", player);
-    		Discord_Say( DISCORD_GENERAL, szNormalString );
+    		DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 		}
 		format(szNormalString, sizeof(szNormalString), "DELETE FROM `BANS` WHERE `NAME` = '%s'", mysql_escape( player ) );
 		mysql_single_query( szNormalString );
@@ -17340,41 +17422,6 @@ CMD:destroybusiness( playerid, params[ ] )
 	return 1;
 }
 
-/*CMD:destroysockets( playerid, params[ ] )
-{
-	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-
-	socket_destroy( discord );
-	socket_stop_listen( discordListener );
-	socket_destroy( discordListener );
-
-	print( "Destroyed all sockets" );
-	return 1;
-}
-
-CMD:reloaddiscord( playerid, params[ ] )
-{
-	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-
-	socket_destroy( discord );
-	socket_stop_listen( discordListener );
-	socket_destroy( discordListener );
-
-	if ( is_socket_valid( ( discord = socket_create( TCP ) ) ) ) { // begin launching tcp
-		socket_connect(discord, "127.0.0.1", 8000);
-		print( "Discord TCP has successfully connected!" );
-	}
-
-	if ( is_socket_valid( ( discordListener = socket_create( TCP ) ) ) ) { // begin creating discord listener
-		socket_set_max_connections(discordListener, 100);
-		socket_bind(discordListener, "127.0.0.1");
-		socket_listen(discordListener, 3939);
-		print( "Discord listener has successfully started listening!" );
-	}
-
-	Discord_Say( DISCORD_GENERAL, "**Loaded discord for SA-MP by Lorenc and XFlawless**" );
-	return 1;
-}*/
 CMD:reloadeditor( playerid, params[ ] )
 {
 	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
@@ -18268,21 +18315,19 @@ CMD:kickall( playerid, params[ ] )
 }
 
 /* End of admin commands */
-
-#define DISCORD_LEVEL_VOICE 1
-#define DISCORD_LEVEL_VIP 	2
-#define DISCORD_LEVEL_MOD 3
-#define DISCORD_LEVEL_ADMIN 4
-#define DISCORD_LEVEL_SUPER 4
-
+#if ENABLE_DISCORD == true
 /* ** IRC ** */
-DQCMD:lastlogged( userID[ ], user[ ], level, params[ ] )
+DQCMD:lastlogged( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	if ( hasPermission )
 	{
 		static
-		    player[ MAX_PLAYER_NAME ]
-		;
+		    player[ MAX_PLAYER_NAME ];
 
 		if ( sscanf( params, "s[24]", player ) ) return 0;
 		else
@@ -18291,13 +18336,18 @@ DQCMD:lastlogged( userID[ ], user[ ], level, params[ ] )
 	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerLastLogged", "iis", INVALID_PLAYER_ID, 1, player );
 		}
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
-DQCMD:weeklytime( userID[ ], user[ ], level, params[ ] )
+DQCMD:weeklytime( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	if ( hasPermission )
 	{
 		static
 		    player[ MAX_PLAYER_NAME ]
@@ -18310,51 +18360,76 @@ DQCMD:weeklytime( userID[ ], user[ ], level, params[ ] )
 	  		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerWeeklyTime", "iis", INVALID_PLAYER_ID, 1, player );
 		}
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
-DQCMD:idof( userID[ ], user[ ], level, params[ ] )
+DQCMD:idof( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	if ( hasPermission )
 	{
 		new pID;
 		if ( sscanf( params, ""#sscanf_u"", pID ) ) return 0;
 		if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return 0;
 		format( szNormalString, sizeof( szNormalString ), "**In-game ID of %s:** %d", ReturnPlayerName( pID ), pID );
-		Discord_Say( DISCORD_GENERAL, szNormalString );
+		DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
-DQCMD:say( userID[ ], user[ ], level, params[ ] )
+DQCMD:say( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	if ( hasPermission )
 	{
 		new
 			szAntispam[ 64 ];
-
+		printf("SAY %s", params);
 		if ( !isnull( params ) && !textContainsIP( params ) )
 		{
-			format( szAntispam, 64, "!say_%s", user );
+			format( szAntispam, 64, "!say_%s", ReturnDiscordName( user ) );
 			if ( GetGVarInt( szAntispam ) < g_iTime )
 			{
-				if ( level > DISCORD_LEVEL_ADMIN ) SetGVarInt( szAntispam, g_iTime + 2 );
-				SendClientMessageToAllFormatted(-1, "{4DFF88}(Discord %s) {00CD45}%s:{FFFFFF} %s", discordLevelToString( level ), user, params );
-				Discord_SayFormatted( DISCORD_GENERAL, "**(Discord %s) %s:** %s", discordLevelToString( level ), user, params );
+				new
+					bool: hasAdmin;
+
+				DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasAdmin );
+
+				if ( hasAdmin )
+					SetGVarInt( szAntispam, g_iTime + 2 );
+
+				// send message
+				SendClientMessageToAllFormatted( -1, "{4DFF88}(Discord %s) {00CD45}%s:{FFFFFF} %s", discordLevelToString( user ), ReturnDiscordName( user ), params );
+				DCC_SendChannelMessageFormatted( discordGeneralChan, "**(Discord %s) %s:** %s", discordLevelToString( user ), ReturnDiscordName( user ), params );
 			}
-			else Discord_Say( userID,"You must wait 2 seconds before speaking again." );
+			else DCC_SendUserMessage( user, "You must wait 2 seconds before speaking again." );
 		}
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
-DQCMD:players( userID[ ], user[ ], level, params[ ] )
+DQCMD:players( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	print("Called players");
+	if ( hasPermission )
 	{
+		print("Has permission");
 		new
 			iPlayers = Iter_Count(Player);
 
@@ -18368,15 +18443,20 @@ DQCMD:players( userID[ ], user[ ], level, params[ ] )
 			}
 		}
 		format( szLargeString, sizeof( szLargeString ), "%sThere are %d player(s) online.", szLargeString, iPlayers );
-		Discord_Say( DISCORD_GENERAL, szLargeString );
+		DCC_SendChannelMessage( discordGeneralChan, szLargeString );
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
-DQCMD:admins( userID[ ], user[ ], level, params[ ] )
+DQCMD:admins( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_VOICE )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVoice, hasPermission );
+
+	if ( hasPermission )
 	{
 		new count = 0;
 		szBigString[ 0 ] = '\0';
@@ -18389,89 +18469,109 @@ DQCMD:admins( userID[ ], user[ ], level, params[ ] )
 		}
 
 		format( szBigString, sizeof( szBigString ), "%sThere are %d admin(s) online.", szBigString, count );
-		Discord_Say( DISCORD_GENERAL, szBigString );
+		DCC_SendChannelMessage( discordGeneralChan, szBigString );
 	}
-	else Discord_Say( userID, "**Error:** This command requires voice." );
+	else DCC_SendUserMessage( user, "**Error:** This command requires voice." );
 	return 1;
 }
 
 /* HALF OP */
-DQCMD:acmds( userID[ ], user[ ], level, params[ ] )
+DQCMD:acmds( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
- 		Discord_Say( userID, "__**Mod:**__ !kick, !ban, !suspend, !warn, !jail, !getip, !(un)mute\n"\
- 							 "__**Admin:**__ !unban, !unbanip, !megaban" );
+ 		DCC_SendUserMessage( user, 	"__**Lead Admin:**__ !kick, !ban, !suspend, !warn, !jail, !getip, !(un)mute\n"\
+ 							 		"__**Admin:**__ !unban, !unbanip" );
 	}
 	return 1;
 }
 
-DQCMD:kick( userID[ ], user[ ], level, params[ ] )
+DQCMD:kick( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
-	{
-		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return Discord_Say( userID, "**Usage:** !kick [PLAYER_ID] [REASON]" );
-		if (IsPlayerConnected(pID))
-		{
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
-		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s(%d) has been kicked by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName(pID), pID, user, reason);
-			KickPlayerTimed(pID);
-		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
-	}
-	return 1;
-}
+	new
+		bool: hasPermission;
 
-DQCMD:ban( userID[ ], user[ ], level, params[ ] )
-{
-	if ( level >= DISCORD_LEVEL_MOD )
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return Discord_Say( userID, "**Usage:** !ban [PLAYER_ID] [REASON]" );
+		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !kick [PLAYER_ID] [REASON]" );
 		if (IsPlayerConnected(pID))
 		{
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
-		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
-			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ) );
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
+		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s(%d) has been kicked by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName(pID), pID, ReturnDiscordName( user ), reason);
+			KickPlayerTimed( pID );
 		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-DQCMD:suspend( userID[ ], user[ ], level, params[ ] )
+DQCMD:ban( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
+	{
+		new pID, reason[64];
+		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !ban [PLAYER_ID] [REASON]" );
+		if (IsPlayerConnected(pID))
+		{
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
+		    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has banned %s(%d) "COL_GREEN"[REASON: %s]", ReturnDiscordName( user ), ReturnPlayerName( pID ), pID, reason );
+			AdvancedBan( pID, "Discord Administrator", reason, ReturnPlayerIP( pID ) );
+		}
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
+	}
+	return 1;
+}
+
+DQCMD:suspend( DCC_Channel: channel, DCC_User: user, params[ ] )
+{
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 		new pID, reason[50], hours, days;
-		if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) return Discord_Say( userID, "**Usage:** !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
-		if ( hours < 0 || hours > 24 ) return Discord_Say( userID, "**Command Error:** Please specify an hour between 0 and 24." );
-		if ( days < 0 || days > 60 ) return Discord_Say( userID, "**Command Error:** Please specifiy the amount of days between 0 and 60." );
-		if ( days == 0 && hours == 0 ) return Discord_Say( userID, "**Command Error:** Invalid time specified." );
+		if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
+		if ( hours < 0 || hours > 24 ) return DCC_SendUserMessage( user, "**Command Error:** Please specify an hour between 0 and 24." );
+		if ( days < 0 || days > 60 ) return DCC_SendUserMessage( user, "**Command Error:** Please specifiy the amount of days between 0 and 60." );
+		if ( days == 0 && hours == 0 ) return DCC_SendUserMessage( user, "**Command Error:** Invalid time specified." );
 		if ( IsPlayerConnected( pID ) )
 		{
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been suspended for %d hour(s) and %d day(s).", ReturnPlayerName( pID ), pID, hours, days );
-			SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has suspended %s(%d) for %d hour(s) and %d day(s) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, hours, days, reason );
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been suspended for %d hour(s) and %d day(s).", ReturnPlayerName( pID ), pID, hours, days );
+			SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has suspended %s(%d) for %d hour(s) and %d day(s) "COL_GREEN"[REASON: %s]", ReturnDiscordName( user ), ReturnPlayerName( pID ), pID, hours, days, reason );
 			new time = g_iTime + ( hours * 3600 ) + ( days * 86400 );
-			AdvancedBan( pID, "IRC Administrator", reason, ReturnPlayerIP( pID ), time );
+			AdvancedBan( pID, "Discord Administrator", reason, ReturnPlayerIP( pID ), time );
 		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-DQCMD:warn( userID[ ], user[ ], level, params[ ] )
+DQCMD:warn( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 		new pID, reason[50];
-		if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return Discord_Say( userID, "**Usage:** !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
 	    	p_Warns[ pID ] ++;
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been warned [%d/3].", ReturnPlayerName( pID ), pID, p_Warns[ pID ] );
-        	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has been warned by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, user, reason );
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been warned [%d/3].", ReturnPlayerName( pID ), pID, p_Warns[ pID ] );
+        	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has been warned by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, ReturnDiscordName( user ), reason );
 
 			if ( p_Warns[ pID ] >= 3 )
 		    {
@@ -18481,42 +18581,50 @@ DQCMD:warn( userID[ ], user[ ], level, params[ ] )
 		        return 1;
 		    }
 		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-DQCMD:jail( userID[ ], user[ ], level, params[ ] )
+DQCMD:jail( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 		new pID, reason[50], Seconds;
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, Seconds, reason ) ) return Discord_Say( userID, "**Usage:** !jail [PLAYER_ID] [SECONDS] [REASON]" );
-		if ( Seconds > 20000 || Seconds < 1 ) return Discord_Say( userID, "**Command Error:** You're misleading the seconds limit! ( 0 - 20000 )");
+		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, Seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !jail [PLAYER_ID] [SECONDS] [REASON]" );
+		if ( Seconds > 20000 || Seconds < 1 ) return DCC_SendUserMessage( user, "**Command Error:** You're misleading the seconds limit! ( 0 - 20000 )");
 		if ( IsPlayerConnected( pID ) )
 		{
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d) has been jailed for %d seconds.", ReturnPlayerName( pID ), pID, Seconds );
-	    	SendGlobalMessage( -1, ""COL_GOLD"[DISCORD JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, user, reason );
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been jailed for %d seconds.", ReturnPlayerName( pID ), pID, Seconds );
+	    	SendGlobalMessage( -1, ""COL_GOLD"[DISCORD JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, ReturnDiscordName( user ), reason );
         	JailPlayer( pID, Seconds, 1 );
 		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
-DQCMD:mute( userID[ ], user[ ], level, params[ ] )
+DQCMD:mute( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 	    new pID, seconds, reason[ 32 ];
 
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return Discord_Say( userID, "**Usage:** !amute [PLAYER_ID] [SECONDS] [REASON]");
-	    else if ( !IsPlayerConnected( pID ) ) Discord_Say( userID, "**Command Error:** Invalid Player ID.");
-		else if ( p_AdminLevel[ pID ] > 4 ) return Discord_Say( userID, "**Command Error:** No sexy head admin targetting!");
-	    else if ( seconds < 0 || seconds > 10000000 ) return Discord_Say( userID, "**Command Error:** Specify the amount of seconds from 1 - 10000000." );
+		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !amute [PLAYER_ID] [SECONDS] [REASON]");
+	    else if ( !IsPlayerConnected( pID ) ) DCC_SendUserMessage( user, "**Command Error:** Invalid Player ID.");
+		else if ( p_AdminLevel[ pID ] > 4 ) return DCC_SendUserMessage( user, "**Command Error:** No sexy head admin targetting!");
+	    else if ( seconds < 0 || seconds > 10000000 ) return DCC_SendUserMessage( user, "**Command Error:** Specify the amount of seconds from 1 - 10000000." );
 	    else
 		{
-	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been muted by %s for %d seconds "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), user, seconds, reason );
+	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been muted by %s for %d seconds "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), ReturnDiscordName( user ), seconds, reason );
 			GameTextForPlayer( pID, "~r~Muted!", 4000, 4 );
 	        p_Muted{ pID } = true;
 	        p_MutedTime[ pID ] = g_iTime + seconds;
@@ -18525,17 +18633,21 @@ DQCMD:mute( userID[ ], user[ ], level, params[ ] )
 	return 1;
 }
 
-DQCMD:unmute( userID[ ], user[ ], level, params[ ] )
+DQCMD:unmute( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
     	new pID;
-	    if ( sscanf( params, ""#sscanf_u"", pID )) return Discord_Say( userID, "/mute [PLAYER_ID]");
-	    else if ( !IsPlayerConnected( pID ) ) return Discord_Say( userID,  "**Command Error:** Invalid Player ID");
-	    else if ( !p_Muted{ pID } ) return Discord_Say( userID,  "**Command Error:** This player isn't muted" );
+	    if ( sscanf( params, ""#sscanf_u"", pID )) return DCC_SendUserMessage( user, "/mute [PLAYER_ID]");
+	    else if ( !IsPlayerConnected( pID ) ) return DCC_SendUserMessage( user,  "**Command Error:** Invalid Player ID");
+	    else if ( !p_Muted{ pID } ) return DCC_SendUserMessage( user,  "**Command Error:** This player isn't muted" );
 	    else
 		{
-	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been un-muted by %s.", ReturnPlayerName(pID), user);
+	        SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has been un-muted by %s.", ReturnPlayerName( pID ), ReturnDiscordName( user ) );
 			GameTextForPlayer( pID, "~g~Un-Muted!", 4000, 4 );
 	        p_Muted{ pID } = false;
 	        p_MutedTime[ pID ] = 0;
@@ -18544,66 +18656,39 @@ DQCMD:unmute( userID[ ], user[ ], level, params[ ] )
     return 1;
 }
 
-DQCMD:getip( userID[ ], user[ ], level, params[ ] )
+DQCMD:getip( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_MOD )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasPermission );
+	if ( hasPermission )
 	{
 		new pID;
-		if ( sscanf( params, ""#sscanf_u"", pID ) ) return Discord_Say( userID, "**Usage:** !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, ""#sscanf_u"", pID ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
-			if ( p_AdminLevel[ pID ] > 4 ) return Discord_Say( userID, "**Command Error:** No sexy head admin targetting!");
-			Discord_SayFormatted( userID, "**Command Success:** %s(%d)'s IP is 14%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
+			if ( p_AdminLevel[ pID ] > 4 ) return DCC_SendUserMessage( user, "**Command Error:** No sexy head admin targetting!");
+			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d)'s IP is 14%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
 		}
-		else Discord_Say( userID, "**Command Error:** Player is not connected!" );
+		else DCC_SendUserMessage( user, "**Command Error:** Player is not connected!" );
 	}
 	return 1;
 }
 
 /* OP */
-DQCMD:akickall( userID[ ], user[ ], level, params[ ] )
-{
-	if ( level >= DISCORD_LEVEL_SUPER )
-	{
-		SendClientMessageToAll( -1, ""COL_PINK"[ADMIN]"COL_WHITE" Everyone has been kicked from the server due to a server update." );
-		for( new i, g = GetMaxPlayers( ); i < g; i++ )
-		{
-		    if ( IsPlayerConnected( i ) )
-		    {
-		        Kick( i );
-		    }
-		}
-		Discord_Say( userID, "**Command Success:** All users have been kicked from the server." );
-	}
-	return 1;
-}
-
-/*DQCMD:amegaban( userID[ ], user[ ], level, params[ ] )
-{
-    new
-	    pID,
-		reason[ 50 ]
-	;
-	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[50]", pID, reason ) ) return Discord_Say( userID, "**Usage:** !amegaban [PLAYER_ID] [REASON]" );
-	else if ( !IsPlayerConnected( pID ) ) Discord_Say( userID, "**Command Error:** Player is not connected!" );
-	else
-	{
-	    SendGlobalMessage( -1, ""COL_PINK"[DISCORD ADMIN]{FFFFFF} %s has mega-banned %s(%d) "COL_GREEN"[REASON: %s]", user, ReturnPlayerName( pID ), pID, reason );
-		BanPlayerISP( pID );
-	}
-	return 1;
-}*/
-
-DQCMD:aunban( userID[ ], user[ ], level, params[ ] )
+DQCMD:unban( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
 	new
 		player[24],
-		Query[70]
+		Query[70],
+		bool: hasPermission
 	;
 
-	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
-	else if (sscanf(params, "s[24]", player)) return Discord_Say( userID, "**Usage:** !unban [PLAYER]" );
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleHead, hasPermission );
+
+	if ( ! hasPermission ) return 0;
+	else if ( sscanf( params, "s[24]", player ) ) return DCC_SendUserMessage( user, "**Usage:** !unban [PLAYER]" );
 	else
 	{
 		format( Query, sizeof( Query ), "SELECT `NAME` FROM `BANS` WHERE `NAME` = '%s'", mysql_escape( player ) );
@@ -18612,15 +18697,18 @@ DQCMD:aunban( userID[ ], user[ ], level, params[ ] )
 	return 1;
 }
 
-DQCMD:aunbanip( userID[ ], user[ ], level, params[ ] )
+DQCMD:unbanip( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
 	new
 		address[16],
-		Query[70]
+		Query[70],
+		bool: hasPermission
 	;
 
-	if ( ! ( level >= DISCORD_LEVEL_ADMIN ) ) return 0;
-	else if (sscanf(params, "s[16]", address)) return Discord_Say( userID, "**Usage:** !unbanip [IP]" );
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleHead, hasPermission );
+
+	if ( ! hasPermission ) return 0;
+	else if (sscanf(params, "s[16]", address)) return DCC_SendUserMessage( user, "**Usage:** !unbanip [IP]" );
 	else
 	{
 		format( Query, sizeof( Query ), "SELECT `IP` FROM `BANS` WHERE `IP` = '%s'", mysql_escape( address ) );
@@ -18629,22 +18717,49 @@ DQCMD:aunbanip( userID[ ], user[ ], level, params[ ] )
 	return 1;
 }
 
-DQCMD:rcon( userID[ ], user[ ], level, params[ ] )
+/* Executive */
+DQCMD:kickall( DCC_Channel: channel, DCC_User: user, params[ ] )
 {
-	if ( level >= DISCORD_LEVEL_SUPER )
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleExecutive, hasPermission );
+	if ( hasPermission )
 	{
-		if (!isnull(params))
+		SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" Everyone has been kicked from the server due to a server update." );
+		for( new i, g = GetMaxPlayers( ); i < g; i++ )
 		{
-			if (strcmp(params, "exit", true) != 0)
+		    if ( IsPlayerConnected( i ) )
+		    {
+		        Kick( i );
+		    }
+		}
+		DCC_SendChannelMessage( discordAdminChan, "**Command Success:** All users have been kicked from the server." );
+	}
+	return 1;
+}
+
+DQCMD:rcon( DCC_Channel: channel, DCC_User: user, params[ ] )
+{
+	new
+		bool: hasPermission;
+
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleExecutive, hasPermission );
+
+	if ( hasPermission )
+	{
+		if ( ! isnull( params ) )
+		{
+			if ( strcmp( params, "exit", true ) != 0 )
 			{
-				Discord_SayFormatted( DISCORD_GENERAL, "RCON command %s has been executed.", params );
+				DCC_SendChannelMessageFormatted( discordAdminChan, "RCON command **%s** has been executed.", params );
 				SendRconCommand( params );
 			}
 		}
 	}
 	return 1;
 }
-
+#endif
 /* ** End of Commands ** */
 
 public OnTrailerUpdate( playerid, vehicleid )
@@ -18853,7 +18968,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 		}
 	#endif
 
-	if ( !g_Driveby )
+	if ( ! g_Driveby )
 		SetPlayerArmedWeapon( playerid, 0 );
 
 	if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
@@ -18905,13 +19020,13 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 						Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ], E_STREAMER_PLAYER_ID, i );
 						Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ], E_STREAMER_PLAYER_ID, i );
 					}
-
 				}
-			}
 
-			g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 2;
-			ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
-			SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+				// message people
+				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 2;
+				ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
+				SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+			}
 		}
 	}
 
@@ -19830,19 +19945,19 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 20000;
+					case 1: iNetWin = 40000;
 
 					// Bells
-					case 2: iNetWin = 10000;
+					case 2: iNetWin = 20000;
 
 					// Cherry
-					case 3: iNetWin = 5000;
+					case 3: iNetWin = 10000;
 
 					// Grapes
-					case 4: iNetWin = 2000;
+					case 4: iNetWin = 4000;
 
 					// 69
-					case 5: iNetWin = 1000;
+					case 5: iNetWin = 2000;
 				}
 			}
 		}
@@ -20254,7 +20369,7 @@ public OnVehiclePaintjob( playerid, vehicleid, paintjobid )
 	        SaveVehicleData( playerid, v );
 	    }
 	}
-	GivePlayerCash( playerid, -500 );
+	// GivePlayerCash( playerid, -500 );
 	return 1;
 }
 
@@ -20739,6 +20854,57 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		}
 	}
 
+	// Hunter Kill Detection
+	if ( iVehicle && IsValidVehicle( iVehicle ) )
+	{
+		new
+			modelid = GetVehicleModel( iVehicle );
+
+		if ( ( modelid == 425 && ( HOLDING( KEY_ACTION ) || PRESSED( KEY_FIRE ) ) ) || ( ( modelid == 520 || modelid == 447 || modelid == 476 ) && HOLDING( KEY_ACTION ) ) )
+		{
+			new
+				closest_vehicle = GetClosestVehicle( playerid, iVehicle );
+
+			if ( closest_vehicle != INVALID_VEHICLE_ID )
+			{
+				static
+					Float: tX, Float: tY, Float: tZ;
+
+				GetVehiclePos( iVehicle, X, Y, Z );
+				GetVehiclePos( closest_vehicle, tX, tY, tZ );
+
+				if ( VectorSize( tX - X, tY - Y, tZ - Z ) < 80.0 )
+				{
+					new
+						Float: facingAngle,
+						Float: angle = atan2( tY - Y, tX - X ) - 90.0
+					;
+
+					// addresses a small bug
+					if ( angle < 0.0 )
+						angle += 360.0;
+
+					GetVehicleZAngle( iVehicle, facingAngle );
+
+					// check if player is facing vehicle
+					if ( floatabs( facingAngle - angle ) < 15.0 ) { // 15m radius
+
+						g_VehicleLastAttacker[ closest_vehicle ] = playerid;
+						g_VehicleLastAttacked[ closest_vehicle ] = g_iTime;
+
+						// anticipate a kill in the vehicle too
+						foreach (new i : Player) if ( GetPlayerVehicleID( i ) == closest_vehicle ) {
+							AC_UpdateDamageInformation( i, playerid, PRESSED( KEY_FIRE ) ? 51 : 38 );
+						}
+
+						// debug
+						printf("Player is shooting vehicle ... %d (%s)", iVehicle, PRESSED( KEY_FIRE ) ? ("rocket") : ("lmg"));
+					}
+				}
+			}
+		}
+	}
+
 	// Various keys
 	if ( PRESSED( KEY_FIRE ) )
 	{
@@ -20766,17 +20932,16 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						new
 							city = g_businessData[ businessid ] [ E_EXPORT_CITY ], drop_off_index = g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ i ];
 
-						// mapandreas
 						GetVehiclePos( vehicleid, playerZ, playerZ, playerZ );
 
 						//if ( g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] > finalZ + 20.0 )
 						//	finalZ = g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ];
 
 						if ( playerZ < g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 20.0 )
-							return SendError( playerid, "You need to be HIGHER to drop off the drugs." );
+							return SendError( playerid, "You need to be HIGHER to drop off the drugs (%0.1f metres).", g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 20.0 - playerZ );
 
-						if ( playerZ > g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 70.0 )
-							return SendError( playerid, "You need to be LOWER to drop off the drugs." );
+						if ( playerZ > g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 100.0 )
+							return SendError( playerid, "You need to be LOWER to drop off the drugs (%0.1f metres).", playerZ - g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ] + 100.0 );
 
 						if ( g_businessData[ businessid ] [ E_EXPORTED ] [ i ] )
 							return SendError( playerid, "This location has already been sold product recently." );
@@ -21657,12 +21822,14 @@ thread OnPlayerLogin( playerid, password[ ] )
 			printf("[%s] Found gang ? %d , id %d, gangid %d", ReturnPlayerName( playerid ), foundGang ? 1 : 0, p_GangID[ playerid ], iGang );
 
 			if ( ! foundGang ) {
-				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `LEADER`=%d OR `ID`=%d LIMIT 0,1", p_AccountID[ playerid ], iGang );
-				mysql_function_query( dbHandle, szNormalString, true, "OnGangLoad", "dd", playerid, iGang );
+				SendServerMessage( playerid, "[DEBUG] Your gang is not preloaded, we will add it in the server now (id %d)", iGang );
+				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `ID`=%d LIMIT 0,1", iGang );
+				mysql_function_query( dbHandle, szNormalString, true, "OnGangLoad", "d", playerid );
 			}
 
 		  	// Send gang join message
 		  	if ( p_GangID[ playerid ] != INVALID_GANG_ID && strlen( g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] ) ) {
+				SendServerMessage( playerid, "[DEBUG] The server has found your old gang, %s (id %d)", g_gangData[ p_GangID[ playerid ] ] [ E_NAME ], iGang );
 		  		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_GREY" %s", g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] );
 		  	}
 		}
@@ -26310,13 +26477,14 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 		if ( g_raceData[ raceid ] [ E_RACE_FINISH_SET ] == 2 )
 		{
 			new
-				Float: finalZ;
+				Float: nodeX, Float: nodeY, Float: nodeZ,
+				nodeid = NearestNodeFromPoint( fX, fY, fZ )
+			;
 
-			// mapandreas
-			MapAndreas_FindZ_For2DCoord( fX, fY, finalZ );
+			GetNodePos( nodeid, nodeX, nodeY, nodeZ );
 
 			// set destination
-			SetRaceDestination( raceid, fX, fY, finalZ + 0.3 );
+			SetRaceDestination( raceid, nodeX, nodeY, nodeZ + 1.0 );
 
 			// alert
 			ShowRaceConfiguration( playerid, raceid );
@@ -26720,7 +26888,9 @@ stock SavePlayerData( playerid, bool: logout = false )
 		new
 			gangid = -1;
 
-		printf ("[%s][0] has the gang id of %d", ReturnPlayerName( playerid ), p_GangID[ playerid ] );
+		if ( logout )
+			printf ("[%s][0] has the gang id of %d", ReturnPlayerName( playerid ), p_GangID[ playerid ] );
+
 		if ( 0 <= p_GangID[ playerid ] < MAX_GANGS && Iter_Contains( gangs, p_GangID[ playerid ] ) )
 			gangid = g_gangData[ p_GangID[ playerid ] ] [ E_SQL_ID ];
 
@@ -26753,7 +26923,8 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_AccountID[ playerid ] );
 
 
-		printf ("[%s][1] Exited Server With Gang ID %d, save len %d", ReturnPlayerName( playerid ), gangid, strlen( Query ) );
+		if ( logout )
+			printf ("[%s][1] Exited Server With Gang ID %d, save len %d", ReturnPlayerName( playerid ), gangid, strlen( Query ) );
 
 		mysql_single_query( Query );
 
@@ -27452,7 +27623,7 @@ stock SendGlobalMessage( colour, format[ ], va_args<> )
 	strreplace( out, #COL_PINK, 	"**" );
 	strreplace( out, #COL_GREY,		"**" );
 	strreplace( out, #COL_WHITE, 	"**" );
-	Discord_Say( DISCORD_GENERAL, out );
+	DCC_SendChannelMessage( discordGeneralChan, out );
 	return 1;
 }
 
@@ -29580,15 +29751,9 @@ stock GetClosestPlayerEx( playerid, classid, &Float: distance = FLOAT_INFINITY )
     return iCurrent;
 }
 
-stock GetClosestVehicle(playerid, &Float: distance = Float: 0x7F800000) {
+stock GetClosestVehicle(playerid, except = INVALID_VEHICLE_ID, &Float: distance = Float: 0x7F800000) {
     new
-        i = GetPlayerVehicleID(playerid)
-    ;
-    if (i) {
-        distance = 0.0;
-        return i;
-    }
-    new
+    	i,
         Float: X,
         Float: Y,
         Float: Z
@@ -29599,7 +29764,7 @@ stock GetClosestVehicle(playerid, &Float: distance = Float: 0x7F800000) {
             closest = INVALID_VEHICLE_ID
         ;
         while(i != MAX_VEHICLES) {
-            if (0.0 < (dis = GetVehicleDistanceFromPoint(++i, X, Y, Z)) < distance) {
+            if (0.0 < (dis = GetVehicleDistanceFromPoint(++i, X, Y, Z)) < distance && i != except) {
                 distance = dis;
                 closest = i;
             }
@@ -29776,7 +29941,7 @@ thread OnGangAdded( gangid )
 	return 1;
 }
 
-thread OnGangLoad( playerid, gang_sql_id )
+thread OnGangLoad( playerid )
 {
 	new
 		rows, fields, i;
@@ -29786,21 +29951,24 @@ thread OnGangLoad( playerid, gang_sql_id )
 	if ( rows )
 	{
 		new
-			id = Iter_Free(gangs);
+			gang_sql_id = cache_get_field_content_int( 0, "ID" ),
+			id = Iter_Free(gangs)
+		;
 
 		// Check again if the gang exists
 		foreach (new g : gangs) if ( gang_sql_id == g_gangData[ g ] [ E_SQL_ID ] ) {
 			p_GangID[ playerid ] = g;
+			SendServerMessage( playerid, "[DEBUG] The server has found your gang, %s, as a duplicate (id %d)", g_gangData[ id ] [ E_NAME ], gang_sql_id );
 			printf( "[gang debug] found duplicate gang for gang id %d (User : %s)", g, ReturnPlayerName( playerid ) );
 			return InformGangConnectMessage( playerid, g ), 1;
 		}
 
-		if ( !Iter_Contains( gangs, id ) )
+		if ( id != -1 )
 		{
 			// Load data into variables
 			cache_get_field_content( 0, "NAME", g_gangData[ id ] [ E_NAME ], dbHandle, 30 );
 			cache_get_field_content( 0, "JOIN_MSG", g_gangData[ id ] [ E_JOIN_MSG ], dbHandle, 96 );
-			g_gangData[ id ] [ E_SQL_ID ] = cache_get_field_content_int( 0, "ID", dbHandle );
+			g_gangData[ id ] [ E_SQL_ID ] = gang_sql_id;
 			g_gangData[ id ] [ E_LEADER ] = cache_get_field_content_int( 0, "LEADER", dbHandle );
 			g_gangData[ id ] [ E_COLOR ] = cache_get_field_content_int( 0, "COLOR", dbHandle );
 			g_gangData[ id ] [ E_KILLS ] = cache_get_field_content_int( 0, "KILLS", dbHandle );
@@ -29825,9 +29993,13 @@ thread OnGangLoad( playerid, gang_sql_id )
 			Iter_Add(gangs, id);
 
 			// Message player
+			SendServerMessage( playerid, "[DEBUG] The server has added your gang, %s, in (id %d)", g_gangData[ id ] [ E_NAME ], gang_sql_id );
 			InformGangConnectMessage( playerid, id );
 		}
-		else printf("[EXCEPTION] Had an issue loading a gang row id %d", i );
+		else {
+			SendServerMessage( playerid, "Had an issue loading your gang. Contact Lorenc (0x92F)." );
+			printf("[EXCEPTION] Had an issue loading a gang row id %d", i );
+		}
 	}
 	else
 	{
@@ -30593,7 +30765,7 @@ stock AddAdminLogLine( szMessage[ sizeof( log__Text[ ] ) ] )
 		memcpy( log__Text[ iPos ], log__Text[ iPos + 1 ], 0, sizeof( log__Text[ ] ) * 4 );
 
 	strcpy( log__Text[ 4 ], szMessage );
-	Discord_Say( DISCORD_ADMINISTRATION, szMessage );
+	DCC_SendChannelMessage( discordAdminChan, szMessage );
 
 	format( szLargeString, 500,	"%s~n~%s~n~%s~n~%s~n~%s", log__Text[ 0 ], log__Text[ 1 ], log__Text[ 2 ], log__Text[ 3 ], log__Text[ 4 ] );
 	return TextDrawSetString( g_AdminLogTD, szLargeString );
@@ -34453,23 +34625,23 @@ stock RollSlotMachine( playerid, id )
 			rotation = 0.0;
 
 		// single brick
-		else if ( 1780 <= randomChance <= 3560 )
+		else if ( 445 <= randomChance <= 890 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 3561 <= randomChance <= 7121 )
+		else if ( 1780 <= randomChance <= 3560 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 7122 <= randomChance <= 14242 )
+		else if ( 7120 <= randomChance <= 14240 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 17800 <= randomChance <= 35600 )
+		else if ( 26700 <= randomChance <= 53400 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 35601 <= randomChance <= 71201 )
+		else if ( 62300 <= randomChance <= 124600 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -34479,30 +34651,30 @@ stock RollSlotMachine( playerid, id )
 	else
 	{
 		// 1 in 400k odds
-		randomChance = random( 400001 );
+		randomChance = random( 100001 );
 
 		// double brick
-		if ( randomChance == 150000 )
+		if ( randomChance == 95000 )
 			rotation = 0.0;
 
 		// single brick
-		else if ( 3560 <= randomChance <= 7120 )
+		else if ( 223 <= randomChance <= 446 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 7121 <= randomChance <= 14241 )
+		else if ( 890 <= randomChance <= 1780 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 14240 <= randomChance <= 28480 )
+		else if ( 3560 <= randomChance <= 7120 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 35600 <= randomChance <= 71200 )
+		else if ( 13350 <= randomChance <= 26700 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 71201 <= randomChance <= 142401 )
+		else if ( 31150 <= randomChance <= 62300 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -35688,7 +35860,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 	FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
 	FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
-	return ( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2000, false, "ddd", playerid, clerkid, step + 1 ) ), 1;
+	return ( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 1000, false, "ddd", playerid, clerkid, step + 1 ) ), 1;
 }
 
 stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
@@ -36330,76 +36502,70 @@ thread OnAccountGuardDelete( playerid )
  * @return true
  */
 
-/*public onSocketReceiveData(Socket:id, remote_clientid, data[], data_len)
+#if ENABLE_DISCORD == true
+public DCC_OnChannelMessage( DCC_Channel: channel, DCC_User: author, const message[ ] )
 {
-	printf("len : %d, data: %s, remote client id %d", data_len, data, remote_clientid);
-	if ( id == discordListener )
+	// ignore outside of #sfcnr and #admin
+	if ( channel != discordGeneralChan && channel != discordAdminChan )
+		return 1;
+
+	// process commands
+	if ( message[ 0 ] == '!' )
 	{
-		static
-			szID[ 19 ], szUser[ 24 ], szMessage[ 32 ], iLevel;
+		new
+			functiona[ 32 ], posi = 0;
 
-		if ( ! sscanf( data, "s[19]s[24]ds[32]", szID, szUser, iLevel, szMessage ) )
-		{
-			if ( szMessage[ 0 ] == '!' )
-			{
-				new
-					functiona[ 32 ], posi = 0;
+		while ( message[ ++posi ] > ' ' ) {
+			functiona[ posi - 1 ] = tolower( message[ posi ] );
+		}
 
-				while ( szMessage[ ++posi ] > ' ' ) {
-					functiona[ posi - 1 ] = tolower( szMessage[ posi ] );
-				}
+		format( functiona, sizeof( functiona ), "discord_%s", functiona );
 
-				format( functiona, sizeof( functiona ), "discord_%s", functiona );
+		while ( message[ posi ] == ' ' ) {
+			posi++;
+		}
 
-				while ( szMessage[ posi ] == ' ' ) {
-					posi++;
-				}
-
-				if ( ! szMessage[ posi ] )
-				{
-					CallLocalFunction( functiona, "ssds", szID, szUser, iLevel, "\1" );
-				} else {
-					CallLocalFunction( functiona, "ssds", szID, szUser, iLevel, szMessage[ posi ] );
-				}
-			}
+		if ( ! message[ posi ] ) {
+			CallLocalFunction( functiona, "dds", _: channel, _: author, "\1" );
+		} else {
+			CallLocalFunction( functiona, "dds", _: channel, _: author, message[ posi ] );
 		}
 	}
-	//socket_close_remote_client( id, remote_clientid ); // test
 	return 1;
-}*/
+}
+
+stock ReturnDiscordName( DCC_User: user ) {
+	static
+		name[ 32 ];
+
+	DCC_GetUserName( user, name, sizeof( name ) );
+	return name;
+}
 
 /**
  * Sends a message to a channel
  * @return true
- */
-stock Discord_Say( channel_id[ ], text[ ] )
-{
-	#pragma unused channel_id
-	#pragma unused text
-	return 1;
-	/*static
-		buffer[ 512 ];
+*/
 
-	format( buffer, sizeof( buffer ), "%s %s\r\n", channel_id, text);
-	return socket_send( discord, buffer, strlen( buffer ) );*/
-}
-
-stock discordLevelToString( level )
+stock discordLevelToString( DCC_User: user )
 {
 	static
-		rank[ 12 ];
+		szRank[ 12 ], bool: hasExecutive, bool: hasHead, bool: hasLead, bool: hasVIP;
 
-    switch (level)
-    {
-        case 1: rank = "Voice";
-        case 2: rank = "V.I.P";
-        case 3: rank = "Moderator";
-        case 4: rank = "Admin";
-        case 5: rank = "Super Admin";
-        default: rank = "N/A";
-    }
-    return rank;
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleExecutive, hasExecutive );
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleHead, hasHead );
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleLead, hasLead );
+	DCC_HasGuildMemberRole( discordGuild, user, discordRoleVIP, hasVIP );
+
+	if ( hasExecutive ) szRank = "Executive";
+	else if ( hasHead ) szRank = "Head Admin";
+	else if ( hasLead ) szRank = "Lead Admin";
+	else if ( hasVIP ) szRank = "VIP";
+	else szRank = "Voice";
+
+    return szRank;
 }
+#endif
 
 stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
 {
@@ -37465,6 +37631,9 @@ stock ShowBusinessTerminal( playerid )
 
 stock IsBusinessAssociate( playerid, businessid )
 {
+	if ( ! IsPlayerConnected( playerid ) )
+		return 0;
+
 	new
 		accountid = p_AccountID[ playerid ];
 
@@ -37689,7 +37858,8 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 	UpdateBusinessData( businessid );
 	UpdateBusinessProductionLabel( businessid );
 
-	// alert
+	GivePlayerScore( playerid, 2 );
+	GivePlayerWantedLevel( playerid, 6 );
 	SendServerMessage( playerid, "You have successfully exported "COL_GOLD"%s"COL_WHITE" worth of product. "COL_ORANGE"(%d/%d)", ConvertPrice( product_amount ), drugsSold, MAX_DROPS );
 
 	// calculate if it was the last batch
@@ -37706,6 +37876,7 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 		// Destroy checkpoint and vehicle
 		StopBusinessExportMission( businessid );
 	}
+	else SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has dropped of their %d%s batch of drugs for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, drugsSold, positionToString( drugsSold ), ConvertPrice( product_amount ) );
 }
 
 stock ShowBusinessMembers( playerid, businessid )
@@ -37767,3 +37938,27 @@ stock CheckPendingBusiness( playerid )
 		}
 	}
 }
+
+#if ENABLE_DISCORD == false
+stock DCC_SendChannelMessage( DCC_Channel: channel, const message[ ] ) {
+	#pragma unused channel
+	#pragma unused message
+	return 1;
+}
+stock DCC_SendUserMessage( DCC_User: user, const message[ ] )
+{
+	#pragma unused user
+	#pragma unused message
+	return 1;
+}
+#else
+stock DCC_SendUserMessage( DCC_User: user, const message[ ] )
+{
+	static
+		user_id[ 64 ];
+
+	DCC_GetUserId( user, user_id, sizeof( user_id ) );
+	format( szBigString, sizeof( szBigString ), "<@%s> ... %s", user_id, message );
+	return DCC_SendChannelMessage( discordSpamChan, szBigString );
+}
+#endif

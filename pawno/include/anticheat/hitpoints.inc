@@ -33,6 +33,15 @@
 	public OnPlayerTakePlayerDamage 	( playerid, issuerid, &Float: amount, weaponid, bodypart );
 	public OnPlayerDeathEx 				( playerid, killerid, reason, Float: damage, bodypart );
 
+	// Function (AC_UpdateKillerData)
+
+	stock AC_UpdateDamageInformation( playerid, attackerid, weaponid )
+	{
+		p_LastTookDamage[ playerid ] = GetTickCount( );
+		p_LastDamageIssuer[ playerid ] = attackerid;
+		p_LastWeaponIssuer[ playerid ] = weaponid;
+	}
+
 	// Function (AC_GetPlayerHealth)
 
 	stock Float: AC_GetPlayerHealth( playerid )
