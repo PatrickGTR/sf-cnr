@@ -23,6 +23,84 @@ stock g_szSprintfBuffer[1024];
 
 new tmpVariable;
 
+// Actors
+enum E_ACTOR_DATA
+{
+	E_SKIN, Float: E_X, Float: E_Y, Float: E_Z, Float: E_RZ,
+	E_ANIM_LIB[ 32 ], E_ANIM_NAME[ 32 ], E_WORLD
+};
+
+new
+	g_actorData[ ] [ E_ACTOR_DATA ] =
+	{
+	// SF Bank
+		// Guards
+		{ 71, -1440.9655, 835.5352, 984.7126, 269.2035, "COP_AMBIENT", "Coplook_loop", 23 },
+		{ 71, -1440.9685, 826.6669, 984.7126, 265.4997, "COP_AMBIENT", "Coplook_loop", 23 },
+		{ 71, -1424.5790, 851.7675, 984.7126, 180.9785, "COP_AMBIENT", "Coplook_loop", 23 },
+		{ 71, -1401.6161, 851.1558, 984.7126, 127.2859, "COP_AMBIENT", "Coplook_loop", 23 },
+		{ 71, -1416.0955, 809.6740, 984.7126, 354.1741, "COP_AMBIENT", "Coplook_loop", 23 },
+		{ 141, -1431.4342, 863.4650, 984.7126, 181.0019, "PED", "null", 23 },
+		{ 17,  -1430.0829, 863.4651, 984.7126, 181.3152, "PED", "null", 23 },
+		{ 187, -1435.4611, 863.4647, 984.7126, 180.3752, "PED", "null", 23 },
+		{ 148, -1436.8112, 863.4647, 984.7126, 180.3752, "PED", "null", 23 },
+		{ 150, -1442.2074, 863.4650, 984.7126, 180.0619, "PED", "null", 23 },
+		{ 212, -1443.6598, 821.4652, 984.7126, 91.59120, "PED", "phone_talk", 23 },
+		{ 223, -1443.6616, 815.0886, 984.7126, 89.08450, "PED", "phone_talk", 23 },
+		{ 147, -1428.3524, 801.6654, 985.6592, 305.9136, "BEACH", "bather", 23 },
+
+	// SF-PD
+		{ 300, -1701.1313, 688.9130, 24.890, 82.99340, "COP_AMBIENT", "Coplook_loop", 0 },
+		{ 301, -1617.1761, 685.5781, 7.1875, 91.40680, "COP_AMBIENT", "Coplook_loop", 0 },
+		{ 307, -1572.4314, 657.5108, 7.1875, 269.4698, "COP_AMBIENT", "Coplook_loop", 0 },
+
+	// Supa Save
+		{ 211, -2405.9412, 767.1729, 1056.7056, 181.1096, "PED", "null", 1 },
+		{ 217, -2401.9216, 767.1737, 1056.7056, 180.4829, "PED", "null", 1 },
+		{ 211, -2397.9246, 767.1732, 1056.7056, 179.5429, "PED", "null", 1 },
+		{ 217, -2393.9060, 767.1729, 1056.7056, 177.6629, "PED", "null", 1 },
+		{ 211, -2389.9084, 767.1729, 1056.7056, 179.2296, "PED", "null", 1 },
+		{ 217, -2432.8936, 767.1730, 1056.7056, 179.2296, "PED", "null", 1 },
+		{ 211, -2436.9250, 767.1729, 1056.7056, 180.1696, "PED", "null", 1 },
+		{ 217, -2440.9246, 767.1728, 1056.7056, 181.1096, "PED", "null", 1 },
+		{ 211, -2444.9470, 767.1730, 1056.7056, 179.8563, "PED", "null", 1 },
+		{ 217, -2448.9636, 767.1729, 1056.7056, 179.8563, "PED", "null", 1 },
+
+	// Jizzy's
+		{ 256, -2654.1667, 1410.6729, 907.3886, 181.1924, "STRIP", "strip_A", 18 },
+		{ 257, -2671.1641, 1410.0186, 907.5703, 2.927600, "STRIP", "strip_C", 18 },
+		{ 87,  -2675.1821, 1410.0433, 907.5703, 29.1581, "STRIP", "strip_b", 18 },
+		{ 244, -2677.6951, 1413.1705, 907.5763, 238.443, "STRIP", "strip_F", 18 },
+		{ 246, -2676.9360, 1408.1617, 907.5703, 93.0787, "STRIP", "strip_D", 18 },
+		{ 256, -2676.9358, 1404.9027, 907.5703, 84.9319, "STRIP", "strip_E", 18 },
+		{ 87,  -2677.1584, 1416.1370, 907.5712, 134.102, "STRIP", "strip_G", 18 },
+		{ 244, -2670.4622, 1427.9211, 907.3604, 86.9676, "STRIP", "strip_E", 18 },
+		{ 258, -2671.5706, 1413.3748, 906.4609, 193.0993, "RIOT", "RIOT_shout", 18 },
+		{ 259, -2668.7529, 1413.0908, 906.4609, 137.5257, "RIOT", "RIOT_shout", 18 },
+		{ 296, -2675.0781, 1429.7128, 906.4609, 226.2898, "BLOWJOBZ", "BJ_STAND_LOOP_P", 18 },
+		{ 244, -2674.5938, 1429.1975, 906.4609, 48.86200, "BLOWJOBZ", "BJ_STAND_LOOP_W", 18 },
+		{ 24,  -2675.8835, 1427.9740, 906.9243, 180.2610, "BEACH", "bather", 18 },
+		{ 221, -2656.4712, 1413.2327, 906.2734, 232.1765, "PAULNMAC", "wank_loop", 18 },
+
+	// Hobo
+		{ 137, -1519.9003, 678.79800, 7.459900, 14.7968, "BEACH", "ParkSit_M_loop", 0 },
+
+	// Casinos
+		{ 11, 2229.9373, 1620.7489, 1006.1771, 180.2492, "PED", "null", 82 },
+		{ 172, 2231.1843, 1613.5005, 1006.1860, 4.177600, "PED", "null", 82 },
+		{ 11, 2229.9492, 1595.8494, 1006.1850, 181.8158, "PED", "null", 82 },
+		{ 11, 2231.1948, 1588.0958, 1006.1812, 2.297500, "PED", "null", 82 },
+		{ 172, 2243.0002, 1588.0959, 1006.1812, 357.9109, "PED", "null", 82 },
+		{ 11, 2241.7341, 1595.8494, 1006.1850, 180.5860, "PED", "null", 82 },
+		{ 172, 2242.0784, 1613.4631, 1006.1797, 353.8611, "PED", "null", 82 },
+		{ 172, 2240.8123, 1620.7012, 1006.1772, 178.7061, "PED", "null", 82 },
+		{ 172, 1964.8026, 1026.3284, 992.4688, 88.1672, "PED", "null", 23 },
+		{ 11, 1960.4900, 1026.3281, 992.4688, 90.0472, "PED", "null", 23 },
+		{ 172, 1960.4900, 1010.7502, 992.4688, 82.8407, "PED", "null", 23 },
+		{ 11, 1964.8025, 1010.7502, 992.4688, 85.3708, "PED", "null", 23 }
+	}
+;
+
 /* ** CLOSED ** */
 #define MAX_ZONE_NAME 28
 enum SAZONE_MAIN {
@@ -543,6 +621,7 @@ stock Float: GetDistanceFromPlayerSquared( playerid, Float: x1, Float: y1, Float
 
 stock Float: floatrandom( Float:max )
 	return floatmul( floatdiv( float( random( cellmax ) ), float( cellmax - 1 ) ), max );
+
 
 
 stock initializePlayerInteriors( playerid )
@@ -17394,7 +17473,6 @@ stock initializeObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1860.528564, 1308.581176, 11.340617, 0.000000, 90.000000, 109.999191 ), 0, 5708, "hospital_lawn", "rock1b_128", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1859.118408, 1304.710571, 13.300620, 0.000000, 0.000000, 109.999191 ), 0, 5708, "hospital_lawn", "rock1b_128", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1860.528564, 1308.581176, 1.440613, 0.000000, 90.000000, 109.999191 ), 0, 5708, "hospital_lawn", "rock1b_128", -16 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1812.660644, 1328.389282, 113.372619, 0.000000, 90.000000, -74.499977 ), 0, 11631, "mp_ranchcut", "CJ_SLATEDWOOD", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1847.270751, 1307.196289, 16.658638, 0.000000, 90.000000, -69.900039 ), 0, 11631, "mp_ranchcut", "CJ_SLATEDWOOD", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1832.402099, 1313.180175, 16.660638, 0.000000, 90.000000, -66.900085 ), 0, 11631, "mp_ranchcut", "CJ_SLATEDWOOD", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -1822.264282, 1318.708984, 13.358613, 0.000000, 90.000000, -43.700111 ), 0, 11631, "mp_ranchcut", "CJ_SLATEDWOOD", 0 );
@@ -22954,6 +23032,778 @@ stock initializeServerObjects( )
 	CreateDynamicObject( 1271, -1732.393554, -1365.696777, 5873.463378, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 944, -1729.667968, -1363.283569, 5873.968750, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 930, -1731.548217, -1363.979003, 5873.600585, 0.000000, 0.000000, 69.200035 );
+
+	// Weapon gun bunker
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -4305.9262, 209.6382, 1302.3594, 0.0000, -89.9000, 179.7657 ), 0, "PARKING", 130, "Arial", 100, 1, -1, 0, 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 201.783401, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 201.783401, 1311.772705, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 208.031402, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 214.279403, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 214.279403, 1311.772705, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 220.527404, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 208.031402, 1311.772705, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.178710, 220.527404, 1311.772705, 180.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.410644, 204.831390, 1305.673339, 10.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.325195, 207.901336, 1305.485473, 0.000000, -80.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.406250, 210.971389, 1305.671508, 10.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4321.334472, 210.971389, 1311.729980, 10.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4318.240234, 207.901336, 1311.622680, 0.000000, -80.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4321.345703, 204.831390, 1311.731689, 10.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.869140, 219.381317, 1305.561401, 0.000000, -84.499931, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.270507, 219.381317, 1311.772949, 0.000000, -84.499931, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.345703, 216.311462, 1311.794677, 5.500008, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.940429, 216.311462, 1305.642944, 5.500008, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.940429, 222.451370, 1305.642944, 5.500008, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.348632, 222.451370, 1311.804687, 5.500008, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 225.613479, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 225.613479, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 231.861480, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 238.109481, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 238.109481, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 231.861480, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.238281, 233.749481, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.300781, 230.669616, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.300781, 236.819625, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.300781, 236.819625, 1311.771728, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4322.300781, 230.669616, 1311.771728, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.238281, 233.749481, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4310.728027, 199.164337, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.728027, 237.374298, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.667968, 237.374496, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.728027, 230.174407, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.686035, 230.176406, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.728027, 199.164337, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4299.186523, 201.194305, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.876464, 202.527481, 1305.523681, 0.000000, 90.000000, 178.500137 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 208.707504, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 214.955505, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 221.203506, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 227.451507, 1305.523681, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 233.699508, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 233.699508, 1311.771728, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 227.451507, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 221.203506, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 214.955505, 1311.771728, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 208.707504, 1311.771728, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.876464, 202.527481, 1311.771728, 0.000000, 90.000000, 178.500137 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4295.716796, 236.769470, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1308.542358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4291.502929, 239.296203, 1308.476318, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4286.770996, 239.296203, 1308.403320, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4281.901367, 239.296203, 1308.330810, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4289.468750, 236.769470, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4283.220703, 236.769668, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4295.716796, 241.819427, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4289.468750, 241.829421, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4283.220703, 241.829421, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1308.792358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1309.042358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1309.292358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1309.542358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4296.321289, 239.296203, 1309.792358, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.786132, 239.919494, 1312.621582, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4301.964843, 241.829421, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.156250, 242.337310, 1305.523681, 0.000000, 90.000000, 80.500038 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.164550, 242.227706, 1305.523681, 0.000000, 90.000000, 85.099960 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.115234, 242.377487, 1305.523681, 0.000000, 90.000000, 90.199890 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19699, -4308.978027, 196.953216, 1305.153686, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19699, -4299.124023, 198.670669, 1305.283447, 0.000000, 90.000000, 12.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.213867, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 191.317321, 1309.213867, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 186.327453, 1309.213867, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.288085, 195.653457, 1305.493652, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.167968, 195.653457, 1305.493652, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.167968, 189.423339, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.167968, 183.183425, 1305.493652, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.288085, 189.423370, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.288085, 183.193481, 1305.493652, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 181.347534, 1309.213867, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.343750, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.473876, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.603759, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.733886, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.219238, 196.277404, 1309.863769, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.385742, 198.723754, 1312.893554, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.160156, 198.723754, 1312.893554, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4321.516601, 198.713760, 1312.133544, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4312.817382, 198.713760, 1313.007568, -22.399999, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.164550, 242.227706, 1311.771728, 0.000000, 90.000000, 85.099960 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.115234, 242.377487, 1311.771728, 0.000000, 90.000000, 90.199890 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4301.964843, 241.819427, 1311.771728, 0.000000, 90.000000, 88.099983 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4299.342285, 241.839416, 1308.433593, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4321.063476, 251.367858, 1304.867919, 0.000000, 90.000000, -159.000015 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 244.357482, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.168945, 244.357482, 1311.771728, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4321.063476, 251.367858, 1309.805908, 0.000000, 90.000000, -159.000015 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4319.631835, 255.680572, 1304.867919, 0.000000, 90.000000, -31.200054 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.218750, 259.227416, 1305.523681, 0.000000, 90.000000, 98.799980 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.189453, 259.445556, 1305.523681, 0.000000, 90.000000, 92.900039 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4306.685546, 259.303314, 1305.523681, 0.000000, 90.000000, 85.900047 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4303.387207, 257.724761, 1304.857910, 0.000000, 90.000000, 54.899929 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4300.290527, 253.273422, 1304.857910, 0.000000, 90.000000, 1.099949 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4296.527343, 249.239227, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1308.480468, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4296.527343, 244.169342, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4302.744140, 243.954406, 1305.523681, 0.000000, 90.000000, 94.099937 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.917968, 243.225646, 1305.523681, 0.000000, 90.000000, 99.499855 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.062500, 242.876251, 1305.523681, 0.000000, 90.000000, 99.499855 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4290.279296, 249.239227, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4284.031250, 249.239227, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4290.279296, 244.169342, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4284.031250, 244.169342, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4292.483398, 246.706085, 1308.416748, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4287.513671, 246.706085, 1308.321655, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4282.732421, 246.706085, 1308.252807, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4319.631835, 255.680572, 1309.826049, 0.000000, 90.000000, -31.200054 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4300.290527, 253.273422, 1309.777954, 0.000000, 90.000000, 1.099949 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4303.387207, 257.724761, 1309.837890, 0.000000, 90.000000, 54.899929 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19699, -4311.695312, 243.765121, 1305.153686, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19699, -4311.687988, 241.427139, 1305.153686, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19645, -4297.388671, 210.998046, 1309.968017, 21.399990, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19645, -4297.388671, 235.968154, 1309.968017, 21.399990, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19645, -4298.336914, 252.998168, 1307.558105, 21.399990, -160.399856, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4302.744140, 243.954406, 1311.771728, 0.000000, 90.000000, 94.099937 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.917968, 243.225646, 1311.771728, 0.000000, 90.000000, 99.499855 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4296.527343, 244.169342, 1311.771728, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1308.710449, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1308.940429, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1309.170532, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1309.400512, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1309.630493, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1309.860595, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1310.090576, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4297.190429, 246.706085, 1310.320556, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4277.793945, 243.940765, 1305.523681, 0.000000, 90.000000, 85.799957 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4276.984375, 242.073669, 1305.523681, 0.000000, 90.000000, 94.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4271.605468, 243.225982, 1305.523681, 0.000000, 90.000000, 81.000030 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4271.618164, 242.494720, 1305.523681, 0.000000, 90.000000, 94.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4277.343750, 239.474929, 1308.257324, 0.000000, 175.899765, 4.399998 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4272.519531, 239.846359, 1308.183105, 0.000000, 175.899765, 4.399998 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4278.123046, 246.510223, 1308.203369, 0.000000, 175.899765, -4.099997 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4277.059570, 246.433807, 1307.848999, 0.000000, 175.899765, -4.099997 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4272.545898, 245.884933, 1307.794677, 0.000000, 175.899765, -10.300004 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4270.607421, 245.820007, 1307.807250, -7.099995, 175.899780, -10.300004 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4270.825195, 248.154541, 1305.523681, 0.000000, 90.000000, 81.000030 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4277.932128, 249.044616, 1305.523681, 0.000000, 90.000000, 85.799957 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4276.300781, 248.925231, 1305.523681, 0.000000, 90.000000, 83.099998 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4277.330078, 236.991271, 1305.523681, 0.000000, 90.000000, 94.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4272.792968, 237.347122, 1305.523681, 0.000000, 90.000000, 94.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4266.143554, 247.403228, 1305.523681, 0.000000, 90.000000, 81.000030 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4264.181640, 245.803222, 1305.553710, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4261.114746, 242.714675, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4267.364257, 237.773513, 1305.523681, 0.000000, 90.000000, 94.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4261.139648, 238.023468, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4264.582519, 245.981628, 1305.523681, 0.000000, 90.000000, 15.599999 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4264.591796, 246.045562, 1305.523681, 0.000000, 90.000000, 37.800003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4266.708007, 245.706100, 1307.665405, -7.099995, 175.899780, 4.499989 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4267.719238, 240.136337, 1308.106079, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4262.878906, 240.186370, 1308.001831, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4258.009765, 240.186370, 1307.919677, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.912109, 238.031112, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.896484, 242.713378, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4248.665039, 238.023468, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4248.665039, 242.713455, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4264.181640, 245.803222, 1311.801635, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4253.341796, 240.186370, 1307.843505, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4248.561523, 240.186370, 1307.774414, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	CreateDynamicObject( 19718, -4296.082031, 239.301025, 1307.907958, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19718, -4280.082031, 239.301025, 1307.757812, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19718, -4264.082031, 240.200912, 1307.348022, 0.000000, 0.000000, -2.900000 );
+	CreateDynamicObject( 19718, -4253.022460, 240.231948, 1307.187988, 0.000000, 0.000000, -2.900000 );
+	CreateDynamicObject( 19718, -4297.023437, 246.691116, 1307.907958, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19718, -4281.023437, 246.691116, 1307.647705, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19718, -4268.359863, 245.206649, 1307.287963, 0.000000, 0.000000, -19.200000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -4239.658691, 205.864578, 1300.776000, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -4245.789550, 208.198165, 1300.773925, 0.000000, 0.000000, 71.500022 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4245.594726, 234.953491, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4241.973632, 234.953491, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4238.903320, 238.023468, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4232.708007, 237.598876, 1305.523681, 0.000000, 90.000000, 82.099983 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4242.416992, 242.713455, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4236.168945, 242.713455, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.920898, 242.713455, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.672851, 242.713455, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.592773, 242.376464, 1305.523681, 0.000000, 90.000000, 81.700035 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.582031, 242.404449, 1305.523681, 0.000000, 90.000000, 68.900016 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.344238, 242.622192, 1305.523681, 0.000000, 90.000000, 58.599967 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4221.102539, 238.152160, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4226.970703, 231.482177, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19699, -4228.268554, 234.537216, 1305.153686, 0.000000, 90.000000, 180.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4243.790527, 240.186370, 1307.694824, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4238.953125, 240.186370, 1307.630371, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19719, -4234.064453, 240.186370, 1307.569335, 0.000000, 175.899765, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4228.519531, 240.213577, 1306.233642, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4222.274414, 240.213272, 1306.233642, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4231.592773, 240.213577, 1309.303710, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4220.529785, 231.958480, 1305.523681, 0.000000, 90.000000, 10.600003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4226.957031, 228.304519, 1303.433837, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4226.972656, 226.338790, 1302.883789, 0.000000, 90.000000, 10.600003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4225.548828, 218.730773, 1305.523681, 0.000000, 90.000000, 10.600003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.901367, 216.191970, 1305.523681, 0.000000, 90.000000, 93.399986 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4218.476074, 218.524627, 1305.523681, 0.000000, 90.000000, -83.499931 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4212.264648, 218.884506, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4216.884277, 228.934478, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4209.993164, 231.364501, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4212.951171, 231.892639, 1305.523681, 0.000000, 90.000000, -16.200000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4221.527343, 215.102890, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	CreateDynamicObject( 1491, -4226.110839, 221.786331, 1302.397705, 0.000000, 0.000000, 100.799995 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4225.826660, 220.205245, 1308.013671, 0.000000, 90.000000, 10.600003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4226.894531, 235.142593, 1306.587768, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4221.912109, 235.142593, 1306.587768, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4224.306152, 228.013275, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4224.306152, 221.773330, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4224.306152, 215.543380, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4218.063476, 228.013153, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4218.063476, 221.773223, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4218.063476, 215.533248, 1307.203613, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4212.302246, 221.983276, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4212.302246, 228.223297, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.842285, 231.998840, 1305.523681, 0.000000, 90.000000, 101.699958 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4199.146484, 232.738372, 1305.523681, 0.000000, 90.000000, 96.900024 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4195.186523, 232.858291, 1305.523681, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.103515, 229.718231, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.103515, 223.470230, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.103515, 217.222229, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.103515, 210.974227, 1305.523681, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4206.016601, 218.884506, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4199.768554, 218.884506, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4193.520507, 218.884506, 1305.523681, 0.000000, 90.000000, -90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4206.063964, 228.223297, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4199.822265, 228.223297, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4193.588867, 228.223297, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4206.061523, 221.983276, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4199.813476, 221.983276, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4193.565429, 221.983276, 1307.205566, 0.000000, 0.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	CreateDynamicObject( 18764, -4243.969726, 234.829269, 1299.574829, 9.100001, 0.000000, 0.000000 );
+	CreateDynamicObject( 18764, -4243.969726, 229.912231, 1298.786865, 9.100001, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4245.594726, 234.953491, 1299.275634, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4241.973632, 234.953491, 1299.275634, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4239.195312, 230.517959, 1304.713378, 0.000000, 90.000000, 64.100006 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4235.148925, 226.377380, 1304.713378, 0.000000, 90.000000, 25.200006 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4233.333984, 220.828659, 1304.713378, 0.000000, 90.000000, 11.600002 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4232.713867, 212.418869, 1304.713378, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4233.983886, 208.117477, 1304.713378, 0.000000, 90.000000, -44.100028 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4238.849609, 205.208343, 1304.713378, 0.000000, 90.000000, -73.300079 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4244.418945, 204.428512, 1304.713378, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4249.776367, 205.089599, 1304.713378, 0.000000, 90.000000, 75.300155 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4252.666015, 206.670639, 1304.713378, 0.000000, 90.000000, 46.900150 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.317871, 211.170654, 1304.713378, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.317871, 223.190643, 1304.713378, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4253.928710, 225.666122, 1304.713378, 0.000000, 90.000000, -17.200004 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4252.182617, 229.332092, 1304.713378, 0.000000, 90.000000, -44.199996 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4248.596679, 231.193679, 1304.713378, 0.000000, 90.000000, -77.300033 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	CreateDynamicObject( 14394, -4240.776367, 211.669631, 1302.428100, 0.000000, 0.000000, -90.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -4235.714843, 207.784622, 1300.773925, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -4241.600585, 204.509262, 1300.765991, 0.000000, 0.000000, -18.299978 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.757324, 211.218322, 1304.713378, 0.000000, 90.000000, -7.499998 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4255.167968, 204.998504, 1304.713378, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4255.448242, 199.912338, 1304.713378, 0.000000, 90.000000, -5.399997 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4257.007812, 194.850311, 1304.713378, 0.000000, 90.000000, -25.200016 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4260.236328, 191.771530, 1304.713378, 0.000000, 90.000000, -67.099998 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4264.586914, 191.291549, 1304.713378, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4269.774414, 191.545715, 1304.713378, 0.000000, 90.000000, 85.100021 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4276.000976, 191.637557, 1304.713378, 0.000000, 90.000000, 93.299957 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4282.143066, 190.762527, 1304.713378, 0.000000, 90.000000, 103.100059 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4288.004882, 188.771194, 1304.713378, 0.000000, 90.000000, 114.600082 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4290.129394, 188.719192, 1304.713378, 0.000000, 94.199996, 91.400085 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4294.759765, 189.292633, 1304.755859, 0.000000, 90.000000, 74.200065 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 208.951934, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 215.199935, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 221.447937, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 227.695938, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 233.943939, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4231.421875, 225.401535, 1304.535400, 0.000000, 90.000000, 128.099914 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.587402, 226.831192, 1304.535400, 0.000000, 90.000000, 128.099914 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.670410, 215.921386, 1304.535400, 0.000000, 90.000000, 97.999855 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.518066, 216.785583, 1304.535400, 0.000000, 90.000000, 97.999855 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.649902, 216.785583, 1307.207397, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.649902, 223.005767, 1307.207397, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.649902, 229.235610, 1307.207397, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4230.448730, 222.216552, 1307.213256, 0.000000, 0.000000, 11.699989 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 240.191940, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 246.439941, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19071, -4224.373046, 210.839996, 1308.153808, 0.000000, 0.000000, 90.000000 ), 0, 3975, "lanbloke", "p_floor3", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4243.663574, 234.627090, 1306.870239, -9.699995, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 252.687942, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4294.222167, 197.104263, 1304.684082, 0.000000, 90.000000, 103.899993 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4288.798828, 198.111755, 1304.684082, 0.000000, 90.000000, 97.000030 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4282.624511, 198.954483, 1304.684082, 0.000000, 90.000000, 98.600036 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4276.499023, 199.991287, 1304.684082, 0.000000, 90.000000, 100.800033 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4273.472167, 203.631271, 1304.684082, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4273.203125, 209.380325, 1304.684082, 0.000000, 90.000000, -5.199995 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4271.700195, 214.748092, 1304.684082, 0.000000, 90.000000, -26.700014 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4268.614746, 218.583709, 1304.684082, 0.000000, 90.000000, -47.500011 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4263.528320, 221.174087, 1304.684082, 0.000000, 90.000000, 102.699935 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4257.481445, 221.824066, 1304.684082, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19071, -4268.791015, 206.730575, 1308.161010, 0.000000, 0.000000, 90.000000 ), 0, 5703, "roads_lawn", "floor_tileone_256", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4308.576660, 191.721130, 1304.684082, 0.000000, 90.000000, -165.800003 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4306.916015, 190.510772, 1304.684082, 0.000000, 90.000000, -109.700103 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4300.843261, 189.978271, 1304.684082, 0.000000, 90.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4307.077148, 189.651748, 1304.684082, 0.000000, 90.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 258.935943, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4323.295898, 252.687942, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4301.021972, 193.343124, 1307.214843, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4307.234863, 193.017044, 1307.214843, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4303.556152, 193.210769, 1307.212890, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4303.556152, 186.962768, 1307.212890, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4307.234863, 186.769042, 1307.214843, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4300.694824, 187.112396, 1307.214843, 0.000000, 0.000000, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4306.365722, 197.746856, 1309.873779, 0.000000, 59.200016, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4300.125488, 198.074005, 1309.873779, 0.000000, 59.200016, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4300.651367, 197.943099, 1310.341918, 0.000000, 36.000022, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4306.856445, 197.618148, 1310.341918, 0.000000, 36.000022, -87.000160 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4316.188476, 170.436859, 1305.493652, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4309.949218, 170.437118, 1305.493652, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4316.188476, 170.427429, 1310.951293, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4309.949218, 170.427124, 1311.741699, 0.000000, 90.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.320800, 217.274169, 1308.594726, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.311035, 217.274169, 1308.584716, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1319, -4301.452636, 199.250930, 1302.911499, 0.000000, 0.000000, 0.000000 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1319, -4304.098144, 198.390670, 1302.791381, 0.000000, 0.000000, 17.899990 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1319, -4306.982910, 197.459243, 1302.591186, 0.000000, 0.000000, 17.899990 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	CreateDynamicObject( 1448, -4318.902832, 206.629577, 1302.511718, 0.000000, 0.000000, 26.299997 );
+	CreateDynamicObject( 1448, -4318.921875, 208.059387, 1302.511718, 0.000000, 0.000000, 86.100097 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18763, -4319.508300, 207.307388, 1300.110839, 0.000000, 0.000000, 0.000000 ), 0, 5168, "lashops6_las2", "yellow2_128", 1 );
+	CreateDynamicObject( 2060, -4319.507324, 210.371307, 1302.481689, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 2060, -4319.507324, 210.371307, 1302.751708, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 2060, -4319.507324, 210.371307, 1303.021728, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 2060, -4319.159179, 209.386032, 1302.481689, 0.000000, 0.000000, 65.899986 );
+	CreateDynamicObject( 2060, -4319.159179, 209.386032, 1302.751708, 0.000000, 0.000000, 65.899986 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19572, -4319.182128, 206.747146, 1302.601806, 0.000000, 0.000000, 10.999999 ), 0, 1279, "craigpackage", "drugs", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19572, -4318.734863, 207.016250, 1302.601806, 0.000000, 0.000000, 40.399997 ), 0, 1279, "craigpackage", "drugs", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19572, -4319.098144, 206.325042, 1302.601806, 0.000000, 0.000000, 25.099998 ), 0, 1279, "craigpackage", "drugs", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19572, -4318.532226, 206.646697, 1302.601806, 0.000000, 0.000000, -55.999996 ), 0, 1279, "craigpackage", "drugs", -16 );
+	CreateDynamicObject( 1271, -4318.882812, 208.005569, 1302.902099, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1685, -4318.260742, 211.433639, 1303.152343, 0.000000, 0.000000, 29.500001 );
+	CreateDynamicObject( 1458, -4319.257324, 214.753326, 1302.521484, 3.699999, 0.000000, -167.600006 );
+	CreateDynamicObject( 923, -4319.459472, 218.026657, 1303.322509, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 943, -4319.536621, 224.493377, 1303.172363, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -4319.674804, 228.103820, 1298.209960, 0.000000, 90.000000, 90.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -4319.689941, 230.095962, 1298.776855, 0.000000, 68.700012, 90.599990 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4319.670410, 229.653182, 1303.442626, 0.000000, 0.000000, 0.000000 ), 0, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	CreateDynamicObject( 18748, -4319.536621, 224.493377, 1301.811035, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2774, -4304.311523, 230.091629, 1314.160766, 0.000000, 0.000000, 0.000000 ), 1, 8397, "luxorpillar1", "plaintarmac1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4304.024902, 220.024276, 1301.916992, 0.000000, 0.000000, 90.000000 ), 0, 11390, "hubint2", "ws_greymetal_small", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.826171, 229.650741, 1302.528930, 0.000000, 90.000000, 180.000000 ), 0, 6291, "law2_roadsb", "sm_conc_hatch", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.824218, 220.652740, 1302.530883, 0.000000, 90.000000, 180.000000 ), 0, 6291, "law2_roadsb", "sm_conc_hatch", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.804199, 220.682723, 1302.540893, 0.000000, 90.000000, 180.000000 ), 0, 4653, "lan2freeway", "concroadslab_256", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.804199, 229.642654, 1302.542846, 0.000000, 90.000000, 180.000000 ), 0, 4653, "lan2freeway", "concroadslab_256", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4304.024902, 221.024276, 1301.916992, 0.000000, 0.000000, 90.000000 ), 0, 11390, "hubint2", "ws_greymetal_small", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4304.034667, 223.224288, 1302.877563, 0.000000, 90.000000, 90.000000 ), 0, 11390, "hubint2", "ws_greymetal_small", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4304.024902, 226.024276, 1301.916992, 0.000000, 0.000000, 90.000000 ), 0, 11390, "hubint2", "ws_greymetal_small", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4304.024902, 225.024276, 1301.916992, 0.000000, 0.000000, 90.000000 ), 0, 11390, "hubint2", "ws_greymetal_small", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2200, -4303.967285, 223.628189, 1303.376586, 0.000000, 0.000000, -90.000000 ), 1, 9908, "smallertxd", "concretenewb256", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2200, -4304.193847, 222.368301, 1303.376586, 0.000000, 0.000000, 90.000000 ), 1, 9908, "smallertxd", "concretenewb256", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 208.951934, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 215.199935, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 240.191940, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 246.439941, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 233.943939, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 252.687942, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4292.070312, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4285.822265, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4292.070312, 246.759857, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4279.574218, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4273.326171, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4267.078125, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3675, -4305.368652, 220.530456, 1301.215209, 0.000000, 0.000000, -90.000000 ), 0, 9624, "sfe_spray1", "spraypipegz1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3675, -4302.988769, 225.550460, 1301.215209, 0.000000, 0.000000, 90.000000 ), 0, 9624, "sfe_spray1", "spraypipegz1", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3675, -4304.017578, 227.200424, 1301.215209, 0.000000, 0.000000, 180.000000 ), 0, 9624, "sfe_spray1", "spraypipegz1", -16 );
+	CreateDynamicObject( 927, -4304.524414, 225.369277, 1303.412475, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 19601, -4302.165039, 219.029968, 1303.022460, 0.000000, 0.000000, 39.500000 );
+	CreateDynamicObject( 19601, -4303.622070, 217.739074, 1302.844726, -60.000045, -1.699998, -34.500007 );
+	CreateDynamicObject( 930, -4318.829101, 205.366546, 1302.922119, 0.000000, 0.000000, 24.000000 );
+	CreateDynamicObject( 2975, -4299.770019, 202.673934, 1302.401611, 0.000000, 0.000000, -102.599990 );
+	CreateDynamicObject( 2975, -4300.611328, 204.345687, 1302.401611, 0.000000, 0.000000, -51.199985 );
+	CreateDynamicObject( 1688, -4318.429687, 233.712585, 1303.442626, 0.000000, 0.000000, 90.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 16770, -4210.895996, 224.576385, 1303.984985, 0.000000, 0.000000, 0.000000 ), 1, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	CreateDynamicObject( 18885, -4214.895507, 228.485397, 1303.516601, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1775, -4217.139648, 228.425354, 1303.526611, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1776, -4218.507324, 228.425354, 1303.546630, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2115, -4213.919433, 219.499923, 1302.455688, 0.000000, 0.000000, 0.000000 ), 0, 1594, "chairsntable", "wood02", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2115, -4213.919433, 222.879913, 1302.455688, 0.000000, 0.000000, 103.000007 ), 0, 1594, "chairsntable", "wood02", -16 );
+	CreateDynamicObject( 19994, -4214.803222, 223.608657, 1302.445312, 0.000000, 0.000000, 67.899986 );
+	CreateDynamicObject( 19994, -4214.431640, 222.817398, 1302.445312, 0.000000, 0.000000, 118.799964 );
+	CreateDynamicObject( 19994, -4214.409667, 224.616958, 1302.445312, 0.000000, 0.000000, 6.399971 );
+	CreateDynamicObject( 19994, -4213.181152, 223.084197, 1302.445312, 0.000000, 0.000000, -129.700027 );
+	CreateDynamicObject( 19994, -4213.833007, 220.203613, 1302.445312, 0.000000, 0.000000, 6.399971 );
+	CreateDynamicObject( 19994, -4212.998046, 220.125885, 1302.445312, 0.000000, 0.000000, -5.300024 );
+	CreateDynamicObject( 2049, -4213.017089, 219.499511, 1303.306396, -90.000000, -90.000000, 66.000015 );
+	CreateDynamicObject( 2056, -4214.136230, 219.600463, 1303.286376, -90.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2056, -4213.846679, 219.302459, 1303.286376, -90.000000, 0.000000, -45.200000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.377441, 222.185485, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.377441, 219.225692, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.377441, 225.195434, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.377441, 228.195358, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4203.377441, 231.205505, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.129394, 231.205505, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.129394, 228.195358, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.129394, 225.195434, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.129394, 219.225692, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.129394, 222.185485, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4190.881347, 222.185485, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4190.881347, 219.225692, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4190.881347, 225.195434, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4190.881347, 228.195358, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4190.881347, 231.205505, 1299.325561, 0.000000, 90.000000, 90.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", -16 );
+	CreateDynamicObject( 18762, -4202.110839, 223.591232, 1300.519775, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4198.110839, 223.591232, 1300.819824, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4194.110839, 223.591232, 1301.219726, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4202.110839, 226.731109, 1300.519775, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4202.110839, 220.671401, 1300.519775, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4202.110839, 229.731002, 1300.519775, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4198.110839, 229.731002, 1300.819824, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4198.110839, 220.671401, 1300.819824, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4198.110839, 226.731109, 1300.819824, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4194.110839, 226.731109, 1301.219726, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4194.110839, 220.671401, 1301.219726, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 18762, -4194.110839, 229.731002, 1301.219726, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1584, -4202.149414, 223.580276, 1303.006103, 83.499969, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4202.149414, 229.770278, 1303.006103, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1583, -4202.149414, 226.610244, 1303.006103, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4202.149414, 220.650436, 1303.006103, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4198.044921, 223.580276, 1303.316406, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4198.045410, 220.700347, 1303.326416, 86.400024, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4198.044921, 226.740249, 1303.316406, 79.099983, 0.000000, 90.000000 );
+	CreateDynamicObject( 1583, -4198.044921, 229.590148, 1303.316406, 2.499941, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4194.108398, 223.580276, 1303.686767, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1583, -4194.108398, 220.540359, 1303.686767, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1583, -4194.108398, 226.620147, 1303.686767, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 1584, -4194.107421, 229.740234, 1303.736816, 85.900070, 0.000000, 89.900001 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -4208.056640, 225.692291, 1317.326782, 0.000000, 0.000000, 0.000000 ), 0, 1583, "targets", "target4", 1 );
+	CreateDynamicObject( 19087, -4226.516601, 223.755615, 1307.658081, 0.000000, 0.000000, 7.899997 );
+	CreateDynamicObject( 19087, -4226.781250, 225.484848, 1307.658081, 0.000000, 0.000000, 7.899997 );
+	CreateDynamicObject( 19087, -4227.118164, 227.245407, 1307.658081, 0.000000, 0.000000, 7.899997 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19796, -4224.571777, 216.613128, 1304.097167, 0.000000, 0.000000, 98.100105 ), 0, 12959, "sw_library", "alleydoor3", -16 );
+	CreateDynamicObject( 3031, -4233.060058, 222.881591, 1302.863037, 0.000000, -20.000003, -31.700016 );
+	CreateDynamicObject( 3791, -4229.178222, 225.189041, 1302.906005, 0.000000, 0.000000, 26.700000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -4241.876464, 220.619766, 1301.278686, 0.000000, 90.000000, 0.000000 ), 0, 3975, "lanbloke", "p_floor3", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4235.956542, 212.723434, 1303.342529, 0.000000, 0.000000, 0.000000 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4239.051757, 212.723434, 1303.342529, 0.000000, 0.000000, 0.000000 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4240.573730, 212.723434, 1303.342529, 0.000000, 0.000000, 0.000000 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4244.644531, 212.937820, 1303.342529, 0.000000, 0.000000, -108.499969 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4245.623535, 209.988754, 1303.342529, 0.000000, 0.000000, -108.499969 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4246.619140, 207.039169, 1303.342529, 0.000000, 0.000000, -108.499969 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 997, -4247.437988, 204.611236, 1303.342529, 0.000000, 0.000000, -108.499969 ), 0, 5168, "lashops6_las2", "yellow2_128", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4233.070800, 215.036407, 1299.939941, 0.000000, 0.000000, 90.000000 ), 0, 3975, "lanbloke", "p_floor3", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4233.070800, 218.256454, 1299.939941, 0.000000, 0.000000, 90.000000 ), 0, 3975, "lanbloke", "p_floor3", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 14407, -4234.581054, 216.644973, 1299.252319, 0.000000, 0.000000, 90.000000 ), 0, 3925, "weemap", "steel128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4233.244628, 218.258453, 1299.941894, 0.000000, 0.000000, 90.000000 ), 0, 3975, "lanbloke", "p_floor3", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4233.244628, 215.028503, 1299.941894, 0.000000, 0.000000, 90.000000 ), 0, 3975, "lanbloke", "p_floor3", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 258.935943, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 258.935943, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 258.935943, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 252.687942, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 246.439941, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 240.191940, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 233.943939, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 227.695938, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 221.447937, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	CreateDynamicObject( 19718, -4244.963378, 240.204666, 1307.324218, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19718, -4236.332031, 240.204666, 1307.144042, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.163085, 176.947067, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4311.163085, 170.707046, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.279785, 176.947067, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4319.279785, 170.716903, 1305.493652, 0.000000, 90.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.209472, 176.406829, 1309.215942, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19733, -4315.209472, 171.426788, 1309.215942, 0.000000, 180.000000, 90.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 16134, -4317.745117, 164.135711, 1296.183471, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 16134, -4307.405761, 170.505798, 1296.134033, 0.000000, 0.000000, 0.000000 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 13520, -4270.994628, 68.776390, 1315.670898, 7.099997, 0.000000, 165.500030 ), 0, 16175, "des2vegas_join", "vgs_rockmid1a", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4317.047851, 202.703933, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 215.199935, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 208.951934, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4310.799804, 202.703933, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 202.703933, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4298.303710, 202.703933, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 208.951934, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 215.199935, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 240.191940, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 246.439941, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 233.943939, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4304.551757, 252.687942, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4260.830078, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4254.582031, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4248.333984, 240.021972, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4242.085937, 240.022064, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4235.837890, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.589843, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.341796, 239.752029, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4285.822265, 246.759857, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4279.574218, 246.759857, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4273.326171, 245.779876, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4267.078125, 245.779876, 1302.382202, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.341796, 233.504028, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.341796, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.341796, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4223.341796, 214.760025, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4217.093750, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4210.845703, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4204.597656, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4198.349609, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.101562, 221.008026, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4217.093750, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4217.093750, 233.504028, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4210.845703, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4204.597656, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4198.349609, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4192.101562, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4210.467773, 233.486114, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4204.219726, 233.486114, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4197.971679, 233.486114, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4191.723632, 233.486114, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.589843, 233.504028, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.589843, 227.256027, 1302.380249, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.280761, 218.588165, 1302.378295, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.242675, 223.808074, 1302.382202, 0.000000, 180.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4230.343261, 221.886383, 1302.386108, 0.000000, 180.000000, 11.199995 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -4241.876464, 224.519012, 1300.636352, 5.999997, 90.000000, 0.000000 ), 0, 3975, "lanbloke", "p_floor3", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19545, -4261.113281, 195.385864, 1301.771606, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19545, -4276.100097, 195.385864, 1301.771606, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19545, -4291.083496, 195.385864, 1301.771606, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19545, -4306.073730, 195.385864, 1301.771606, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19545, -4306.073730, 168.735733, 1297.503662, 9.099998, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3524, -4304.077636, 198.390792, 1300.552734, 0.000000, 180.000000, 0.000000 ), 1, 5117, "traintrack_las2", "concretenewb256", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3524, -4306.946777, 197.461090, 1300.552734, 0.000000, 180.000000, 0.000000 ), 1, 5117, "traintrack_las2", "concretenewb256", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3524, -4301.403320, 199.250640, 1300.652832, 0.000000, 180.000000, 0.000000 ), 1, 5117, "traintrack_las2", "concretenewb256", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4304.753417, 215.253189, 1297.195556, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4309.625488, 219.983215, 1297.195556, 0.000000, 0.000000, 0.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4309.625488, 229.603286, 1297.195556, 0.000000, 0.000000, 0.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4304.753417, 235.043136, 1297.195556, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4309.625488, 230.313186, 1297.195556, 0.000000, 0.000000, 0.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4302.496093, 212.333297, 1297.195556, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4302.496093, 207.173492, 1297.195556, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19355, -4307.229003, 208.753494, 1300.707031, 0.000000, 0.000000, 0.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19355, -4307.229003, 210.813369, 1300.707031, 0.000000, 0.000000, 0.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.193847, 215.253189, 1297.197509, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -4303.193847, 235.043060, 1297.197509, 0.000000, 0.000000, 90.000000 ), 0, 11095, "stadbridge_sfs", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -4241.876464, 195.649734, 1301.278686, 0.000000, 90.000000, 0.000000 ), 0, 3975, "lanbloke", "p_floor3", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4229.641113, 217.708724, 1302.388061, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19737, -4249.369140, 219.148544, 1303.289184, 0.000000, 90.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4248.187500, 218.292114, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4242.658691, 225.761398, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4243.656250, 225.761398, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19737, -4242.793457, 224.598526, 1303.289184, 0.000000, 90.000000, 90.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4241.926757, 225.763397, 1302.780639, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19737, -4239.525878, 217.898635, 1303.289184, 0.000000, 90.000000, 180.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4240.693359, 218.754699, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4240.693359, 217.044952, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4240.691406, 217.866729, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19737, -4250.024414, 209.578613, 1303.289184, 0.000000, 90.000000, 90.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4249.169921, 210.746032, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4250.882812, 210.746032, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4250.163574, 210.746231, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4248.187500, 220.001953, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4248.185546, 219.204055, 1302.778686, 0.000000, 0.000000, 0.000000 ), 0, 8390, "vegasemulticar", "greyground256128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4240.309570, 211.726318, 1303.265014, 0.000000, 0.000000, 0.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4239.146484, 212.466171, 1303.266967, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4237.248046, 212.466171, 1303.266967, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4236.708496, 212.468170, 1303.268920, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4235.959472, 211.726318, 1303.265014, 0.000000, 0.000000, 0.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	CreateDynamicObject( 1775, -4233.198730, 211.943710, 1304.356079, 0.000000, 0.000000, -90.000000 );
+	CreateDynamicObject( 1776, -4233.198730, 210.613708, 1304.356079, 0.000000, 0.000000, -90.000000 );
+	CreateDynamicObject( 631, -4244.323730, 212.516754, 1304.128662, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1808, -4234.760742, 207.644882, 1303.255004, 0.000000, 0.000000, -133.899856 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19935, -4236.669433, 212.038269, 1303.068847, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19935, -4237.659179, 212.038269, 1303.068847, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19935, -4237.860839, 211.768310, 1303.080810, 0.000000, 0.000000, 0.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	CreateDynamicObject( 19999, -4236.597167, 210.503860, 1303.255004, 0.000000, 0.000000, -161.900009 );
+	CreateDynamicObject( 2206, -4240.013671, 211.842651, 1303.165771, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19893, -4236.937500, 212.007781, 1304.085815, 0.000000, 0.000000, -10.500000 );
+	CreateDynamicObject( 631, -4246.650878, 204.996719, 1304.128662, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2164, -4237.060058, 205.842041, 1303.265014, 0.000000, 0.000000, -163.200210 ), 1, 18265, "w_town3cs_t", "ws_whitewall2_bottom", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2165, -4244.303710, 204.978012, 1303.265014, 0.000000, 0.000000, -179.900207 ), 3, 18265, "w_town3cs_t", "ws_whitewall2_bottom", 0 );
+	CreateDynamicObject( 2309, -4244.960937, 205.776763, 1303.244995, 0.000000, 0.000000, -159.200027 );
+	CreateDynamicObject( 2202, -4239.850097, 205.464721, 1303.255004, 0.000000, 0.000000, -163.500213 );
+	CreateDynamicObject( 2894, -4239.145996, 211.867050, 1304.095825, 0.000000, 0.000000, 9.000000 );
+	CreateDynamicObject( 2059, -4238.314453, 211.865341, 1304.125854, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 3111, -4243.162109, 204.507690, 1305.517211, 0.000000, 90.000000, 90.000000 );
+	CreateDynamicObject( 19164, -4241.930664, 207.925231, 1304.276000, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4241.918457, 208.656097, 1303.246948, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4241.175781, 207.916229, 1303.246948, 0.000000, 0.000000, 0.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4241.918457, 207.176177, 1303.246948, 0.000000, 0.000000, 90.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4242.661621, 207.916229, 1303.246948, 0.000000, 0.000000, 0.000000 ), 0, 18265, "w_town3cs_t", "ws_whitewall2_top", -16 );
+	CreateDynamicObject( 2886, -4224.800781, 216.640640, 1303.903198, 0.000000, 0.000000, -171.399978 );
+	CreateDynamicObject( 2238, -4236.316894, 212.136703, 1304.506225, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2196, -4239.143066, 212.388122, 1304.105834, 0.000000, 0.000000, -9.199995 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4242.783203, 223.091110, 1300.221801, 0.000000, 0.000000, 0.000000 ), 0, 4569, "civic1_lan2", "sl_LAbedingsoil", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4242.773437, 223.081115, 1300.217895, 0.000000, 0.000000, 0.000000 ), 0, 12954, "sw_furniture", "CJ_WOOD5", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4242.792968, 223.101104, 1300.217895, 0.000000, 0.000000, 0.000000 ), 0, 12954, "sw_furniture", "CJ_WOOD5", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4242.791015, 223.073104, 1300.217895, 0.000000, 0.000000, 0.000000 ), 0, 12954, "sw_furniture", "CJ_WOOD5", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4242.775390, 223.099105, 1300.217895, 0.000000, 0.000000, 0.000000 ), 0, 12954, "sw_furniture", "CJ_WOOD5", -16 );
+	CreateDynamicObject( 633, -4242.783203, 223.091110, 1303.394531, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2115, -4248.552734, 230.737899, 1301.787719, 0.000000, 0.000000, 12.800004 ), 0, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3077, -4241.281738, 217.916336, 1301.737670, 0.000000, 0.000000, 90.000000 ), 1, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2115, -4253.502929, 225.419555, 1301.757690, 0.000000, 0.000000, 72.799995 ), 0, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19940, -4253.653320, 226.001571, 1303.159057, 0.000000, 0.000000, -17.100013 ), 0, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19940, -4253.653320, 226.001571, 1303.659057, 0.000000, 0.000000, -17.100013 ), 0, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	CreateDynamicObject( 2723, -4252.569335, 225.703536, 1302.118041, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2509, -4248.143554, 231.231002, 1303.206665, 0.000000, 90.000000, 12.800004 ), 0, 1675, "wshxrefhse", "greygreensubuild_128", -16 );
+	CreateDynamicObject( 2723, -4248.273925, 230.053482, 1302.118041, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 11728, -4246.955566, 231.579666, 1303.028930, 0.000000, 0.000000, 16.000003 );
+	CreateDynamicObject( 2035, -4248.137695, 230.683425, 1302.598144, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19602, -4253.176757, 226.031311, 1302.638549, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 19602, -4253.404296, 226.638122, 1303.239135, 0.000000, 0.000000, -16.499990 );
+	CreateDynamicObject( 353, -4248.789062, 231.000656, 1303.488769, 0.000000, 0.000000, 18.900020 );
+	CreateDynamicObject( 353, -4248.554199, 231.081619, 1303.088378, 0.000000, 0.000000, 18.900020 );
+	CreateDynamicObject( 19602, -4253.809082, 225.267044, 1303.239135, 0.000000, 0.000000, -16.499990 );
+	CreateDynamicObject( 19602, -4253.543945, 226.177947, 1303.239135, 0.000000, 0.000000, -16.499990 );
+	CreateDynamicObject( 11727, -4248.166015, 231.231033, 1304.650024, 0.000000, 0.000000, 12.100000 );
+	CreateDynamicObject( 11727, -4253.751953, 226.020080, 1304.650024, 0.000000, 0.000000, 72.799911 );
+	CreateDynamicObject( 2041, -4247.408691, 231.062057, 1302.758666, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2619, -4247.643554, 231.318801, 1303.239135, 0.000000, 0.000000, 102.899993 );
+	CreateDynamicObject( 3016, -4253.845214, 225.296920, 1303.799682, 0.000000, 0.000000, 71.599967 );
+	CreateDynamicObject( 3016, -4253.692871, 225.752456, 1303.799682, 0.000000, 0.000000, 71.599967 );
+	CreateDynamicObject( 2685, -4249.382324, 230.920669, 1303.239135, 0.000000, 0.000000, 12.699995 );
+	CreateDynamicObject( 964, -4250.052734, 230.090362, 1301.717651, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 930, -4252.568847, 227.579650, 1302.278198, 0.000000, 0.000000, 34.799999 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3800, -4255.812500, 204.279586, 1301.760620, 0.000000, 0.000000, 0.000000 ), 0, 2913, "gym_weights", "cheerybox03", 0 );
+	CreateDynamicObject( 1271, -4255.933593, 204.226119, 1303.171997, 0.000000, 0.000000, 31.299997 );
+	CreateDynamicObject( 3800, -4255.813964, 205.399581, 1301.760620, 0.000000, 0.000000, 2.299998 );
+	CreateDynamicObject( 3800, -4255.812500, 207.429580, 1301.760620, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1271, -4255.792968, 205.285797, 1303.182006, 0.000000, 0.000000, -15.099998 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 3800, -4256.889648, 206.392471, 1301.760620, 0.000000, 0.000000, 64.800056 ), 1, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4267.189941, 218.812622, 1303.041870, 0.000000, 0.000000, 0.000000 ), 0, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2991, -4267.872558, 217.785217, 1302.411254, 0.000000, 0.000000, 42.700042 ), 1, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2991, -4272.333496, 203.415298, 1302.411254, 0.000000, 0.000000, 90.000000 ), 1, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4267.380859, 217.954086, 1303.041870, 0.000000, 0.000000, 33.999992 ), 0, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4268.789550, 217.372589, 1303.041870, 0.000000, 0.000000, 0.000000 ), 0, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4272.806152, 204.780853, 1303.041870, 0.000000, 0.000000, 33.999992 ), 0, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4272.889648, 203.856872, 1303.041870, 0.000000, 0.000000, -6.500010 ), 0, 5855, "crates", "cheerybox03", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2912, -4272.042480, 202.089172, 1303.041870, 0.000000, 0.000000, -16.200004 ), 0, 5855, "crates", "cheerybox03", -16 );
+	CreateDynamicObject( 944, -4264.029296, 219.869003, 1302.631469, 0.000000, 0.000000, 16.300001 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1685, -4270.326171, 215.036285, 1302.521362, 0.000000, 0.000000, -20.800003 ), 0, 1685, "blokpalet", "ws_blockpall", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1685, -4271.173828, 212.668319, 1302.521362, 0.000000, 0.000000, -34.100002 ), 0, 1685, "blokpalet", "ws_blockpall", -16 );
+	CreateDynamicObject( 3576, -4272.677246, 208.566421, 1303.241455, 0.000000, 0.000000, 174.899749 );
+	CreateDynamicObject( 964, -4255.972167, 210.033630, 1301.740600, 0.000000, 0.000000, -71.799972 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -4258.166015, 188.891265, 1305.703247, 0.000000, 0.000000, 32.299991 ), 0, 10281, "michgar", "tool_store2", 1 );
+	CreateDynamicObject( 964, -4255.965332, 211.714355, 1301.740600, 0.000000, 0.000000, -109.799972 );
+	CreateDynamicObject( 964, -4255.900390, 210.865280, 1302.661499, 0.000000, 0.000000, -93.699951 );
+	CreateDynamicObject( 2359, -4256.276855, 208.850540, 1301.980957, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2359, -4256.946289, 209.711822, 1301.980957, 0.000000, 0.000000, -84.599990 );
+	CreateDynamicObject( 2035, -4256.046386, 209.651077, 1302.701538, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2035, -4256.181640, 212.074600, 1302.701538, 0.000000, 0.000000, -136.699981 );
+	CreateDynamicObject( 1654, -4256.482910, 208.741455, 1301.960815, 0.000000, 94.199989, 0.000000 );
+	CreateDynamicObject( 2985, -4256.028320, 208.420867, 1301.765991, 12.700001, 0.000000, 0.000000 );
+	CreateDynamicObject( 2985, -4207.457519, 225.856536, 1302.441772, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2985, -4207.457519, 228.916381, 1302.441772, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2985, -4207.457519, 219.826736, 1302.441772, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2064, -4261.307617, 220.413894, 1302.331176, 0.000000, 0.000000, 72.800018 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4257.121582, 197.998306, 1302.651489, 0.000000, 0.000000, 73.099960 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4256.432617, 201.386428, 1302.651489, 0.000000, 0.000000, 84.699966 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4258.875488, 194.336624, 1302.651489, 0.000000, 0.000000, 53.899974 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	CreateDynamicObject( 2478, -4256.947265, 197.203659, 1302.281127, 0.000000, 0.000000, -104.299949 );
+	CreateDynamicObject( 2478, -4257.578125, 197.402069, 1302.281127, 0.000000, 0.000000, -89.699981 );
+	CreateDynamicObject( 2478, -4256.784179, 198.699401, 1302.281127, 0.000000, 0.000000, -104.299949 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4247.471191, 219.143646, 1301.767700, 0.000000, 0.000000, 0.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	CreateDynamicObject( 934, -4235.106445, 223.070785, 1303.056030, 0.000000, 0.000000, 17.799982 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4247.284179, 218.013778, 1301.767700, 0.000000, 0.000000, 90.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4247.284179, 220.283798, 1301.767700, 0.000000, 0.000000, 90.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4247.068359, 219.143646, 1301.769653, 0.000000, 0.000000, 0.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	CreateDynamicObject( 14679, -4247.330078, 219.149093, 1303.199096, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2035, -4247.328613, 219.044692, 1302.938842, 90.599990, -0.699998, 70.400062 );
+	CreateDynamicObject( 3014, -4247.373046, 220.147750, 1302.888793, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2035, -4246.990234, 217.697692, 1302.259155, 0.000000, -78.299980, 90.000000 );
+	CreateDynamicObject( 964, -4253.510253, 212.909667, 1301.787719, 0.000000, 0.000000, 93.000015 );
+	CreateDynamicObject( 19621, -4247.247558, 218.519653, 1302.898803, 0.000000, 0.000000, -177.600006 );
+	CreateDynamicObject( 18634, -4247.006347, 218.049316, 1302.818725, 0.000000, 90.000000, 66.199981 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4250.033203, 211.453567, 1301.767700, 0.000000, 0.000000, 90.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4248.896484, 211.633529, 1301.767700, 0.000000, 0.000000, 0.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4251.160644, 211.633529, 1301.767700, 0.000000, 0.000000, 0.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19937, -4250.033203, 211.863449, 1301.767700, 0.000000, 0.000000, 90.000000 ), 0, 4604, "buildblk555", "gm_labuld5_b", -16 );
+	CreateDynamicObject( 14679, -4249.990722, 211.509735, 1303.189086, 0.000000, 0.000000, 108.699951 );
+	CreateDynamicObject( 359, -4249.768066, 211.593154, 1302.868774, 0.000000, 0.000000, 180.000000 );
+	CreateDynamicObject( 1654, -4251.106933, 211.344055, 1302.968872, 0.000000, 0.000000, 136.700012 );
+	CreateDynamicObject( 1654, -4250.862792, 211.398788, 1302.899047, -87.499984, 0.000000, 136.700012 );
+	CreateDynamicObject( 1672, -4251.226562, 211.673263, 1302.878784, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1672, -4251.126464, 211.673263, 1302.878784, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1672, -4251.026367, 211.773269, 1302.878784, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1672, -4251.026367, 211.873260, 1302.878784, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1672, -4251.294433, 211.903305, 1302.878784, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 372, -4249.148437, 211.861679, 1302.778686, 90.000000, -18.799999, 0.000000 );
+	CreateDynamicObject( 361, -4251.967773, 211.329116, 1301.763793, 0.000000, -37.700012, 0.000000 );
+	CreateDynamicObject( 362, -4252.021484, 211.729080, 1301.927368, 0.000000, -37.700012, 0.000000 );
+	CreateDynamicObject( 2723, -4250.589843, 212.662094, 1302.138061, 0.000000, 0.000000, -54.300003 );
+	CreateDynamicObject( 2723, -4246.188964, 218.719360, 1302.138061, 0.000000, 0.000000, -54.300003 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2991, -4310.352050, 258.277709, 1303.052368, 0.000000, 0.000000, 180.000000 ), 0, 2358, "cj_ammo", "CJ_SLATEDWOOD2", -16 );
+	CreateDynamicObject( 1688, -4238.262695, 228.448425, 1302.708618, 0.000000, 0.000000, -40.900009 );
+	CreateDynamicObject( 927, -4247.640625, 218.645111, 1303.629516, 0.000000, 0.000000, 90.000000 );
+	CreateDynamicObject( 927, -4250.403808, 211.222152, 1303.559326, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2991, -4314.663085, 257.846862, 1303.052368, 0.000000, 0.000000, -167.300018 ), 0, 2358, "cj_ammo", "CJ_SLATEDWOOD2", -16 );
+	CreateDynamicObject( 631, -4241.657226, 231.246826, 1302.727294, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 631, -4253.813964, 220.676834, 1302.727294, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2612, -4242.803222, 226.297119, 1303.791381, 0.000000, 0.000000, 180.000000 );
+	CreateDynamicObject( 1997, -4242.890136, 226.771209, 1301.767700, 0.000000, 0.000000, 90.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2926, -4320.568847, 253.575790, 1302.441772, 0.000000, 0.000000, -108.299995 ), 0, 2358, "cj_ammo", "CJ_SLATEDWOOD", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2925, -4320.507812, 253.666168, 1302.724853, 0.000000, 48.600002, 51.599998 ), 0, 2358, "cj_ammo", "CJ_SLATEDWOOD", -16 );
+	CreateDynamicObject( 14600, -4317.957519, 258.080688, 1303.442749, 0.000000, 0.000000, 139.300018 );
+	CreateDynamicObject( 2035, -4314.990722, 256.918212, 1303.692993, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1654, -4320.467285, 253.010284, 1302.822143, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1654, -4320.771484, 253.130279, 1302.822143, 0.000000, 0.000000, 74.299987 );
+	CreateDynamicObject( 1654, -4320.605468, 253.264785, 1302.822143, 0.000000, 0.000000, -169.699981 );
+	CreateDynamicObject( 1654, -4320.544433, 253.700149, 1302.611938, 0.000000, 90.000000, 0.000000 );
+	CreateDynamicObject( 1654, -4320.544433, 253.470153, 1302.611938, 0.000000, 90.000000, 21.400001 );
+	CreateDynamicObject( 1271, -4320.184082, 252.308334, 1302.782104, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 1271, -4319.757324, 251.529876, 1302.782104, 0.000000, 0.000000, -68.999984 );
+	CreateDynamicObject( 1271, -4319.651367, 250.628448, 1302.782104, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 3504, -4306.092773, 257.631866, 1303.783081, 0.000000, 0.000000, 137.800018 );
+	CreateDynamicObject( 3504, -4303.648437, 255.491760, 1303.783081, 0.000000, 0.000000, 153.400039 );
+	CreateDynamicObject( 964, -4309.263183, 258.237701, 1303.542236, 0.000000, 0.000000, -23.299995 );
+	CreateDynamicObject( 964, -4315.650390, 257.738739, 1303.542236, 0.000000, 0.000000, 34.299999 );
+	CreateDynamicObject( 3570, -4311.896972, 252.699081, 1303.773071, 0.000000, 0.000000, 14.699995 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.313964, 196.478591, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.313964, 190.230590, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.313964, 183.982589, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.313964, 177.734588, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4314.313964, 171.486587, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.562011, 177.734588, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.562011, 171.486587, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.562011, 183.982589, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.562011, 190.230590, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, -4320.562011, 196.478591, 1302.391723, 0.000000, 0.000000, 0.000000 ), 0, 17075, "cuntwlandwest", "sw_sand", -16 );
+	CreateDynamicObject( 2478, -4256.333496, 200.926483, 1302.281127, 0.000000, 0.000000, -114.999931 );
+	CreateDynamicObject( 2478, -4256.647460, 202.060470, 1302.281127, 0.000000, 0.000000, -83.599929 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1685, -4261.650390, 192.534820, 1302.521362, 0.000000, 0.000000, -73.499992 ), 0, 1685, "blokpalet", "ws_blockpall", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1685, -4264.171386, 192.454483, 1302.521362, 0.000000, 0.000000, -95.699951 ), 0, 1685, "blokpalet", "ws_blockpall", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4274.709960, 199.472717, 1301.750610, 0.000000, 0.000000, 100.900085 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4277.238769, 198.984756, 1301.750610, 0.000000, 0.000000, 100.900085 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4279.782226, 198.497070, 1300.259155, 0.000000, 0.000000, 100.900085 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4282.416992, 198.135757, 1300.259155, 0.000000, 0.000000, 96.500114 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	CreateDynamicObject( 3577, -4287.252929, 189.302947, 1302.461303, 0.000000, 0.000000, 23.700004 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4284.568359, 190.954193, 1300.259155, 0.000000, 0.000000, 105.500091 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4282.062988, 191.649032, 1300.259155, 0.000000, 0.000000, 104.100120 ), 0, 12976, "sw_diner1", "Gen_Crate", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4266.775390, 192.439758, 1300.259155, 0.000000, 0.000000, 78.400123 ), 0, 916, "crates_n_stuffext", "cj_crates", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2974, -4269.634277, 192.701568, 1301.739746, 0.000000, 0.000000, 93.900108 ), 0, 916, "crates_n_stuffext", "cj_crates", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4272.947265, 192.869232, 1302.651489, 0.000000, 0.000000, 3.299971 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4277.361816, 192.781784, 1302.651489, 0.000000, 0.000000, -7.200026 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4286.208496, 197.471267, 1302.651489, 0.000000, 0.000000, 9.399970 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 944, -4289.792968, 197.003906, 1302.651489, 0.000000, 0.000000, 5.099969 ), 1, 16175, "des2vegas_join", "vgs_rockmid1a", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2464, -4277.824218, 193.318862, 1302.140991, 0.000000, 0.000000, 168.600082 ), 4, 3193, "cxref_desert", "BIG_COCK", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2464, -4276.536132, 192.732421, 1302.140991, 0.000000, 0.000000, -140.599945 ), 4, 3193, "cxref_desert", "BIG_COCK", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2464, -4277.982910, 192.524856, 1302.140991, 0.000000, 0.000000, -7.099915 ), 4, 3193, "cxref_desert", "BIG_COCK", -16 );
+	CreateDynamicObject( 964, -4285.445312, 197.586303, 1301.970825, 0.000000, 0.000000, 9.599995 );
+	CreateDynamicObject( 964, -4286.884277, 197.342834, 1301.970825, 0.000000, 0.000000, 9.599995 );
+	CreateDynamicObject( 1348, -4290.497558, 189.305480, 1302.461303, 0.000000, 0.000000, 0.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 1685, -4258.657226, 220.835952, 1302.521362, 0.000000, 0.000000, -93.599922 ), 0, 1685, "blokpalet", "ws_blockpall", -16 );
+	CreateDynamicObject( 2035, -4213.936035, 222.843093, 1303.262573, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2035, -4214.158691, 223.992080, 1303.262573, 3.399998, 0.000000, 34.400012 );
+	CreateDynamicObject( 2985, -4319.692382, 250.022781, 1302.451782, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2985, -4317.078613, 257.312744, 1302.451782, 0.000000, 0.000000, -75.000000 );
+	CreateDynamicObject( 2064, -4319.236816, 221.514495, 1303.022338, 0.000000, 0.000000, 30.099992 );
+	CreateDynamicObject( 3787, -4307.586914, 193.071777, 1302.341186, 0.000000, 0.000000, -64.399993 );
+	CreateDynamicObject( 3793, -4305.817382, 191.556976, 1302.591064, 43.200000, 37.500000, -54.299972 );
+	CreateDynamicObject( 11729, -4225.728027, 216.765319, 1302.437622, 0.000000, 0.000000, -172.099670 );
+	CreateDynamicObject( 11729, -4226.434082, 216.667816, 1302.437622, 0.000000, 0.000000, -172.099670 );
+	CreateDynamicObject( 11729, -4227.135742, 216.570266, 1302.437622, 0.000000, 0.000000, -172.099670 );
+	CreateDynamicObject( 11730, -4227.855468, 216.469833, 1302.437622, 0.000000, 0.000000, -172.099670 );
+	CreateDynamicObject( 11729, -4229.245117, 216.277664, 1302.437622, 0.000000, 0.000000, -172.099670 );
+	CreateDynamicObject( 2002, -4228.583496, 216.602752, 1302.429687, 0.000000, 0.000000, -172.099975 );
+	CreateDynamicObject( 2705, -4227.834472, 216.611007, 1304.031127, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2372, -4231.283691, 223.104904, 1302.459594, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2603, -4232.607421, 220.802795, 1302.869995, 0.000000, 0.000000, 12.800002 );
+	CreateDynamicObject( 2226, -4232.271972, 219.266921, 1303.050170, 0.000000, 0.000000, 0.000000 );
+	CreateDynamicObject( 2331, -4232.231445, 219.266052, 1302.669799, 0.000000, 0.000000, 12.199995 );
+	CreateDynamicObject( 14604, -4242.658691, 205.086532, 1304.210815, 0.000000, 0.000000, 24.200002 );
 }
 
 stock removeExcessiveBuildings( playerid )
