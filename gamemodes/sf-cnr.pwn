@@ -3115,10 +3115,10 @@ new
 #define BUSINESS_COKE 				( 2 )
 #define BUSINESS_WEAPON 			( 3 )
 
-#define MAX_WEED_AMOUNT				( 10 )
-#define MAX_METH_AMOUNT 			( 10 )
+#define MAX_WEED_AMOUNT				( 30 )
+#define MAX_METH_AMOUNT 			( 20 )
 #define MAX_COKE_AMOUNT 			( 10 )
-#define MAX_WEAPON_AMOUNT 			( 5 )
+#define MAX_WEAPON_AMOUNT 			( 10 )
 
 #define IsBusinessAerialVehicle(%0,%1) (%1 == g_businessData[%0][E_HELI_MODEL_ID])
 
@@ -7895,30 +7895,33 @@ public OnVehicleDeath( vehicleid, killerid )
 			payout = floatround( float( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) * ( p_Class[ killerid ] == CLASS_POLICE ? 0.3 : 0.25 ) )
 		;
 
-		printf("2.is associate %d, ticks %d", IsBusinessAssociate( attackerid, businessid ), g_iTime - g_VehicleLastAttacked[ vehicleid ] );
-		if ( IsPlayerConnected( attackerid ) && ! IsBusinessAssociate( attackerid, businessid ) && ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ) < 7 )
+		if ( g_businessData[ businessid ] [ E_EXPORT_STARTED ] == 1 )
 		{
-			GivePlayerScore( attackerid, 2 );
-			GivePlayerCash( attackerid, payout );
-			if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 );
-			SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, ConvertPrice( payout ) );
-		}
-		else
-		{
-			if ( IsPlayerConnected( killerid ) ) {
-				if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
-				else
-				{
-					GivePlayerScore( killerid, 2 );
-					GivePlayerCash( killerid, payout );
-					if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 );
-					SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, ConvertPrice( payout ) );
+			printf("2.is associate %d, ticks %d", IsBusinessAssociate( attackerid, businessid ), g_iTime - g_VehicleLastAttacked[ vehicleid ] );
+			if ( IsPlayerConnected( attackerid ) && ! IsBusinessAssociate( attackerid, businessid ) && ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ) < 8 )
+			{
+				GivePlayerScore( attackerid, 2 );
+				GivePlayerCash( attackerid, payout );
+				if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 );
+				SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, ConvertPrice( payout ) );
+			}
+			else
+			{
+				if ( IsPlayerConnected( killerid ) ) {
+					if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+					else
+					{
+						GivePlayerScore( killerid, 2 );
+						GivePlayerCash( killerid, payout );
+						if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 );
+						SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, ConvertPrice( payout ) );
+					}
 				}
 			}
-		}
 
-		// stop the mission
-		StopBusinessExportMission( businessid );
+			// stop the mission
+			StopBusinessExportMission( businessid );
+		}
 	}
 
 
@@ -11114,7 +11117,10 @@ CMD:mech( playerid, params[ ] )
    			return SendError( playerid, "You are not in any vehicle." );
 
 		new
-			cost = g_isBusinessVehicle[ iVehicle ] ? 500 : 250;
+			cost = 250;
+
+		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) )
+			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 2500 : 750;
 
    		if ( GetPlayerCash( playerid ) < cost )
    			return SendError( playerid, "You need %s to fix this vehicle.", ConvertPrice( cost ) );
@@ -11167,6 +11173,16 @@ CMD:mech( playerid, params[ ] )
 	    if ( ( GetTickCount( ) - p_AntiMechFlipSpam[ playerid ] ) < 10000 ) return SendError( playerid, "You must wait 10 seconds before using this feature." );
    		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You are not in any vehicle." );
    		if ( GetPlayerCash( playerid ) < 500 ) return SendError( playerid, "You need $500 to flip and fix this vehicle." );
+
+		new
+			cost = 500;
+
+		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) )
+			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 3000 : 1250;
+
+   		if ( GetPlayerCash( playerid ) < cost )
+   			return SendError( playerid, "You need %s to fix this vehicle.", ConvertPrice( cost ) );
+
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
@@ -11174,7 +11190,7 @@ CMD:mech( playerid, params[ ] )
 	 	SendServerMessage( playerid, "You have flipped and fixed this vehicle." );
 	 	p_AntiMechFixSpam[ playerid ] = GetTickCount( );
 	 	p_AntiMechFlipSpam[ playerid ] = GetTickCount( );
-	 	GivePlayerCash( playerid, -500 );
+	 	GivePlayerCash( playerid, -cost );
 	}
 	else if ( strmatch( params, "price" ) )
 	{
@@ -12646,9 +12662,6 @@ CMD:h( playerid, params[ ] )
 	{
 	  	if ( p_OwnedHouses[ playerid ] < 1 )
 	    	return SendError( playerid, "You need to own a house in-order to use this." );
-
-	    if ( p_BusinessSpawnLocation[ playerid ] != -1 )
-	    	return SendError( playerid, "You currently have a business spawn set, remove it through "COL_GREY"/business spawn"COL_WHITE"." );
 
 	    format( szLargeString, sizeof( szLargeString ), ""COL_GREY"Set Back To Normal\n" );
 		for( new i = 0; i < MAX_HOUSES; i++ )
@@ -17945,7 +17958,7 @@ CMD:addgpci( playerid, params[ ] )
 			playerserial[ 45 ];
 
 		gpci( pID, playerserial, sizeof( playerserial ) );
-	  	AddFileLogLine( "gpci.txt", sprintf( "USER : %s , GPCI : %s", ReturnPlayerName( pID ), playerserial ) );
+	  	AddFileLogLine( "gpci.txt", sprintf( "USER : %s , GPCI : %s\r\n", ReturnPlayerName( pID ), playerserial ) );
 	}
 	return 1;
 }
@@ -19034,7 +19047,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 			if ( p_WantedLevel[ playerid ] < 12 )
 				GivePlayerWantedLevel( playerid, 12 - p_WantedLevel[ playerid ] );
 
-			if ( IsBusinessAerialVehicle( businessid, model ) && g_businessData[ businessid ] [ E_EXPORT_STARTED ] < 2 )
+			if ( IsBusinessAerialVehicle( businessid, model ) && g_businessData[ businessid ] [ E_EXPORT_STARTED ] == 2 )
 			{
 				new
 					ignore_drop_ids[ sizeof( g_airBusinessExportData[ ] ) ] = { -1, ... };
@@ -19076,7 +19089,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 				}
 
 				// message people
-				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 2;
+				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 1;
 				ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
 				SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 			}
@@ -19978,19 +19991,19 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 200000;
+					case 1: iNetWin = 100000;
 
 					// Bells
-					case 2: iNetWin = 100000;
+					case 2: iNetWin = 50000;
 
 					// Cherry
-					case 3: iNetWin = 50000;
+					case 3: iNetWin = 25000;
 
 					// Grapes
-					case 4: iNetWin = 20000;
+					case 4: iNetWin = 10000;
 
 					// 69
-					case 5: iNetWin = 10000;
+					case 5: iNetWin = 5000;
 				}
 			}
 			else
@@ -19998,19 +20011,19 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 40000;
+					case 1: iNetWin = 20000;
 
 					// Bells
-					case 2: iNetWin = 20000;
+					case 2: iNetWin = 10000;
 
 					// Cherry
-					case 3: iNetWin = 10000;
+					case 3: iNetWin = 5000;
 
 					// Grapes
-					case 4: iNetWin = 4000;
+					case 4: iNetWin = 2000;
 
 					// 69
-					case 5: iNetWin = 2000;
+					case 5: iNetWin = 1000;
 				}
 			}
 		}
@@ -26272,7 +26285,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			case 3:
 			{
 				new
-					prod = GetProductPrice( business_type ), prod_hardened = GetProductPrice( business_type, true );
+					prod = GetProductPrice( business_type, true ), prod_hardened = GetProductPrice( business_type, false );
 
 				format( szBigString, sizeof( szBigString ),
 					""COL_WHITE"Your business has %d product\t \nSell Product Locally\t%s%s\nSell Product Nationally\t%s%s",
@@ -26637,7 +26650,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	   	StopBusinessExportMission( businessid );
 
 		// update product levels
-		g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 1;
 		g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] = 0;
 		g_businessData[ businessid ] [ E_PRODUCT ] -= MAX_DROPS;
 		UpdateBusinessProductionLabel( businessid );
@@ -26647,15 +26659,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 			case 0:
 			{
-				// update values
-				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = false );
+				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 1;
+				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = true );
 				SetRandomDropoffLocation( playerid, businessid, .heli = false );
 				return 1;
 			}
 
 			case 1:
 			{
-				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = true );
+				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 2;
+				g_businessData[ businessid ] [ E_EXPORT_VALUE ] = GetProductPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ], .hardened = false );
 				SetRandomDropoffLocation( playerid, businessid, .heli = true );
 				return 1;
 			}
@@ -34875,27 +34888,27 @@ stock RollSlotMachine( playerid, id )
 		printf("random chance %d", randomChance );
 
 		// double brick
-		if ( randomChance == 80000 ) // rigged
+		if ( randomChance == 131730 ) // rigged
 			rotation = 0.0;
 
 		// single brick
-		else if ( 445 <= randomChance <= 890 )
+		else if ( 1 <= randomChance <= 3560 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 1780 <= randomChance <= 3560 )
+		else if ( 3561 <= randomChance <= 10680 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 7120 <= randomChance <= 14240 )
+		else if ( 10681 <= randomChance <= 24920 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 26700 <= randomChance <= 53400 )
+		else if ( 24921 <= randomChance <= 69520 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 62300 <= randomChance <= 124600 )
+		else if ( 60521 <= randomChance <= 131720 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -34905,30 +34918,30 @@ stock RollSlotMachine( playerid, id )
 	else
 	{
 		// 1 in 400k odds
-		randomChance = random( 100001 );
+		randomChance = random( 50001 );
 
 		// double brick
-		if ( randomChance == 95000 )
+		if ( randomChance == 27390 )
 			rotation = 0.0;
 
 		// single brick
-		else if ( 223 <= randomChance <= 446 )
+		else if ( 1 <= randomChance <= 740 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 890 <= randomChance <= 1780 )
+		else if ( 741 <= randomChance <= 2220 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 3560 <= randomChance <= 7120 )
+		else if ( 2221 <= randomChance <= 5180 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 13350 <= randomChance <= 26700 )
+		else if ( 5181 <= randomChance <= 12580 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 31150 <= randomChance <= 62300 )
+		else if ( 12581 <= randomChance <= 27380 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -37254,7 +37267,7 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 	{
 		new
 			entryFee = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ],
-			poolContribute = floatround( float( entryFee ) * 0.9 );
+			poolContribute = entryFee == 10000 ? floatround( float( entryFee ) * 0.9 ) : floatround( float( entryFee ) * 0.75 );
 
 		if ( GetPlayerCash( playerid ) < entryFee )
 			return SendError( playerid, "You must have at least %s to use this slot machine.", ConvertPrice( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
@@ -38253,7 +38266,9 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 		// Destroy checkpoint and vehicle
 		StopBusinessExportMission( businessid );
 	}
-	else SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has dropped of their %d%s batch of drugs for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, drugsSold, positionToString( drugsSold ), ConvertPrice( product_amount ) );
+
+	// just send alerts fuck it
+	SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has dropped off their %d%s batch of drugs for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, drugsSold, positionToString( drugsSold ), ConvertPrice( product_amount ) );
 }
 
 stock ShowBusinessMembers( playerid, businessid )
