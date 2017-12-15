@@ -13,7 +13,7 @@
 */
 
 #pragma dynamic 					7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
