@@ -28,14 +28,29 @@
 #define GetPlayerFPS(%1)			p_FPS[%1]
 
 // Client messages
-#define SendUsage(%0,%1)\
+#define SendUsage(%0,%1) \
 	(SendClientMessageFormatted(%0,-1,"{FFAF00}[USAGE]{FFFFFF} " # %1))
 
-#define SendError(%0,%1)\
+#define SendError(%0,%1) \
 	(SendClientMessageFormatted(%0,-1,"{F81414}[ERROR]{FFFFFF} " # %1))
 
-#define SendServerMessage(%0,%1)\
+#define SendServerMessage(%0,%1) \
 	(SendClientMessageFormatted(%0,-1,"{C0C0C0}[SERVER]{FFFFFF} " # %1))
+
+
+stock SendClientMessageFormatted( playerid, colour, format[ ], va_args<> )
+{
+    static
+		out[ 144 ];
+
+    va_format( out, sizeof( out ), format, va_start<3> );
+
+	if ( !IsPlayerConnected( playerid ) ) {
+		SendClientMessageToAll( colour, out );
+		return 0;
+	}
+ 	return SendClientMessage( playerid, colour, out );
+}
 
 /* ** RADIO SYSTEM ** */
 enum E_RADIO_DATA
@@ -122,7 +137,7 @@ public OnRconLoginAttempt(ip[], password[], success)
 		 	SendClientMessageFormatted( playerid, -1, "{FF0000}[ERROR]{FFFFFF} You have entered an invalid rcon password. {C0C0C0}[%d/2]", p_RconLoginFails{ playerid } );
 
 		 	if( p_RconLoginFails{ playerid } >= 2 ) {
-				SendServerMessage( playerid, "If you are not the server operator or manager, don't bother trying!" );
+				SendClientMessageFormatted( playerid, -1, "{C0C0C0}[SERVER]{FFFFFF} If you are not the server operator or manager, don't bother trying!" );
 				Kick( playerid );
 			}
 		}
@@ -281,5 +296,4 @@ stock GetRangeIP( szIP[ ], iSize = sizeof( szIP ) )
 	    }
 	}
 	format( szIP, iSize, "%s.*.*", szIP );
-	return szIP;
 }
