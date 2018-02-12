@@ -24,6 +24,8 @@ pawno/include/**/*
 !pawno/include/attachments.inc
 !pawno/include/anticheat
 !pawno/include/anticheat/**
+!pawno/include/irresistible
+!pawno/include/irresistible/**
 
 
 # filterscripts

@@ -1,27 +1,15 @@
 /*
+ * Irresistible Gaming (c) 2018
+ * Developed by Gammix
+ * Module: attachments.inc
+ * Purpose:
+ *  - This include fixes the attachments bug, which is expierenced while zooming with snipers, camera, RPGs..
+ *  - The attached object info now can be retrieved from GetPlayerAttachedObject
+ *  - This include also restores player attachments on Spawn, so they will remain!
+ *  - Disconnect fix; Destroys the attachments on Disconnect.
+ */
 
-attachments.inc
-- This include fixes the attachments bug, which is expierenced while zooming with snipers, camera, RPGs..
-- The attached object info now can be retrieved from GetPlayerAttachedObject
-- This include also restores player attachments on Spawn, so they will remain!
-- Disconnect fix; Destroys the attachments on Disconnect.
-
-Author:
-- Gammix
-
-(c) Copyright 2015
-- This file is provided as is (no warranties).
-
-*/
-
-/*
-
-native SetPlayerAttachedObject(playerid, index, modelid, bone, Float:fOffsetX = 0.0, Float:fOffsetY = 0.0, Float:fOffsetZ = 0.0, Float:fRotX = 0.0, Float:fRotY = 0.0, Float:fRotZ = 0.0, Float:fScaleX = 1.0, Float:fScaleY = 1.0, Float:fScaleZ = 1.0, materialcolor1 = 0, materialcolor2 = 0);
-native GetPlayerAttachedObject(playerid, index, &modelid, &bone, &Float:fOffsetX, &Float:fOffsetY, &Float:fOffsetZ, &Float:fRotX, &Float:fRotY, &Float:fRotZ, &Float:fScaleX, &Float:fScaleY, &Float:fScaleZ, &materialcolor1, &materialcolor2);
-native RemovePlayerAttachedObject(playerid, index);
-
-*/
-
+/* ** Defines ** */
 #define att_modelid 		(0)
 #define att_bone 			(1)
 #define att_offset_x 		(2)
@@ -37,8 +25,8 @@ native RemovePlayerAttachedObject(playerid, index);
 #define att_color_2 		(12)
 #define att_used 			(13)
 
-new
-	g_AttachmentData[][45] =
+/* ** Variables ** */
+new g_AttachmentData[][45] =
 {
 	"att_modelid",
 	"att_bone",
@@ -56,6 +44,7 @@ new
 	"att_used"
 };
 
+/* ** Functions ** */
 stock static ATT_SetInt(playerid, index, type, val)
 {
 	new
@@ -100,6 +89,7 @@ stock static Float:ATT_GetFloat(playerid, index, type)
 	return GetPVarFloat(playerid, s_String);
 }
 
+/* ** Hooks ** */
 public OnPlayerSpawn(playerid)
 {
 	for(new i; i < MAX_PLAYER_ATTACHED_OBJECTS; i++)

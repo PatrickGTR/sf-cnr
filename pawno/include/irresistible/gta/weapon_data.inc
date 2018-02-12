@@ -1,15 +1,9 @@
-/*==============================================================================
-
-	Southclaw's Advanced Weapon Damage Library
-
-	With this you can finely tune weapon damage based on distance.
-	Using min/max range values, a weapon's damage varies depending on the
-	distance between the shooter and the target.
-
-	Do what you want with it, but keep my name on it :)
-
-==============================================================================*/
-
+/*
+ * Irresistible Gaming 2018
+ * Developed by Southclaw
+ * Module: gta\weapon_data.inc
+ * Purpose: advanced weapon damage library
+ */
 
 #define MAX_WEAPONS     (50)
 #define MAX_WEAPON_NAME (17)
@@ -204,7 +198,7 @@ stock Float:GetWeaponDamageFromDistance(weaponid, Float:distance)
 {
 	if(distance < WeaponData[weaponid][weapon_minRange])
 		return WeaponData[weaponid][weapon_maxDmg];
-	
+
 	if(distance > WeaponData[weaponid][weapon_maxRange])
 		return WeaponData[weaponid][weapon_minDmg];
 

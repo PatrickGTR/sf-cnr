@@ -1,13 +1,9 @@
 /*
- *
- *      	   Irresistible Gaming
- *
- *      		Founded by Lorenc
- *
- *	Analytics to be used with Irresistible Gaming SA-MP Servers
- *
- *
-*/
+ * Irresistible Gaming (c) 2018
+ * Developed by Lorenc Pekaj
+ * Module: analytics.inc
+ * Purpose: track player connection analytics
+ */
 
 #if !defined ANAL_INCLUDED
 	#include 							< a_samp >
@@ -52,7 +48,7 @@
 	 	g_Analytics[ E_BAN_USES ] ++;
 	    return Ban( playerid );
 	}
-	
+
 	#if defined _ALS_Ban
 	    #undef Ban
 	#else
@@ -104,7 +100,7 @@
 	{
 		if( reason < 3 )
 			g_Analytics[ E_DISCONNECTS ] [ reason ] ++;
-		
+
 		#if defined SAMPANAL_OnPlayerDisconnect
 			return SAMPANAL_OnPlayerDisconnect( playerid, reason );
 		#else
@@ -135,7 +131,7 @@
 			iDisconnects = g_Analytics[ E_DISCONNECTS ] [ 0 ] + g_Analytics[ E_DISCONNECTS ] [ 1 ] + g_Analytics[ E_DISCONNECTS ] [ 2 ]
 		;
 
-		format( szString, sizeof( szString ), 
+		format( szString, sizeof( szString ),
 			"Connections: %d\nDisconnections: %d\n\nPlayer Timeout/Crash: %d\nPlayer Quits: %d\nPlayer Kick/Ban: %d\n\nServer Ban Uses: %d\nServer Kick Uses: %d\n\nCustom Ban Rejects: %d",
 			g_Analytics[ E_CONNECTS ], iDisconnects, g_Analytics[ E_DISCONNECTS ] [ 0 ], g_Analytics[ E_DISCONNECTS ] [ 1 ], g_Analytics[ E_DISCONNECTS ] [ 2 ], g_Analytics[ E_BAN_USES ],
 			g_Analytics[ E_KICK_USES ], g_Analytics[ E_CUSTOM_BAN_REJECTS ]

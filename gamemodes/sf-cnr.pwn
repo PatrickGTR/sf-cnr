@@ -14,7 +14,7 @@
 
 #pragma compat 1
 #pragma dynamic 7200000
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -33,27 +33,19 @@
 #include 							< zcmd >
 #include 							< sscanf2 >
 #include 							< streamer >
-#include 							< sf-cnr >
 #include                            < regex >
 #include                            < gvar >
-#include                            < lookupffs >
-#include 							< FloodControl >
 #include 							< RouteConnector >
 #include 							< sampac >
-#include 							< color >
-#include 							< mailer >
-#include 							< a_weapondata >
 #include 							< MathParser >
-#include 							< attachments >
-//#include 							< a_analytics >
 native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
 
-/* ** IG CONFIG ** */
-#define 							CNR_SERVER
-#include 							< a_ig >
+/* ** irresistible gaming ** */
+#include 							< irresistible\main >
 
+/* ** Anticheat ** */
 #if !defined AC_INCLUDED
 	#include 						< anticheat\global >
 	#include 						< anticheat\player >
@@ -73,12 +65,9 @@ native gpci 						( playerid, serial[ ], len );
 	#define AC_INCLUDED
 #endif
 
+
 /* ** Useful macros ** */
-#define function%1(%2)              forward%1(%2); public%1(%2)
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
-#define RandomEx(%0,%1)  			(random((%1) - (%0)) + (%0))
-#define HOLDING(%0)             	((newkeys & (%0)) == (%0))
-#define PRESSED(%0)					(((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
 #define IsPlayerSpawned(%1)    		(p_Spawned{%1})
 #define IsPlayerJailed(%1)          (p_Jailed{%1})
 #define IsPlayerTazed(%1)          	(p_Tazed{%1})
@@ -103,16 +92,9 @@ native gpci 						( playerid, serial[ ], len );
 #define GetPlayerCash(%1)           p_Cash[%1]
 #define GetPlayerXP(%1)             p_XP[%1]
 #define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
-#define strmatch(%1,%2) 			(!strcmp(%1,%2,true))
-#define Beep(%1)              		PlayerPlaySound(%1, 1137, 0.0, 0.0, 5.0)
-#define fRandomEx(%1,%2)			(floatrandom(%2-%1)+%1)
-#define StopSound(%1)       		PlayerPlaySound(%1,1186,0.0,0.0,0.0)
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
-#define erase(%0)                   (%0[0]='\0')
 #define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + p_Cash[%0]) // Bank Money and Money
-#define KEY_AIM                     (128)
-#define thread               		function
 #define IsPlayerAFK(%0)				((GetTickCount()-p_AFKTime[%0])>=2595)
 #define GetPlayerMethLabVehicle(%0)	(GetPlayerVirtualWorld(%0)-VW_METH)
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0]==1)
@@ -128,7 +110,6 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
-#define positionToString(%0) 		(%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
 #define ITER_NONE 					-1
 
 /* Dynamic Macros */
@@ -163,7 +144,6 @@ new bool: False = false, szNormalString[ 144 ];
 	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
 
 #define mysql_single_query(%0) mysql_function_query(dbHandle,(%0),true,"","")
-#define SetPlayerPosEx(%0,%1,%2,%3,%4) SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
@@ -204,6 +184,21 @@ const
 	Float: default_Angle 			= 0.0
 ;
 
+/* ** Donation System ** */
+#define szRedemptionSalt 			"7resta#ecacakumedeM=yespawr!d@et"
+enum E_DONATION_DATA
+{
+	E_TRANSACTION_ID[ 17 ],
+	E_NAME[ 24 ],
+	E_AMOUNT[ 11 ],
+	E_PURPOSE[ 64 ],
+	E_DATE
+}
+
+new stock
+	Float: a_vipCoinRequirements[ ] = { 0.0, 500.0, 1500.0, 2500.0, 5000.0, 10000.0 }
+;
+
 /* ** Cities ** */
 #define ENABLE_CITY_LV 				true
 #define ENABLE_CITY_LS 				true
@@ -215,49 +210,6 @@ const
 #define CITY_LS						2
 #define CITY_DESERTS 				3
 #define CITY_COUNTRY				4
-
-/* ** Colours ** */
-#define COL_GREEN               	"{6EF83C}"
-#define COL_LGREEN               	"{91FA6B}"
-#define COL_RED                 	"{F81414}"
-#define COL_BLUE		           	"{00C0FF}"
-#define COL_LRED                	"{FFA1A1}"
-#define COL_GOLD                	"{FFDC2E}"
-#define COL_PLATINUM                "{E0E0E0}"
-#define COL_DIAMOND                	"{4EE2EC}"
-#define COL_GREY                    "{C0C0C0}"
-#define COL_PINK                    "{FF0770}"
-#define COL_WHITE                   "{FFFFFF}"
-#define COL_ORANGE                  "{FF7500}"
-#define COL_GANG                    "{009999}"
-#define COL_YELLOW                  "{FFFF00}"
-#define COL_BLACK					"{333333}"
-#define COLOR_GANGZONE              0x00000080
-#define COLOR_RDMZONES 				0x00CC0010
-#define COLOR_GREEN             	0x00CC00FF
-#define COLOR_RED               	0xFF0000FF
-#define COLOR_BLUE                  0x00C0FFFF
-#define COLOR_YELLOW            	0xFFFF00FF
-#define COLOR_ORANGE            	0xEE9911FF
-#define COLOR_POLICE              	0x3E7EFF70
-#define COLOR_MAYOR              	0x99000070
-#define COLOR_GREY                  0xC0C0C0FF
-#define COLOR_WHITE                 0xFFFFFFFF
-#define COLOR_PINK                  0xFF0770FF
-#define COLOR_GOLD                  0xFFDC2EFF
-#define COLOR_DEFAULT               0xFFFFFF70
-#define COLOR_WANTED2               0xFFEC41E2
-#define COLOR_WANTED6               0xFF9233FF
-#define COLOR_WANTED12              0xF83245FF
-#define COLOR_FBI                   0x0035FF70
-#define COLOR_ARMY                  0x954BFF70
-#define COLOR_CIA                   0x19197000
-#define COLOR_FIREMAN               0xA8343470
-#define COLOR_MEDIC                 0x00CC0070
-#define COLOR_CONNECT				0x22BB22AA
-#define COLOR_DISCONNECT			0xC0C0C0AA
-#define COLOR_TIMEOUT				0x990099AA
-#define COLOR_KICK					0xFFCC00AA
 
 /* ** Dialogs ** */
 #define DIALOG_REGISTER             0 			+ 1000
@@ -598,6 +550,7 @@ new
 	Text:  g_AnimationTD            = Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_ProgressBoxTD        	= Text: INVALID_TEXT_DRAW,
+	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
 	Text:  p_ProgressBoxOutsideTD	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_ProgressBoxTD        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_ProgressTitleTD      	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
@@ -3306,8 +3259,6 @@ new
     Iterator:blackjacktables<MAX_BLACKJACK_TABLES>
 ;
 
-/* ** Visage Apartments ** */
-
 /* ** Player Data ** */
 new
     bool: p_Spawned    				[ MAX_PLAYERS char ],
@@ -3667,7 +3618,7 @@ public OnGameModeInit()
 	//SetServerRule( "mapname", "San Fierro" );
 
 	/* ** Intalize Data ** */
-	InitializeIGTextdraws( );
+	InitializeFpsTextdraw( );
 	initializeTextDraws( );
 	initializeCheckpoints( );
 	initializeVehicles( );
@@ -3699,7 +3650,7 @@ public OnGameModeInit()
 	}
 
 	/* ** Database Configuration ** */
-	dbHandle = mysql_connect( MYSQL_HOST, MYSQL_USER, MYSQL_DB, MYSQL_PASS );
+	dbHandle = mysql_connect( MYSQL_HOST, MYSQL_USER, MYSQL_DATABASE, MYSQL_PASS );
 
 	if ( mysql_errno( dbHandle )  )
 		print( "[MYSQL]: Couldn't connect to MySQL database." ), g_ServerLocked = true;
@@ -8871,6 +8822,47 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	}
 
 	if ( g_CommandLogging ) printf( "[COMMAND_LOG] %s(%d) - %s", ReturnPlayerName( playerid ), playerid, cmdtext );
+	return 1;
+}
+
+CMD:fireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	new
+		flares, style, Float: speed, Float: gravity, Float: angle, Float: time_delay, Float: max_height;
+
+	// /fireworks 50 0 10 10.8 50 0.2 50 - spiral
+	if ( sscanf( params, "ddffffF(50.0)", flares, style, speed, gravity, angle, time_delay, max_height ) ) return SendUsage( playerid, "fireworks [FLARES] [STYLE] [SPEED] [GRAVITY] [ANGLE] [TIME_DELAY] [MAX_HEIGHT]" );
+	else
+	{
+		new
+			Float: X, Float: Y, Float: Z
+		;
+
+		GetPlayerPos( playerid, X, Y, Z );
+
+		CreateFireworks( flares, style, X, Y, Z, angle, speed, gravity, time_delay, max_height );
+		return SendServerMessage( playerid, "Fireworks placed! Use /launchfireworks to launch." );
+	}
+}
+
+CMD:launchfireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	foreach (new f : fireworks) {
+		LaunchFireworks( f );
+	}
+	SendServerMessage( playerid, "Launching" );
+	return 1;
+}
+
+CMD:destroyfireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	for (new f = 0; f < MAX_FIREWORKS; f++ ) {
+		ResetHandleFields( f );
+	}
+	SendServerMessage( playerid, "Destroyed" );
 	return 1;
 }
 
@@ -27684,6 +27676,14 @@ stock initializeTextDraws( )
 	TextDrawBoxColor(g_MovieModeTD[ 5 ], 128);
 	TextDrawTextSize(g_MovieModeTD[ 5 ], 620.000000, 0.000000);
 
+    g_AdminOnDutyTD = TextDrawCreate(552.000000, 66.500000, "ADMIN ON DUTY");
+	TextDrawBackgroundColor(g_AdminOnDutyTD, 255);
+	TextDrawFont(g_AdminOnDutyTD, 1);
+	TextDrawLetterSize(g_AdminOnDutyTD, 0.180000, 0.899999);
+	TextDrawColor(g_AdminOnDutyTD, -65281);
+	TextDrawSetOutline(g_AdminOnDutyTD, 1);
+	TextDrawSetProportional(g_AdminOnDutyTD, 1);
+
 	/* ** Gangzone Allocation ** */
 	for( new i; i < sizeof( g_gangzoneData ); i++ )
 	{
@@ -34744,20 +34744,6 @@ stock CreateBusinessActors( businessid )
     	ApplyActorAnimation( g_businessActors[ businessid ] [ i ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_LIB ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
 	}
 	return 1;
-}
-
-stock initializeActors( )
-{
-	for( new i = 0; i < sizeof( g_actorData ); i++ )
-	{
-		new
-			actorid = CreateActor( g_actorData[ i ] [ E_SKIN ], g_actorData[ i ] [ E_X ], g_actorData[ i ] [ E_Y ], g_actorData[ i ] [ E_Z ], g_actorData[ i ] [ E_RZ ] );
-
-		SetActorInvulnerable( actorid, true );
-		SetActorVirtualWorld( actorid, g_actorData[ i ] [ E_WORLD ] );
-    	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
-    	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
-	}
 }
 
 stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )

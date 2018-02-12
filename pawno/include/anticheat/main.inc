@@ -23,22 +23,21 @@
 	with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
-#include 							< a_samp >
-#include 							< foreach >
-
 #if !defined AC_INCLUDED
 	#include 						< anticheat\global >
 	#include 						< anticheat\player >
 
-	#include 						< anticheat\hitpoints >
 	#include 						< anticheat\weapon >
 	//#include 						< anticheat\spectate >
 	#include 						< anticheat\airbrake >
 	#include 						< anticheat\proaim >
 	#include 						< anticheat\autocbug >
 	#include 						< anticheat\flying >
+	#include 						< anticheat\remotejack > // Works fine
 
 	#include 						< anticheat\hooks >
+
+	#include 						< anticheat\hitpoints >  // Good
 
 	#define AC_INCLUDED
 #endif

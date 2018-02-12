@@ -1,23 +1,19 @@
 /*
- *				Lookupffs.inc
- *			  Edited by Lorenc_
- *
-*/
+ * Irresistible Gaming (c) 2018
+ * Developed by Lorenc Pekaj
+ * Module: lookup.inc
+ * Purpose: enables player information to be looked up
+ */
 
 // Macros
-//#define GetPlayerHost(%1) 				(g_lookup_PlayerData[%1][E_HOST])
-//#define GetPlayerISP(%1) 				(g_lookup_PlayerData[%1][E_ISP])
 #define GetPlayerCountryCode(%1) 		(g_lookup_PlayerData[%1][E_CODE])
 #define GetPlayerCountryName(%1) 		(g_lookup_PlayerData[%1][E_COUNTRY])
-//#define GetPlayerCountryRegion(%1) 	(g_lookup_PlayerData[%1][E_REGION])
-//#define IsProxyUser(%1) 				(g_lookup_PlayerData[%1][E_PROXY])
 #define IsProxyEnabledForPlayer(%1)		(g_lookup_Success{%1})
 
 // Variables
 enum E_LOOKUP_DATA
 {
 	E_CODE[ 3 ],		E_COUNTRY[ 45 ]
-	//E_REGION[ 43 ],		E_ISP[ 128 ],		E_PROXY
 };
 
 stock

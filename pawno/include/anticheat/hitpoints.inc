@@ -24,10 +24,6 @@
 */
 
 #if !defined AC_HITPOINTS_INCLUDED
-	#include 							< a_samp >
-
-	#include 							< anticheat\global >
-	#include 							< anticheat\player >
 
 	// Forwards
 	public OnPlayerTakePlayerDamage 	( playerid, issuerid, &Float: amount, weaponid, bodypart );
