@@ -24,8 +24,8 @@
 #define SetPlayerPosEx(%0,%1,%2,%3,%4)      SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
 
 // Defines
-#define KEY_AIM                     (128)
-#define thread                      function
+#define KEY_AIM                             (128)
+#define thread                              function // used to look pretty for mysql
 
 /* ** Variables ** */
 stock g_szSprintfBuffer[ 1024 ];
@@ -117,3 +117,96 @@ stock Float: GetDistanceFromPlayerSquared( playerid, Float: x1, Float: y1, Float
 // purpose: random float number support
 stock Float: floatrandom( Float:max )
     return floatmul( floatdiv( float( random( cellmax ) ), float( cellmax - 1 ) ), max );
+
+// purpose: replace a character
+stock strreplacechar(string[], oldchar, newchar)
+{
+    new matches;
+    if (ispacked(string)) {
+        if (newchar == '\0') {
+            for(new i; string{i} != '\0'; i++) {
+                if (string{i} == oldchar) {
+                    strdel(string, i, i + 1);
+                    matches++;
+                }
+            }
+        } else {
+            for(new i; string{i} != '\0'; i++) {
+                if (string{i} == oldchar) {
+                    string{i} = newchar;
+                    matches++;
+                }
+            }
+        }
+    } else {
+        if (newchar == '\0') {
+            for(new i; string[i] != '\0'; i++) {
+                if (string[i] == oldchar) {
+                    strdel(string, i, i + 1);
+                    matches++;
+                }
+            }
+        } else {
+            for(new i; string[i] != '\0'; i++) {
+                if (string[i] == oldchar) {
+                    string[i] = newchar;
+                    matches++;
+                }
+            }
+        }
+    }
+    return matches;
+}
+
+// purpose: replaces a phrase in a string with whatever specified
+stock strreplace(string[], const search[], const replacement[], bool:ignorecase = false, pos = 0, limit = -1, maxlength = sizeof(string)) {
+    // No need to do anything if the limit is 0.
+    if (limit == 0)
+        return 0;
+
+    new
+             sublen = strlen(search),
+             replen = strlen(replacement),
+        bool:packed = ispacked(string),
+             maxlen = maxlength,
+             len = strlen(string),
+             count = 0
+    ;
+
+
+    // "maxlen" holds the max string length (not to be confused with "maxlength", which holds the max. array size).
+    // Since packed strings hold 4 characters per array slot, we multiply "maxlen" by 4.
+    if (packed)
+        maxlen *= 4;
+
+    // If the length of the substring is 0, we have nothing to look for..
+    if (!sublen)
+        return 0;
+
+    // In this line we both assign the return value from "strfind" to "pos" then check if it's -1.
+    while (-1 != (pos = strfind(string, search, ignorecase, pos))) {
+        // Delete the string we found
+        strdel(string, pos, pos + sublen);
+
+        len -= sublen;
+
+        // If there's anything to put as replacement, insert it. Make sure there's enough room first.
+        if (replen && len + replen < maxlen) {
+            strins(string, replacement, pos, maxlength);
+
+            pos += replen;
+            len += replen;
+        }
+
+        // Is there a limit of number of replacements, if so, did we break it?
+        if (limit != -1 && ++count >= limit)
+            break;
+    }
+
+    return count;
+}
+
+// purpose: copy a string from a source to a destination
+/*stock strcpy(dest[], const source[], maxlength=sizeof dest) {
+    strcat((dest[0] = EOS, dest), source, maxlength);
+}*/

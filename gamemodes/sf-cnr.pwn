@@ -13,8 +13,9 @@
 */
 
 #pragma compat 1
+#pragma option -d3
 #pragma dynamic 7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -110,7 +111,7 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
-#define ITER_NONE 					-1
+// #define ITER_NONE 					-1
 
 /* Dynamic Macros */
 #define GetTaxRate()				(GetGVarFloat("taxrate"))
@@ -3257,6 +3258,25 @@ new
     g_blackjackSlotData				[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_PLAYERS ],
     p_blackjackTable				[ MAX_PLAYERS ] = { -1, ... },
     Iterator:blackjacktables<MAX_BLACKJACK_TABLES>
+;
+
+/* ** Visage Apartments ** */
+#define MAX_VISAGE_APARTMENTS    	( 13 )
+
+static const
+	Float: VISAGE_APARTMENT_ENTRANCE[ 3 ] = { 0.0, 0.0, 0.0 },
+	Float: VISAGE_APARTMENT_EXIT[ 3 ] = { 0.0, 0.0, 0.0 }
+;
+
+enum E_APARTMENT_DATA
+{
+	E_OWNER_ID,    			E_TITLE[ 30 ], 			E_PASSCODE[ 4 ],
+	bool: E_GAMBLING
+};
+
+new
+	g_VisageApartmentData        	[ MAX_VISAGE_APARTMENTS ] [ E_FLAT_DATA ],
+	Iterator: visageapartments < MAX_VISAGE_APARTMENTS >
 ;
 
 /* ** Player Data ** */
@@ -7671,7 +7691,7 @@ public OnPlayerDeath(playerid, killerid, reason)
 		    new iTax = p_inPaintBall{ playerid } == true ? 0 : getPlayerTax( playerid );
 			GivePlayerCash( playerid, -iTax );
 			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + floatround( iTax * 0.10 ), 0.0, "", GLOBAL_VARTYPE_INT );
-			if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", ConvertPrice( iTax ) );
+			if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, ConvertPrice( iTax ) );
 			else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", ConvertPrice( iTax ) );
 			p_TaxTime{ playerid } = false;
 		}
@@ -8860,7 +8880,7 @@ CMD:destroyfireworks( playerid, params[ ] )
 {
 	if ( ! IsPlayerAdmin( playerid ) ) return 0;
 	for (new f = 0; f < MAX_FIREWORKS; f++ ) {
-		ResetHandleFields( f );
+		ResetFirework( f );
 	}
 	SendServerMessage( playerid, "Destroyed" );
 	return 1;
@@ -29120,45 +29140,6 @@ stock GetVehicleSeatCount(iModel)
     return 0xF;
 }
 
-stock strreplacechar(string[], oldchar, newchar)
-{
-	new matches;
-	if (ispacked(string)) {
-		if (newchar == '\0') {
-			for(new i; string{i} != '\0'; i++) {
-				if (string{i} == oldchar) {
-					strdel(string, i, i + 1);
-					matches++;
-				}
-			}
-		} else {
-			for(new i; string{i} != '\0'; i++) {
-				if (string{i} == oldchar) {
-					string{i} = newchar;
-					matches++;
-				}
-			}
-		}
-	} else {
-		if (newchar == '\0') {
-			for(new i; string[i] != '\0'; i++) {
-				if (string[i] == oldchar) {
-					strdel(string, i, i + 1);
-					matches++;
-				}
-			}
-		} else {
-			for(new i; string[i] != '\0'; i++) {
-				if (string[i] == oldchar) {
-					string[i] = newchar;
-					matches++;
-				}
-			}
-		}
-	}
-	return matches;
-}
-
 stock CreateRobberyCheckpoint( szName[ 32 ], iRobValue, Float: fX, Float: fY, Float: fZ, Float: rotation, ... )
 {
 	new
@@ -31392,8 +31373,8 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false ) {
 stock ConvertPrice( iValue, iCashSign = 1 )
 {
 	static
-		szNum[ 32 ]
-	;
+		szNum[ 32 ];
+
 	format( szNum, sizeof( szNum ), "%d", iValue < 0 ? -iValue : iValue );
 
     for( new i = strlen( szNum ) - 3; i > 0; i -= 3 ) {
@@ -35774,57 +35755,6 @@ thread checkforvipnotes( playerid )
 	return 1;
 }
 
-stock strreplace(string[], const search[], const replacement[], bool:ignorecase = false, pos = 0, limit = -1, maxlength = sizeof(string)) {
-    // No need to do anything if the limit is 0.
-    if (limit == 0)
-        return 0;
-
-    new
-             sublen = strlen(search),
-             replen = strlen(replacement),
-        bool:packed = ispacked(string),
-             maxlen = maxlength,
-             len = strlen(string),
-             count = 0
-    ;
-
-
-    // "maxlen" holds the max string length (not to be confused with "maxlength", which holds the max. array size).
-    // Since packed strings hold 4 characters per array slot, we multiply "maxlen" by 4.
-    if (packed)
-        maxlen *= 4;
-
-    // If the length of the substring is 0, we have nothing to look for..
-    if (!sublen)
-        return 0;
-
-    // In this line we both assign the return value from "strfind" to "pos" then check if it's -1.
-    while (-1 != (pos = strfind(string, search, ignorecase, pos))) {
-        // Delete the string we found
-        strdel(string, pos, pos + sublen);
-
-        len -= sublen;
-
-        // If there's anything to put as replacement, insert it. Make sure there's enough room first.
-        if (replen && len + replen < maxlen) {
-            strins(string, replacement, pos, maxlength);
-
-            pos += replen;
-            len += replen;
-        }
-
-        // Is there a limit of number of replacements, if so, did we break it?
-        if (limit != -1 && ++count >= limit)
-            break;
-    }
-
-    return count;
-}
-
-stock strcpy(dest[], const source[], maxlength=sizeof dest) {
-	strcat((dest[0] = EOS, dest), source, maxlength);
-}
-
 function ExportVehicle( vehicleid, container )
 {
 	MoveDynamicObject( g_containerData[ container ] [ E_DOOR ] [ 0 ], g_containerData[ container ] [ E_DOOR1_CORDS ] [ 0 ], g_containerData[ container ] [ E_DOOR1_CORDS ] [ 1 ], g_containerData[ container ] [ E_DOOR1_CORDS ] [ 2 ], ( 0.1 ), 0.0, 0.0, g_containerData[ container ] [ E_OPEN_ANGLE ] [ 0 ] );
@@ -35957,7 +35887,6 @@ stock TextDrawShowForAllSpawned( Text: textdrawid ) {
 	}
 }
 
-
 stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
     new
     	iCurrent = -1, Float: fTmp;
@@ -36003,7 +35932,6 @@ stock TriggerRobberyForClerks( playerid, robberyid )
 
 stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: rZ, skinid, ... )
 {
-
 	static const
 		Float: drugDealerPositions[ 5 ] [ 2 ] [ 4 ] =
 		{

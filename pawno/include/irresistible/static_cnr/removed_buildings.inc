@@ -378,4 +378,17 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 10057, -1669.2188, 723.4688, 57.5469, 0.25);
 	RemoveBuildingForPlayer(playerid, 10049, -1683.1406, 786.0938, 38.8203, 0.25);
 	RemoveBuildingForPlayer(playerid, 10040, -1765.7422, 799.9453, 53.2266, 0.25);
+
+	// Zach's Drug Business
+	RemoveBuildingForPlayer(playerid, 5171, 2124.9453, -2275.4531, 20.1406, 0.25);
+	RemoveBuildingForPlayer(playerid, 3577, 2131.3281, -2274.6484, 16.0156, 100.0);
+	RemoveBuildingForPlayer(playerid, 3631, 2149.1406, -2266.9063, 12.8750, 100.0);
+	RemoveBuildingForPlayer(playerid, 5260, 2161.3438, -2264.9141, 14.0156, 0.25);
+	RemoveBuildingForPlayer(playerid, 3633, 2142.9141, -2256.3359, 13.9297, 100.0);
+	RemoveBuildingForPlayer(playerid, 3632, 2144.2969, -2258.1484, 13.9297, 100.0);
+	RemoveBuildingForPlayer(playerid, 5262, 2152.7109, -2256.7813, 15.2109, 0.25);
+	RemoveBuildingForPlayer(playerid, 5261, 2152.2578, -2239.4609, 14.5000, 0.25);
+	RemoveBuildingForPlayer(playerid, 5269, 2146.3750, -2248.7969, 14.6172, 0.25);
+	RemoveBuildingForPlayer(playerid, 5132, 2163.2891, -2251.6094, 14.1406, 0.25);
+	RemoveBuildingForPlayer(playerid, 5259, 2168.8438, -2246.7813, 13.9375, 0.25);
 }

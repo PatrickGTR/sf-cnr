@@ -57,13 +57,13 @@ new
 ;
 
 /* ** Functions ** */
-stock ResetHandleFields(handle)
+stock ResetFirework(handle)
 {
 	if(handle >= MAX_FIREWORKS)
 		return false;
 
-	if(!Iter_Contains(fireworks, handle))
-		return false;
+	// if(!Iter_Contains(fireworks, handle))
+	// 	return false;
 
 	FW_Data[handle][FW_ORIGIN_X] = 0.0;
 	FW_Data[handle][FW_ORIGIN_Y] = 0.0;
@@ -84,6 +84,7 @@ stock ResetHandleFields(handle)
 	FW_Data[handle][FW_FL_TIME_DELAY_COUNT] = 0;
 	FW_Data[handle][FW_FL_TIME_DELAY_RESULT] = 0;
 	FW_Data[handle][FW_CURRENT_STAGE] = FW_S_CREATE_FLARES;
+
 	for(new i = 0; i < FW_MAX_FLARES_PER_LAUNCH; i++)
 	{
 		FW_Data[handle][FW_IS_FLARE_MOVING][i] = false;
@@ -234,7 +235,7 @@ forward FW_UpdateTick(handle); public FW_UpdateTick(handle)
 							DestroyDynamicObject(FW_Data[handle][FW_FLARE_OBJECT_ID][i]);
 							cur++;
 						}
-						ResetHandleFields(handle);
+						ResetFirework(handle);
 					}
 				}
 			}
@@ -269,7 +270,7 @@ forward FW_UpdateTick(handle); public FW_UpdateTick(handle)
 				{
 					if(FW_Data[handle][FW_OBJECT_DESTROYED_COUNT] >= FW_Data[handle][FW_TOTAL_FLARE_OBJECTS])
 					{
-						ResetHandleFields(handle);
+						ResetFirework(handle);
 						return 0;
 					}
 
@@ -346,7 +347,7 @@ forward FW_UpdateTick(handle); public FW_UpdateTick(handle)
 				{
 					if(FW_Data[handle][FW_OBJECT_DESTROYED_COUNT] >= FW_Data[handle][FW_TOTAL_FLARE_OBJECTS])
 					{
-						ResetHandleFields(handle);
+						ResetFirework(handle);
 						return 0;
 					}
 					new const Float:angle_step = floatdiv(360.0, float(FW_Data[handle][FW_TOTAL_FLARE_OBJECTS])); //XY angle step in degrees
