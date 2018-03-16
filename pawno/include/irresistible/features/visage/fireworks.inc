@@ -381,3 +381,44 @@ forward FW_UpdateTick(handle); public FW_UpdateTick(handle)
 	FW_Data[handle][FW_FL_TIME_DELAY_COUNT]++;
 	return 1;
 }
+
+CMD:fireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	new
+		flares, style, Float: speed, Float: gravity, Float: angle, Float: time_delay, Float: max_height;
+
+	// /fireworks 50 0 10 10.8 50 0.2 50 - spiral
+	if ( sscanf( params, "ddffffF(50.0)", flares, style, speed, gravity, angle, time_delay, max_height ) ) return SendUsage( playerid, "fireworks [FLARES] [STYLE] [SPEED] [GRAVITY] [ANGLE] [TIME_DELAY] [MAX_HEIGHT]" );
+	else
+	{
+		new
+			Float: X, Float: Y, Float: Z
+		;
+
+		GetPlayerPos( playerid, X, Y, Z );
+
+		CreateFireworks( flares, style, X, Y, Z, angle, speed, gravity, time_delay, max_height );
+		return SendServerMessage( playerid, "Fireworks placed! Use /launchfireworks to launch." );
+	}
+}
+
+CMD:launchfireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	foreach (new f : fireworks) {
+		LaunchFireworks( f );
+	}
+	SendServerMessage( playerid, "Launching" );
+	return 1;
+}
+
+CMD:destroyfireworks( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	for (new f = 0; f < MAX_FIREWORKS; f++ ) {
+		ResetFirework( f );
+	}
+	SendServerMessage( playerid, "Destroyed" );
+	return 1;
+}

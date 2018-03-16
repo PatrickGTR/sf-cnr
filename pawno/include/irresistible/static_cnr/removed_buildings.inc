@@ -331,6 +331,18 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 1978, 2241.4453, 1619.6094, 1006.2266, 10000.0);
 	RemoveBuildingForPlayer(playerid, 2188, 2241.3125, 1602.7500, 1006.1563, 10000.0);
 
+	// Remove all poker machines
+	RemoveBuildingForPlayer(playerid, 2786, 2259.2188, 1596.4844, 1006.0156, 10000.0);
+	RemoveBuildingForPlayer(playerid, 2785, 2258.2578, 1596.4766, 1006.0156, 10000.0);
+	RemoveBuildingForPlayer(playerid, 2098, 1941.5234, 1006.3828, 993.4141, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1940.3906, 1014.2031, 993.4141, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1940.3906, 1021.4141, 993.4141, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1968.0938, 1006.3594, 993.4063, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1968.0938, 1013.9844, 993.4063, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1968.0938, 1021.6797, 993.4063, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1941.2188, 1029.2969, 993.4141, 0.25);
+	RemoveBuildingForPlayer(playerid, 2098, 1968.0938, 1029.5391, 993.4063, 0.25);
+
 	// TDK HQ
 	RemoveBuildingForPlayer(playerid, 6937, 2572.2422, 2703.9609, 19.0234, 0.25);
 	RemoveBuildingForPlayer(playerid, 7038, 2527.8203, 2703.9609, 10.8203, 0.25);

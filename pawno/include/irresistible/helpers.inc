@@ -28,6 +28,10 @@
 #define thread                              function // used to look pretty for mysql
 
 /* ** Variables ** */
+stock szSmallString[ 32 ];
+stock szBigString[ 256 ];
+stock szLargeString[ 1024 ];
+stock szHugeString[ 2048 ];
 stock g_szSprintfBuffer[ 1024 ];
 stock tmpVariable;
 
@@ -210,3 +214,31 @@ stock strreplace(string[], const search[], const replacement[], bool:ignorecase 
 /*stock strcpy(dest[], const source[], maxlength=sizeof dest) {
     strcat((dest[0] = EOS, dest), source, maxlength);
 }*/
+
+// purpose: get unattached player object index
+stock Player_GetUnusedAttachIndex( playerid )
+{
+    for ( new i = 0; i < MAX_PLAYER_ATTACHED_OBJECTS; i ++ )
+        if ( ! IsPlayerAttachedObjectSlotUsed( playerid, i ) )
+            return i;
+
+    return cellmin;
+}
+
+// purpose: convert integer into dollar string
+stock ConvertPrice( iValue, iCashSign = 1 )
+{
+    static
+        szNum[ 32 ];
+
+    format( szNum, sizeof( szNum ), "%d", iValue < 0 ? -iValue : iValue );
+
+    for( new i = strlen( szNum ) - 3; i > 0; i -= 3 ) {
+        strins( szNum, ",", i, sizeof( szNum ) );
+    }
+
+    if ( iCashSign ) strins( szNum, "$", 0 );
+    if ( iValue < 0 ) strins( szNum, "-", 0, sizeof( szNum ) );
+
+    return szNum;
+}

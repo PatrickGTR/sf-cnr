@@ -22,7 +22,8 @@
 #include                            < a_http >
 
 /* ** YSI ** */
-#include 							< foreach >
+#include 							< YSI\y_iterate >
+#include 							< YSI\y_hooks >
 #include                            < YSI\y_va >
 
 /* ** Redefinitions ** */
@@ -90,7 +91,6 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerInMethlab(%0)		(GetPVarInt(%0,"inMethLab")==1&&GetPlayerInterior(%0)==VW_METH)
 #define IsPlayerInShamal(%0)		(GetPlayerInterior(%0)==VW_SHAMAL)
 #define IsValidApartment(%0)		(0 <= %0 < sizeof(g_apartmentData))
-#define GetPlayerCash(%1)           p_Cash[%1]
 #define GetPlayerXP(%1)             p_XP[%1]
 #define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
@@ -3223,62 +3223,6 @@ new
 	Iterator:business<MAX_BUSINESSES>
 ;
 
-/* ** Blackjack ** */
-#define MAX_BLACKJACK_TABLES 		( 32 )
-#define MAX_BLACKJACK_CARDS 		( 5 )
-#define MAX_BLACKJACK_PLAYERS 		( 3 )
-#define BLACKJACK_DEALER_WAIT 		( 500 )
-#define BLACKJACK_PLAYER_WAIT 		( 10 )
-
-#define BLACKJACK_STATE_NONE 		( 0 )
-#define BLACKJACK_STATE_TURN 		( 1 )
-#define BLACKJACK_STATE_BUST 		( 2 )
-#define BLACKJACK_STATE_STAND 		( 3 )
-#define BLACKJACK_STATE_WIN 		( 4 )
-
-enum E_BLACKJACK_DATA
-{
-    bool: E_GAME_STARTED,   E_CARDS_DRAWN,          E_GAME_TIMER,
-
-    E_PAYOUT,
-
-    E_OBJECT,               E_ACTOR,
-    Float: E_X,             Float: E_Y,             Float: E_Z,
-    Float: E_ROTATION
-};
-
-new
-    g_blackjackData 				[ MAX_BLACKJACK_TABLES ] [ E_BLACKJACK_DATA ],
-    Text: g_blackjackTurnTD			[ MAX_BLACKJACK_TABLES ] = { Text: INVALID_TEXT_DRAW, ... },
-    Text: g_blackjackPlayerCards	[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_CARDS ] [ MAX_BLACKJACK_PLAYERS ],
-    Text: g_blackjackDealerCards	[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_CARDS ],
-    g_blackjackDealerCardIndex		[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_CARDS ],
-    g_blackjackPlayerCardIndex		[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_CARDS ] [ MAX_BLACKJACK_PLAYERS ],
-    g_blackjackPlayerState			[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_PLAYERS ],
-    g_blackjackSlotData				[ MAX_BLACKJACK_TABLES ] [ MAX_BLACKJACK_PLAYERS ],
-    p_blackjackTable				[ MAX_PLAYERS ] = { -1, ... },
-    Iterator:blackjacktables<MAX_BLACKJACK_TABLES>
-;
-
-/* ** Visage Apartments ** */
-#define MAX_VISAGE_APARTMENTS    	( 13 )
-
-static const
-	Float: VISAGE_APARTMENT_ENTRANCE[ 3 ] = { 0.0, 0.0, 0.0 },
-	Float: VISAGE_APARTMENT_EXIT[ 3 ] = { 0.0, 0.0, 0.0 }
-;
-
-enum E_APARTMENT_DATA
-{
-	E_OWNER_ID,    			E_TITLE[ 30 ], 			E_PASSCODE[ 4 ],
-	bool: E_GAMBLING
-};
-
-new
-	g_VisageApartmentData        	[ MAX_VISAGE_APARTMENTS ] [ E_FLAT_DATA ],
-	Iterator: visageapartments < MAX_VISAGE_APARTMENTS >
-;
-
 /* ** Player Data ** */
 new
     bool: p_Spawned    				[ MAX_PLAYERS char ],
@@ -3530,12 +3474,7 @@ new
 
 /* ** Server Data ** */
 new
-	dbHandle,
     g_Checkpoints           		[ ALL_CHECKPOINTS ],
-    szSmallString                  	[ 32 ],
-    szBigString                 	[ 256 ],
-    szLargeString                   [ 1024 ],
-    szHugeString 					[ 2048 ],
 	g_redeemVipWait 				= 0,
 	g_TrolleyVehicles               [ 5 ],
 	engine, lights, doors, bonnet, boot, objective, alarm, panels, tires,
@@ -3556,7 +3495,6 @@ new
 	szReportsLog 					[ 8 ][ 128 ],
 	szQuestionsLog 					[ 8 ][ 128 ],
 	g_preloadedObjectCount          = 0,
-	bool: g_ServerLocked            = false,
 	bool: g_CommandLogging			= false,
 	bool: g_DialogLogging			= false,
 	szRules							[ 3300 ],
@@ -3618,6 +3556,7 @@ stock Float: distanceFromSafe( iPlayer, iRobbery, &Float: fDistance = Float: 0x7
 main()
 {
 	print( "\n" #SERVER_NAME "\n" );
+	CallRemoteFunction( "InitializeTextDraws", "" );
 }
 
 public OnGameModeInit()
@@ -3638,8 +3577,6 @@ public OnGameModeInit()
 	//SetServerRule( "mapname", "San Fierro" );
 
 	/* ** Intalize Data ** */
-	InitializeFpsTextdraw( );
-	initializeTextDraws( );
 	initializeCheckpoints( );
 	initializeVehicles( );
 	initializeServerObjects( );
@@ -3668,14 +3605,6 @@ public OnGameModeInit()
 		if ( g_informationPickupsData[ i ] [ E_Z ] < 800.0 )
 			CreateDynamicMapIcon( g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ], 37, 0, -1, -1, -1, 50.0 );
 	}
-
-	/* ** Database Configuration ** */
-	dbHandle = mysql_connect( MYSQL_HOST, MYSQL_USER, MYSQL_DATABASE, MYSQL_PASS );
-
-	if ( mysql_errno( dbHandle )  )
-		print( "[MYSQL]: Couldn't connect to MySQL database." ), g_ServerLocked = true;
-	else
-		print( "[MYSQL]: Connection to database is successful." );
 
 	/* ** Server Variables ** */
 	AddServerVariable( "taxrate", "5.0", GLOBAL_VARTYPE_FLOAT );
@@ -3967,20 +3896,6 @@ public OnGameModeInit()
 	CreateRouletteTable( 1959.39844, 1025.69531, 992.507810, 0.000000 );
 	CreateRouletteTable( 1963.71094, 1010.11719, 992.507810, 0.000000 );
 	CreateRouletteTable( 1959.39844, 1010.11719, 992.507810, 0.000000 );
-
-	// Create blackjack tables
-	CreateBlackjackTable( 25000, 2230.37500, 1602.75000, 1006.15631, 0.00000, 82 );
-	CreateBlackjackTable( 25000, 2232.18750, 1604.43750, 1006.15631, 90.0000, 82 );
-	CreateBlackjackTable( 25000, 2228.49219, 1604.45313, 1006.15631, -90.000, 82 );
-	CreateBlackjackTable( 25000, 2230.37500, 1606.27344, 1006.15631, 180.000, 82 );
-	CreateBlackjackTable( 100000, 2241.31250, 1602.75000, 1006.15631, 0.00000, 82 );
-	CreateBlackjackTable( 100000, 2243.12500, 1604.43750, 1006.15631, 90.0000, 82 );
-	CreateBlackjackTable( 100000, 2239.42969, 1604.45313, 1006.15631, -90.000, 82 );
-	CreateBlackjackTable( 100000, 2241.31250, 1606.27344, 1006.15631, 180.000, 82 );
-	CreateBlackjackTable( 1000000, 1962.34375, 1015.66412, 992.46881, 90.00000, 23 );
-	CreateBlackjackTable( 1000000, 1960.36719, 1015.66412, 992.46881, -90.0000, 23 );
-	CreateBlackjackTable( 1000000, 1960.74829, 1020.31189, 992.46881, -90.0000, 23 );
-	CreateBlackjackTable( 10000000, 1962.34375, 1020.17969, 992.46881, 90.00000, 23 );
 
 	// Houses
 	/*CreateEntrance( "[ROOFTOP]", 			-2440.5149, 820.9702, 35.1838, -2438.1204, 819.7362, 65.5078, 			0,   0, false, true ); // Jendral
@@ -5232,7 +5147,6 @@ function lumberjack_RemoveWood( obj ) return StopDynamicObject( obj ), DestroyDy
 
 public OnGameModeExit( )
 {
-    mysql_close( );
 	KillTimer( rl_ServerUpdate );
 	KillTimer( rl_ZoneUpdate );
     for( new t; t != MAX_TEXT_DRAWS; t++ ) TextDrawDestroy( Text: t );
@@ -6386,9 +6300,6 @@ public OnPlayerConnect( playerid )
 	if ( textContainsIP( ReturnPlayerName( playerid ) ) )
 	    return Kick( playerid ), 1;
 
-	if ( g_ServerLocked )
-	    return SendError( playerid, "The server is locked due to false server configuration. Please wait for the operator." ), KickPlayerTimed( playerid ), 1;
-
 	// Ultra fast queries...
 	format( Query, sizeof( Query ), "SELECT * FROM `BANS` WHERE (`NAME`='%s' OR `IP`='%s') AND `SERVER`=0 LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ), mysql_escape( ReturnPlayerIP( playerid ) ) );
 	mysql_function_query( dbHandle, Query, true, "OnPlayerBanCheck", "i", playerid );
@@ -6629,7 +6540,6 @@ public OnPlayerDisconnect( playerid, reason )
 	StopPlayerTruckingCourier( playerid );
     RemovePlayerFromRace( playerid );
 	RemovePlayerFromRoulette( playerid );
-	RemovePlayerFromBlackjack( playerid );
 	p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
@@ -7580,7 +7490,7 @@ stock getPlayerTax( playerid )
 #if defined AC_INCLUDED
 public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
-public OnPlayerDeath(playerid, killerid, reason)
+public OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
 	if ( !p_PlayerLogged{ playerid } )
@@ -7623,7 +7533,6 @@ public OnPlayerDeath(playerid, killerid, reason)
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
     RemovePlayerFromRoulette( playerid );
-	RemovePlayerFromBlackjack( playerid );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
@@ -8842,47 +8751,6 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	}
 
 	if ( g_CommandLogging ) printf( "[COMMAND_LOG] %s(%d) - %s", ReturnPlayerName( playerid ), playerid, cmdtext );
-	return 1;
-}
-
-CMD:fireworks( playerid, params[ ] )
-{
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
-	new
-		flares, style, Float: speed, Float: gravity, Float: angle, Float: time_delay, Float: max_height;
-
-	// /fireworks 50 0 10 10.8 50 0.2 50 - spiral
-	if ( sscanf( params, "ddffffF(50.0)", flares, style, speed, gravity, angle, time_delay, max_height ) ) return SendUsage( playerid, "fireworks [FLARES] [STYLE] [SPEED] [GRAVITY] [ANGLE] [TIME_DELAY] [MAX_HEIGHT]" );
-	else
-	{
-		new
-			Float: X, Float: Y, Float: Z
-		;
-
-		GetPlayerPos( playerid, X, Y, Z );
-
-		CreateFireworks( flares, style, X, Y, Z, angle, speed, gravity, time_delay, max_height );
-		return SendServerMessage( playerid, "Fireworks placed! Use /launchfireworks to launch." );
-	}
-}
-
-CMD:launchfireworks( playerid, params[ ] )
-{
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
-	foreach (new f : fireworks) {
-		LaunchFireworks( f );
-	}
-	SendServerMessage( playerid, "Launching" );
-	return 1;
-}
-
-CMD:destroyfireworks( playerid, params[ ] )
-{
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
-	for (new f = 0; f < MAX_FIREWORKS; f++ ) {
-		ResetFirework( f );
-	}
-	SendServerMessage( playerid, "Destroyed" );
 	return 1;
 }
 
@@ -20678,42 +20546,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 	if ( IsPlayerInCasino( playerid ) )
 	{
-        new
-            blackjack_table = p_blackjackTable[ playerid ];
-
-       	// Blackjack
-        if ( blackjack_table != -1 )
-        {
-            new
-                player_index = GetBlackjackPlayerIndex( blackjack_table, playerid );
-
-            if ( player_index == -1 )
-                return SendError( playerid, "You don't seem to be playing any blackjack table." );
-
-		    if ( PRESSED( KEY_SPRINT ) ) {
-
-	            if ( ! g_blackjackData[ blackjack_table ] [ E_CARDS_DRAWN ] && g_blackjackData[ blackjack_table ] [ E_GAME_TIMER ] == -1 )
-	                return ( g_blackjackData[ blackjack_table ] [ E_GAME_TIMER ] = SetTimerEx( "BeginBlackJackTurn", BLACKJACK_DEALER_WAIT, false, "d", blackjack_table ) ), 1;
-
-	            if ( g_blackjackPlayerState[ blackjack_table ] [ player_index ] == BLACKJACK_STATE_TURN ) {
-	                g_blackjackPlayerState[ blackjack_table ] [ player_index ] = BLACKJACK_STATE_STAND;
-	                SendClientMessageToBlackjack( blackjack_table, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has decided to stand.", ReturnPlayerName( playerid ), playerid );
-	                return 1;
-	            }
-		        return 1;
-		    }
-
-		    if ( PRESSED( KEY_CTRL_BACK ) )
-		    {
-	            if ( g_blackjackPlayerState[ blackjack_table ] [ player_index ] != BLACKJACK_STATE_TURN )
-	                return SendError( playerid, "It's not your turn to hit. Please wait!" );
-
-	            DrawPlayerBlackjackCard( blackjack_table, player_index );
-	            CheckForBlackjack( blackjack_table );
-	            return 1;
-		    }
-        }
-
 		// Roulette
 		if ( p_RouletteMarkerTimer[ playerid ] != -1 )
 		{
@@ -20890,83 +20722,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 			if ( p_RouletteTable[ playerid ] != -1 )
 				return RemovePlayerFromRoulette( playerid );
-
-			if ( p_blackjackTable[ playerid ] != -1 )
-				return RemovePlayerFromBlackjack( playerid, .reset_cam = 1 );
-
-			foreach(new id : blackjacktables)
-	        {
-	            if ( IsPlayerInRangeOfPoint( playerid, 3.0, g_blackjackData[ id ] [ E_X ], g_blackjackData[ id ] [ E_Y ], g_blackjackData[ id ] [ E_Z ] ) ) {
-
-	                new
-	                    player_index;
-
-	                for ( ; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ )
-	                    if ( g_blackjackSlotData[ id ] [ player_index ] == -1 )
-	                        break;
-
-	                if ( player_index >= MAX_BLACKJACK_PLAYERS || g_blackjackSlotData[ id ] [ player_index ] != -1 )
-	                    return SendError( playerid, "There are no more vacant slots for this table." );
-
-	                if ( GetPlayerCash( playerid ) < g_blackjackData[ id ] [ E_PAYOUT ] )
-	                    return SendError( playerid, "You don't have any money to wager." );
-
-	                new
-	                    Float: lookatX, Float: lookatY, Float: lookatZ,
-	                    Float: tmpX, Float: tmpY, Float: tmpZ
-	                ;
-
-	                GetPlayerCameraPos( playerid, X, Y, Z );
-	                GetPlayerCameraFrontVector( playerid, lookatX, lookatY, lookatZ );
-
-	                tmpX = g_blackjackData[ id ] [ E_X ] - 1.3 * floatcos( g_blackjackData[ id ] [ E_ROTATION ] + 90.0, degrees );
-	                tmpY = g_blackjackData[ id ] [ E_Y ] - 1.3 * floatsin( g_blackjackData[ id ] [ E_ROTATION ] + 90.0, degrees );
-	                tmpZ = g_blackjackData[ id ] [ E_Z ] + 1.7;
-
-	                InterpolateCameraPos( playerid, X, Y, Z, tmpX, tmpY, tmpZ, 1000, CAMERA_MOVE );
-
-	                X += floatmul( lookatX, 20.0 );
-	                Y += floatmul( lookatY, 20.0 );
-	                Z += floatmul( lookatZ, 20.0 );
-
-	                InterpolateCameraLookAt( playerid, X, Y, Z, g_blackjackData[ id ] [ E_X ], g_blackjackData[ id ] [ E_Y ], g_blackjackData[ id ] [ E_Z ] - 1.0, 1000, CAMERA_MOVE );
-
-	                p_blackjackTable[ playerid ] = id;
-	                g_blackjackSlotData[ id ] [ player_index ] = playerid;
-
-	                // reset player cards
-	                for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
-	                    g_blackjackPlayerCardIndex[ id ] [ c ] [ player_index ] = -1;
-
-	                // show cards to players
-	                for ( new player = 0; player < MAX_BLACKJACK_PLAYERS; player ++ )
-	                {
-	                    new
-	                        gamerid = g_blackjackSlotData[ id ] [ player ];
-
-	                    // deal only first two cards
-	                    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
-	                    {
-	                        TextDrawShowForPlayer( gamerid, g_blackjackDealerCards[ id ] [ c ] );
-
-	                        // show two player cards only
-	                        if ( c >= 2 )
-	                            continue;
-
-	                        for ( new p = 0; p < GetBlackjackPlayers( id ); p ++ ) {
-	                            TextDrawShowForPlayer( gamerid, g_blackjackPlayerCards[ id ] [ c ] [ p ] );
-	                        }
-	                    }
-	                }
-
-					szBigString = "~y~~k~~PED_SPRINT~~w~ - Begin game/Stand~n~~y~~k~~GROUP_CONTROL_BWD~~w~ - Hit~n~~y~~k~~VEHICLE_ENTER_EXIT~~w~ - Exit";
-					ShowPlayerHelpDialog( playerid, 0, szBigString );
-
-	                SendServerMessage( playerid, "You have entered the %s hand blackjack table.", ConvertPrice( g_blackjackData[ id ] [ E_PAYOUT ] ) );
-	                ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
-	                return 1;
-	            }
-	        }
 
 			foreach(new id : roulettetables)
 			{
@@ -27398,19 +27153,9 @@ stock SavePlayerData( playerid, bool: logout = false )
     return 1;
 }
 
-stock initializeTextDraws( )
+forward InitializeTextDraws( ); public InitializeTextDraws( )
 {
-	// reset blackjack data
-    for ( new i = 0; i < MAX_BLACKJACK_TABLES; i ++ ) {
-        for ( new x = 0; x < MAX_BLACKJACK_CARDS; x ++ ) {
-            g_blackjackDealerCards[ i ] [ x ] = Text: INVALID_TEXT_DRAW;
-            for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) {
-                g_blackjackPlayerCards[ i ] [ x ] [ p ] = Text: INVALID_TEXT_DRAW;
-                g_blackjackSlotData[ i ] [ p ] = -1;
-            }
-        }
-    }
-
+	print ("Initialized First");
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -27792,10 +27537,6 @@ stock initializeTextDraws( )
 			TextDrawTextSize(g_SlotMachineThreeTD[ playerid ], 66.000000, 77.000000);
 		}
 
-		if ( playerid < MAX_BLACKJACK_TABLES ) {
-			initializeBlackjackTextdraws( playerid );
-		}
-
 		p_ProgressBoxOutsideTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
 		TextDrawBackgroundColor(p_ProgressBoxOutsideTD[ playerid ], 255);
 		TextDrawFont(p_ProgressBoxOutsideTD[ playerid ], 1);
@@ -27922,6 +27663,7 @@ stock initializeTextDraws( )
 		TextDrawTextSize(p_HelpBoxTD[ playerid ], 170.000000, 0.000000);
 		TextDrawSetSelectable(p_HelpBoxTD[ playerid ], 0);
 	}
+	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
 stock initializePlayerTextDraws( playerid )
@@ -28020,6 +27762,7 @@ stock initializePlayerTextDraws( playerid )
 	PlayerTextDrawSetOutline(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetSelectable(playerid, p_RobberyAmountTD[ playerid ], 0);
+	return 1;
 }
 
 stock SendClientMessageToGang( gangid, colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
@@ -28467,6 +28210,8 @@ stock ClearPlayerWantedLevel( playerid )
 	SetPlayerWantedLevel( playerid, 0 );
 	SetPlayerColorToTeam( playerid );
 }
+
+stock GetPlayerCash( playerid ) return p_Cash[ playerid ];
 
 stock GivePlayerCash( playerid, money, bool: force_save = false )
 {
@@ -31368,23 +31113,6 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false ) {
 	    }
 	}
 	return false;
-}
-
-stock ConvertPrice( iValue, iCashSign = 1 )
-{
-	static
-		szNum[ 32 ];
-
-	format( szNum, sizeof( szNum ), "%d", iValue < 0 ? -iValue : iValue );
-
-    for( new i = strlen( szNum ) - 3; i > 0; i -= 3 ) {
-        strins( szNum, ",", i, sizeof( szNum ) );
-    }
-
-	if ( iCashSign )	 strins( szNum, "$", 0 );
-    if ( iValue < 0 ) strins( szNum, "-", 0, sizeof( szNum ) );
-
-    return szNum;
 }
 
 stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU_BUY, Float: custom_multplier = 1.0, bool: unlimited_ammo = false )
@@ -34923,7 +34651,7 @@ thread OnSlotMachinesLoad( )
 				// 3d Text
 				fOffsetX = 1.0 * floatsin( -rZ, degrees );
 				fOffsetY = 1.0 * floatcos( -rZ, degrees );
-				CreateDynamic3DTextLabel( sprintf( "Press ENTER to use\n"COL_WHITE"%s Minimum", ConvertPrice( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ), COLOR_GREY, X + fOffsetX, Y + fOffsetY, Z - 0.1, 5.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 1 );
+				CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play\n"COL_WHITE"%s Minimum", ConvertPrice( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ), COLOR_GREY, X + fOffsetX, Y + fOffsetY, Z - 0.1, 5.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 1 );
 
 				// Misc variables
 				g_slotmachineData[ id ] [ E_TIMER ] = -1;
@@ -36886,7 +36614,7 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
 		X += 1.365 * floatcos( Angle + 98.0, degrees );
 		Y += 1.365 * floatsin( Angle + 98.0, degrees );
 
-		CreateDynamic3DTextLabel( "Press ENTER to use\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+		CreateDynamic3DTextLabel( "Press ENTER To Play\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
 
 		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0 );
 		Iter_Add( roulettetables, id );
@@ -38410,488 +38138,5 @@ stock GetBusinessAirModelIndex( modelid ) {
 	return index;
 }
 
-stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, world = 0 )
-{
-    new
-        id = Iter_Free(blackjacktables);
-
-    if ( id != ITER_NONE )
-    {
-        g_blackjackData[ id ] [ E_X ] = X;
-        g_blackjackData[ id ] [ E_Y ] = Y;
-        g_blackjackData[ id ] [ E_Z ] = Z;
-        g_blackjackData[ id ] [ E_ROTATION ] = Angle;
-
-        g_blackjackData[ id ] [ E_GAME_TIMER ] = -1;
-        g_blackjackData[ id ] [ E_PAYOUT ] = payout;
-        g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle );
-        g_blackjackData[ id ] [ E_ACTOR ] = CreateActor( 171, X - 0.4 * floatcos( Angle - 90.0, degrees ), Y - 0.4 * floatsin( Angle - 90.0, degrees ), Z, Angle + 180.0 );
-        CreateDynamic3DTextLabel( sprintf( "Press ENTER to use\n"COL_WHITE"%s Minimum", ConvertPrice( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-
-		SetActorInvulnerable( g_blackjackData[ id ] [ E_ACTOR ], true );
-		SetActorVirtualWorld( g_blackjackData[ id ] [ E_ACTOR ], world );
-
-        ResetBlackjackTable( id );
-        Iter_Add( blackjacktables, id );
-    }
-    return 1;
-}
-
-function DrawPlayerBlackjackCard( tableid, player_index )
-{
-    new
-        randomCard = random( sizeof( g_blackjackDealerCards ) );
-
-    for ( new cardid = 0; cardid < MAX_BLACKJACK_CARDS; cardid ++ ) if ( g_blackjackPlayerCardIndex[ tableid ] [ cardid ] [ player_index ] == -1 ) {
-        TextDrawSetString( g_blackjackPlayerCards[ tableid ] [ cardid ] [ player_index ], g_cardTextdrawData[ randomCard ] );
-        foreach (new gamerid : Player) if ( p_blackjackTable[ gamerid ] == tableid ) {
-        	TextDrawShowForPlayer( gamerid, g_blackjackPlayerCards[ tableid ] [ cardid ] [ player_index ] );
-    		PlayerPlaySound( gamerid, 1145, 0.0, 0.0, 0.0 );
-        }
-        g_blackjackPlayerCardIndex[ tableid ] [ cardid ] [ player_index ] = randomCard;
-        break;
-    }
-    return randomCard;
-}
-
-function BeginBlackJackTurn( tableid )
-{
-    new
-        cardid = g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] ++;
-
-    if ( cardid >= MAX_BLACKJACK_CARDS ) {
-        ResetBlackjackTable( tableid );
-        return;
-    }
-
-    new
-        randomCard = random( sizeof( g_blackjackDealerCards ) );
-
-    // dealer cards
-    ApplyActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
-    ApplyActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
-    TextDrawSetString( g_blackjackDealerCards[ tableid ] [ cardid ], g_cardTextdrawData[ randomCard ] );
-    g_blackjackDealerCardIndex[ tableid ] [ cardid ] = randomCard;
-
-    // noise
-    foreach (new gamerid : Player) if ( p_blackjackTable[ gamerid ] != -1 ) {
-    	PlayerPlaySound( gamerid, 1145, 0.0, 0.0, 0.0 );
-    }
-
-    // deal player first card
-    if ( cardid == 0 )
-    {
-    	new
-    		bet_amount = 0;
-
-        for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 )
-        {
-            new
-                gamerid = g_blackjackSlotData[ tableid ] [ player_index ];
-
-            if ( GetPlayerCash( gamerid ) < g_blackjackData[ tableid ] [ E_PAYOUT ] ) {
-                SendError( gamerid, "You don't have any money to wager." );
-                RemovePlayerFromBlackjack( gamerid, .reset_cam = 1 );
-                continue;
-            }
-
-            bet_amount += g_blackjackData[ tableid ] [ E_PAYOUT ];
-            GivePlayerCash( gamerid, -g_blackjackData[ tableid ] [ E_PAYOUT ] );
-            DrawPlayerBlackjackCard( tableid, player_index );
-            if ( cardid < 1 ) { // distribute first two cards to players
-               SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
-            }
-        }
-
-		UpdateServerVariable( "blackjack_bets", 0, GetGVarFloat( "blackjack_bets" ) + ( float( bet_amount ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
-
-        // begin turns
-        new
-            first_player = GetNextAvailableBlackjackPlayer( tableid ),
-            first_player_index = GetBlackjackPlayerIndex( tableid, first_player )
-        ;
-
-        if ( first_player_index != -1 )
-        	g_blackjackPlayerState[ tableid ] [ first_player_index ] = BLACKJACK_STATE_TURN;
-
-        g_blackjackData[ tableid ] [ E_GAME_TIMER ] = SetTimerEx( "BlackjackPlayerTurn", BLACKJACK_DEALER_WAIT + 500, false, "ddd", tableid, first_player, BLACKJACK_PLAYER_WAIT );
-    }
-
-    // check for blackjack on players & bot
-    new
-        dealer_score = CheckForBlackjack( tableid );
-
-    // pull more cards
-    if ( cardid >= 1 && dealer_score < 17 )
-        g_blackjackData[ tableid ] [ E_GAME_TIMER ] = SetTimerEx( "BeginBlackJackTurn", BLACKJACK_DEALER_WAIT, false, "d", tableid );
-
-    if ( dealer_score >= 17 ) {
-        SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" Table will reset in 5 seconds as all hands have been dealt." );
-        SetTimerEx( "ResetBlackjackTable", 5000, false, "d", tableid );
-    }
-}
-
-stock GetNextAvailableBlackjackPlayer( tableid, exclude = INVALID_PLAYER_ID )
-{
-    new
-        playerid = INVALID_PLAYER_ID;
-
-    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 && g_blackjackPlayerState[ tableid ] [ player_index ] == BLACKJACK_STATE_NONE && exclude != g_blackjackSlotData[ tableid ] [ player_index ] && g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] != -1 ) {
-        playerid = g_blackjackSlotData[ tableid ] [ player_index ];
-        break;
-    }
-    return playerid;
-}
-
-function BlackjackPlayerTurn( tableid, playerid, seconds_left )
-{
-    new
-        player_index = GetBlackjackPlayerIndex( tableid, playerid );
-
-    if ( IsPlayerConnected( playerid ) && player_index != -1 && seconds_left >= 0 && g_blackjackPlayerState[ tableid ] [ player_index ] == BLACKJACK_STATE_TURN )
-    {
-        foreach (new gamerid : Player) if ( p_blackjackTable[ gamerid ] == tableid ) {
-            TextDrawSetString( g_blackjackTurnTD[ tableid ], sprintf( "%s has %d seconds left", ReturnPlayerName( playerid ), seconds_left ) );
-            TextDrawShowForPlayer( gamerid, g_blackjackTurnTD[ tableid ] );
-        }
-        g_blackjackData[ tableid ] [ E_GAME_TIMER ] = SetTimerEx( "BlackjackPlayerTurn", 960, false, "ddd", tableid, playerid, seconds_left - 1 );
-    }
-    else
-    {
-        new
-            next_player = GetNextAvailableBlackjackPlayer( tableid, playerid );
-
-        if ( next_player == INVALID_PLAYER_ID )
-        {
-            TextDrawHideForAll( g_blackjackTurnTD[ tableid ] );
-            g_blackjackData[ tableid ] [ E_GAME_TIMER ] = SetTimerEx( "BeginBlackJackTurn", BLACKJACK_DEALER_WAIT, false, "d", tableid );
-        }
-        else
-        {
-            new
-                next_player_index  = GetBlackjackPlayerIndex( tableid, next_player );
-
-           	// otherwise winning hands will get reissued prizes
-            if ( player_index != -1 && g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_WIN && g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_BUST )
-            	g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_STAND;
-
-            g_blackjackPlayerState[ tableid ] [ next_player_index ] = BLACKJACK_STATE_TURN;
-            g_blackjackData[ tableid ] [ E_GAME_TIMER ] = SetTimerEx( "BlackjackPlayerTurn", 960, false, "ddd", tableid, next_player, BLACKJACK_PLAYER_WAIT );
-        }
-    }
-}
-
-function ResetBlackjackTable( tableid )
-{
-	if ( tableid == -1 )
-		return;
-
-    // variables
-    KillTimer( g_blackjackData[ tableid ] [ E_GAME_TIMER ] ), g_blackjackData[ tableid ] [ E_GAME_TIMER ] = -1;
-    g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] = 0;
-
-    // card data
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) {
-        g_blackjackDealerCardIndex[ tableid ] [ c ] = -1;
-        TextDrawSetString( g_blackjackDealerCards[ tableid ] [ c ], "ld_card:cdback" );
-
-        for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) {
-            g_blackjackPlayerState[ tableid ] [ p ] = BLACKJACK_STATE_NONE;
-            g_blackjackPlayerCardIndex[ tableid ] [ c ] [ p ] = -1;
-            TextDrawSetString( g_blackjackPlayerCards[ tableid ] [ c ] [ p ], "ld_card:cdback" );
-            if ( c > 1 ) TextDrawHideForAll( g_blackjackPlayerCards[ tableid ] [ c ] [ p ] );
-        }
-    }
-
-    // reshow textdraws to players
-    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 )
-    {
-        new
-            gamerid = g_blackjackSlotData[ tableid ] [ player_index ];
-
-        // deal only first two cards
-        for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
-        {
-            TextDrawShowForPlayer( gamerid, g_blackjackDealerCards[ tableid ] [ c ] );
-
-            // show two player cards only
-            if ( c >= 2 )
-                continue;
-
-            for ( new p = 0; p < GetBlackjackPlayers( tableid ); p ++ ) {
-                TextDrawShowForPlayer( gamerid, g_blackjackPlayerCards[ tableid ] [ c ] [ p ] );
-            }
-        }
-    }
-}
-
-stock CheckForBlackjack( tableid )
-{
-    new
-        dealer_score = 0;
-
-    //if ( g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] <= 1 )
-    //    return dealer_score;
-
-    // calculate dealer score
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackDealerCardIndex[ tableid ] [ c ] != -1 )
-    {
-        new
-            card_value = GetBlackjackCardValue( g_blackjackDealerCardIndex[ tableid ] [ c ] );
-
-        // printf("%d Card = %d", c, card_value);
-
-        if ( card_value == 1 ) {
-            if ( dealer_score >= 11 ) dealer_score += 1;
-            else dealer_score += 11;
-        }
-        else dealer_score += card_value;
-    }
-    //printf("The Dealer score is %d", dealer_score );
-
-    // calculate player score
-    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 && g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] != -1 )
-    {
-        new
-            playerid = g_blackjackSlotData[ tableid ] [ player_index ], player_score = 0;
-
-		for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] != -1 )
-	    {
-	        new
-	            card_value = GetBlackjackCardValue( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] );
-
-	        if ( card_value == 1 ) {
-	            if ( player_score >= 11 ) player_score += 1;
-	            else player_score += 11;
-	        }
-	        else player_score += card_value;
-	    }
-
-        if ( g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_BUST && g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_WIN  )
-        {
-            new
-                payout = floatround( float( g_blackjackData[ tableid ] [ E_PAYOUT ] ) * 2.0 );
-
-            // check for win
-       		if ( dealer_score == player_score && dealer_score >= 17 ) {
-       			payout = g_blackjackData[ tableid ] [ E_PAYOUT ];
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has been returned %s due to a push.", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
-		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
-                GivePlayerCash( playerid, payout );
-            }
-            else if ( player_score == 21 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
-                if ( IsPlayerHandBlackjack( tableid, player_index, player_score ) ) {
-	                payout = floatround( float( g_blackjackData[ tableid ] [ E_PAYOUT ] ) * 2.5 );
-	                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" Blackjack! %s(%d) has won %s!", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
-                } else {
-	                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a card count of 21!", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
-                }
-		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
-                GivePlayerCash( playerid, payout );
-            }
-            else if ( dealer_score == 21 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a dealer %s.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ), IsDealerHandBlackjack( tableid, dealer_score ) ? ( "blackjack" ) : ( "21" ) );
-		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
-            }
-            else if ( player_score > 21 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
-		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
-            }
-            else if ( dealer_score > 21 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a dealer bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
-		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
-                GivePlayerCash( playerid, payout );
-            }
-            else if ( player_score < dealer_score && dealer_score >= 17 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
-		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
-            }
-            else if ( player_score > dealer_score && dealer_score >= 17 ) {
-                g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
-                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a dealer bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
-		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
-                GivePlayerCash( playerid, payout );
-            }
-
-            // alert world
-			if ( g_blackjackPlayerState[ tableid ] [ player_index ] == BLACKJACK_STATE_WIN && payout > g_blackjackData[ tableid ] [ E_PAYOUT ] && payout >= 10000 ) {
-				UpdateServerVariable( "blackjack_wins", 0, GetGVarFloat( "blackjack_wins" ) + ( float( payout ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
-				SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from blackjack!", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
-			}
-        }
-    }
-    return dealer_score;
-}
-
-stock RemovePlayerFromBlackjack( playerid, reset_cam = 0 )
-{
-    new
-        blackjack_table = p_blackjackTable[ playerid ];
-
-    if ( blackjack_table == -1 )
-        return 0;
-
-    // hide textdraws & reset
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) {
-        TextDrawHideForPlayer( playerid, g_blackjackDealerCards[ blackjack_table ] [ c ] );
-
-        for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) {
-            TextDrawHideForPlayer( playerid, g_blackjackPlayerCards[ blackjack_table ] [ c ] [ p ] );
-        }
-    }
-  	TextDrawHideForPlayer( playerid, g_blackjackTurnTD[ blackjack_table ] );
-
-    // check if it is a player
-    new
-        player_index = GetBlackjackPlayerIndex( blackjack_table, playerid );
-
-    if ( player_index != -1 )
-    {
-        foreach (new i : Player) if ( p_blackjackTable[ i ] == blackjack_table ) {
-            for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) {
-                g_blackjackPlayerCardIndex[ blackjack_table ] [ c ] [ player_index ] = -1;
-                g_blackjackPlayerState[ blackjack_table ] [ player_index ] = BLACKJACK_STATE_NONE;
-                TextDrawSetString( g_blackjackPlayerCards[ blackjack_table ] [ c ] [ player_index ], "ld_card:cdback" );
-                TextDrawHideForPlayer( i, g_blackjackPlayerCards[ blackjack_table ] [ c ] [ player_index ] );
-            }
-        }
-        g_blackjackSlotData[ blackjack_table ] [ player_index ] = -1;
-    }
-
-    // reset camera?
-    if ( reset_cam ) {
-        TogglePlayerControllable( playerid, 1 );
-        ClearAnimations( playerid );
-        SetCameraBehindPlayer( playerid );
-        HidePlayerHelpDialog( playerid );
-    }
-
-    // reset variables
-    p_blackjackTable[ playerid ] = -1;
-
-    // reset table just incase empty
-    if ( GetBlackjackPlayers( blackjack_table ) <= 0 )
-		ResetBlackjackTable( blackjack_table );
-
-    return 1;
-}
-
-stock SendClientMessageToBlackjack( tableid, colour, format[ ], va_args<> )
-{
-    static
-        out[ 144 ];
-
-    va_format( out, sizeof( out ), format, va_start<3> );
-
-    for(new i = 0; i < 10; i++) if ( p_blackjackTable[ i ] == tableid ) {
-        SendClientMessage( i, colour, out );
-    }
-    return 1;
-}
-
-stock initializeBlackjackTextdraws( id )
-{
-    g_blackjackTurnTD[ id ] = TextDrawCreate(330.000000, 204.000000, "Lorenc has 5 seconds");
-    TextDrawAlignment(g_blackjackTurnTD[ id ], 2);
-    TextDrawBackgroundColor(g_blackjackTurnTD[ id ], 255);
-    TextDrawFont(g_blackjackTurnTD[ id ], 1);
-    TextDrawLetterSize(g_blackjackTurnTD[ id ], 0.260000, 1.200000);
-    TextDrawColor(g_blackjackTurnTD[ id ], 16711935);
-    TextDrawSetOutline(g_blackjackTurnTD[ id ], 1);
-    TextDrawSetProportional(g_blackjackTurnTD[ id ], 1);
-
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
-    {
-        g_blackjackDealerCards[ id ] [ c ] = TextDrawCreate(243.000000 + 35.0 * float( c ), 138.000000, "ld_card:cdback");
-        TextDrawBackgroundColor( g_blackjackDealerCards[ id ] [ c ], 255);
-        TextDrawFont( g_blackjackDealerCards[ id ] [ c ], 4);
-        TextDrawLetterSize( g_blackjackDealerCards[ id ] [ c ], 0.500000, 1.000000);
-        TextDrawUseBox( g_blackjackDealerCards[ id ] [ c ], 1);
-        TextDrawBoxColor( g_blackjackDealerCards[ id ] [ c ], 255);
-        TextDrawTextSize( g_blackjackDealerCards[ id ] [ c ], 30.000000, 51.000000);
-    }
-
-    new
-        Float: g_blackjackPlayerPosition[ MAX_BLACKJACK_PLAYERS ] [ 2 ] = { { 295.0, 334.0 }, { 205.0, 319.0 }, { 390.0, 329.0 } };
-
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
-    {
-        for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ )
-        {
-            g_blackjackPlayerCards[ id ] [ c ] [ p ] = TextDrawCreate( g_blackjackPlayerPosition[ p ] [ 0 ] + 10.0 * float( c ), g_blackjackPlayerPosition[ p ] [ 1 ] - 16.0 * float( c ), "ld_card:cdback" );
-            TextDrawBackgroundColor( g_blackjackPlayerCards[ id ] [ c ] [ p ], 255 );
-            TextDrawFont( g_blackjackPlayerCards[ id ] [ c ] [ p ], 4 );
-            TextDrawLetterSize( g_blackjackPlayerCards[ id ] [ c ] [ p ], 0.5, 0.7 );
-            TextDrawUseBox( g_blackjackPlayerCards[ id ] [ c ] [ p ], 1 );
-            TextDrawBoxColor( g_blackjackPlayerCards[ id ] [ c ] [ p ], 255 );
-            TextDrawTextSize( g_blackjackPlayerCards[ id ] [ c ] [ p ], 22.000000, 37.000000 );
-        }
-    }
-}
-
-stock IsPlayerHandBlackjack( tableid, player_index, card_count )
-{
-	if ( card_count == 21 && ( g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] == 0 || g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] == 13 || g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] == 26 || g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] == 39 ) )
-		return true;
-
-	if ( card_count == 21 && ( g_blackjackPlayerCardIndex[ tableid ] [ 1 ] [ player_index ] == 0 || g_blackjackPlayerCardIndex[ tableid ] [ 1 ] [ player_index ] == 13 || g_blackjackPlayerCardIndex[ tableid ] [ 1 ] [ player_index ] == 26 || g_blackjackPlayerCardIndex[ tableid ] [ 1 ] [ player_index ] == 39 ) )
-		return true;
-
-	return false;
-}
-
-stock IsDealerHandBlackjack( tableid, card_count )
-{
-	if ( card_count == 21 && ( g_blackjackDealerCardIndex[ tableid ] [ 0 ] == 0 || g_blackjackDealerCardIndex[ tableid ] [ 0 ] == 13 || g_blackjackDealerCardIndex[ tableid ] [ 0 ] == 26 || g_blackjackDealerCardIndex[ tableid ] [ 0 ] == 39 ) )
-		return true;
-
-	if ( card_count == 21 && ( g_blackjackDealerCardIndex[ tableid ] [ 1 ] == 0 || g_blackjackDealerCardIndex[ tableid ] [ 1 ] == 13 || g_blackjackDealerCardIndex[ tableid ] [ 1 ] == 26 || g_blackjackDealerCardIndex[ tableid ] [ 1 ] == 39 ) )
-		return true;
-
-	return false;
-}
-
-stock GetBlackjackCardValue( card_index )
-{
-    new
-        card_value = 0;
-
-    switch ( card_index )
-    {
-        case 0, 13, 26, 39: card_value = 1;
-        case 1, 14, 27, 40: card_value = 2;
-        case 2, 15, 28, 41: card_value = 3;
-        case 3, 16, 29, 42: card_value = 4;
-        case 4, 17, 30, 43: card_value = 5;
-        case 5, 18, 31, 44: card_value = 6;
-        case 6, 19, 32, 45: card_value = 7;
-        case 7, 20, 33, 46: card_value = 8;
-        case 8, 21, 34, 47: card_value = 9;
-        case 9, 22, 35, 48, 10, 23, 36, 49, 11, 24, 37, 50, 12, 25, 38, 51: card_value = 10;
-    }
-    return card_value;
-}
-
-stock GetBlackjackPlayerIndex( tableid, playerid )
-{
-    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( playerid == g_blackjackSlotData[ tableid ] [ player_index ] ) {
-        return player_index;
-    }
-    return -1;
-}
-
-stock GetBlackjackPlayers( tableid ) {
-    new
-        count = 0;
-
-    for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) if ( g_blackjackSlotData[ tableid ] [ p ] != -1 )
-        count ++;
-
-    return count;
-}
+stock GetPlayerAccountID( playerid )
+	return p_AccountID[ playerid ];

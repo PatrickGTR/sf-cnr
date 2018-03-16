@@ -5,6 +5,9 @@
  * Purpose: fps counter in-game
  */
 
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
 /* ** Defines ** */
 #define GetPlayerFPS(%1)			p_FPS[%1]
 
@@ -55,7 +58,8 @@ stock formatFPSCounter( playerid ) {
 	TextDrawSetString( p_FPSCounterTD[ playerid ], szFPS );
 }
 
-stock InitializeFpsTextdraw( )
+/* ** Hooks ** */
+hook InitializeTextDraws( )
 {
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
 	{

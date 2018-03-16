@@ -6,7 +6,7 @@
  */
 
 // default
-#include < irresistible\settings >
+#include < irresistible\settings > // keep #1
 #include < irresistible\security >
 #include < irresistible\helpers >
 #include < irresistible\floodcontrol >
@@ -18,14 +18,19 @@
 
 // gta related variables
 #include < irresistible\gta\map >
-#include < irresistible\gta\cards >
 #include < irresistible\gta\vehicles >
 #include < irresistible\gta\weapon_data >
 
 // features
 #include < irresistible\features\fps >
 #include < irresistible\features\radio >
-#include < irresistible\features\fireworks >
+
+// visage casino
+#include < irresistible\features\visage\blackjack >
+#include < irresistible\features\visage\poker >
+// #include < irresistible\features\visage\fireworks >
+#include < irresistible\features\visage\apartments >
+#include < irresistible\features\visage\static_casino >
 
 // static
 #include < irresistible\static_cnr\actors >
