@@ -77,7 +77,7 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 #define T_START_DELAY														5 //5 seconds
 #define T_SAVE_PLAYER_POS 													true
 //Max number the chips can express 10^(MAX_CHIP_DIGITS) - 1
-#define MAX_CHIP_DIGITS														8
+#define MAX_CHIP_DIGITS														7
 
 
 //Layout and design
@@ -261,8 +261,8 @@ new const colors[MAX_CHIP_DIGITS] =
 	0xFF7C4303,//1,000
 	0xFF63720E,//10,000
 	0xFFE2C241,//100,000
-	0xFFE4603F,//1,000,000
-	0xFFCD270A //100,000,000
+	0xFFE4603F//1,000,000
+	//0xFFCD270A, //100,000,000
 	//0xFFFF2424, //1,000,000,000
 	//0xFFFF2424, //10,000,000,000
 
@@ -276,9 +276,9 @@ new const chip_text[MAX_CHIP_DIGITS][8] =
 	{"$1K"},
 	{"$10K"},
 	{"$100K"},
-	{"$1M"},
-	{"$10M"}
-	//{"$100M"}
+	{"$1M"}
+	//{"$10M"},
+	//{"$100M"},
 	//{"$1,000M"}
 };
 /*============*/
@@ -409,8 +409,8 @@ stock ResetLabel(handle)
 	if(!IsValidTable(handle)) return 0;
 	new const buy_in = TableData[handle][E_TABLE_BUY_IN];
 	new const small_blind = TableData[handle][E_TABLE_SMALL_BLIND];
-	UpdateDynamic3DTextLabelTextEx(TableData[handle][E_TABLE_POT_LABEL], -1,
-		"{FFFFFF}ID: %d\nPress {F98A0F}ENTER {FFFFFF}To Play\n{FFFFFF}$%d Minimum\n$%d / $%d Blinds", handle, buy_in, small_blind, small_blind * 2);
+	UpdateDynamic3DTextLabelTextEx(TableData[handle][E_TABLE_POT_LABEL], COLOR_GREY,
+		"Press ENTER To Play (%d)\n{FFFFFF}%s Minimum\n%s / %s Blinds", handle, ConvertPrice(buy_in), ConvertPrice(small_blind), ConvertPrice(small_blind * 2));
 	return 1;
 }
 
@@ -476,11 +476,11 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 	/* Objects */
 
 	//Table
-	TableData[handle][E_TABLE_OBJECT_IDS][0] = CreateDynamicObject(2189, X, Y, Z + T_Z_OFFSET - 0.01, 0.0, 0.0, 0.0, vworld, interior);
-	TableData[handle][E_TABLE_OBJECT_IDS][1] = CreateDynamicObject(2111, X, Y, Z-0.01, 0.0, 0.0, 0.0, vworld, interior);
+	TableData[handle][E_TABLE_OBJECT_IDS][0] = CreateDynamicObject(2189, X, Y, Z + T_Z_OFFSET - 0.01, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
+	TableData[handle][E_TABLE_OBJECT_IDS][1] = CreateDynamicObject(2111, X, Y, Z-0.01, 0.0, 0.0, 0.0, vworld, interior, .priority = 1);
 
 	//Chairs
-	TableData[handle][E_TABLE_POT_LABEL] = CreateDynamic3DTextLabel("-", -1, X+T_CHIP_OFFSET, Y+T_CHIP_OFFSET, Z+0.5, 3.0, .worldid = vworld, .interiorid = interior);
+	TableData[handle][E_TABLE_POT_LABEL] = CreateDynamic3DTextLabel("-", -1, X+T_CHIP_OFFSET, Y+T_CHIP_OFFSET, Z+0.5, 10.0, .worldid = vworld, .interiorid = interior);
 
 	new Float:angle_step = floatdiv(360.0, float(seats));
 	for(new i = 0; i < seats; i++)
@@ -490,7 +490,7 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 		new const Float:o_posx = unit_posx * T_CHAIR_RANGE + X;
 		new const Float:o_posy = unit_posy * T_CHAIR_RANGE + Y;
 		new const Float:c_posz = Z + 0.36;
-		TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][i] = CreateDynamicObject(T_CHAIR_MODEL, o_posx, o_posy, Z + 0.25, 0.0, 0.0, angle_step * float(i),  vworld, interior);
+		TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][i] = CreateDynamicObject(T_CHAIR_MODEL, o_posx, o_posy, Z + 0.25, 0.0, 0.0, angle_step * float(i), vworld, interior, .priority = 9999);
 		TableData[handle][E_TABLE_SEAT_POS_X][i] = o_posx;
 		TableData[handle][E_TABLE_SEAT_POS_Y][i] = o_posy;
 		TableData[handle][E_TABLE_SEAT_POS_Z][i] = Z;
@@ -507,9 +507,9 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 		{
 			new Float:rad = 0.11;
 			new rand = random(20);
-			TableChips[handle][i][j] = CreateDynamicObject(1902, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, vworld, interior);
+			TableChips[handle][i][j] = CreateDynamicObject(1902, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
 			SetDynamicObjectMaterialText(TableChips[handle][i][j], 0, " ", .backcolor = colors[j]);
-			TableChipsLabel[handle][i][j] = CreateDynamicObject(1905, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, vworld, interior);
+			TableChipsLabel[handle][i][j] = CreateDynamicObject(1905, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
 			SetDynamicObjectMaterialText(TableChipsLabel[handle][i][j],
 			0, chip_text[j], 50, "Arial", 44, 1, colors[j], -1, 1 );
 		}
@@ -523,9 +523,9 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 		new rand = random(20);
 		new Float:px = rad * floatcos(float(j) * a_s, degrees) + X + T_CHIP_OFFSET;
 		new Float:py = rad * floatsin(float(j) * a_s, degrees) + Y + T_CHIP_OFFSET;
-		TableData[handle][E_TABLE_CHIPS][j] = CreateDynamicObject(1902, px, py, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, vworld, interior);
+		TableData[handle][E_TABLE_CHIPS][j] = CreateDynamicObject(1902, px, py, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
 		SetDynamicObjectMaterialText(TableData[handle][E_TABLE_CHIPS][j], 0, " ", .backcolor = colors[j]);
-		TableData[handle][E_TABLE_CHIPS_LABEL][j] = CreateDynamicObject(1905, px, py, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, vworld, interior);
+		TableData[handle][E_TABLE_CHIPS_LABEL][j] = CreateDynamicObject(1905, px, py, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
 		SetDynamicObjectMaterialText(TableData[handle][E_TABLE_CHIPS_LABEL][j],
 		0, chip_text[j], 50, "Arial", 44, 1, colors[j], -1, 1 );
 	}
@@ -729,7 +729,7 @@ stock KickPlayerFromTable(playerid)
 	TogglePlayerControllable(playerid, true);
 	new const Float:angle_step = floatdiv(360.0, TableData[handle][E_TABLE_TOTAL_SEATS]);
 	//Create the chair object again:
-	TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][slot] = CreateDynamicObject(T_CHAIR_MODEL, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot], 0.0, 0.0, angle_step * float(slot), TableData[handle][E_TABLE_VIRTUAL_WORLD], TableData[handle][E_TABLE_INTERIOR]);
+	TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][slot] = CreateDynamicObject(T_CHAIR_MODEL, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot], 0.0, 0.0, angle_step * float(slot), TableData[handle][E_TABLE_VIRTUAL_WORLD], TableData[handle][E_TABLE_INTERIOR], .priority = 9999);
 	Internal_RemoveChairSlot(handle, slot);
 	SetPlayerPos(playerid, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot]);
 	SetCameraBehindPlayer(playerid);
@@ -994,7 +994,7 @@ stock AddPlayerToTable(playerid, handle)
 		return 0;
 	}
 
-	if(GetPlayerCash(playerid) < TableData[handle][E_TABLE_BUY_IN]) return SendPokerMessage(playerid, "You don't have enough money to access this table. Buy In: $%d", TableData[handle][E_TABLE_BUY_IN]);
+	if(GetPlayerCash(playerid) < TableData[handle][E_TABLE_BUY_IN]) return SendPokerMessage(playerid, "You don't have enough money to access this table. Buy In: %s", ConvertPrice(TableData[handle][E_TABLE_BUY_IN]));
 
 	new index = Player_GetUnusedAttachIndex(playerid);
 	if(index == cellmin)
@@ -1037,7 +1037,7 @@ stock AddPlayerToTable(playerid, handle)
 	TableData[handle][E_TABLE_CHAIR_PLAYER_ID][slot] = playerid;
 	GivePlayerCash(playerid, -TableData[handle][E_TABLE_BUY_IN]);
 	PlayerData[playerid][E_PLAYER_TOTAL_CHIPS] = TableData[handle][E_TABLE_BUY_IN];
-	SendPokerMessage(playerid, "You've been charged $%d as a result of joining in the table.", TableData[handle][E_TABLE_BUY_IN]);
+	SendPokerMessage(playerid, "You've been charged %s as a result of joining in the table.", ConvertPrice(TableData[handle][E_TABLE_BUY_IN]));
 	//Allow players to join a table where a game has already started but there are empty seats remaining (these players will be able to play once the current match finishes)
 	if(TableData[handle][E_TABLE_CURRENT_STATE] != STATE_BEGIN)
 	{
@@ -1045,9 +1045,9 @@ stock AddPlayerToTable(playerid, handle)
 		{
 			if(!TableData[handle][E_TABLE_STING_NEW_GAME])
 			{
-				SendTableMessage(handle, "There are currently two players in the table.");
-				SendTableMessage(handle, "Any players interested in being part of this game have "#T_START_DELAY" seconds to join the table.");
-				SendTableMessage(handle, "The game will begin in "#T_START_DELAY" seconds...");
+				SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"There are currently two players in the table.");
+				SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Any players interested in being part of this game have "#T_START_DELAY" seconds to join the table.");
+				SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"The game will begin in "#T_START_DELAY" seconds...");
 				Iter_Clear(IT_PlayersInGame<handle>);
 				TableData[handle][E_TABLE_LOADING_GAME] = true;
 				SetTimerEx("Poker_StartGame", T_START_DELAY * 1000, false, "ii", handle, INVALID_PLAYER_ID);
@@ -1098,13 +1098,13 @@ stock UpdateInfoTextdrawsForPlayer(playerid)
 {
 	new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
 	new tstring[64];
-	format(tstring, sizeof(tstring), "~g~Chips:_~w~$%d", PlayerData[playerid][E_PLAYER_TOTAL_CHIPS]);
+	format(tstring, sizeof(tstring), "~g~Chips:_~w~%s", ConvertPrice(PlayerData[playerid][E_PLAYER_TOTAL_CHIPS]));
 	PlayerTextDrawSetString(playerid, PlayerData[playerid][E_PLAYER_INFO_TXT][2], tstring);
-	format(tstring, sizeof(tstring), "~y~Pot:_~w~$%d", TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]);
+	format(tstring, sizeof(tstring), "~y~Pot:_~w~%s", ConvertPrice(TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]));
 	PlayerTextDrawSetString(playerid, PlayerData[playerid][E_PLAYER_INFO_TXT][3], tstring);
-	format(tstring, sizeof(tstring), "~r~Last_bet:_~w~$%d", TableData[handle][E_TABLE_LAST_BET]);
+	format(tstring, sizeof(tstring), "~r~Last_bet:_~w~%s", ConvertPrice(TableData[handle][E_TABLE_LAST_BET]));
 	PlayerTextDrawSetString(playerid, PlayerData[playerid][E_PLAYER_INFO_TXT][4], tstring);
-	format(tstring, sizeof(tstring), "~r~Your_bet:_~w~$%d", PlayerData[playerid][E_PLAYER_CURRENT_BET]);
+	format(tstring, sizeof(tstring), "~r~Your_bet:_~w~%s", ConvertPrice(PlayerData[playerid][E_PLAYER_CURRENT_BET]));
 	PlayerTextDrawSetString(playerid, PlayerData[playerid][E_PLAYER_INFO_TXT][5], tstring);
 	return 1;
 }
@@ -1131,7 +1131,7 @@ public Poker_StartGame(handle, dealer)
 		{
 			SendPokerMessage(i, "You don't have any chips left.");
 			SendPokerMessage(i, "You may join the table again and pay the buy-in fee to play once again!");
-			SendTableMessage(handle, "Player %s has been kicked out of the table. [Reason: Ran out of chips]");
+			SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been kicked out of the table. [Reason: Ran out of chips]", ReturnPlayerName(i));
 			KickPlayerFromTable(i);
 			ShowPlayerDialog(i, -1, DIALOG_STYLE_INPUT, " ", " ", " ", " ");
 		}
@@ -1139,7 +1139,7 @@ public Poker_StartGame(handle, dealer)
 
 	if(Iter_Count(IT_PlayersTable<handle>) < 2)
 	{
-		SendTableMessage(handle, "There aren't enough players to start a game");
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"There aren't enough players to start a game");
 		TableData[handle][E_TABLE_LOADING_GAME] = false;
 		return 0;
 	}
@@ -1192,13 +1192,13 @@ public Poker_StartGame(handle, dealer)
 		TableData[handle][E_TABLE_PLAYER_DEALER_ID] = dealer;
 		TableData[handle][E_TABLE_DEALER_SEAT] = PlayerData[dealer][E_PLAYER_CURRENT_CHAIR_SLOT];
 		TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID] = dealer;
-		SendTableMessage(handle, "Player %s has been chosen to be the dealer and big blind in this first stage of the game!", ReturnPlayerName(dealer));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been chosen to be the dealer and big blind in this first stage of the game!", ReturnPlayerName(dealer));
 		UpdateDynamic3DTextLabelTextEx(PlayerData[dealer][E_PLAYER_3D_LABEL], -1, "{7AC72E}%s\n{FD4102}BB-D", ReturnPlayerName(dealer));
 
 		//small blind..
 		new next_turn = GetTurnAfterPlayer(handle, dealer);
 		UpdateDynamic3DTextLabelTextEx(PlayerData[next_turn][E_PLAYER_3D_LABEL], -1, "{7AC72E}%s\n{FD4102}SB", ReturnPlayerName(next_turn));
-		SendTableMessage(handle, "Player %s has been chosen to be the small blind in this first stage of the game!", ReturnPlayerName(next_turn));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been chosen to be the small blind in this first stage of the game!", ReturnPlayerName(next_turn));
 		TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID] = next_turn;
 
 
@@ -1208,19 +1208,19 @@ public Poker_StartGame(handle, dealer)
 
 		//Dealer
 		UpdateDynamic3DTextLabelTextEx(PlayerData[dealer][E_PLAYER_3D_LABEL], -1, "{7AC72E}%s\n{FD4102}D", ReturnPlayerName(dealer));
-		SendTableMessage(handle, "Player %s has been chosen to be the dealer in this first stage of the game!", ReturnPlayerName(dealer));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been chosen to be the dealer in this first stage of the game!", ReturnPlayerName(dealer));
 		TableData[handle][E_TABLE_PLAYER_DEALER_ID] = dealer;
 		TableData[handle][E_TABLE_DEALER_SEAT] = PlayerData[dealer][E_PLAYER_CURRENT_CHAIR_SLOT];
 
 		//Big blind
 		new next_player = GetTurnAfterPlayer(handle, dealer);
 		UpdateDynamic3DTextLabelTextEx(PlayerData[next_player][E_PLAYER_3D_LABEL], -1, "{7AC72E}%s\n{FD4102}SB", ReturnPlayerName(next_player));
-		SendTableMessage(handle, "Player %s has been chosen to be the Small Blind in this first stage of the game!", ReturnPlayerName(next_player));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been chosen to be the Small Blind in this first stage of the game!", ReturnPlayerName(next_player));
 		TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID] = next_player;
 
 		//Small blind
 		next_player = GetTurnAfterPlayer(handle, next_player);
-		SendTableMessage(handle, "Player %s has been chosen to be the Big Blind in this first stage of the game!", ReturnPlayerName(next_player));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been chosen to be the Big Blind in this first stage of the game!", ReturnPlayerName(next_player));
 		UpdateDynamic3DTextLabelTextEx(PlayerData[next_player][E_PLAYER_3D_LABEL], -1, "{7AC72E}%s\n{FD4102}BB", ReturnPlayerName(next_player));
 		TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID] = next_player;
 	}
@@ -1240,8 +1240,8 @@ public Poker_StartGame(handle, dealer)
 		Streamer_Update(playerid);
 	}
 
-	SendTableMessage(handle, "Dealer is shuffling the pack of cards...!");
-	SendTableMessage(handle, "Cards will be handed out in two seconds...!");
+	SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Dealer is shuffling the pack of cards...!");
+	SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Cards will be handed out in two seconds...!");
 	//If everything executes without stop, it wouldn't look that nice for me, so a timer comes handy..
 	SetTimerEx("Poker_DealCards", 2000, false, "i", handle);
 	return 1;
@@ -1260,7 +1260,7 @@ public Poker_KickPlayers(handle)
 			{
 				SendPokerMessage(i, "You don't have any chips left.");
 				SendPokerMessage(i, "You may join the table again and pay the buy-in fee to play once again!");
-				SendTableMessage(handle, "Player %s has been kicked out of the table. [Reason: Ran out of chips]");
+				SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been kicked out of the table. [Reason: Ran out of chips]", ReturnPlayerName(i));
 				KickPlayerFromTable(i);
 			}
 			else
@@ -1304,12 +1304,12 @@ stock StartNewPokerGame(handle, time)
 
 	if(Iter_Count(IT_PlayersTable<handle>) >= 2)
 	{
-		SendTableMessage(handle, "Starting a new game in %d seconds...", time);
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Starting a new game in %d seconds...", time);
 		SetTimerEx("Poker_StartGame", 1000 * time, false, "ii", handle, INVALID_PLAYER_ID);
 	}
 	else
 	{
-		SendTableMessage(handle, "There are not enough players to start a new game!");
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"There are not enough players to start a new game!");
 	}
 	return 1;
 }
@@ -1500,8 +1500,8 @@ public Poker_DealCards(handle)
 	{
 		PlayerData[big_blind][E_PLAYER_CURRENT_BET] = TableData[handle][E_TABLE_BIG_BLIND];
 		PlayerData[small_blind][E_PLAYER_CURRENT_BET] = TableData[handle][E_TABLE_SMALL_BLIND];
-		SendTableMessage(handle, "{2DD9A9} * * %s posts a small blind of $%d.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID]), TableData[handle][E_TABLE_SMALL_BLIND]);
-		SendTableMessage(handle, "{2DD9A9}  * * %s posts a big blind of $%d.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID]), TableData[handle][E_TABLE_BIG_BLIND]);
+		SendTableMessage(handle, "{2DD9A9} * * %s posts a small blind of %s.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID]), ConvertPrice(TableData[handle][E_TABLE_SMALL_BLIND]));
+		SendTableMessage(handle, "{2DD9A9}  * * %s posts a big blind of %s.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID]), ConvertPrice(TableData[handle][E_TABLE_BIG_BLIND]));
 		new next_turn = GetTurnAfterPlayer(handle, TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID]);
 		TableData[handle][E_TABLE_LAST_BET] = TableData[handle][E_TABLE_BIG_BLIND];
 		SetLastToRaise(handle, next_turn);
@@ -1524,7 +1524,7 @@ public Poker_DealCards(handle)
 		}
 		else
 		{
-			SendTableMessage(handle, "{2DD9A9} * * %s posts a small blind of $%d.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID]), TableData[handle][E_TABLE_SMALL_BLIND]);
+			SendTableMessage(handle, "{2DD9A9} * * %s posts a small blind of %s.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_SMALL_BLIND_ID]), ConvertPrice(TableData[handle][E_TABLE_SMALL_BLIND]));
 			RemoveChipsFromPlayer( small_blind, TableData[handle][E_TABLE_SMALL_BLIND]);
 			PlayerData[small_blind][E_PLAYER_CURRENT_BET] = TableData[handle][E_TABLE_SMALL_BLIND];
 		}
@@ -1543,7 +1543,7 @@ public Poker_DealCards(handle)
 		else
 		{
 
-			SendTableMessage(handle, "{2DD9A9}  * * %s posts a big blind of $%d.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID]), TableData[handle][E_TABLE_BIG_BLIND]);
+			SendTableMessage(handle, "{2DD9A9}  * * %s posts a big blind of %s.. * *", ReturnPlayerName(TableData[handle][E_TABLE_PLAYER_BIG_BLIND_ID]), ConvertPrice(TableData[handle][E_TABLE_BIG_BLIND]));
 			RemoveChipsFromPlayer( big_blind, TableData[handle][E_TABLE_BIG_BLIND]);
 			PlayerData[big_blind][E_PLAYER_CURRENT_BET] = TableData[handle][E_TABLE_BIG_BLIND];
 			TableData[handle][E_TABLE_LAST_BET] = TableData[handle][E_TABLE_BIG_BLIND];
@@ -1573,14 +1573,14 @@ static stock UpdateTable(handle)
 		UpdateInfoTextdrawsForPlayer(playerid);
 		new const seat = PlayerData[playerid][E_PLAYER_CURRENT_CHAIR_SLOT];
 		new str[128	];
-		format(str, sizeof(str), "{34c5db}Chips: {db8d34}$%d\n{db3a34}Last bet: {db8d34}$%d", PlayerData[playerid][E_PLAYER_TOTAL_CHIPS], PlayerData[playerid][E_PLAYER_CURRENT_BET]);
+		format(str, sizeof(str), "{34c5db}Chips: {db8d34}%s\n{db3a34}Last bet: {db8d34}%s", ConvertPrice(PlayerData[playerid][E_PLAYER_TOTAL_CHIPS]), ConvertPrice(PlayerData[playerid][E_PLAYER_CURRENT_BET]));
 		UpdateDynamic3DTextLabelText(TableData[handle][E_TABLE_BET_LABELS][seat], T_BET_LABEL_COLOR, str);
 		SetChipsValue(handle, PlayerData[playerid][E_PLAYER_CURRENT_CHAIR_SLOT], PlayerData[playerid][E_PLAYER_TOTAL_CHIPS]);
 
 	}
 	new str[256];
 	new tmp[10];
-	format(str, sizeof(str), "{59cdff}MP: {ff9059}$%d\n", TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]);
+	format(str, sizeof(str), "{59cdff}MP: {ff9059}%s\n", ConvertPrice(TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]));
 	SetPotChipsValue(handle, TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]);
 	if(Iter_Count(IT_Sidepots[handle] > 1))
 	{
@@ -1588,7 +1588,7 @@ static stock UpdateTable(handle)
 		foreach(new i: IT_Sidepots[handle])
 		{
 			if(i == MAIN_POT) continue;
-			format(tmp, sizeof(tmp), "$%d\n", TableData[handle][E_TABLE_POT_CHIPS][i]);
+			format(tmp, sizeof(tmp), "%s\n", ConvertPrice(TableData[handle][E_TABLE_POT_CHIPS][i]));
 			strcat(str, tmp);
 		}
 	}
@@ -1824,7 +1824,7 @@ public CheckRounds(handle, bool: start_showdown)
 			SendTableMessage(handle, "{D07035}======================================================================================");
 			SendTableMessage(handle, "{D07035}									  The River 										");
 			SendTableMessage(handle, "{D07035}======================================================================================");
-			//SendTableMessage(handle, "%s, %s, %s", CardData[TableData[handle][T_COM_CARDS_VALUES][0]][E_CARD_NAME], CardData[TableData[handle][T_COM_CARDS_VALUES][1]][E_CARD_NAME], CardData[TableData[handle][T_COM_CARDS_VALUES][2]][E_CARD_NAME]);
+			//SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"%s, %s, %s", CardData[TableData[handle][T_COM_CARDS_VALUES][0]][E_CARD_NAME], CardData[TableData[handle][T_COM_CARDS_VALUES][1]][E_CARD_NAME], CardData[TableData[handle][T_COM_CARDS_VALUES][2]][E_CARD_NAME]);
 			if(start_showdown)
 			{
 				SetTimerEx("CheckRounds", 2000, false, "ib", handle, false);
@@ -1920,7 +1920,7 @@ stock CheckShowdown(handle)
 			}
 			SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 			SendTableMessage(handle, "{9FCF30}Player {FF8000}%s {9FCF30}has won with a {377CC8}%s", ReturnPlayerName(high_id), HAND_RANKS[highest_rank >> 12]);
-			SendTableMessage(handle, "{9FCF30}Prize: {377CC8}$%d!", TableData[handle][E_TABLE_POT_CHIPS][pot_id]);
+			SendTableMessage(handle, "{9FCF30}Prize: {377CC8}%s!", ConvertPrice(TableData[handle][E_TABLE_POT_CHIPS][pot_id]));
 			SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 			PlayerData[high_id][E_PLAYER_TOTAL_CHIPS] += TableData[handle][E_TABLE_POT_CHIPS][pot_id];
 		}
@@ -2023,15 +2023,14 @@ stock CheckPotAndNextTurn(playerid, handle)
 		}
 	}
 
-
-	if(TableData[handle][E_TABLE_FIRST_TURN] == playerid && TableData[handle][E_TABLE_CHECK_FIRST] && PlayerData[playerid][E_PLAYER_FOLDED])
+	/*if(TableData[handle][E_TABLE_FIRST_TURN] == playerid && TableData[handle][E_TABLE_CHECK_FIRST] && PlayerData[playerid][E_PLAYER_FOLDED])
 	{
 		new turn = GetTurnAfterPlayer(handle, playerid);
 		SetLastToRaise(handle, turn);
 		is_cycle_complete = false;
 		TableData[handle][E_TABLE_FIRST_TURN] = INVALID_PLAYER_ID;
 		TableData[handle][E_TABLE_CHECK_FIRST] = false;
-	}
+	}*/
 
 	PlayerData[playerid][E_PLAYER_FOLDED] = false;
 	if(is_cycle_complete)
@@ -2128,7 +2127,7 @@ stock bool: FoldPlayer(handle, playerid)
 		HidePlayerChoices(winner);
 		SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 		SendTableMessage(handle, "{9FCF30}Player {FF8000}%s {9FCF30}has won the game!", ReturnPlayerName(winner));
-		SendTableMessage(handle, "{9FCF30}Prize: {377CC8}$%d!", TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]);
+		SendTableMessage(handle, "{9FCF30}Prize: {377CC8}%s!", ConvertPrice(TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]));
 		SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 		PlayerData[winner][E_PLAYER_TOTAL_CHIPS]  += TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT];
 		PlayerData[winner][E_PLAYER_TOTAL_CHIPS]  += PlayerData[winner][E_PLAYER_CURRENT_BET];
@@ -2185,8 +2184,8 @@ hook OnPlayerClickPlayerTD(playerid, PlayerText:playertextid)
 				if(PlayerData[playerid][E_PLAYER_TOTAL_CHIPS] >= dif)
 				{
 					KillPlayerTurnTimer(playerid);
-					SendTableMessage(handle, "{2DD9A9}  * * %s calls $%d .. * *", ReturnPlayerName(playerid), dif);
-					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{22B1BD}** CALLS $%d ** ", dif);
+					SendTableMessage(handle, "{2DD9A9}  * * %s calls %s .. * *", ReturnPlayerName(playerid), ConvertPrice(dif));
+					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{22B1BD}** CALLS %s ** ", ConvertPrice(dif));
 					RemoveChipsFromPlayer( playerid, dif);
 					PlayerData[playerid][E_PLAYER_CURRENT_BET] = TableData[handle][E_TABLE_LAST_BET];
 					SetPlayerClickedTxt(playerid, true);
@@ -2235,8 +2234,8 @@ stock ForcePlayerAllIn(playerid, handle, bool:checkpot = true)
 	Iter_Add(IT_PlayersAllIn<handle>, playerid);
 	new raise = PlayerData[playerid][E_PLAYER_TOTAL_CHIPS] + PlayerData[playerid][E_PLAYER_CURRENT_BET];
 	PlayerData[playerid][E_PLAYER_CURRENT_BET] = raise;
-	SendTableMessage(handle, "{2DD9A9}  * * %s goes all in with $%d .. * *", ReturnPlayerName(playerid), raise);
-	SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{9512CD}** ALL IN with $%d ** ", raise);
+	SendTableMessage(handle, "{2DD9A9}  * * %s goes all in with %s .. * *", ReturnPlayerName(playerid), ConvertPrice(raise));
+	SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{9512CD}** ALL IN with %s ** ", ConvertPrice(raise));
 	PlayerData[playerid][E_PLAYER_TOTAL_CHIPS] = 0;
 	if(checkpot)
 		CheckPotAndNextTurn(playerid, handle);
@@ -2256,11 +2255,11 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 			GivePlayerCash(playerid, -TableData[handle][E_TABLE_BUY_IN]);
 			PlayerData[playerid][E_PLAYER_TOTAL_CHIPS] = TableData[handle][E_TABLE_BUY_IN];
-			SendTableMessage(handle, "Player %s has paid the buy-in fee of $%d chips to keep playing.", ReturnPlayerName(playerid), TableData[handle][E_TABLE_BUY_IN]);
+			SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has paid the buy-in fee of %s chips to keep playing.", ReturnPlayerName(playerid), ConvertPrice(TableData[handle][E_TABLE_BUY_IN]));
 		}
 		else
 		{
-			SendTableMessage(handle, "Player %s has been kicked out of the table. [Reason: Failure to pay the buy-in fee]");
+			SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been kicked out of the table. [Reason: Failure to pay the buy-in fee]", ReturnPlayerName(playerid));
 			KickPlayerFromTable(playerid);
 		}
 	}
@@ -2300,7 +2299,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			else if(raise <= TableData[handle][E_TABLE_LAST_BET])
 			{
-				SendPokerMessage(playerid, "Value must be greater than the last bet: $%d", TableData[handle][E_TABLE_LAST_BET]);
+				SendPokerMessage(playerid, "Value must be greater than the last bet: %s", ConvertPrice(TableData[handle][E_TABLE_LAST_BET]));
 				ShowPlayerRaiseDialog(playerid);
 				return 1;
 			}
@@ -2309,8 +2308,8 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Idle_Loop", 4.1, 1, 1, 1, 0, 0, 1);
 				KillPlayerTurnTimer(playerid);
 				//all in - not mandatory
-				SendTableMessage(handle, "{2DD9A9}  * * %s goes all in with $%d .. * *", ReturnPlayerName(playerid), raise);
-				SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{9512CD}** ALL IN with $%d ** ", raise);
+				SendTableMessage(handle, "{2DD9A9}  * * %s goes all in with %s .. * *", ReturnPlayerName(playerid), ConvertPrice(raise));
+				SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{9512CD}** ALL IN with %s ** ", ConvertPrice(raise));
 				Iter_Add(IT_PlayersAllIn<handle>, playerid);
 				RemoveChipsFromPlayer( playerid, raise);
 				SetLastToRaise(handle, playerid);
@@ -2330,13 +2329,13 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				RemoveChipsFromPlayer( playerid, dif);
 				if(PlayerData[playerid][E_PLAYER_RCHOICE] == E_RAISE_BET)
 				{
-					SendTableMessage(handle, "{2DD9A9}  * * %s  bets $%d .. * *", ReturnPlayerName(playerid), raise);
-					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{31CA15}** BETS $%d ** ");
+					SendTableMessage(handle, "{2DD9A9}  * * %s  bets %s .. * *", ReturnPlayerName(playerid), ConvertPrice(raise));
+					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{31CA15}** BETS %s ** ", ConvertPrice(raise));
 				}
 				else
 				{
-					SendTableMessage(handle, "{2DD9A9}  * * %s raises to $%d .. * *", ReturnPlayerName(playerid), raise);
-					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{31CA15}** RAISES to $%d ** ", raise);
+					SendTableMessage(handle, "{2DD9A9}  * * %s raises to %s .. * *", ReturnPlayerName(playerid), ConvertPrice(raise));
+					SetPlayerChatBubbleEx(playerid, -1, 30.0, 2000, "{31CA15}** RAISES to %s ** ", ConvertPrice(raise));
 				}
 				CheckPotAndNextTurn(playerid, handle);
 			}
@@ -2403,7 +2402,7 @@ hook OnPlayerDeath(playerid, killerid, reason)
 		if(!FoldPlayer(handle, playerid))
 			CheckPotAndNextTurn(playerid, handle);
 
-		SendTableMessage(handle, "Player %s has died and has been kicked out from the table.", ReturnPlayerName(playerid));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has died and has been kicked out from the table.", ReturnPlayerName(playerid));
 		KickPlayerFromTable(playerid);
 	}
 	return 1;
@@ -2417,7 +2416,7 @@ hook OnPlayerDisconnect(playerid, reason)
 		if(!FoldPlayer(handle, playerid))
 			CheckPotAndNextTurn(playerid, handle);
 
-		SendTableMessage(handle, "Player %s has disconnected and has been kicked out from the table.", ReturnPlayerName(playerid));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has disconnected and has been kicked out from the table.", ReturnPlayerName(playerid));
 		KickPlayerFromTable(playerid);
 	}
 	return 1;
@@ -2481,6 +2480,26 @@ hook OnGameModeInit()
 		TableChips[T_MAX_POKER_TABLES][i][2] = 0;
 		TableChips[T_MAX_POKER_TABLES][i][3] = 0;
 	}
+
+	// red dragons casino
+	CreatePokerTable( 5000000, 100000, 1968.395019, 1027.808959, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 2500000, 50000, 1940.795043, 1008.741027, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 1000000, 20000, 1940.795043, 1027.240966, 991.828002, 3, 23, 10 );
+	CreatePokerTable( 500000, 10000, 1940.795043, 1021.075012, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 250000, 5000, 1940.795043, 1014.908996, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 100000, 2000, 1968.395019, 1014.609008, 991.828002, 5, 23, 10 );
+	CreatePokerTable( 250000, 5000, 1968.395019, 1021.208984, 991.828002, 6, 23, 10 );
+	CreatePokerTable( 100000, 2000, 1968.395019, 1008.008972, 991.828002, 6, 23, 10 );
+
+	// caliguas casino
+	CreatePokerTable( 2500000, 50000, 2273.936035, 1597.272949, 1005.568969, 2, 82, 1 );
+	CreatePokerTable( 500000, 10000, 2252.936035, 1591.272949, 1005.568969, 2, 82, 1 );
+	CreatePokerTable( 1000000, 20000, 2255.936035, 1597.272949, 1005.568969, 3, 82, 1 );
+	CreatePokerTable( 500000, 10000, 2258.936035, 1591.272949, 1005.568969, 4, 82, 1 );
+	CreatePokerTable( 250000, 5000, 2261.936035, 1597.272949, 1005.568969, 4, 82, 1 );
+	CreatePokerTable( 100000, 2000,	2264.936035, 1591.272949, 1005.568969, 5, 82, 1 );
+	CreatePokerTable( 50000, 1000, 2267.936035, 1597.272949, 1005.568969, 6, 82, 1 );
+	CreatePokerTable( 25000, 500, 2270.936035, 1591.272949, 1005.568969, 6, 82, 1 );
 	T_SendWarning("TPoker by ThreeKingz has been succesfully loaded!");
 	return 1;
 }
@@ -2503,7 +2522,7 @@ CMD:ctable(playerid, params[])
 	new Float:Pos[3];
 	GetPlayerPos(playerid, Pos[0], Pos[1], Pos[2]);
 	new table = CreatePokerTable(buy_in, small_blind, Pos[0], Pos[1], Pos[2]-0.6, seats, GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid));
-	SendPokerMessage(playerid, "You have created table ID: %d | Small blind: $%d | Big blind: $%d | Buy In: $%d | Seats: %d", table, small_blind, small_blind*2, buy_in, seats);
+	SendPokerMessage(playerid, "You have created table ID: %d | Small blind: %s | Big blind: %s | Buy In: %s | Seats: %d", table, ConvertPrice(small_blind), ConvertPrice(small_blind*2), ConvertPrice(buy_in), seats);
 	return 1;
 }
 CMD:dtable(playerid, params[])

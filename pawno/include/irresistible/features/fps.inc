@@ -36,6 +36,28 @@ CMD:fps( playerid, params[ ] )
 	return 1;
 }
 
+#if defined _streamer_included
+CMD:drawdistance( playerid, params[ ] )
+{
+	if ( strmatch( params, "low" ) ) {
+		Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 300, playerid );
+	    SendClientMessage( playerid, 0x84aa63ff, "-> Draw distance of objects now set to LOW." );
+	} else if ( strmatch( params, "medium" ) ) {
+		Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 625, playerid );
+	    SendClientMessage( playerid, 0x84aa63ff, "-> Draw distance of objects now set to MEDIUM." );
+	} else if ( strmatch( params, "high" ) ) {
+		Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 950, playerid );
+	    SendClientMessage( playerid, 0x84aa63ff, "-> Draw distance of objects now set to HIGH." );
+	} else if ( strmatch( params, "info" ) ) {
+	    SendClientMessage( playerid, 0x84aa63ff, sprintf( "-> You have currently %d objects streamed towards your client.", Streamer_GetVisibleItems( STREAMER_TYPE_OBJECT, playerid ) ) );
+	}
+	else {
+		SendClientMessage( playerid, 0xa9c4e4ff, "-> /drawdistance [LOW/MEDIUM/HIGH/INFO]" );
+	}
+	return 1;
+}
+#endif
+
 /* ** Functions ** */
 stock formatFPSCounter( playerid ) {
 	if( !p_FPSCounter{ playerid } )

@@ -8,6 +8,11 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Error checking ** */
+#if !defined __irresistible_servervars
+    #error "You need server variables enabled to track betting."
+#endif
+
 /* ** Definitions ** */
 #define MAX_BLACKJACK_TABLES 		( 32 )
 #define MAX_BLACKJACK_CARDS 		( 5 )
@@ -105,6 +110,10 @@ new
 /* ** Hooks ** */
 hook OnGameModeInit( )
 {
+    // for tracking bets
+    AddServerVariable( "blackjack_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
+    AddServerVariable( "blackjack_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
+
 	// Reset Textdraw Variables
     for ( new i = 0; i < MAX_BLACKJACK_TABLES; i ++ ) {
         for ( new x = 0; x < MAX_BLACKJACK_CARDS; x ++ ) {
@@ -296,7 +305,7 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
 
         g_blackjackData[ id ] [ E_GAME_TIMER ] = -1;
         g_blackjackData[ id ] [ E_PAYOUT ] = payout;
-        g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle );
+        g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle, .priority = 9999 );
         g_blackjackData[ id ] [ E_ACTOR ] = CreateActor( 171, X - 0.4 * floatcos( Angle - 90.0, degrees ), Y - 0.4 * floatsin( Angle - 90.0, degrees ), Z, Angle + 180.0 );
         CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play\n"COL_WHITE"%s Minimum", ConvertPrice( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
 
@@ -305,6 +314,11 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
 
         ResetBlackjackTable( id );
         Iter_Add( blackjacktables, id );
+    }
+    else
+    {
+        static overflow;
+        printf("[BLACKJACK ERROR] Reached limit of %d blackjack tables, increase to %d to fix.", MAX_BLACKJACK_TABLES, MAX_BLACKJACK_TABLES + ( ++ overflow ) );
     }
     return 1;
 }

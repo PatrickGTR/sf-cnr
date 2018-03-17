@@ -5,17 +5,30 @@
  * Purpose: security related functions for ig servers
  */
 
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
 /* ** Macros ** */
-#define GetServerName(%0) g_igServerNames[%0]
+#define GetServerName(%0) 			g_igServerNames[%0]
+#define ReturnPlayerIP(%0) 			(p_PlayerIP[(%0)])
+#define ReturnPlayerName(%0) 		(p_PlayerName[(%0)])
+
+/* ** Constants ** */
+stock const
+	g_igServerNames 				[ ] [ 28 ] = { "San Fierro Cops And Robbers" };
 
 /* ** Variables ** */
 new
-	g_igServerNames[ 2 ] [ 28 ] = { "San Fierro Cops And Robbers", "Call Of Duty For SA-MP" },
-	p_RconLoginFails[ MAX_PLAYERS char ]
+	p_PlayerName 					[ MAX_PLAYERS ] [ MAX_PLAYER_NAME ],
+	p_PlayerIP 						[ MAX_PLAYERS ] [ 16 ],
+	p_RconLoginFails 				[ MAX_PLAYERS char ]
 ;
 
-/* ** Callbacks ** */
-public OnRconLoginAttempt(ip[], password[], success)
+/* ** Forwards ** */
+forward OnNpcConnect( npcid );
+
+/* ** Hooks ** */
+hook OnRconLoginAttempt( ip[ ], password[ ], success )
 {
 	new
 		playerid = INVALID_PLAYER_ID,
@@ -67,12 +80,55 @@ public OnRconLoginAttempt(ip[], password[], success)
 	return 1;
 }
 
+hook OnPlayerConnect( playerid )
+{
+	static
+		szName[ MAX_PLAYER_NAME ], szIP[ 16 ];
+
+    GetPlayerIp( playerid, szIP, sizeof( szIP ) );
+    GetPlayerName( playerid, szName, sizeof( szName ) );
+
+	if ( IsPlayerNPC( playerid ) ) {
+		CallLocalFunction( "OnNpcConnect", "d", playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+
+	strcpy( p_PlayerIP[ playerid ], szIP );
+	strcpy( p_PlayerName[ playerid ], szName );
+
+	if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
+		return Kick( playerid ), 1;
+
+	if ( strlen( ReturnPlayerName( playerid ) ) <= 2 )
+		return Kick( playerid ), 1;
+
+	return 1;
+}
+
 #if defined DEBUG_MODE
 	// aims to clear the banned from the server bug
 	public OnIncomingConnection( playerid, ip_address[ ], port ) {
 		SendRconCommand( "reloadbans" );
 	}
 #endif
+
+/* ** Hooked Functions ** */
+Security_SetPlayerName( playerid, const name[ ] )
+{
+	if ( 0 <= playerid < MAX_PLAYERS ) {
+		format ( p_PlayerName[ playerid ], sizeof ( p_PlayerName[ ] ), "%s", name );
+	}
+	print ("Hooked SetPlayerName");
+	return SetPlayerName( playerid, name );
+}
+
+#if defined _ALS_SetPlayerName
+    #undef SetPlayerName
+#else
+    #define _ALS_SetPlayerName
+#endif
+
+#define SetPlayerName Security_SetPlayerName
 
 /* ** Functions ** */
 stock RangeBanPlayer( playerid )

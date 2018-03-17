@@ -15,7 +15,7 @@
 #pragma compat 1
 #pragma option -d3
 #pragma dynamic 7200000
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -28,7 +28,7 @@
 
 /* ** Redefinitions ** */
 #undef  MAX_PLAYERS
-#define MAX_PLAYERS                 ( 128 )
+#define MAX_PLAYERS                 128
 
 /* ** Sundry Includes ** */
 #include                            < a_mysql >
@@ -67,10 +67,8 @@ native gpci 						( playerid, serial[ ], len );
 	#define AC_INCLUDED
 #endif
 
-
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
-#define IsPlayerSpawned(%1)    		(p_Spawned{%1})
 #define IsPlayerJailed(%1)          (p_Jailed{%1})
 #define IsPlayerTazed(%1)          	(p_Tazed{%1})
 #define IsPlayerDetained(%1)        (p_Detained{%1})
@@ -82,10 +80,8 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerAdminOnDuty(%0)     (p_AdminOnDuty{%0})
 #define IsPlayerInPaintBall(%0)		(p_inPaintBall{%0})
 #define IsPlayerMining(%0)			(p_isMining{%0})
-#define IsPlayerUsingRadio(%0)		(p_UsingRadio{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerOnSlotMachine(%0)	(p_usingSlotMachine[%0]!=-1)
-#define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)
 #define IsPlayerRobbing(%0)			IsPlayerAttachedObjectSlotUsed(%0,0)
 #define IsPlayerAdminJailed(%0) 	(p_AdminJailed{%0}&&p_JailTime[%0])
 #define IsPlayerInMethlab(%0)		(GetPVarInt(%0,"inMethLab")==1&&GetPlayerInterior(%0)==VW_METH)
@@ -103,14 +99,12 @@ native gpci 						( playerid, serial[ ], len );
 #define UpdateWoodStockObject()		(format(szNormalString,32,"%d Logs Ready",g_LogsInStock),SetDynamicObjectMaterialText(g_LogCountObject,0,szNormalString,130,"Arial",0,1,-1,0,1))
 #define replacePercentageSymbol(%0)	strreplacechar(szString,'%','#')
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
-#define ReturnPlayerIP(%0) 			(p_PlayerIP[(%0)])
-#define ReturnPlayerName(%0) 		(p_PlayerName[(%0)])
 #define IsPlayerInEvent(%0)			(GetPlayerVirtualWorld(playerid)==69)
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
 #define INVALID_TIMER_ID			(-1)
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
-#define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
+
 // #define ITER_NONE 					-1
 
 /* Dynamic Macros */
@@ -144,7 +138,6 @@ new bool: False = false, szNormalString[ 144 ];
 #define DCC_SendChannelMessageFormatted(%0,%1,%2) \
 	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
 
-#define mysql_single_query(%0) mysql_function_query(dbHandle,(%0),true,"","")
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
@@ -158,7 +151,6 @@ new bool: False = false, szNormalString[ 144 ];
 
 //#define MAX_WEAPONS                 54
 #define MAX_MACHINES 				35 // Placed top because of textdraws
-#define MAX_ROULETTE_TABLES 		12
 #define MAX_CLASS_BAN_WARNS			3
 #define MAX_CAR_MODS                15
 #define MAX_BURGLARY_SLOTS          8
@@ -171,12 +163,6 @@ new bool: False = false, szNormalString[ 144 ];
 
 #define VW_METH 					110
 #define VW_SHAMAL 					220
-
-#define VIP_REGULAR 				( 1 )
-#define VIP_BRONZE 					( 2 )
-#define VIP_GOLD 					( 3 )
-#define VIP_PLATINUM 				( 4 )
-#define VIP_DIAMOND 				( 5 )
 
 const
 	Float: default_X 				= -2242.152,
@@ -211,159 +197,6 @@ new stock
 #define CITY_LS						2
 #define CITY_DESERTS 				3
 #define CITY_COUNTRY				4
-
-/* ** Dialogs ** */
-#define DIALOG_REGISTER             0 			+ 1000
-#define DIALOG_LOGIN	            1 			+ 1000
-#define DIALOG_JOB	            	2 			+ 1000
-#define DIALOG_BOMB_SHOP            3           + 1000
-#define DIALOG_NULL                 4           + 1000
-#define DIALOG_BANNED               5           + 1000
-#define DIALOG_BANK_MENU            6           + 1000
-#define DIALOG_BANK_WITHDRAW        7           + 1000
-#define DIALOG_BANK_DEPOSIT         8           + 1000
-#define DIALOG_BANK_INFO            9           + 1000
-#define DIALOG_SHOP_MENU            10          + 1000
-#define DIALOG_HOUSES               11          + 1000
-#define DIALOG_CITY_HALL 	       	12          + 1000
-#define DIALOG_HOSPITAL             13          + 1000
-#define DIALOG_HOUSE_CONFIG         14          + 1000
-#define DIALOG_HOUSE_TITLE          15          + 1000
-#define DIALOG_HOUSE_INTERIORS      16          + 1000
-#define DIALOG_IC_MARKET            17          + 1000
-#define DIALOG_VEHICLE_SPAWN        18          + 1000
-#define DIALOG_ARENAS               19          + 1000
-#define DIALOG_BOUGHT_VEH        	20          + 1000
-#define DIALOG_PERKS                21          + 1000
-#define DIALOG_PERKS_P              22          + 1000
-#define DIALOG_VIP              	23          + 1000
-#define DIALOG_PERKS_V              24          + 1000
-#define DIALOG_DONATED           	25          + 1000
-#define DIALOG_VEHICLE_LOCATE       26          + 1000
-#define DIALOG_GANG_COLOR           27          + 1000
-#define DIALOG_GANG_COLOR_INPUT     28          + 1000
-#define DIALOG_RADIO                29          + 1000
-#define DIALOG_XPMARKET             30          + 1000
-#define DIALOG_PAINTBALL            31          + 1000
-#define DIALOG_GPS                  32          + 1000
-#define DIALOG_VIP_LOCKER           33          + 1000
-#define DIALOG_AMMU                 34          + 1000
-#define DIALOG_GARAGE_INTERIORS     35          + 1000
-#define DIALOG_GARAGE_INT_CONFIRM	36          + 1000
-#define DIALOG_GANG_LIST         	37          + 1000
-#define DIALOG_LUMBERJACK           38          + 1000
-#define DIALOG_FIGHTSTYLE           39          + 1000
-#define DIALOG_TOYS_MAIN            40          + 1000
-#define DIALOG_TOYS     			41          + 1000
-#define DIALOG_TOYS_BONE 			42          + 1000
-#define DIALOG_VIP_WEP              43          + 1000
-#define DIALOG_VIP_WEP_SELECT       44          + 1000
-#define DIALOG_GANG_LIST_RESPONSE 	45          + 1000
-#define DIALOG_CMDS                 46          + 1000
-#define DIALOG_CMDS_REDIRECT        47          + 1000
-#define DIALOG_STATS                48          + 1000
-#define DIALOG_STATS_REDIRECT       49          + 1000
-#define DIALOG_VEHDEALER            50          + 1000
-#define DIALOG_CP_MENU            	51          + 1000
-#define DIALOG_AMMU_BUY             52          + 1000
-#define DIALOG_APARTMENTS         	53          + 1000
-#define DIALOG_APARTMENTS_BUY     	54          + 1000
-#define DIALOG_FLAT_CONFIG          55          + 1000
-#define DIALOG_FLAT_CONTROL         56          + 1000
-#define DIALOG_FLAT_TITLE	        57          + 1000
-#define DIALOG_BUSINESS_TERMINAL	58          + 1000
-#define DIALOG_WEAPON_DEAL          59          + 1000
-#define DIALOG_WEAPON_DEAL_BUY      60          + 1000
-#define DIALOG_HOUSE_PW             61          + 1000
-#define DIALOG_HOUSE_SET_PW         62          + 1000
-#define DIALOG_HOUSE_WEAPONS        63          + 1000
-#define DIALOG_HOUSE_WEAPONS_ADD    64          + 1000
-#define DIALOG_BUSINESS_BUY         65          + 1000
-#define DIALOG_FURNITURE            66          + 1000
-#define DIALOG_FURNITURE_LIST 		67          + 1000
-#define DIALOG_FURNITURE_OPTION     68          + 1000
-#define DIALOG_FURNITURE_ROTATION   69          + 1000
-#define DIALOG_FURNITURE_MAN_SEL    70          + 1000
-#define DIALOG_ONLINE_JOB           71          + 1000
-#define DIALOG_ONLINE_JOB_R         72          + 1000
-#define DIALOG_FURNITURE_CATEGORY   73          + 1000
-#define DIALOG_FLAT_FURNITURE 		74         	+ 1000
-#define DIALOG_TRUNCATE_FURNITURE	75 			+ 1000
-#define DIALOG_VEHDEALER_BUY		76 			+ 1000
-#define DIALOG_VEHDEALER_OPTIONS	77 			+ 1000
-#define DIALOG_HELP 				78 			+ 1000
-#define DIALOG_HELP_CATEGORY		79 			+ 1000
-#define DIALOG_HELP_THREAD			80 			+ 1000
-#define DIALOG_HELP_BACK			81 			+ 1000
-#define DIALOG_RADIO_CUSTOM			82 			+ 1000
-#define DIALOG_GPS_CITY 			83 			+ 1000
-#define DIALOG_SPAWN_CITY			84 			+ 1000
-#define DIALOG_GATE					85  		+ 1000
-#define DIALOG_GATE_EDIT 			86 			+ 1000
-#define DIALOG_GATE_OWNER 			87 			+ 1000
-#define DIALOG_GATE_OWNER_EDIT		88 			+ 1000
-#define DIALOG_PAINTBALL_EDIT 		89 			+ 1000
-#define DIALOG_PAINTBALL_EDIT_VAL 	90 			+ 1000
-#define DIALOG_PAINTBALL_ARENAS 	91 			+ 1000
-#define DIALOG_PAINTBALL_WEP 		92 			+ 1000
-#define DIALOG_PAINTBALL_PW 		93 			+ 1000
-#define DIALOG_DONATED_PLATBRONZE 	94 			+ 1000
-#define DIALOG_SHOP_AMOUNT 			95 			+ 1000
-#define DIALOG_PAINTBALL_REFILL 	96 			+ 1000
-#define DIALOG_HOUSE_INT_CONFIRM	98 			+ 1000
-#define DIALOG_TOYS_ITEMS			99 			+ 1000
-#define DIALOG_TOYS_EDIT 			100 		+ 1000
-#define DIALOG_TOYS_BONE_EDIT 		101 		+ 1000
-#define DIALOG_TOYS_BUY 			102 		+ 1000
-#define DIALOG_TOYS_ITEMS_BUY 		103 		+ 1000
-#define DIALOG_UNBAN_CLASS 			104 		+ 1000
-#define DIALOG_GANG_BANK_WITHDRAW   105			+ 1000
-#define DIALOG_GANG_BANK_DEPOSIT    106			+ 1000
-#define DIALOG_GANG_BANK_INFO       107			+ 1000
-#define DIALOG_YOU_SURE_APART  		108			+ 1000
-#define DIALOG_YOU_SURE_VIP 		109			+ 1000
-#define DIALOG_CHANGENAME			110 		+ 1000
-#define DIALOG_GANG_LIST_OPTIONS	111 		+ 1000
-#define DIALOG_GANG_LIST_MEMBERS 	112 		+ 1000
-#define DIALOG_COMPONENTS_CATEGORY 	113 		+ 1000
-#define DIALOG_COMPONENTS			114 		+ 1000
-#define DIALOG_COMPONENT_EDIT 		115 		+ 1000
-#define DIALOG_COMPONENT_EDIT_MENU	116			+ 1000
-#define DIALOG_COMPONENT_MENU		117			+ 1000
-#define DIALOG_DONATED_DIAGOLD 		118			+ 1000
-#define DIALOG_LATEST_DONOR			119			+ 1000
-#define DIALOG_FINISHED_DONATING	120			+ 1000
-#define DIALOG_MODIFY_HITSOUND 		121			+ 1000
-#define DIALOG_VIP_NOTE				122 		+ 1000
-#define DIALOG_REGISTER_QUIT 		123 		+ 1000
-#define DIALOG_LOGIN_QUIT			124			+ 1000
-#define DIALOG_WEAPON_LOCKER		125			+ 1000
-#define DIALOG_WEAPON_LOCKER_BUY	126			+ 1000
-#define DIALOG_FEEDBACK				127			+ 1000
-#define DIALOG_IC_MARKET_2 			128			+ 1000
-#define DIALOG_BUSINESS_CAR			129 		+ 1000
-#define DIALOG_BUSINESS_HELI		130 		+ 1000
-#define DIALOG_ACC_GUARD 			131			+ 1000
-#define DIALOG_ACC_GUARD_EMAIL		132 		+ 1000
-#define DIALOG_ACC_GUARD_MODE 		133			+ 1000
-#define DIALOG_ACC_GUARD_CONFIRM	134			+ 1000
-#define DIALOG_ACC_GUARD_DEL_CANCEL	135			+ 1000
-#define DIALOG_RACE 				136			+ 1000
-#define DIALOG_RACE_MODE 			137			+ 1000
-#define DIALOG_RACE_FEE 			138			+ 1000
-#define DIALOG_RACE_POS 			139			+ 1000
-#define DIALOG_RACE_DISTANCE 		140			+ 1000
-#define DIALOG_RACE_KICK 			141			+ 1000
-#define DIALOG_RACE_DEST 			142			+ 1000
-#define DIALOG_RACE_PRESELECT 		143			+ 1000
-#define DIALOG_RACE_CUSTOM_DEST 	144			+ 1000
-#define DIALOG_BUSINESS_SELL		145			+ 1000
-#define DIALOG_BUSINESS_NAME 		146 		+ 1000
-#define DIALOG_BUSINESS_ADD_MEMBER	147			+ 1000
-#define DIALOG_BUSINESS_MEMBERS		148			+ 1000
-#define DIALOG_BUSINESS_WITHDRAW	149 		+ 1000
-#define DIALOG_BUSINESS_UPGRADES	150			+ 1000
-#define DIALOG_BUSINESSES 			151 		+ 1000
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
@@ -571,8 +404,6 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
-	Text: g_rouletteNumberBG		[ MAX_ROULETTE_TABLES ],
-	Text: g_rouletteNumberTD		[ MAX_ROULETTE_TABLES ],
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -2927,95 +2758,6 @@ new
 	p_accountSecurityData		[ MAX_PLAYERS ] [ E_IRRESISTIBLE_GUARD ]
 ;
 
-/* ** Roulette ** */
-enum E_ROULETTE_OFFSET_DATA
-{
-	E_VALUE, Float: E_OFFSET, Float: E_ANGLE
-};
-
-new
-	Float: g_rouletteOffsets[ ] [ E_ROULETTE_OFFSET_DATA ] = {
-
-		{ 0, 0.6, 85.0 }, // 0
-
-		// 1, 2, 3
-		{ 1, 0.50, 110.0 }, { 2, 0.44, 85.0 }, { 3, 0.55, 55.0 },
-
-		// 4, 5, 6
-		{ 4, 0.31, 120.0 }, { 5, 0.3, 75.0 }, { 6, 0.43, 40.0 },
-
-		// 7, 8, 9
-		{ 7, 0.20, 147.0 }, { 8, 0.13, 55.0 }, { 9, 0.32, 18.0 },
-
-		// 10, 11, 12
-		{ 10, 0.17, 195.0 }, { 11, 0.08, -25.0 }, { 12, 0.32, -10.0 },
-
-		// 13, 14, 15
-		{ 13, 0.25, 230.0 }, { 14, 0.22, -70.0 }, { 15, 0.38, -33.0 },
-
-		// 16, 17, 18
-		{ 16, 0.39, 244.0 }, { 17, -0.35, 103.0 }, { 18, 0.48, -48.0 },
-
-		// 19, 20, 21
-		{ 19, 0.53, 251.0 }, { 20, 0.51, 278.0 }, { 21, 0.6, -58.0 },
-
-		// 22, 23, 24
-		{ 22, 0.68, 256.0 }, { 23, 0.66, 276.0 }, { 24, 0.73, 295.0 },
-
-		// 25, 26, 27
-		{ 25, 0.82, 259.0 }, { 26, 0.81, 275.0 }, { 27, 0.87, 292.0 },
-
-		// 28, 29, 30
-		{ 28, 0.97, 261.0 }, { 29, 0.96, 275.0 }, { 30, 1.01, 289.0 },
-
-		// 31, 32, 33
-		{ 31, 1.12, 264.0 }, { 32, 1.12, 274.0 }, { 33, 1.17, 286.0 },
-
-		// 34, 35, 36
-		{ 34, 1.28, 264.0 }, { 35, 1.27, 274.0 }, { 36, 1.31, 284.0 },
-
-		// 3to1, 3to1, 3to1
-		{ 3211, 1.43, 264.0 }, { 3212, 1.42, 273.0 }, { 3213, 1.45, 283.0 },
-
-		// 1-18, even, 1st to 12
-		{ 118, 0.73, 152.0 },{ 222, 0.65, 178.0 }, { 112, 0.46, 153.0 },
-
-		// red, black, 2nd 12
-		{ 88, 0.7, 202.0 }, { 44, 0.87, 222.0 }, { 212, 0.59, 227.0 },
-
-		// odd, 19 to 36, 3rd 12
-		{ 333, 1.09, 233.0 }, { 1936, 1.35, 241.0 },{ 312, 1.12, 249.0 }
-
-	}
-;
-
-enum E_ROULETTE_DATA
-{
-	E_OBJECT, 					E_SPINNER_OBJECT, 				E_SPINNING_TIMER,
-	bool: E_NO_MORE_BETS,
-
-	Float: E_X, 				Float: E_Y, 					Float: E_Z,
-	Float: E_ROTATION
-};
-
-
-new
-	g_rouletteTableData			[ MAX_ROULETTE_TABLES ] [ E_ROULETTE_DATA ],
-	Iterator:roulettetables<MAX_ROULETTE_TABLES>,
-
-	g_rouletteChipColor			[ MAX_PLAYERS ],
-	g_rouletteChip				[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
-	g_rouletteChipValue			[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
-	Text3D: g_rouletteChipLabel	[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
-	p_rouletteBetValue			[ MAX_PLAYERS ],
-
-	p_RouletteMarkerTimer 		[ MAX_PLAYERS ] = { -1, ... },
-	p_RouletteMarker 			[ MAX_PLAYERS ] = { -1, ... },
-	p_RouletteTable 			[ MAX_PLAYERS ] = { -1, ... },
-	p_RouletteMarkerColumn 		[ MAX_PLAYERS char ],
-	bool: p_rouletteBetLocked 	[ MAX_PLAYERS char ]
-;
-
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
 
@@ -3060,7 +2802,7 @@ new
 ;
 
 /* ** VIP House Display ** */
-#define MAX_BUSINESSES				( 150 )
+#define MAX_BUSINESSES				( 200 )
 #define MAX_DROPS 					( 5 )
 #define MAX_BUSINESS_MEMBERS 		( 8 )
 #define MAX_BIZ_VEH_MODELS 			( 18 )
@@ -3409,7 +3151,6 @@ new
 	PreviousPickupID				[ MAX_PLAYERS ],
 	//p_LastAnimIndex					[ MAX_PLAYERS ],
 	p_SpawningCity					[ MAX_PLAYERS char ],
-	bool: p_UsingRadio				[ MAX_PLAYERS char ],
 	p_UsingRobberySafe 				[ MAX_PLAYERS ] = { -1, ... },
 	bool: p_CancelProgress 			[ MAX_PLAYERS char ],
 	p_LumberjackMapIcon 			[ MAX_PLAYERS ] = { 0xFFFF, ... },
@@ -3436,8 +3177,6 @@ new
 	p_BlowjobPrice 					[ MAX_PLAYERS ],
 	p_DesyncTime 					[ MAX_PLAYERS ],
 	p_AnswerDelay					[ MAX_PLAYERS ],
-	p_PlayerIP 						[ MAX_PLAYERS ] [ 16 ],
-	p_PlayerName 					[ MAX_PLAYERS ] [ MAX_PLAYER_NAME ],
 	p_LastPlayerState 				[ MAX_PLAYERS char ],
 	p_RespondDelay 					[ MAX_PLAYERS ],
 	p_VisibleOnRadar 				[ MAX_PLAYERS ],
@@ -3471,7 +3210,6 @@ new
 	p_VehicleBringCooldown 			[ MAX_PLAYERS ],
 	p_BusinessSpawnLocation 		[ MAX_PLAYERS ] = { -1, ... }
 ;
-
 /* ** Server Data ** */
 new
     g_Checkpoints           		[ ALL_CHECKPOINTS ],
@@ -3531,9 +3269,7 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical );
 public VendingMachineUsed( playerid, Float: fHealthGiven );
 public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, third_combo );
 public OnPlayerHoldupStore( playerid, clerkid, step );
-public OnRouletteWheelStop( rouletteid, winner );
-public OnSpinRouletteTable( rouletteid, elapsed, steps );
-public OnRouletteMarkerUpdate( playerid );
+public OnPlayerAccessEntrance( playerid, entranceid );
 
 /* ** Functions ** */
 stock Float: distanceFromSafe( iPlayer, iRobbery, &Float: fDistance = Float: 0x7F800000 )
@@ -3568,6 +3304,7 @@ public OnGameModeInit()
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
 	DisableInteriorEnterExits( );
+	// Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 950 );
 	// MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
 	// mysql_log( LOG_ALL );
@@ -3592,11 +3329,6 @@ public OnGameModeInit()
 	for( new i = 0; i < sizeof( g_garageInteriorData ); i++ )
 		format( szg_garageInteriors, sizeof( szg_garageInteriors ), "%s"COL_GREY"%d Vehicle Slots"COL_WHITE"\t%s\n", szg_garageInteriors, g_garageInteriorData[ i ] [ E_VEHICLE_CAPACITY ], g_garageInteriorData[ i ] [ E_NAME ] );
 
-	strins( g_RadioStations, ""COL_GREY"Custom URL "COL_GOLD"[V.I.P]"COL_WHITE"\n", 0 );
-    for( new i = 0; i < sizeof( g_RadioData ); i++ ) {
-	    format( g_RadioStations, sizeof( g_RadioStations ), "%s%s\n", g_RadioStations, g_RadioData[ i ] [ E_NAME ] );
-	}
-
 	for( new i = 0; i < sizeof( g_informationPickupsData ); i++ )
 	{
 		g_informationPickupsData[ i ] [ E_PICKUP_ID ] = CreateDynamicPickup( 1239, 2, g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ] );
@@ -3614,13 +3346,7 @@ public OnGameModeInit()
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
-	AddServerVariable( "roulette_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
-	AddServerVariable( "roulette_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
-	AddServerVariable( "blackjack_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
-	AddServerVariable( "blackjack_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
-
-	mysql_function_query( dbHandle, "SELECT * FROM `SERVER`", true, "OnLoadServerVariables", "" );
 
 	/* ** CIVILIAN ** */
 	AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
@@ -3735,9 +3461,6 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 4", 5000, -1400.84180, 858.61407, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateRobberyCheckpoint( "San Fierro Airport - Safe 1", 4000, -1894.15894, -17.17650, 1060.88428, 90.00000, -1 );
 	CreateRobberyCheckpoint( "San Fierro Airport - Safe 2", 4000, -1894.15808, -19.11643, 1060.88428, 90.00000, -1 );
-
-	CreateRobberyCheckpoint( "Dope's Casino - Safe 1", 3000, -2049.279541, 415.303710, 1959.170898, 0.000000, 68 );
-	CreateRobberyCheckpoint( "Dope's Casino - Safe 2", 3000, -2048.228515, 415.303710, 1959.170898, 0.000000, 68 );
 
 	CreateRobberyCheckpoint( "Desperado Cafe", 1500, 2113.085693, -1784.566406, 12.950445, 180.000000, -1 );
 	CreateRobberyCheckpoint( "Ahmyy's Cafe", 3000, 2540.558593, 2013.840209, 10.289649, 90.000000, -1 );
@@ -3883,20 +3606,6 @@ public OnGameModeInit()
 	#endif
 	/* ** Entrances/Exits ** */
 
-	// Create roulette machine
-	CreateRouletteTable( 2242.36719, 1589.18750, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2242.36719, 1594.75781, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2230.57031, 1589.18750, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2230.57031, 1594.75781, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2230.57031, 1614.59375, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2230.57031, 1619.65625, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2241.44531, 1614.55469, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2241.44531, 1619.60938, 1006.22662, 90.00000 );
-	CreateRouletteTable( 1963.71094, 1025.69531, 992.507810, 0.000000 );
-	CreateRouletteTable( 1959.39844, 1025.69531, 992.507810, 0.000000 );
-	CreateRouletteTable( 1963.71094, 1010.11719, 992.507810, 0.000000 );
-	CreateRouletteTable( 1959.39844, 1010.11719, 992.507810, 0.000000 );
-
 	// Houses
 	/*CreateEntrance( "[ROOFTOP]", 			-2440.5149, 820.9702, 35.1838, -2438.1204, 819.7362, 65.5078, 			0,   0, false, true ); // Jendral
 	CreateEntrance( "[ROOFTOP]", 			-2475.4238, 161.5239, 35.1406, -2476.4043, 155.6541, 64.9332, 			0,   0, false, true ); // Queens' Rooftop
@@ -3949,7 +3658,6 @@ public OnGameModeInit()
 
 	// Custom Interiors
 	CreateEntrance( "[SEWER]",				-1990.7736, 1033.7378, 55.7266, 3638.4670, 5215.5024, 1203.3168, 		1,   1, true, true, -1 ); // Milky
-	CreateEntrance( "[CASINO]", 			-2056.7678, 454.2312, 35.1719, -2059.0774, 388.7253, 1959.7297, 		0,  68, true, false, 44 ); // Dope Casino
 	CreateEntrance( "[BANK]", 				-1493.1296, 920.1409, 7.1875, -1444.2537, 831.0490, 985.7027, 			0,  g_bankvaultData[ CITY_SF ] [ E_WORLD ], true, false, 52 );
 
 	// San Fierro
@@ -4543,14 +4251,14 @@ public OnGameModeInit()
 	SetDynamicObjectMaterialText( ( g_LogCountObject = CreateDynamicObject(3074, -2329.4724, -106.0164, 33.1678, 0.0000, 0.0000, 90.000000) ), 0, "0 Logs Ready", 130, "Arial", 0, 1, -1, 0, 1);
 
 	// Parking
- 	CreateObject( 19485, -1909.55, 497.22, 25.71,   0.00, 0.00, 0.00, 500.0 );
+ 	CreateDynamicObject( 19485, -1909.55, 497.22, 25.71, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 1 );
 
  	// Random replacements made by sa-mp
-	CreateObject( 19794, 1787.13281, -1565.67969, 11.96880, 0.00000, 0.00000, 0.00000, 500.0 );
-	CreateObject( 11692, 199.343800, 1943.789060, 18.20310, 0.00000, 0.00000, 0.00000, 500.0 );
-	CreateObject( 19484, -1875.02344, -65.328130, 15.06250, 0.00000, 0.00000, 0.00000, 500.0 );
-	CreateObject( 19595, 1160.96094, -1180.57813, 70.41406, 0.00000, 0.00000, 0.00000, 500.0 );
-	CreateObject( 19798, 1160.96094, -1180.57813, 20.50000, 0.00000, 0.00000, 0.00000, 500.0 );
+	CreateDynamicObject( 19794, 1787.13281, -1565.67969, 11.96880, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 11692, 199.343800, 1943.789060, 18.20310, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19484, -1875.02344, -65.328130, 15.06250, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19595, 1160.96094, -1180.57813, 70.41406, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19798, 1160.96094, -1180.57813, 20.50000, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
 
 	// V.I.P Lounge
 	CreateDynamicObject( 3532, -1881.90, 823.73, 40.22, 0.00, 0.00, -48.84 );
@@ -4560,12 +4268,12 @@ public OnGameModeInit()
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1882.8883, 824.6093, 40.3129, 0.0000, 0.0000, 133.4854 ), 0, "VIP LOUNGE", 90, "Impact", 64, 0, 0xFFFFFFFF, 0, 1 ); //0xFFFFDC2E
 
 	// Apartments
-	CreateObject( 4587, -1971.51, 1356.26, 65.32,   0.00, 0.00, -180.00 );
-	CreateObject( 3781, -1971.50, 1356.27, 28.26,   0.00, 0.00, -180.00 );
-	CreateObject( 3781, -1971.50, 1356.27, 55.54,   0.00, 0.00, -180.00 );
-	CreateObject( 3781, -1971.50, 1356.27, 82.77,   0.00, 0.00, -180.00 );
-	CreateObject( 3781, -1971.50, 1356.27, 109.89,  0.00, 0.00, -180.00 );
-	CreateObject( 4605, -1992.10, 1353.31, 1.11,    0.00, 0.00, -180.00 );
+	CreateDynamicObject( 4587, -1971.51, 1356.26, 65.32,   0.00, 0.00, -180.00, .priority = 1 );
+	CreateDynamicObject( 3781, -1971.50, 1356.27, 28.26,   0.00, 0.00, -180.00, .priority = 1 );
+	CreateDynamicObject( 3781, -1971.50, 1356.27, 55.54,   0.00, 0.00, -180.00, .priority = 1 );
+	CreateDynamicObject( 3781, -1971.50, 1356.27, 82.77,   0.00, 0.00, -180.00, .priority = 1 );
+	CreateDynamicObject( 3781, -1971.50, 1356.27, 109.89,  0.00, 0.00, -180.00, .priority = 1 );
+	CreateDynamicObject( 4605, -1992.10, 1353.31, 1.11,    0.00, 0.00, -180.00, .priority = 1 );
 
 	g_apartmentElevator = CreateDynamicObject( 18755, -1955.09, 1365.51, 8.36, 0.00, 0.00, 90.00 );
 
@@ -4582,14 +4290,14 @@ public OnGameModeInit()
 	}
 
 	// Houses
-	SetObjectMaterialText( CreateObject( 10447, -2550.1719, 54.5625, 14.3906, 0.00, 0.00, 0.00, 500.0 ), "The Lost", 7, 40, "Times New Roman", 24, 1, -1, -16777216, 1 ); // The Lost
+	SetDynamicObjectMaterialText( CreateDynamicObject( 10447, -2550.1719, 54.5625, 14.3906, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 100 ), 40, "The Lost", 7, "Times New Roman", 24, 1, -1, -16777216, 1 ); // The Lost
 
 	// Lumberjack
-	SetObjectMaterial( CreateObject( 12814, -2337.1, -94.00, 34.28, 0.0, 0.0, 270.0, 500.0 ), 0, 19381, "all_walls", "desgreengrass" );
-	SetObjectMaterial( CreateObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, 500.0 ), 0, 19381, "all_walls", "desgreengrass" );
+	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.1, -94.00, 34.28, 0.0, 0.0, 270.0, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
+	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
 
 	// Mining
-	SetObjectMaterial( CreateObject(9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, 500.000 ), 3, 4845, "griffobs_las", "dirt64b2" );
+	SetDynamicObjectMaterial( CreateDynamicObject(9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = 500.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
 
 	// Open warehouse near driving school
 	CreateDynamicObject( 19486, -2111.13, -27.23, 36.95, 0.00, 0.00, -90.00 );
@@ -4607,38 +4315,38 @@ public OnGameModeInit()
 	SetDynamicObjectMaterialText( g_TopDonorWall, 0, "Nobody donated :(", 130, "Arial", 48, 0, -65536, 0, 1 );
 
 	// Alcatraz
-	tmpVariable = CreateObject( 16109, -2080.595703, 1734.933837, -3.897439, 0.000000, 0.000000, 0.000000, 500.0 );
-	SetObjectMaterial( tmpVariable, 0, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
-	SetObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	tmpVariable = CreateDynamicObject( 16109, -2080.595703, 1734.933837, -3.897439, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
 
-	tmpVariable = CreateObject( 16149, -1912.565917, 1698.053833, -12.757503, 0.000000, 0.000000, 0.000000, 500.0 );
-	SetObjectMaterial( tmpVariable, 0, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 2, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 5, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 6, 9957, "multistory_sfe", "grassgrn256", 0 );
+	tmpVariable = CreateDynamicObject( 16149, -1912.565917, 1698.053833, -12.757503, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 9957, "multistory_sfe", "grassgrn256", 0 );
 
-	tmpVariable = CreateObject( 16147, -1926.906250, 1901.545288, -11.262178, 0.000000, 0.000000, 0.000000, 500.0 );
-	SetObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 5, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 6, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
+	tmpVariable = CreateDynamicObject( 16147, -1926.906250, 1901.545288, -11.262178, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
 
-	tmpVariable = CreateObject( 16148, -2088.817626, 1913.784423, -1.467424, 0.000000, 0.000000, 0.000000, 500.0 );
-	SetObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetObjectMaterial( tmpVariable, 1, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetObjectMaterial( tmpVariable, 5, 5134, "wasteland_las2", "concretenewb256", 0 );
-	SetObjectMaterial( tmpVariable, 6, 5134, "wasteland_las2", "concretenewb256", 0 );
-	SetObjectMaterial( tmpVariable, 8, 5134, "wasteland_las2", "concretenewb256", 0 );
+	tmpVariable = CreateDynamicObject( 16148, -2088.817626, 1913.784423, -1.467424, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 5134, "wasteland_las2", "concretenewb256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 5134, "wasteland_las2", "concretenewb256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 8, 5134, "wasteland_las2", "concretenewb256", 0 );
 
 	/* ** Dirty Mechanic ** */
 	// SF
@@ -4680,23 +4388,23 @@ public OnGameModeInit()
 
 	/* ** Auto Inactive Deletion ** */
 #if !defined DEBUG_MODE
-	static
-		szDelete[ 600 ];
 
 	// Delete accounts older than 4 months
-	strcat( szDelete, "DELETE a1, a2, a3, a4, a5, a6, a7, a8, a9 FROM `USERS` AS a1 " );
-	strcat( szDelete, "LEFT JOIN `HOUSES` AS a2 ON a2.`OWNER` = a1.`NAME` " );
-	strcat( szDelete, "LEFT JOIN `VEHICLES` AS a3 ON a3.`OWNER` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `FURNITURE` as a4 ON a4.`OWNER` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `APARTMENTS` as a5 ON a5.`OWNER` = a1.`NAME` " );
-	strcat( szDelete, "LEFT JOIN `GATES` as a6 ON a6.`OWNER` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `TOY_UNLOCKS` as a7 ON a7.`USER_ID` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `SETTINGS` as a8 ON a8.`USER_ID` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `TOYS` as a9 ON a9.`USER_ID` = a1.`ID` " );
-	strcat( szDelete, "LEFT JOIN `GARAGES` as a10 ON a10.`OWNER` = a1.`ID` " );
-	strcat( szDelete, "WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > 10368000" );
+	erase( szLargeString );
+	strcat( szLargeString, "DELETE a1, a2, a3, a4, a5, a6, a7, a8, a9 FROM `USERS` AS a1 " );
+	strcat( szLargeString, "LEFT JOIN `HOUSES` AS a2 ON a2.`OWNER` = a1.`NAME` " );
+	strcat( szLargeString, "LEFT JOIN `VEHICLES` AS a3 ON a3.`OWNER` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `FURNITURE` as a4 ON a4.`OWNER` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `APARTMENTS` as a5 ON a5.`OWNER` = a1.`NAME` " );
+	strcat( szLargeString, "LEFT JOIN `GATES` as a6 ON a6.`OWNER` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `TOY_UNLOCKS` as a7 ON a7.`USER_ID` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `SETTINGS` as a8 ON a8.`USER_ID` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `TOYS` as a9 ON a9.`USER_ID` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `GARAGES` as a10 ON a10.`OWNER` = a1.`ID` " );
+	strcat( szLargeString, "LEFT JOIN `BUSINESSES` as a11 ON a11.`OWNER_ID` = a1.`ID` " );
+	strcat( szLargeString, "WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > 10368000" );
+	mysql_function_query( dbHandle, szLargeString, true, "onRemoveInactiveRows", "d", 0 );
 
-	mysql_function_query( dbHandle, szDelete, true, "onRemoveInactiveRows", "d", 0 );
 	// Truncate accounts older than 4 months
 	mysql_function_query( dbHandle, "UPDATE USERS SET CASH =0,BANKMONEY=0,COINS=0.0 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>5259487", true, "onRemoveInactiveRows", "d", 1 );
 
@@ -6257,42 +5965,37 @@ thread OnPlayerDuplicateAccountCheck( playerid )
 	return 1;
 }
 
+public OnNpcConnect( npcid )
+{
+	static
+		npc_name[ MAX_PLAYER_NAME ], npc_ip[ 16 ];
+
+    GetPlayerIp( npcid, npc_ip, sizeof( npc_ip ) );
+    GetPlayerName( npcid, npc_name, sizeof( npc_name ) );
+
+	#if ENABLED_SECURE_TRUCK == true
+		if ( strmatch( npc_name, SECURE_TRUCK_DRIVER_NAME ) ) {
+			g_secureTruckDriver = npcid;
+			g_secureTruckData[ E_MAP_ICON ] = 0xFFFF;
+			SetPlayerColor( npcid, COLOR_SECURITY );
+			PutPlayerInVehicle( npcid, g_secureTruckVehicle, 0 );
+			return 1;
+		}
+	#endif
+	#if ENABLED_NPC_ROBBERIES == true
+		if ( strmatch( npc_ip, "127.0.0.1" ) ) {
+			SetPlayerColor( npcid, 0xFFFFFF20 );
+			return 1;
+		}
+	#endif
+	print( "Kicked" );
+	return Kick( npcid ), 1;
+}
+
 public OnPlayerConnect( playerid )
 {
     static
-        Query[ 200 ], szName[ MAX_PLAYER_NAME ], szIP[ 16 ];
-
-    GetPlayerIp( playerid, szIP, sizeof( szIP ) );
-    GetPlayerName( playerid, szName, sizeof( szName ) );
-
-	if ( IsPlayerNPC( playerid ) )
-	{
-		#if ENABLED_SECURE_TRUCK == true
-			if ( strmatch( szName, SECURE_TRUCK_DRIVER_NAME ) ) {
-				g_secureTruckDriver = playerid;
-				g_secureTruckData[ E_MAP_ICON ] = 0xFFFF;
-				SetPlayerColor( playerid, COLOR_SECURITY );
-				PutPlayerInVehicle( playerid, g_secureTruckVehicle, 0 );
-				return 1;
-			}
-		#endif
-		#if ENABLED_NPC_ROBBERIES == true
-			if ( strmatch( szIP, "127.0.0.1" ) ) {
-				SetPlayerColor( playerid, 0xFFFFFF20 );
-				return 1;
-			}
-		#endif
-	 	return Kick( playerid ), 1;
-	}
-
-	strcpy( p_PlayerIP[ playerid ], szIP );
-	strcpy( p_PlayerName[ playerid ], szName );
-
-	if ( strlen( ReturnPlayerName( playerid ) ) <= 2 )
-		return Kick( playerid ), 1;
-
-	if ( !( 0 <= playerid < MAX_PLAYERS ) )
-		return Kick( playerid ), 1;
+        Query[ 200 ];
 
 	if ( strmatch( ReturnPlayerName( playerid ), "No-one" ) )
 		return Kick( playerid ), 1;
@@ -6322,13 +6025,6 @@ public OnPlayerConnect( playerid )
 	p_FPS_DrunkLevel	[ playerid ] = 0;
 	p_FPS 				[ playerid ] = 0;
 	p_UsingRobberySafe	[ playerid ] = -1;
-
-	// reset roullete chips incase
-	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
-		g_rouletteChip[ playerid ] [ i ] = -1;
-		g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
-		g_rouletteChipValue[ playerid ] [ i ] = 0;
-	}
 
 	// reset jails
 	jailDoors( playerid, false, false );
@@ -6539,7 +6235,6 @@ public OnPlayerDisconnect( playerid, reason )
 	resetPlayerStreaks( playerid );
 	StopPlayerTruckingCourier( playerid );
     RemovePlayerFromRace( playerid );
-	RemovePlayerFromRoulette( playerid );
 	p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
@@ -6596,7 +6291,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_ViewingStats  [ playerid ] = INVALID_PLAYER_ID;
 	p_HealDealer    [ playerid ] = INVALID_PLAYER_ID;
 	p_Spectating    { playerid } = false;
-	p_UsingRadio 	{ playerid } = false;
 	p_TicketIssuer	[ playerid ] = INVALID_PLAYER_ID;
 	p_DetainedBy	[ playerid ] = INVALID_PLAYER_ID;
     p_GangID		[ playerid ] = INVALID_GANG_ID;
@@ -7532,7 +7226,6 @@ public OnPlayerDeath( playerid, killerid, reason )
     StopPlayerUsingSlotMachine( playerid );
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
-    RemovePlayerFromRoulette( playerid );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
@@ -12122,13 +11815,6 @@ CMD:labelcolor( playerid, params[ ] )
 	return 1;
 }
 
-CMD:stopradio( playerid, params[ ] )
-{
-	if ( IsPlayerUsingRadio( playerid ) ) p_UsingRadio{ playerid } = false;
-    StopAudioStreamForPlayer( playerid );
-	return 1;
-}
-
 CMD:changepassword( playerid, params[ ] ) return cmd_changepw( playerid, params );
 CMD:changepass( playerid, params[ ] ) return cmd_changepw( playerid, params );
 CMD:changepw( playerid, params[ ] )
@@ -12211,12 +11897,6 @@ CMD:hitlist( playerid, params[ ] )
 	    }
 	}
 	if ( count == 0 ) SendClientMessage( playerid, -1, "No-one" );
-	return 1;
-}
-
-CMD:radio( playerid, params[ ] )
-{
-    ShowPlayerDialog(playerid, DIALOG_RADIO, DIALOG_STYLE_LIST, "{FFFFFF}Radio Stations - List", g_RadioStations, "Select", "Close");
 	return 1;
 }
 
@@ -16997,7 +16677,6 @@ thread OnAdminChangePlayerName( playerid, pID, nName[ ] )
         AddAdminLogLineFormatted( "%s(%d) has changed %s(%d)'s name to %s", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, nName );
 
 		SetPlayerName( pID, nName );
-    	GetPlayerName( pID, p_PlayerName[ pID ], sizeof( p_PlayerName[ ] ) );
 
     	// Update New Things
     	foreach(new g : garages)
@@ -17391,7 +17070,7 @@ CMD:createbusiness( playerid, params[ ] )
 		new
 			iTmp = CreateBusiness( 0, "Business", cost, type, X, Y, Z );
 
-	    if ( iTmp != -1 ) {
+	    if ( iTmp != ITER_NONE ) {
 			SaveToAdminLog( playerid, iTmp, "created business" );
 	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" You have created a %s business taking up business id %d.", ConvertPrice( cost ), iTmp );
 	    } else {
@@ -19417,10 +19096,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 			{
 		        if ( checkpointid == g_entranceData[ i ] [ E_ENTER ] )
 				{
-				    if ( g_entranceData[ i ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
-				        SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
-						break;
-				    }
+				    if ( ! CallLocalFunction( "OnPlayerAccessEntrance", "dd", playerid, i ) ) break;
 					p_LastEnteredEntrance[ playerid ] = i;
 				    SetPlayerInterior( playerid, g_entranceData[ i ] [ E_INTERIOR ] );
 				    SetPlayerVirtualWorld( playerid, g_entranceData[ i ] [ E_WORLD ] );
@@ -19518,6 +19194,24 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 		}
 	}
 	return 1;
+}
+
+public OnPlayerAccessEntrance( playerid, entranceid )
+{
+    if ( g_entranceData[ entranceid ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
+        return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" ), 0;
+    }
+    if ( entranceid == VISAGE_ENTRANCE ) {
+    	static const EARLY_ACCESS[ 21 ] = { 690025, 277833, 13, 341204, 754775, 674688, 30, 435396, 493400, 688039, 1, 483892, 140, 418997, 658457, 314783, 671759, 479950, 663408, 38, 25 };
+
+    	for ( new earlybird = 0; earlybird < sizeof( EARLY_ACCESS ); earlybird ++ ) {
+    		if ( p_AccountID[ playerid ] == EARLY_ACCESS[ earlybird ] ) {
+    			return SendServerMessage( playerid, "You have permission to access this casino as you contributed early to this project." ), 1;
+    		}
+    	}
+    	return SendError( playerid, "You do not have early access to this feature on this account." ), 0;
+    }
+    return 1;
 }
 
 public OnPlayerEnterDynamicArea( playerid, areaid )
@@ -20546,233 +20240,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 	if ( IsPlayerInCasino( playerid ) )
 	{
-		// Roulette
-		if ( p_RouletteMarkerTimer[ playerid ] != -1 )
-		{
-			new
-				rouletteid = p_RouletteTable[ playerid ];
-
-			if ( ! Iter_Contains( roulettetables, rouletteid ) )
-				return SendServerMessage( playerid, "Invalid Roulette Table." );
-
-			if ( GetDistanceFromPlayerSquared( playerid, g_rouletteTableData[ rouletteid ] [ E_X ], g_rouletteTableData[ rouletteid ] [ E_Y ], g_rouletteTableData[ rouletteid ] [ E_Z ] ) > 16.0 ) // Squared
-				return RemovePlayerFromRoulette( playerid );
-
-			// confirm bet
-			if ( PRESSED( KEY_SPRINT ) )
-			{
-				if ( g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] )
-					return SendError( playerid, "This roulette table must finish its spin before you can bet again." );
-
-				if ( p_rouletteBetLocked{ playerid } )
-					return SendError( playerid, "You have already locked in your bet. Wait for the spin to finish." );
-
-				new
-					totalBet = GetPlayerTotalRouletteBet( playerid );
-
-				if ( totalBet <= 0 )
-					return SendError( playerid, "You cannot spin the roulette without having placed any bets." );
-
-				if ( totalBet > GetPlayerCash( playerid ) )
-					return SendError( playerid, "You do not have enough money to make this bet." );
-
-				// deduct money
-				GivePlayerCash( playerid, -totalBet );
-
-				// lock the player in
-				p_rouletteBetLocked{ playerid } = true;
-
-				if ( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] == -1 )
-				{
-					// randomize string
-					GenerateRandomRouletteNumber( rouletteid );
-
-					foreach (new i : Player) if ( p_RouletteTable[ i ] == rouletteid )
-					{
-						TextDrawShowForPlayer( i, g_rouletteNumberBG[ rouletteid ] );
-						TextDrawShowForPlayer( i, g_rouletteNumberTD[ rouletteid ] );
-
-						if ( ! p_rouletteBetLocked{ i } ) {
-							SendServerMessage( i, "%s(%d) has waged %s with this spin, press SPACE to join the spin!", ReturnPlayerName( playerid ), playerid, ConvertPrice( totalBet ) );
-						}
-					}
-
-					// allow bets
-					g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
-
-					// fire the spin table
-					g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, 0, 1 );
-
-					// inform other players
-					SendServerMessage( playerid, "You have begun the spin with a wager of %s. Good luck!", ConvertPrice( totalBet ) );
-				}
-				else SendServerMessage( playerid, "You have joined the spin. Good luck!" );
-			}
-			// decrease bet
-			if ( PRESSED( KEY_WALK ) )
-			{
-				if ( ( p_rouletteBetValue[ playerid ] /= 2 ) < 1000 )
-					p_rouletteBetValue[ playerid ] = 1000;
-
-				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
-			}
-
-			// increase bet
-			if ( PRESSED( KEY_JUMP  ) )
-			{
-				if ( ( p_rouletteBetValue[ playerid ] *= 2 ) > 100000 )
-					p_rouletteBetValue[ playerid ] = 100000;
-
-				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
-			}
-
-			// Cancel Bets
-			if ( PRESSED( KEY_CROUCH ) )
-			{
-				if ( p_rouletteBetLocked{ playerid } )
-					return SendError( playerid, "You cannot cancel your bet once you have entered a spin." );
-
-				for ( new column = 0; column < sizeof( g_rouletteOffsets ); column ++ )
-				{
-					g_rouletteChipValue[ playerid ] [ column ] = 0;
-					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
-					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: INVALID_3DTEXT_ID;
-				}
-			}
-
-			// Place bet
-			if ( PRESSED( KEY_FIRE ) || PRESSED( KEY_AIM ) )
-			{
-				if ( p_rouletteBetLocked{ playerid } )
-					return SendError( playerid, "You cannot change your bet once you have entered a spin." );
-
-				new
-					column = p_RouletteMarkerColumn{ playerid };
-
-				new Float: offsetX = g_rouletteTableData[ rouletteid ] [ E_X ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatcos( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
-				new Float: offsetY = g_rouletteTableData[ rouletteid ] [ E_Y ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatsin( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
-
-				if ( PRESSED( KEY_FIRE ) )
-				{
-					new
-						totalBet = GetPlayerTotalRouletteBet( playerid );
-
-					// Check if the player has even money
-					if ( totalBet > GetPlayerCash( playerid ) ) {
-						return SendError( playerid, "You cannot afford to wager any more money!" );
-					}
-
-					// Exceeded The Maximum
-					if ( totalBet + p_rouletteBetValue[ playerid ] > 100000 ) {
-						return SendError( playerid, "You are only allowed to bet a total of $100,000 per spin on this table." );
-					}
-
-					PlayerPlaySound( playerid, 1083, 0.0, 0.0, 5.0 );
-					g_rouletteChipValue[ playerid ] [ column ] += p_rouletteBetValue[ playerid ];
-				}
-				else
-				{
-					PlayerPlaySound( playerid, 1084, 0.0, 0.0, 5.0 );
-					g_rouletteChipValue[ playerid ] [ column ] -= p_rouletteBetValue[ playerid ];
-				}
-
-				//printf("COLUMN : %d", column);
-				if ( g_rouletteChipValue[ playerid ] [ column ] <= 0 )
-				{
-					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: -1;
-					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
-					g_rouletteChipValue[ playerid ] [ column ] = 0;
-					//printf("removed");
-				}
-				else
-				{
-					// Calculate chip height
-					new
-						Float: height = 0.295 - float( g_rouletteChipValue[ playerid ] [ column ] / 1000 ) * 0.005;
-
-					if ( height < 0.18 )
-						height = 0.18;
-
-					//printf("g_rouletteChip[%s][%d] = %d", ReturnPlayerName( playerid ), column, g_rouletteChip[ playerid ] [ column ] );
-					if ( g_rouletteChip[ playerid ] [ column ] == -1 )
-					{
-						g_rouletteChip[ playerid ] [ column ] = CreateDynamicObject( 1902, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height, 0.00000, 0.00000, 0.0 ); // 2992
-						SetDynamicObjectMaterial( g_rouletteChip[ playerid ] [ column ], 0, 1902, "chip_stack08", "chip_stck6", ( ( g_rouletteChipColor[ playerid ] >> 8 ) | 0x99000000 ) );
-						g_rouletteChipLabel[ playerid ] [ column ] = CreateDynamic3DTextLabel( sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ), g_rouletteChipColor[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.15 + ( float( playerid ) / 100 ), 5.0 ); //INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, playerid );
-						//printf("(%s) CREATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
-					}
-					else
-					{
-						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height );
-						UpdateDynamic3DTextLabelText( g_rouletteChipLabel[ playerid ] [ column ], g_rouletteChipColor[ playerid ], sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ) );
-						//printf("(%s) UPDATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
-					}
-				}
-
-				// sometimes it doesnt show up
-				SyncObject( playerid, 0.005, 0.005, 0.005 );
-				ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
-			}
-		}
-
-		if ( PRESSED( KEY_SECONDARY_ATTACK ) )
-		{
-			if ( p_rouletteBetLocked{ playerid } )
-				return SendError( playerid, "Please wait until the spin is completed before leaving the table." );
-
-			if ( p_RouletteTable[ playerid ] != -1 )
-				return RemovePlayerFromRoulette( playerid );
-
-			foreach(new id : roulettetables)
-			{
-				if ( IsPlayerInRangeOfPoint( playerid, 3.1, g_rouletteTableData[ id ] [ E_X ], g_rouletteTableData[ id ] [ E_Y ], g_rouletteTableData[ id ] [ E_Z ] ) ) {
-
-					static
-						Float: lookatX, Float: lookatY, Float: lookatZ,
-						Float: tmpX, Float: tmpY, Float: tmpZ
-					;
-
-					GetPlayerCameraPos( playerid, X, Y, Z );
-					GetPlayerCameraFrontVector( playerid, lookatX, lookatY, lookatZ );
-
-					tmpX = g_rouletteTableData[ id ] [ E_X ] + -1.8 * floatcos( g_rouletteTableData[ id ] [ E_ROTATION ] + 74.0, degrees );
-					tmpY = g_rouletteTableData[ id ] [ E_Y ] + -1.8 * floatsin( g_rouletteTableData[ id ] [ E_ROTATION ] + 74.0, degrees );
-					tmpZ = g_rouletteTableData[ id ] [ E_Z ] + 1.7;
-
-					InterpolateCameraPos( playerid, X, Y, Z, tmpX, tmpY, tmpZ, 1000, CAMERA_MOVE );
-
-					X += floatmul( lookatX, 20.0 );
-					Y += floatmul( lookatY, 20.0 );
-					Z += floatmul( lookatZ, 20.0 );
-
-					InterpolateCameraLookAt( playerid, X, Y, Z, g_rouletteTableData[ id ] [ E_X ], g_rouletteTableData[ id ] [ E_Y ], g_rouletteTableData[ id ] [ E_Z ] - 1.0, 1000, CAMERA_MOVE );
-
-					p_RouletteTable[ playerid ] = id;
-					p_RouletteMarkerColumn{ playerid } = 0;
-
-					new Float: offsetX = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatcos( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
-					new Float: offsetY = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatsin( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
-					DestroyDynamicObject( p_RouletteMarker[ playerid ] );
-					p_RouletteMarker[ playerid ] = CreateDynamicObject( 2992, X + offsetX, Y + offsetY, Z - 0.17, 0.00000, 0.00000, 0.0, -1, -1, playerid );
-
-					// starting bet
-					p_rouletteBetValue[ playerid ] = 1000;
-					g_rouletteChipColor[ playerid ] = makeColor( RandomEx( 128, 255 ), RandomEx( 128, 255 ), RandomEx( 128, 255 ), 0xFF );
-					SendServerMessage( playerid, "Your starting bet is $1,000 for this table. {%06x}This is your chip color.", g_rouletteChipColor[ playerid ] >>> 8 );
-
-					ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
-
-					szBigString = "~y~~k~~PED_SPRINT~~w~ - Spin Wheel~n~~y~~k~~PED_FIREWEAPON~/~k~~PED_LOCK_TARGET~~w~ - Place/Remove Bet~n~~y~~k~~PED_JUMPING~/~k~~SNEAK_ABOUT~~w~ - Increase/Decrease Bet~n~~y~~k~~PED_DUCK~~w~ - Cancel Bets~n~~y~~k~~VEHICLE_ENTER_EXIT~~w~ - Exit";
-					ShowPlayerHelpDialog( playerid, 0, szBigString );
-
-					// printf("(%s) BEFORE TIMER %d", ReturnPlayerName( playerid ), p_RouletteMarkerTimer[ playerid ] );
-					KillTimer( p_RouletteMarkerTimer[ playerid ] );
-					p_RouletteMarkerTimer[ playerid ] = SetTimerEx( "OnRouletteMarkerUpdate", 100, true, "d", playerid );
-					return 1;
-				}
-			}
-		}
-
 		// Gambling Slots
 		if ( machineid != -1 )
 		{
@@ -23061,29 +22528,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     	}
     	else cmd_shop( playerid, "" );
     }
-	if ( ( dialogid == DIALOG_RADIO ) && response )
-	{
-		if ( listitem == 0 )
-		{
-			if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-				return SendError( playerid, "You must be a V.I.P to use this, to become one visit "COL_GREY"donate.irresistiblegaming.com" ), 1;
-
-		 	ShowPlayerDialog(playerid, DIALOG_RADIO_CUSTOM, DIALOG_STYLE_INPUT, "{FFFFFF}Custom Radio", ""COL_WHITE"Enter the URL below, and streaming will begin.\n\n"COL_ORANGE"Please note, if there isn't a response. It's likely to be an invalid URL.", "Stream", "Back");
-			return 1;
-		}
-	   	p_UsingRadio{ playerid } = true;
-	   	StopAudioStreamForPlayer( playerid );
-	   	PlayAudioStreamForPlayer( playerid, g_RadioData[ listitem - 1 ] [ E_URL ] );
-	    SendServerMessage( playerid, "If the radio doesn't respond then it must be offline. Use "COL_GREY"/stopradio"COL_WHITE" to stop the radio." );
-	}
-	if ( dialogid == DIALOG_RADIO_CUSTOM )
-	{
-		if ( !response ) return cmd_radio( playerid, "" );
-	   	p_UsingRadio{ playerid } = true;
-	   	StopAudioStreamForPlayer( playerid );
-	   	PlayAudioStreamForPlayer( playerid, inputtext );
-	    SendServerMessage( playerid, "If the radio doesn't respond then it must be offline. Use "COL_GREY"/stopradio"COL_WHITE" to stop the radio." );
-	}
 	if ( ( dialogid == DIALOG_XPMARKET ) && response )
 	{
 		if ( !strlen( inputtext ) || !IsNumeric( inputtext ) )
@@ -27155,7 +26599,6 @@ stock SavePlayerData( playerid, bool: logout = false )
 
 forward InitializeTextDraws( ); public InitializeTextDraws( )
 {
-	print ("Initialized First");
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -27466,30 +26909,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 	/* ** Player TextDraws ** */
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
 	{
-		if ( playerid < MAX_ROULETTE_TABLES ) {
-			g_rouletteNumberBG[ playerid ] = TextDrawCreate(285.000000, 23.000000, "ld_roul:roulbla");
-			TextDrawBackgroundColor(g_rouletteNumberBG[ playerid ], 255);
-			TextDrawFont(g_rouletteNumberBG[ playerid ], 4);
-			TextDrawLetterSize(g_rouletteNumberBG[ playerid ], 0.500000, 1.000000);
-			TextDrawColor(g_rouletteNumberBG[ playerid ], -1);
-			TextDrawSetOutline(g_rouletteNumberBG[ playerid ], 0);
-			TextDrawSetProportional(g_rouletteNumberBG[ playerid ], 1);
-			TextDrawSetShadow(g_rouletteNumberBG[ playerid ], 1);
-			TextDrawUseBox(g_rouletteNumberBG[ playerid ], 1);
-			TextDrawBoxColor(g_rouletteNumberBG[ playerid ], 255);
-			TextDrawTextSize(g_rouletteNumberBG[ playerid ], 60.000000, 60.000000);
-
-			g_rouletteNumberTD[ playerid ] = TextDrawCreate(314.000000, 25.000000, "35");
-			TextDrawAlignment(g_rouletteNumberTD[ playerid ], 2);
-			TextDrawBackgroundColor(g_rouletteNumberTD[ playerid ], 255);
-			TextDrawFont(g_rouletteNumberTD[ playerid ], 1);
-			TextDrawLetterSize(g_rouletteNumberTD[ playerid ], 0.800000, 4.000000);
-			TextDrawColor(g_rouletteNumberTD[ playerid ], -1);
-			TextDrawSetOutline(g_rouletteNumberTD[ playerid ], 0);
-			TextDrawSetProportional(g_rouletteNumberTD[ playerid ], 1);
-			TextDrawSetShadow(g_rouletteNumberTD[ playerid ], 1);
-		}
-
 		if ( playerid < MAX_MACHINES ) {
 			p_SlotMachineFigureTD[ playerid ] = TextDrawCreate(324.000000, 307.000000, "$20,000");
 			TextDrawAlignment(p_SlotMachineFigureTD[ playerid ], 2);
@@ -32493,69 +31912,6 @@ stock hasBadDrivebyWeapon( playerid )
 	return false;
 }
 
-thread OnLoadServerVariables( )
-{
-	new
-		rows, fields, i = -1,
-		Field[ 30 ],
-		szName[ 64 ],
-		iValue,
-		Float: fValue,
-		iType
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows )
-	{
-		while( ++i < rows )
-		{
-			cache_get_field_content( i, "NAME", szName );
-			cache_get_field_content( i, "STRING_VAL", szBigString );
-			cache_get_field_content( i, "INT_VAL", Field ),		iValue = strval( Field );
-			cache_get_field_content( i, "FLOAT_VAL", Field ),	fValue = floatstr( Field );
-			cache_get_field_content( i, "TYPE", Field ),		iType = strval( Field );
-
-			switch( iType )
-			{
-				case GLOBAL_VARTYPE_INT: SetGVarInt( szName, iValue );
-				case GLOBAL_VARTYPE_STRING: SetGVarString( szName, szBigString );
-				case GLOBAL_VARTYPE_FLOAT: SetGVarFloat( szName, fValue );
-			}
-		}
-	}
-	printf( "[SERVER] %d server variables have been loaded.", rows );
-	return 1;
-}
-
-stock UpdateServerVariable( szName[ 64 ], intVal, Float: floatVal, stringVal[ 128 ], type )
-{
-	static
-		szString[ 256 ];
-
-	switch( type )
-	{
-		case GLOBAL_VARTYPE_INT:	format( szString, 128, "UPDATE `SERVER` SET `INT_VAL`=%d WHERE `NAME`='%s'", intVal, mysql_escape( szName ) ),							SetGVarInt( szName, intVal );
-		case GLOBAL_VARTYPE_STRING:	format( szString, 256, "UPDATE `SERVER` SET `STRING_VAL`='%s' WHERE `NAME`='%s'", mysql_escape( stringVal ), mysql_escape( szName ) ), 	SetGVarString( szName, stringVal );
-		case GLOBAL_VARTYPE_FLOAT:	format( szString, 128, "UPDATE `SERVER` SET `FLOAT_VAL`=%f WHERE `NAME`='%s'", floatVal, mysql_escape( szName ) ),						SetGVarFloat( szName, floatVal );
-		default: return;
-	}
-
-	mysql_single_query( szString );
-}
-
-stock AddServerVariable( szName[ 64 ], szValue[ 128 ], type )
-{
-	switch( type )
-	{
-		case GLOBAL_VARTYPE_INT:	format( szLargeString, 164, "INSERT IGNORE INTO `SERVER`(`NAME`,`INT_VAL`,`TYPE`) VALUES ('%s',%d,%d)", mysql_escape( szName ), strval( szValue ), type );
-		case GLOBAL_VARTYPE_STRING:	format( szLargeString, 296, "INSERT IGNORE INTO `SERVER`(`NAME`,`STRING_VAL`,`TYPE`) VALUES ('%s','%s',%d)", mysql_escape( szName ), mysql_escape( szValue ), type );
-		case GLOBAL_VARTYPE_FLOAT:	format( szLargeString, 164, "INSERT IGNORE INTO `SERVER`(`NAME`,`FLOAT_VAL`,`TYPE`) VALUES ('%s',%f,%d)", mysql_escape( szName ), floatstr( szValue ), type );
-		default: return;
-	}
-
-	mysql_single_query( szLargeString );
-}
-
 stock SetPlayerVipLevel( pID, level, bool: gifted = false )
 {
 	if ( !IsPlayerConnected( pID ) )
@@ -34146,8 +33502,10 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 	return false;
 }
 
-stock IsPlayerInCasino( playerid )
+stock IsPlayerInCasino( playerid ) {
+	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && GetPlayerVirtualWorld( playerid ) == VISAGE_WORLD ) return 1;
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
+}
 
 //function RespawnVehicle( vehicleid )
 //	return SetVehicleToRespawn( vehicleid );
@@ -34987,7 +34345,6 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
 
     	// Update username
 		SetPlayerName( playerid, newName );
-    	GetPlayerName( playerid, p_PlayerName[ playerid ], sizeof( p_PlayerName[ ] ) );
 
     	// Update garages
     	foreach(new g : garages)
@@ -36595,427 +35952,6 @@ stock discordLevelToString( DCC_User: user )
 }
 #endif
 
-stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
-{
-	new
-		id = Iter_Free(roulettetables);
-
-	if ( id != ITER_NONE )
-	{
-		g_rouletteTableData[ id ] [ E_X ] = X;
-		g_rouletteTableData[ id ] [ E_Y ] = Y;
-		g_rouletteTableData[ id ] [ E_Z ] = Z;
-		g_rouletteTableData[ id ] [ E_ROTATION ] = Angle;
-
-		g_rouletteTableData[ id ] [ E_SPINNING_TIMER ] = -1;
-
-		g_rouletteTableData[ id ] [ E_OBJECT ] = CreateDynamicObject( 1978, X, Y, Z, 0.00000, 0.00000, Angle );
-
-		X += 1.365 * floatcos( Angle + 98.0, degrees );
-		Y += 1.365 * floatsin( Angle + 98.0, degrees );
-
-		CreateDynamic3DTextLabel( "Press ENTER To Play\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-
-		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0 );
-		Iter_Add( roulettetables, id );
-	}
-	return 1;
-}
-
-stock GenerateRandomRouletteNumber( rouletteid ) {
-
-	new
-		iRandom = random( 37 );
-
-	if ( iRandom == 0 )
-		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulgre" );
-
-	else if ( ! IsRedRouletteNumber( iRandom ) )
-		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulbla" );
-
-	else
-		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulred" );
-
-	TextDrawSetString( g_rouletteNumberTD[ rouletteid ], sprintf( "%d", iRandom ) );
-	return iRandom;
-}
-
-public OnSpinRouletteTable( rouletteid, elapsed, steps )
-{
-	new
-		Float: fElapsed = float( ( elapsed += 25 ) ),
-		Float: rotation = -0.0001 * ( fElapsed * fElapsed ) + 0.8162 * fElapsed
-	;
-
-	// update it every 50 ms
-	if ( elapsed % 50 == 0 && elapsed != 4000 )
-		GenerateRandomRouletteNumber( rouletteid );
-
-	SetDynamicObjectRot( g_rouletteTableData[ rouletteid ] [ E_SPINNER_OBJECT ], 0.0, 0.0, rotation );
-
-	if ( elapsed >= 3250 )
-		g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = true;
-
-	if ( elapsed >= 4000 )
-	{
-		new
-			iWinning = GenerateRandomRouletteNumber( rouletteid );
-
-		// Kill the timer just incase
-		KillTimer( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] );
-		g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = -1;
-	 	g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
-
-		// Call a win
-		CallLocalFunction( "OnRouletteWheelStop", "dd", rouletteid, iWinning );
-		return 1;
-	}
-
-	return ( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, elapsed, steps ) );
-}
-
-stock GetPlayerTotalRouletteBet( playerid ) {
-	new
-		bet = 0;
-
-	for ( new chipid = 0; chipid < sizeof( g_rouletteChipValue[ ] ); chipid ++ ) if ( g_rouletteChipValue[ playerid ] [ chipid ] >= 100 ) {
-		bet += g_rouletteChipValue[ playerid ] [ chipid ];
-	}
-	return bet;
-}
-
-public OnRouletteWheelStop( rouletteid, winner )
-{
-	new
-		globalWaged = 0, globalWon = 0;
-
-	// printf ( "OnRouletteWheelStop( %d, %d )", rouletteid, winner );
-	foreach(new playerid : Player) if ( p_RouletteTable[ playerid ] == rouletteid && p_rouletteBetLocked{ playerid } )
-	{
-		new
-			waged = 0, won = 0;
-
-		for( new chipid = 0; chipid < sizeof( g_rouletteOffsets ); chipid ++ ) if ( g_rouletteChipValue[ playerid ] [ chipid ] > 0 )
-		{
-			// store chip value here
-			new
-				beforeWin = won,
-				winValue = g_rouletteChipValue[ playerid ] [ chipid ];
-
-			// increment the amount waged
-			waged += g_rouletteChipValue[ playerid ] [ chipid ];
-
-			// calculate wins
-			switch ( g_rouletteOffsets[ chipid ] [ E_VALUE ] )
-			{
-				// 1st 3to1
-				case 3211: {
-					if ( winner == 1 || winner == 4 || winner == 7 || winner == 10 || winner == 13 || winner == 16 || winner == 19 || winner == 22 || winner == 25 || winner == 28 || winner == 31 || winner == 34 )
-						won += winValue * 3;
-				}
-
-				// 2nd 3to1
-				case 3212: {
-					if ( winner == 2 || winner == 5 || winner == 8 || winner == 11 || winner == 14 || winner == 17 || winner == 20 || winner == 23 || winner == 26 || winner == 29 || winner == 32 || winner == 35 )
-						won += winValue * 3;
-				}
-
-				// 2nd 3to1
-				case 3213: {
-					if ( winner == 3 || winner == 6 || winner == 9 || winner == 12 || winner == 15 || winner == 18 || winner == 21 || winner == 24 || winner == 27 || winner == 30 || winner == 33 || winner == 36 )
-						won += winValue * 3;
-				}
-
-				// 1st 18
-				case 118: {
-					if ( 1 <= winner <= 18 )
-						won += winValue * 2;
-				}
-
-				// even
-				case 222: {
-					if ( winner % 2 == 0 )
-						won += winValue * 2;
-				}
-
-				// 1st to 12
-				case 112: {
-					if ( 1 <= winner <= 12 )
-						won += winValue * 3;
-				}
-
-				// black
-				case 44: {
-					if ( ! IsRedRouletteNumber( winner ) && winner != 0 )
-						won += winValue * 2;
-				}
-
-				// red
-				case 88: {
-					if ( IsRedRouletteNumber( winner ) )
-						won += winValue * 2;
-				}
-
-				// 2nd 12
-				case 212: {
-					if ( 13 <= winner <= 24 )
-						won += winValue * 3;
-				}
-
-				// odd
-				case 333: {
-					if ( winner % 2 == 1 && winner != 0 )
-						won += winValue * 2;
-				}
-
-				// 19-36
-				case 1936: {
-					if ( 19 <= winner <= 36 )
-						won += winValue * 2;
-				}
-
-				// 3rd 12
-				case 312: {
-					if ( 25 <= winner <= 36 )
-						won += winValue * 3;
-				}
-
-				// check if its a single
-				default:
-				{
-					if ( winner == g_rouletteOffsets[ chipid ] [ E_VALUE ] )
-						won += winValue * 36;
-				}
-			}
-
-			if ( beforeWin >= won ) {
-				g_rouletteChipValue[ playerid ] [ chipid ] = 0;
-				DestroyDynamicObject( g_rouletteChip[ playerid ] [ chipid ] ), g_rouletteChip[ playerid ] [ chipid ] = -1;
-				DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ chipid ] ), g_rouletteChipLabel[ playerid ] [ chipid ] = Text3D: -1;
-			}
-
-			// track
-			globalWaged += waged;
-			globalWon += won;
-		}
-
-		// bet unlocked and paid
-		GivePlayerCash( playerid, won );
-		p_rouletteBetLocked{ playerid } = false;
-
-		new
-			profit = won - waged;
-
-		// inform users
-		if ( profit >= 10000 ) {
-			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from roulette!", ReturnPlayerName( playerid ), playerid, ConvertPrice( profit ) );
-		}
-
-		// gametext
-		if ( profit > 0 )  {
-		 	GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( profit ) ), 4000, 3 );
-			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
-		} else {
-			profit *= -1; // to improve the client message
-		 	GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
-			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
-		}
-	}
-
-	// log wins/losses
-	UpdateServerVariable( "roulette_bets", 0, GetGVarFloat( "roulette_bets" ) + ( float( globalWaged ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
-	UpdateServerVariable( "roulette_wins", 0, GetGVarFloat( "roulette_wins" ) + ( float( globalWon ) / 1000000.0 ), "", GLOBAL_VARTYPE_FLOAT );
-	return 1;
-}
-
-public OnRouletteMarkerUpdate( playerid )
-{
-	new
-		rouletteid = p_RouletteTable[ playerid ], column = p_RouletteMarkerColumn{ playerid };
-
-	if ( rouletteid == -1 || ! Iter_Contains( roulettetables, rouletteid ) )
-		return RemovePlayerFromRoulette( playerid );
-
-	if ( IsValidDynamicObject( p_RouletteMarker[ playerid ] ) )
-	{
-	    new ud, lr;
-	    GetPlayerKeys( playerid, ud, ud, lr );
-
-	    if ( ud == KEY_UP )
-	    {
-	    	// up on 0
-	    	if ( column == 0 )
-	    		column = 38;
-
-	    	// up on 1,2,3
-	    	else if ( 1 <= column <= 3 )
-	    		column = 0;
-
-	    	// up 1st 12
-	    	else if ( column == 42 )
-	    		column = 48;
-
-	    	// up 3rd 12
-	    	else if ( column == 48 )
-	    		column = 45;
-
-	    	// up 2nd 12
-	    	else if ( column == 45 )
-	    		column = 42;
-
-	    	// up 1-to-18
-	    	else if ( column == 40 )
-	    		column = 47;
-
-	    	else if ( column == 41 || column == 44 || column == 47 )
-	    		column --;
-
-	    	else if ( column == 43 || column == 46 )
-	    		column -= 2;
-
-	    	else
-	    		column -= 3;
-	    }
-	    else if ( ud == KEY_DOWN )
-	    {
-	    	// pressed down on 3to1s
-	    	if ( 36 < column < 40 )
-	    		column = 0;
-
-	    	// down on 1st 12
-	    	else if ( column == 42 )
-	    		column = 45;
-
-	    	// down on 2nd 12
-	    	else if ( column == 45 )
-	    		column = 48;
-
-	    	// down 19-to-36
-	    	else if ( column == 47 )
-	    		column = 40;
-
-	    	// down on 3rd 12
-	    	else if ( column == 48 )
-	    		column = 42;
-
-	    	// if pressed down on zero, go to previous
-	    	else if ( column == 0 )
-	    		column = 2;
-
-	    	else if ( column == 40 || column == 43 || column == 46 )
-	    		column ++;
-
-	    	else if ( column == 41 || column == 44 )
-	    		column += 2;
-
-	    	else
-	    		column += 3;
-	    }
-	    else if ( lr == KEY_LEFT )
-	    {
-	    	// right on 0
-	    	if ( column == 0 )
-	    		column = 0;
-
-	    	else if ( column == 1 || column == 4 || column == 7 || column == 10 )
-	    		column = 42;
-
-	    	else if ( column == 13 || column == 16 || column == 19 || column == 22 )
-	    		column = 45;
-
-	    	else if ( column == 25 || column == 28 || column == 31 || column == 34 )
-	    		column = 48;
-
-	    	// left 1 to 18
-	    	else if ( column == 40 )
-	    		column = 0;
-
-	    	else
-	    		column --;
-
-	    }
-	    else if ( lr == KEY_RIGHT )
-	    {
-	    	// left on 0
-	    	if ( column == 0 )
-	    		column = 0;
-
-	    	// right 39
-	    	if ( column == 39 )
-	    		column = 0;
-
-	    	// right red black
-	    	else if ( 43 <= column <= 44 )
-	    		column = 45;
-
-	    	// right 1-18,even
-	    	else if ( 40 <= column <= 41 )
-	    		column = 42;
-
-	    	// right odd,19-36
-	    	else if ( 46 <= column <= 47 )
-	    		column = 48;
-
-	    	// right on 3rd 12
-	    	else if ( column == 48 )
-	    		column = 25;
-
-	   		// right on 2nd 12
-	    	else if ( column == 45 )
-	    		column = 13;
-
-	    	// right on 1st 12
-	    	else if ( column == 42 )
-	    		column = 1;
-
-	    	else
-	    		column ++;
-	    }
-
-	    // update object pos
-		new Float: offsetX = g_rouletteTableData[ rouletteid ] [ E_X ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatcos( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
-		new Float: offsetY = g_rouletteTableData[ rouletteid ] [ E_Y ] + g_rouletteOffsets[ column ] [ E_OFFSET ] * floatsin( g_rouletteTableData[ rouletteid ] [ E_ROTATION ] + g_rouletteOffsets[ column ] [ E_ANGLE ], degrees );
-		SetDynamicObjectPos( p_RouletteMarker[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.17 );
-
-		// update player column
-	    p_RouletteMarkerColumn{ playerid } = column;
-	}
-	return 1;
-}
-
-stock RemovePlayerFromRoulette( playerid )
-{
-	// remove chips
-	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
-		DestroyDynamicObject( g_rouletteChip[ playerid ] [ i ] ), g_rouletteChip[ playerid ] [ i ] = -1;
-		DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ i ] ), g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
-		g_rouletteChipValue[ playerid ] [ i ] = 0;
-	}
-
-	// hide textdraws
-	if ( p_RouletteTable[ playerid ] != -1 ) {
-		TextDrawHideForPlayer( playerid, g_rouletteNumberBG[ p_RouletteTable[ playerid ] ] );
-		TextDrawHideForPlayer( playerid, g_rouletteNumberTD[ p_RouletteTable[ playerid ] ] );
-	}
-
-	// reset user variables
-	HidePlayerHelpDialog( playerid );
-	p_RouletteTable[ playerid ] = -1;
-	p_RouletteMarkerColumn{ playerid } = 0;
-	p_rouletteBetLocked{ playerid } = false;
-
-	// close timers
-	KillTimer( p_RouletteMarkerTimer[ playerid ] ), p_RouletteMarkerTimer[ playerid ] = -1;
-	DestroyDynamicObject( p_RouletteMarker[ playerid ] ), p_RouletteMarker[ playerid ] = -1;
-
-	// clear animations if spawned
-	if ( IsPlayerSpawned( playerid ) ) {
-		SetCameraBehindPlayer( playerid );
-		ClearAnimations( playerid );
-	}
-	return 1;
-}
-
 stock TriggerPlayerSlotMachine( playerid, machineid )
 {
 	if ( p_usingSlotMachine[ playerid ] != machineid )
@@ -37443,7 +36379,7 @@ thread OnBusinessLoad( )
 			);
 
 			// check if valid business
-			if ( b != -1 )
+			if ( b != ITER_NONE )
 			{
 				// add members
 				if ( sscanf( szMembers, sprintf( "a<i>[%d]", MAX_BUSINESS_MEMBERS ), g_businessData[ businessid ] [ E_MEMBERS ] ) ) {
@@ -38140,3 +37076,9 @@ stock GetBusinessAirModelIndex( modelid ) {
 
 stock GetPlayerAccountID( playerid )
 	return p_AccountID[ playerid ];
+
+stock GetPlayerVIPLevel( playerid )
+	return p_VIPLevel[ playerid ];
+
+stock IsPlayerSpawned( playerid )
+	return p_Spawned{ playerid };

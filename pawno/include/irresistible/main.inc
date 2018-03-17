@@ -14,6 +14,7 @@
 #include < irresistible\colours >
 #include < irresistible\attachments >
 #include < irresistible\lookup >
+#include < irresistible\servervars >
 // #include <irresistible\analytics >
 
 // gta related variables
@@ -21,21 +22,26 @@
 #include < irresistible\gta\vehicles >
 #include < irresistible\gta\weapon_data >
 
+// cnr configuration
+#include < irresistible\cnr\vip >
+#include < irresistible\cnr\dialog_ids >
+
 // features
 #include < irresistible\features\fps >
 #include < irresistible\features\radio >
 
 // visage casino
+#include < irresistible\features\visage\roulette >
 #include < irresistible\features\visage\blackjack >
 #include < irresistible\features\visage\poker >
 // #include < irresistible\features\visage\fireworks >
-#include < irresistible\features\visage\apartments >
+// #include < irresistible\features\visage\apartments >
 #include < irresistible\features\visage\static_casino >
 
-// static
-#include < irresistible\static_cnr\actors >
-#include < irresistible\static_cnr\server_vehicles >
-#include < irresistible\static_cnr\removed_buildings >
-#include < irresistible\static_cnr\removed_furniture >
-#include < irresistible\static_cnr\server_objects >
-#include < irresistible\static_cnr\player_objects >
+// static cnr features
+#include < irresistible\cnr\static\actors >
+#include < irresistible\cnr\static\server_vehicles >
+#include < irresistible\cnr\static\removed_buildings >
+#include < irresistible\cnr\static\removed_furniture >
+#include < irresistible\cnr\static\server_objects >
+#include < irresistible\cnr\static\player_objects >

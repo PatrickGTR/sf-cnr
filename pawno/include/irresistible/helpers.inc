@@ -22,6 +22,7 @@
 #define erase(%0)                           (%0[0]='\0')
 #define positionToString(%0)                (%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
 #define SetPlayerPosEx(%0,%1,%2,%3,%4)      SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
+#define mysql_single_query(%0)              mysql_function_query(dbHandle,(%0),true,"","")
 
 // Defines
 #define KEY_AIM                             (128)
