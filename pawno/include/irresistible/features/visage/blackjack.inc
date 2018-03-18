@@ -620,6 +620,9 @@ stock CheckForBlackjack( tableid )
 
 stock RemovePlayerFromBlackjack( playerid, reset_cam = 0 )
 {
+    if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
+        return 0;
+
     new
         blackjack_table = p_blackjackTable[ playerid ];
 

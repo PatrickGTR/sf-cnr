@@ -347,7 +347,8 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				}
 
 				// sometimes it doesnt show up
-				SyncObject( playerid, 0.005, 0.005, 0.005 );
+				// SyncObject( playerid, 0.005, 0.005, 0.005 );
+				Streamer_Update( playerid );
 				ApplyAnimation( playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 1, 1, 1, 0, 1 );
 			}
 		}

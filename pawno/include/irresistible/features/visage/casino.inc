@@ -62,6 +62,49 @@ hook OnPlayerConnect( playerid )
 // purpose: creates the interior itself
 static stock InitializeCasinoInterior( )
 {
+	// Remake
+	tmpVariable = CreateDynamicObject( 14624, 2585.871093, 1609.286010, 1511.188964, 0.000000, 0.000000, 180.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 15, 8396, "sphinx01", "luxorwall02_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 9, 11471, "des_wtownmain", "orange2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 12, 14627, "ab_optilite", "ab_optilite", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 10, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 8396, "sphinx01", "luxorledge02_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 11, 5392, "eastshops1_lae", "blueshop2_LAe", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, 2619.851074, 1570.769042, 1509.729980, 0.000000, 0.000000, -36.799999, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorceiling01_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, 2619.667968, 1636.426025, 1509.729980, 0.000000, 0.000000, -36.799999, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorceiling01_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, 2600.346923, 1568.895019, 1509.534057, -90.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxormural01_256", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19741, 2606.597900, 1568.895019, 1509.534057, -90.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxormural01_256", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19355, 2603.465087, 1568.878051, 1509.042968, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "slidingdoor01_128", -16 );
+	tmpVariable = CreateDynamicObject( 14623, 2635.883056, 1677.000000, 1512.906005, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 10412, "hotel1", "gold128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 5392, "eastshops1_lae", "blueshop2_LAe", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 8396, "sphinx01", "luxorwall02_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 7, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 8, 5392, "eastshops1_lae", "blueshop2_LAe", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 9, 11471, "des_wtownmain", "orange2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 10, 8396, "sphinx01", "casinodoor1_128", 0 );
+	tmpVariable = CreateDynamicObject( 14624, 2653.422119, 1597.921997, 1511.194946, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 15, 8396, "sphinx01", "luxorwall02_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 9, 11471, "des_wtownmain", "orange2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 3, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 4, 8396, "sphinx01", "luxorceiling01_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 12, 14627, "ab_optilite", "ab_optilite", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 10, 8396, "sphinx01", "luxormural01_256", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 8396, "sphinx01", "luxorledge02_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 11, 5392, "eastshops1_lae", "blueshop2_LAe", 0 );
+	CreateDynamicObject( 19943, 2616.636962, 1632.371948, 1507.371948, 0.000000, 0.000000, -19.899999, -1, -1, -1 );
+	CreateDynamicObject( 19943, 2622.750976, 1574.579956, 1507.371948, 0.000000, 0.000000, -19.899999, -1, -1, -1 );
+
+
+
+
 	// Main Visage Object
 	CreateDynamicObject( 7584, 1947.38281, 1916.19531, 78.19531, 0.00000, 0.00000, 0.00000, 0, 0, -1, 500.0, .priority = 1 ); // visible to 500m in world & interior 0
 

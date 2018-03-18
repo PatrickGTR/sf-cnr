@@ -15,7 +15,7 @@
 #pragma compat 1
 #pragma option -d3
 #pragma dynamic 7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -34015,28 +34015,28 @@ thread OnSlotMachinesLoad( )
 				g_slotmachineData[ id ] [ E_TIMER ] = -1;
 
 				// Create machines
-				CreateDynamicObject( 2325, X, Y, Z, 0.00000, 0.00000, rZ );
+				CreateDynamicObject( 2325, X, Y, Z, 0.00000, 0.00000, rZ, .priority = 9999 );
 
 				// Third slot
 				fOffsetX = 0.096 * floatsin( rZ + 96.0, degrees );
 				fOffsetY = 0.096 * floatcos( rZ + 96.0, degrees );
 
 				g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 0 ] = 20.0 * random( 18 );
-				g_slotmachineData[ id ] [ E_SPIN ] [ 0 ] = CreateDynamicObject( 2347, X - fOffsetX, Y + fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 0 ], 0.00000, rZ );
+				g_slotmachineData[ id ] [ E_SPIN ] [ 0 ] = CreateDynamicObject( 2347, X - fOffsetX, Y + fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 0 ], 0.00000, rZ, .priority = 9999 );
 
 				// Second slot
 				fOffsetX = 0.025 * floatsin( rZ + 66.4, degrees );
 				fOffsetY = 0.025 * floatcos( rZ + 66.4, degrees );
 
 				g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 1 ] = 20.0 * random( 18 );
-				g_slotmachineData[ id ] [ E_SPIN ] [ 1 ] = CreateDynamicObject( 2347, X + fOffsetX, Y - fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 1 ], 0.00000, rZ );
+				g_slotmachineData[ id ] [ E_SPIN ] [ 1 ] = CreateDynamicObject( 2347, X + fOffsetX, Y - fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 1 ], 0.00000, rZ, .priority = 9999 );
 
 				// First slot
 				fOffsetX = 0.140 * floatsin( rZ + 85.9, degrees );
 				fOffsetY = 0.140 * floatcos( rZ + 85.9, degrees );
 
 				g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ] = 20.0 * random( 18 );
-				g_slotmachineData[ id ] [ E_SPIN ] [ 2 ] = CreateDynamicObject( 2347, X + fOffsetX, Y - fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ], 0.00000, rZ );
+				g_slotmachineData[ id ] [ E_SPIN ] [ 2 ] = CreateDynamicObject( 2347, X + fOffsetX, Y - fOffsetY, Z + 0.0024, g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ], 0.00000, rZ, .priority = 9999 );
 
 				// Add to iteration
 				Iter_Add(SlotMachines, id);
