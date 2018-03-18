@@ -89,7 +89,7 @@ enum E_BLACKJACK_DATA
 
     E_PAYOUT,
 
-    E_OBJECT,               E_ACTOR,
+    E_OBJECT,               E_ACTOR,                E_WORLD,
     Float: E_X,             Float: E_Y,             Float: E_Z,
     Float: E_ROTATION
 };
@@ -134,10 +134,12 @@ hook OnGameModeInit( )
 	CreateBlackjackTable( 100000, 2243.12500, 1604.43750, 1006.15631, 90.0000, 82 );
 	CreateBlackjackTable( 100000, 2239.42969, 1604.45313, 1006.15631, -90.000, 82 );
 	CreateBlackjackTable( 100000, 2241.31250, 1606.27344, 1006.15631, 180.000, 82 );
-	CreateBlackjackTable( 1000000, 1962.34375, 1015.66412, 992.46881, 90.00000, 23 );
-	CreateBlackjackTable( 1000000, 1960.36719, 1015.66412, 992.46881, -90.0000, 23 );
+
+    // 4 dragons
+	CreateBlackjackTable( 250000, 1962.34375, 1015.66412, 992.46881, 90.00000, 23 );
+	CreateBlackjackTable( 500000, 1960.36719, 1015.66412, 992.46881, -90.0000, 23 );
 	CreateBlackjackTable( 1000000, 1960.74829, 1020.31189, 992.46881, -90.0000, 23 );
-	CreateBlackjackTable( 10000000, 1962.34375, 1020.17969, 992.46881, 90.00000, 23 );
+	CreateBlackjackTable( 2500000, 1962.34375, 1020.17969, 992.46881, 90.00000, 23 );
 	return 1;
 }
 
@@ -205,7 +207,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			if ( p_blackjackTable[ playerid ] != -1 )
 				return RemovePlayerFromBlackjack( playerid, .reset_cam = 1 );
 
-			foreach(new id : blackjacktables)
+			foreach(new id : blackjacktables) if ( GetPlayerVirtualWorld( playerid ) == g_blackjackData[ id ] [ E_WORLD ] )
 	        {
 	            if ( IsPlayerInRangeOfPoint( playerid, 3.0, g_blackjackData[ id ] [ E_X ], g_blackjackData[ id ] [ E_Y ], g_blackjackData[ id ] [ E_Z ] ) ) {
 
@@ -291,7 +293,7 @@ hook InitializeTextDraws( )
 }
 
 /* ** Functions ** */
-stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, world = 0 )
+stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, world )
 {
     new
         id = Iter_Free(blackjacktables);
@@ -302,15 +304,16 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
         g_blackjackData[ id ] [ E_Y ] = Y;
         g_blackjackData[ id ] [ E_Z ] = Z;
         g_blackjackData[ id ] [ E_ROTATION ] = Angle;
+        g_blackjackData[ id ] [ E_WORLD ] = world;
 
         g_blackjackData[ id ] [ E_GAME_TIMER ] = -1;
         g_blackjackData[ id ] [ E_PAYOUT ] = payout;
-        g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle, .priority = 9999 );
-        g_blackjackData[ id ] [ E_ACTOR ] = CreateActor( 171, X - 0.4 * floatcos( Angle - 90.0, degrees ), Y - 0.4 * floatsin( Angle - 90.0, degrees ), Z, Angle + 180.0 );
-        CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play\n"COL_WHITE"%s Minimum", ConvertPrice( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+        g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle, .worldid = world, .priority = 9999 );
+        g_blackjackData[ id ] [ E_ACTOR ] = CreateDynamicActor( 171, X - 0.4 * floatcos( Angle - 90.0, degrees ), Y - 0.4 * floatsin( Angle - 90.0, degrees ), Z, Angle + 180.0, .worldid = world );
+        CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Blackjack\n"COL_WHITE"%s Minimum", ConvertPrice( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, .testlos = 0, .worldid = world );
 
-		SetActorInvulnerable( g_blackjackData[ id ] [ E_ACTOR ], true );
-		SetActorVirtualWorld( g_blackjackData[ id ] [ E_ACTOR ], world );
+		SetDynamicActorInvulnerable( g_blackjackData[ id ] [ E_ACTOR ], true );
+		SetDynamicActorVirtualWorld( g_blackjackData[ id ] [ E_ACTOR ], world );
 
         ResetBlackjackTable( id );
         Iter_Add( blackjacktables, id );
@@ -354,8 +357,8 @@ function BeginBlackJackTurn( tableid )
         randomCard = random( sizeof( g_blackjackDealerCards ) );
 
     // dealer cards
-    ApplyActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
-    ApplyActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
+    ApplyDynamicActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
+    ApplyDynamicActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
     TextDrawSetString( g_blackjackDealerCards[ tableid ] [ cardid ], g_cardTextdrawData[ randomCard ] );
     g_blackjackDealerCardIndex[ tableid ] [ cardid ] = randomCard;
 

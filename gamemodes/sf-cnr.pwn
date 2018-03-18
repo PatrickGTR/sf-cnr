@@ -120,7 +120,7 @@ native gpci 						( playerid, serial[ ], len );
 	mysql_function_query(dbHandle,sprintf("UPDATE `GARAGES` SET OWNER=%d,PRICE=%d,INTERIOR=%d WHERE ID=%d",g_garageData[(%0)][E_OWNER_ID],g_garageData[(%0)][E_PRICE],g_garageData[(%0)][E_INTERIOR_ID],(%0)),true,"","")
 
 /* Beast Functions */
-new bool: False = false, szNormalString[ 144 ];
+new bool: False = false;
 #define SendClientMessageToAllFormatted(%1,%2,%3) \
 	do{format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessageToAll((%1),szNormalString);}while(False)
 #define SendClientMessageToRCON(%1,%2,%3) \
@@ -141,7 +141,7 @@ new bool: False = false, szNormalString[ 144 ];
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.5.12"
+#define FILE_BUILD                	"v11.10.20"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -1261,15 +1261,18 @@ new
 ;
 
 /* ** ATM System ** */
+#define MAX_ATMS 					46
+
 enum E_ATM_DATA
 {
-	bool: E_CREATED, 	E_CHECKPOINT, 		Float: E_HEALTH,
+	E_CHECKPOINT, 		Float: E_HEALTH, 	E_TIMESTAMP,
 	E_OBJECT,			Text3D: E_LABEL, 	bool: E_DISABLED,
-	E_PICKUP,			E_LOOT,				E_TIMESTAMP
+	E_PICKUP,			E_LOOT
 };
 
 new
-	g_atmData						[ 46 ] [ E_ATM_DATA ]
+	g_atmData						[ MAX_ATMS ] [ E_ATM_DATA ],
+	Iterator: atms 					< MAX_ATMS >
 ;
 
 /* ** Invalid Mod Array ** */
@@ -4297,7 +4300,7 @@ public OnGameModeInit()
 	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
 
 	// Mining
-	SetDynamicObjectMaterial( CreateDynamicObject(9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = 500.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
+	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = 500.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
 
 	// Open warehouse near driving school
 	CreateDynamicObject( 19486, -2111.13, -27.23, 36.95, 0.00, 0.00, -90.00 );
@@ -5429,7 +5432,7 @@ public OnServerUpdate( )
  			ReplenishRobberyNpc( clerkid );
 
  		// Replenish Atms
- 		for( new i = 0; i < sizeof( g_atmData ); i++ ) if ( g_atmData[ i ] [ E_CREATED ] && g_atmData[ i ] [ E_DISABLED ] && g_iTime > g_atmData[ i ] [ E_TIMESTAMP ] ) {
+ 		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] && g_iTime > g_atmData[ i ] [ E_TIMESTAMP ] ) {
 			UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, "[ATM]\n"COL_GREY"100%" );
 			DestroyDynamicPickup( g_atmData[ i ] [ E_PICKUP ] ), g_atmData[ i ] [ E_PICKUP ] = -1;
 			g_atmData[ i ] [ E_LOOT ] = 0, g_atmData[ i ] [ E_DISABLED ] = false, g_atmData[ i ] [ E_HEALTH ] = 100.0;
@@ -6204,14 +6207,10 @@ thread OnPlayerBanCheck( playerid )
 	}
 	return 1;
 }*/
-
-public OnPlayerDisconnect( playerid, reason )
+public OnNpcDisconnect( npcid, reason )
 {
-	static
-		string[ 64 ], color;
-
 	#if ENABLED_SECURE_TRUCK == true
-		if ( g_secureTruckDriver == playerid )
+		if ( g_secureTruckDriver == npcid )
 		{
 			restartSecurityGuardProcess( .inform_npc = false );
 			g_secureTruckDriver = INVALID_PLAYER_ID;
@@ -6220,10 +6219,13 @@ public OnPlayerDisconnect( playerid, reason )
 			return 1;
 		}
 	#endif
+	return 1;
+}
 
-	// Filter out bots
-	if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
-		return 1;
+public OnPlayerDisconnect( playerid, reason )
+{
+	static
+		string[ 64 ], color;
 
 	// Reset player variables
     SavePlayerData( playerid, true );
@@ -6733,7 +6735,7 @@ public OnPlayerSpawn( playerid )
 
 	SetPlayerColorToTeam( playerid );
 	SetPlayerVirtualWorld( playerid, 0 );
-	SetPlayerRandomSpawn( playerid );
+	CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
 
 	if ( p_VIPLevel[ playerid ] > 0 && p_VIPWep1{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep1{ playerid }, 200 );
 	if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPWep2{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep2{ playerid }, 200 );
@@ -6971,7 +6973,7 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 			new
 				Float: Damage = GetWeaponDamageFromDistance( weaponid, GetPlayerDistanceFromPoint( playerid, x, y, z ) );
 
-			for( new i = 0; i < sizeof( g_atmData ); i++ ) if ( g_atmData[ i ] [ E_CREATED ] ) {
+			foreach ( new i : atms ) {
 
 				if ( g_atmData[ i ] [ E_OBJECT ] == objectid && !g_atmData[ i ] [ E_DISABLED ] )
 				{
@@ -10910,7 +10912,7 @@ CMD:slapass( playerid, params[ ] )
 
 CMD:sex( playerid, params[ ] )
 {
-	CreateLoopingAnimation( playerid, "SNM", "SPANKING_ENDW", 4.0, 0, 0, 0, 0, 0 );
+	CreateLoopingAnimation( playerid, "SNM", "SPANKING_IDLEW", 4.0, 0, 0, 0, 0, 0 );
 	return 1;
 }
 
@@ -19080,7 +19082,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( !IsPlayerInAnyVehicle( playerid ) )
 	{
-		for( new i; i < sizeof( g_atmData ); i ++ ) if ( g_atmData[ i ] [ E_CREATED ] && checkpointid == g_atmData[ i ] [ E_CHECKPOINT ] ) {
+		foreach ( new i : atms ) if ( checkpointid == g_atmData[ i ] [ E_CHECKPOINT ] ) {
 	    	if ( g_atmData[ i ] [ E_DISABLED ] ) {
 	    		return SendError( playerid, "This ATM has recently been robbed and cannot be accessed for now." );
 	    	} else {
@@ -19088,7 +19090,8 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 	    	}
 		}
 	}
-	if ( hasTickcountPassed( p_EntranceTickcount[ playerid ], 2500 ) )
+
+	if ( CanPlayerExitEntrance( playerid ) )
 	{
 		if ( !IsPlayerInAnyVehicle( playerid ) )
 		{
@@ -19101,7 +19104,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 				    SetPlayerInterior( playerid, g_entranceData[ i ] [ E_INTERIOR ] );
 				    SetPlayerVirtualWorld( playerid, g_entranceData[ i ] [ E_WORLD ] );
 				    SetPlayerPos( playerid, g_entranceData[ i ] [ E_LX ], g_entranceData[ i ] [ E_LY ], g_entranceData[ i ] [ E_LZ ] );
-				    p_EntranceTickcount[ playerid ] = GetTickCount( );
+				    UpdatePlayerEntranceExitTick( playerid );
 				    if ( g_entranceData[ i ] [ E_CUSTOM ] )
 				    {
 				    	pauseToLoad( playerid );
@@ -19125,7 +19128,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 					TogglePlayerControllable( playerid, 0 );
 					SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
 				    SetPlayerVirtualWorld( playerid, 0 );
-				    p_EntranceTickcount[ playerid ] = GetTickCount( );
+				    UpdatePlayerEntranceExitTick( playerid );
 					SyncSpectation( playerid );
 				    break;
 				}
@@ -19633,19 +19636,19 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 				switch( first_combo )
 				{
 					// Single bar
-					case 1: iNetWin = 20000;
+					case 1: iNetWin = 30000;
 
 					// Bells
-					case 2: iNetWin = 10000;
+					case 2: iNetWin = 20000;
 
 					// Cherry
-					case 3: iNetWin = 5000;
+					case 3: iNetWin = 10000;
 
 					// Grapes
-					case 4: iNetWin = 2000;
+					case 4: iNetWin = 5000;
 
 					// 69
-					case 5: iNetWin = 1000;
+					case 5: iNetWin = 2500;
 				}
 			}
 		}
@@ -19740,7 +19743,7 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 
 	// Money bag from atms
 	if ( p_Class[ playerid ] != CLASS_POLICE ) {
-		for( new i = 0; i < sizeof( g_atmData ); i++ ) if ( g_atmData[ i ] [ E_CREATED ] && g_atmData[ i ] [ E_DISABLED ] ) {
+		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] ) {
 			if ( g_atmData[ i ] [ E_PICKUP ] == pickupid && pickupid != -1 ) {
 				new
 					szCity[ MAX_ZONE_NAME ], szLocation[ MAX_ZONE_NAME ], iLoot = g_atmData[ i ] [ E_LOOT ];
@@ -20962,7 +20965,7 @@ public OnPlayerUpdate( playerid )
 #if ENABLED_SECURE_TRUCK == true
 	if ( GetPlayerSurfingVehicleID( playerid ) == g_secureTruckVehicle || IsPlayerInVehicle( playerid, g_secureTruckVehicle ) ) {
 		if ( IsSecurityDriverAFK( ) ) {
-			SetPlayerRandomSpawn( playerid );
+			CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
 			SendServerMessage( playerid, "You seemed to fly away with the security guard. You've been teleported to a spawn." );
 		}
 	}
@@ -27219,7 +27222,7 @@ stock SendGlobalMessage( colour, format[ ], va_args<> )
 	return 1;
 }
 
-stock SetPlayerRandomSpawn( playerid )
+function SetPlayerRandomSpawn( playerid )
 {
 	if ( p_LeftPaintball{ playerid } == true )
 	{
@@ -27325,7 +27328,7 @@ stock SetPlayerRandomSpawn( playerid )
 			}
 		}
 	}
-	return 1;
+	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
 stock initializeCheckpoints( )
@@ -28182,7 +28185,7 @@ stock IsPlayerFireman( playerid )
 	return false;
 }
 
-stock CreateBribe( Float: fX, Float: fY, Float: fZ, iExistingID = -1 )
+stock CreateBribe( Float: fX, Float: fY, Float: fZ, iExistingID = ITER_NONE )
 {
 	new
 		bID = iExistingID != ITER_NONE ? iExistingID : Iter_Free(BribeCount);
@@ -28200,7 +28203,7 @@ stock CreateBribe( Float: fX, Float: fY, Float: fZ, iExistingID = -1 )
 	    g_bribeData[ bID ] [ E_PICKUP ] [ 1 ] = CreateDynamicPickup( 19300, 14, fX, fY, fZ );
 	    g_bribeData[ bID ] [ E_LABEL ] 		  = CreateDynamic3DTextLabel( sprintf( "Bribe(%d)", bID ), COLOR_GOLD, fX, fY, fZ, 15.0 );
 
-	    if ( iExistingID == -1 )
+	    if ( iExistingID == ITER_NONE )
 			mysql_single_query( sprintf( "INSERT INTO `BRIBES` VALUES (%d,%f,%f,%f)", bID, fX, fY, fZ ) );
 	}
 	return bID;
@@ -30057,28 +30060,23 @@ stock VIPToString( viplvl )
 
 stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0 )
 {
-	new ID = -1;
-	for( new i; i < sizeof( g_atmData ); i ++ )
+	new ID = Iter_Free( atms );
+
+	if ( ID != ITER_NONE )
 	{
-	    if ( g_atmData[ i ] [ E_CREATED ] == false ) {
-	        ID = i;
-	        break;
-		}
+		rX = rX - offset;
+
+		new
+			Float: nX = X + 1.0 * -floatsin( -rX, degrees ),
+			Float: nY = Y + 1.0 * -floatcos( -rX, degrees )
+		;
+
+		Iter_Add( atms, ID );
+		g_atmData[ ID ] [ E_HEALTH ] = 100.0;
+		g_atmData[ ID ] [ E_CHECKPOINT ] = CreateDynamicCP( nX, nY, Z, 1.0 , -1, -1, -1, 100.0 );
+		g_atmData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 19324, X, Y, Z, 0.0, 0.0, rX, -1, -1, -1, 100.0, .priority = 2 );
+		g_atmData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "[ATM]\n"COL_GREY"100%", COLOR_GOLD, nX, nY, Z, 20.0 );
 	}
-	if ( ID == -1 ) return ID;
-
-	rX = rX - offset;
-
-	new
-		Float: nX = X + 1.0 * -floatsin( -rX, degrees ),
-		Float: nY = Y + 1.0 * -floatcos( -rX, degrees )
-	;
-
-	g_atmData[ ID ] [ E_HEALTH ] = 100.0;
-	g_atmData[ ID ] [ E_CREATED ] = true;
-	g_atmData[ ID ] [ E_CHECKPOINT ] = CreateDynamicCP( nX, nY, Z, 1.0 , -1, -1, -1, 100.0 );
-	g_atmData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 19324, X, Y, Z, 0.0, 0.0, rX, -1, -1, -1, 100.0 );
-	g_atmData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "[ATM]\n"COL_GREY"100%", COLOR_GOLD, nX, nY, Z, 20.0 );
 	return ID;
 }
 
@@ -30427,7 +30425,8 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	else if ( IsPlayerTied( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're tied." );
 	else if ( IsPlayerKidnapped( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're kidnapped." );
 	else if ( IsPlayerGettingBlowed( playerid ) )return SendError( playerid, "You cannot use this command since you're getting blowed." );
-	else if ( IsPlayerBlowingCock( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+	else if ( IsPlayerBlowingCock( playerid ) )  	return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+	else if ( IsPlayerPlayingPoker( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing poker." );
 	else if ( IsPlayerInWater( playerid ) )      return SendError( playerid, "You cannot use this command since you're in water." );
 	else if ( IsPlayerMining( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're mining." );
 	else if ( IsPlayerInEvent( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're in an event." );
@@ -33127,7 +33126,7 @@ stock IsDeathmatchProtectedZone( playerid ) {
 	return false;
 }*/
 
-stock CreateGarage( iAccountID, iPrice, iInterior, Float: fX, Float: fY, Float: fZ, Float: fAngle, iExistingID = -1 )
+stock CreateGarage( iAccountID, iPrice, iInterior, Float: fX, Float: fY, Float: fZ, Float: fAngle, iExistingID = ITER_NONE )
 {
 	new
 		iGarage = iExistingID != ITER_NONE ? iExistingID : Iter_Free(garages);
@@ -33150,8 +33149,8 @@ stock CreateGarage( iAccountID, iPrice, iInterior, Float: fX, Float: fY, Float: 
 		g_garageData[ iGarage ] [ E_CHECKPOINT ] = CreateDynamicCP( fX, fY, fZ, 3.0, -1, 0, -1, 100.0 );
 	    g_garageData[ iGarage ] [ E_LABEL ] 	 = CreateDynamic3DTextLabel( sprintf( "Garage(%d)\nOwner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", iGarage, ConvertPrice( g_garageData[ iGarage ] [ E_PRICE ] ) ), COLOR_GOLD, fX, fY, fZ, 20.0 );
 
-		if ( iExistingID != -1 && iAccountID ) UpdateGarageTitle( iGarage );
-		else if ( iExistingID == -1 )
+		if ( iExistingID != ITER_NONE && iAccountID ) UpdateGarageTitle( iGarage );
+		else if ( iExistingID == ITER_NONE )
 		{
 			format( szBigString, 162, "INSERT INTO `GARAGES`(`ID`,`OWNER`,`PRICE`,`INTERIOR`,`X`,`Y`,`Z`,`ANGLE`) VALUES (%d,%d,%d,%d,%f,%f,%f,%f)", iGarage, iAccountID, iPrice, iInterior, fX, fY, fZ, fAngle );
 			mysql_single_query( szBigString );
@@ -33503,7 +33502,8 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 }
 
 stock IsPlayerInCasino( playerid ) {
-	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && GetPlayerVirtualWorld( playerid ) == VISAGE_WORLD ) return 1;
+	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && GetPlayerVirtualWorld( playerid ) == VISAGE_WORLD ) return 1; // visage itself
+	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && GetPlayerVirtualWorld( playerid ) != 0 ) return 1; // visage apartments
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
 }
 
@@ -33804,11 +33804,11 @@ stock CreateBusinessActors( businessid )
 
 	for ( new i = 0; i < MAX_BIZ_ACTORS; i ++ ) if ( g_businessActorData[ biz_type ] [ i ] [ E_SKIN ] != -1 )
 	{
-		g_businessActors[ businessid ] [ i ] = CreateActor( g_businessActorData[ biz_type ] [ i ] [ E_SKIN ], g_businessActorData[ biz_type ] [ i ] [ E_X ], g_businessActorData[ biz_type ] [ i ] [ E_Y ], g_businessActorData[ biz_type ] [ i ] [ E_Z ], g_businessActorData[ biz_type ] [ i ] [ E_RZ ] );
-		SetActorInvulnerable( g_businessActors[ businessid ] [ i ], true );
-		SetActorVirtualWorld( g_businessActors[ businessid ] [ i ], g_businessData[ businessid ] [ E_WORLD ] );
-    	ApplyActorAnimation( g_businessActors[ businessid ] [ i ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_LIB ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
-    	ApplyActorAnimation( g_businessActors[ businessid ] [ i ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_LIB ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
+		g_businessActors[ businessid ] [ i ] = CreateDynamicActor( g_businessActorData[ biz_type ] [ i ] [ E_SKIN ], g_businessActorData[ biz_type ] [ i ] [ E_X ], g_businessActorData[ biz_type ] [ i ] [ E_Y ], g_businessActorData[ biz_type ] [ i ] [ E_Z ], g_businessActorData[ biz_type ] [ i ] [ E_RZ ] );
+		SetDynamicActorInvulnerable( g_businessActors[ businessid ] [ i ], true );
+		SetDynamicActorVirtualWorld( g_businessActors[ businessid ] [ i ], g_businessData[ businessid ] [ E_WORLD ] );
+    	ApplyDynamicActorAnimation( g_businessActors[ businessid ] [ i ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_LIB ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
+    	ApplyDynamicActorAnimation( g_businessActors[ businessid ] [ i ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_LIB ], g_businessActorData[ biz_type ] [ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
 	}
 	return 1;
 }
@@ -34055,32 +34055,32 @@ stock RollSlotMachine( playerid, id )
 
 	if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == 10000 )
 	{
-		// 1 in 200k odds
-		randomChance = random( 200001 );
+		// 1 in 125k odds
+		randomChance = random( 125001 );
 		printf("random chance %d", randomChance );
 
 		// double brick
-		if ( randomChance == 131730 ) // rigged
+		if ( randomChance == 91235 )
 			rotation = 0.0;
 
 		// single brick
-		else if ( 1 <= randomChance <= 3560 )
+		else if ( 2 <= randomChance <= 2201 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 3561 <= randomChance <= 10680 )
+		else if ( 2202 <= randomChance <= 6602 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 10681 <= randomChance <= 24920 )
+		else if ( 6603 <= randomChance <= 15403 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 24921 <= randomChance <= 69520 )
+		else if ( 15404 <= randomChance <= 37404 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 60521 <= randomChance <= 131720 )
+		else if ( 37405 <= randomChance <= 81405 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -34089,31 +34089,31 @@ stock RollSlotMachine( playerid, id )
 	}
 	else
 	{
-		// 1 in 400k odds
-		randomChance = random( 50001 );
+		// 1 in 40k odds
+		randomChance = random( 40001 );
 
 		// double brick
 		if ( randomChance == 27390 )
 			rotation = 0.0;
 
 		// single brick
-		else if ( 1 <= randomChance <= 740 )
+		else if ( 1 <= randomChance <= 973 )
 			rotation = 40.0;
 
 		// gold bells
-		else if ( 741 <= randomChance <= 2220 )
+		else if ( 974 <= randomChance <= 2434 )
 			rotation = 60.0;
 
 		// cherry
-		else if ( 2221 <= randomChance <= 5180 )
+		else if ( 2435 <= randomChance <= 5355 )
 			rotation = 80.0;
 
 		// grapes
-		else if ( 5181 <= randomChance <= 12580 )
+		else if ( 5356 <= randomChance <= 11196 )
 			rotation = 100.0;
 
 		// 69s
-		else if ( 12581 <= randomChance <= 27380 )
+		else if ( 11197 <= randomChance <= 22877 )
 			rotation = 20.0;
 
 		// loss otherwise
@@ -36426,7 +36426,7 @@ thread OnBusinessVehicleLoad( businessid )
 	return 1;
 }
 
-CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Float: fY, Float: fZ, iSupply = 0, iProduct = 0, iProductionTimestamp = 0, iBank = 0, iExistingID = -1 )
+CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Float: fY, Float: fZ, iSupply = 0, iProduct = 0, iProductionTimestamp = 0, iBank = 0, iExistingID = ITER_NONE )
 {
 	new
 		iBusiness = iExistingID != ITER_NONE ? iExistingID : Iter_Free(business);
@@ -36481,8 +36481,8 @@ CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Float: f
 	    StopBusinessExportMission( iBusiness );
 
 	    // insert or readjust name
-		if ( iExistingID != -1 && iAccountID != 0 ) UpdateBusinessTitle( iBusiness );
-		else if ( iExistingID == -1 )
+		if ( iExistingID != ITER_NONE && iAccountID != 0 ) UpdateBusinessTitle( iBusiness );
+		else if ( iExistingID == ITER_NONE )
 		{
 			format( szBigString, sizeof( szBigString ), "INSERT INTO `BUSINESSES`(`ID`, `OWNER_ID`, `NAME`, `COST`, `TYPE`, `X`, `Y`, `Z`) VALUES (%d,%d,'%s',%d,%d,%f,%f,%f)", iBusiness, iAccountID, szBusiness, iPrice, iType, fX, fY, fZ );
 			mysql_single_query( szBigString );
@@ -37082,3 +37082,11 @@ stock GetPlayerVIPLevel( playerid )
 
 stock IsPlayerSpawned( playerid )
 	return p_Spawned{ playerid };
+
+stock UpdatePlayerEntranceExitTick( playerid, ms = 2500 ) {
+	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
+}
+
+stock CanPlayerExitEntrance( playerid ) {
+	return GetTickCount( ) > p_EntranceTickcount[ playerid ];
+}

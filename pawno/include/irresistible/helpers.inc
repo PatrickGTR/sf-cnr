@@ -30,6 +30,7 @@
 
 /* ** Variables ** */
 stock szSmallString[ 32 ];
+stock szNormalString[ 144 ];
 stock szBigString[ 256 ];
 stock szLargeString[ 1024 ];
 stock szHugeString[ 2048 ];

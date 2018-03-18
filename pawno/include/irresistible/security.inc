@@ -26,6 +26,7 @@ new
 
 /* ** Forwards ** */
 forward OnNpcConnect( npcid );
+forward OnNpcDisconnect( npcid, reason );
 
 /* ** Hooks ** */
 hook OnRconLoginAttempt( ip[ ], password[ ], success )
@@ -96,11 +97,31 @@ hook OnPlayerConnect( playerid )
 	strcpy( p_PlayerIP[ playerid ], szIP );
 	strcpy( p_PlayerName[ playerid ], szName );
 
-	if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
-		return Kick( playerid ), 1;
+	// get out the bots/invalid player ids
+	if ( ! ( 0 <= playerid < MAX_PLAYERS ) ) {
+		Kick( playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
 
-	if ( strlen( ReturnPlayerName( playerid ) ) <= 2 )
-		return Kick( playerid ), 1;
+	// check for invalid name
+	if ( strlen( ReturnPlayerName( playerid ) ) <= 2 ) {
+		Kick( playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	return 1;
+}
+
+hook OnPlayerDisconnect( playerid, reason )
+{
+	if ( IsPlayerNPC( playerid ) ) {
+		CallLocalFunction( "OnNpcDisconnect", "dd", playerid, reason );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+
+	// Filter out bots
+	if ( ! ( 0 <= playerid < MAX_PLAYERS ) ) {
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
 
 	return 1;
 }

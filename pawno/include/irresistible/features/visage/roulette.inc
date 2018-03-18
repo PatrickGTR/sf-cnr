@@ -14,7 +14,7 @@
 #endif
 
 /* ** Definitions ** */
-#define MAX_ROULETTE_TABLES 		16
+#define MAX_ROULETTE_TABLES 		23
 
 /* ** Macros ** */
 #define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)
@@ -85,7 +85,7 @@ static const
 enum E_ROULETTE_DATA
 {
 	E_OBJECT, 					E_SPINNER_OBJECT, 				E_SPINNING_TIMER,
-	bool: E_NO_MORE_BETS,
+	bool: E_NO_MORE_BETS,		E_WORLD,
 
 	Float: E_X, 				Float: E_Y, 					Float: E_Z,
 	Float: E_ROTATION
@@ -100,7 +100,7 @@ new
 	Text: g_rouletteNumberTD		[ MAX_ROULETTE_TABLES ],
 
 	g_rouletteChipColor			[ MAX_PLAYERS ],
-	g_rouletteChip				[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
+	g_rouletteChip				[ MAX_PLAYERS ] [ 2 ] [ sizeof( g_rouletteOffsets ) ],
 	g_rouletteChipValue			[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
 	Text3D: g_rouletteChipLabel	[ MAX_PLAYERS ] [ sizeof( g_rouletteOffsets ) ],
 	p_rouletteBetValue			[ MAX_PLAYERS ],
@@ -125,25 +125,26 @@ hook OnGameModeInit( )
 	AddServerVariable( "roulette_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// create roulette tables
-	CreateRouletteTable( 2242.36719, 1589.18750, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2242.36719, 1594.75781, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2230.57031, 1589.18750, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2230.57031, 1594.75781, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2230.57031, 1614.59375, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2230.57031, 1619.65625, 1006.22662, 90.00000 );
-	CreateRouletteTable( 2241.44531, 1614.55469, 1006.22662, -90.0000 );
-	CreateRouletteTable( 2241.44531, 1619.60938, 1006.22662, 90.00000 );
-	CreateRouletteTable( 1963.71094, 1025.69531, 992.507810, 0.000000 );
-	CreateRouletteTable( 1959.39844, 1025.69531, 992.507810, 0.000000 );
-	CreateRouletteTable( 1963.71094, 1010.11719, 992.507810, 0.000000 );
-	CreateRouletteTable( 1959.39844, 1010.11719, 992.507810, 0.000000 );
+	CreateRouletteTable( 2242.36719, 1589.18750, 1006.22662, -90.0000, 82 );
+	CreateRouletteTable( 2242.36719, 1594.75781, 1006.22662, 90.00000, 82 );
+	CreateRouletteTable( 2230.57031, 1589.18750, 1006.22662, -90.0000, 82 );
+	CreateRouletteTable( 2230.57031, 1594.75781, 1006.22662, 90.00000, 82 );
+	CreateRouletteTable( 2230.57031, 1614.59375, 1006.22662, -90.0000, 82 );
+	CreateRouletteTable( 2230.57031, 1619.65625, 1006.22662, 90.00000, 82 );
+	CreateRouletteTable( 2241.44531, 1614.55469, 1006.22662, -90.0000, 82 );
+	CreateRouletteTable( 2241.44531, 1619.60938, 1006.22662, 90.00000, 82 );
+	CreateRouletteTable( 1963.71094, 1025.69531, 992.507810, 0.000000, 23 );
+	CreateRouletteTable( 1959.39844, 1025.69531, 992.507810, 0.000000, 23 );
+	CreateRouletteTable( 1963.71094, 1010.11719, 992.507810, 0.000000, 23 );
+	CreateRouletteTable( 1959.39844, 1010.11719, 992.507810, 0.000000, 23 );
 	return 1;
 }
 
 hook OnPlayerConnect( playerid )
 {
 	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
-		g_rouletteChip[ playerid ] [ i ] = -1;
+		g_rouletteChip[ playerid ] [ 0 ] [ i ] = -1;
+		g_rouletteChip[ playerid ] [ 1 ] [ i ] = -1;
 		g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
 		g_rouletteChipValue[ playerid ] [ i ] = 0;
 	}
@@ -216,6 +217,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 					foreach (new i : Player) if ( p_RouletteTable[ i ] == rouletteid )
 					{
+						PlayerPlaySound( i, 33400, 0.0, 0.0, 0.0 );
 						TextDrawShowForPlayer( i, g_rouletteNumberBG[ rouletteid ] );
 						TextDrawShowForPlayer( i, g_rouletteNumberTD[ rouletteid ] );
 
@@ -262,7 +264,8 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				for ( new column = 0; column < sizeof( g_rouletteOffsets ); column ++ )
 				{
 					g_rouletteChipValue[ playerid ] [ column ] = 0;
-					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ 0 ] [ column ] ), g_rouletteChip[ playerid ] [ 0 ] [ column ] = -1;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ 1 ] [ column ] ), g_rouletteChip[ playerid ] [ 1 ] [ column ] = -1;
 					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: INVALID_3DTEXT_ID;
 				}
 			}
@@ -307,30 +310,37 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				if ( g_rouletteChipValue[ playerid ] [ column ] <= 0 )
 				{
 					DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ column ] ), g_rouletteChipLabel[ playerid ] [ column ] = Text3D: -1;
-					DestroyDynamicObject( g_rouletteChip[ playerid ] [ column ] ), g_rouletteChip[ playerid ] [ column ] = -1;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ 0 ] [ column ] ), g_rouletteChip[ playerid ] [ 0 ] [ column ] = -1;
+					DestroyDynamicObject( g_rouletteChip[ playerid ] [ 1 ] [ column ] ), g_rouletteChip[ playerid ] [ 1 ] [ column ] = -1;
 					g_rouletteChipValue[ playerid ] [ column ] = 0;
 					//printf("removed");
 				}
 				else
 				{
 					// Calculate chip height
-					new
-						Float: height = 0.295 - float( g_rouletteChipValue[ playerid ] [ column ] / 1000 ) * 0.005;
+					new Float: height = 0.295 - float( g_rouletteChipValue[ playerid ] [ column ] / 1000 ) * 0.005;
 
-					if ( height < 0.18 )
-						height = 0.18;
+					// readjust max height
+					if ( height < 0.18 ) height = 0.18;
+
+					// store color
+					new color = ( g_rouletteChipColor[ playerid ] >> 8 ) | 0x99000000;
 
 					//printf("g_rouletteChip[%s][%d] = %d", ReturnPlayerName( playerid ), column, g_rouletteChip[ playerid ] [ column ] );
-					if ( g_rouletteChip[ playerid ] [ column ] == -1 )
+					if ( g_rouletteChip[ playerid ] [ 0 ] [ column ] == -1 )
 					{
-						g_rouletteChip[ playerid ] [ column ] = CreateDynamicObject( 1902, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height, 0.00000, 0.00000, 0.0, .priority = 9999, .drawdistance = 10.0, .streamdistance = 12.0 ); // 2992
-						SetDynamicObjectMaterial( g_rouletteChip[ playerid ] [ column ], 0, 1902, "chip_stack08", "chip_stck6", ( ( g_rouletteChipColor[ playerid ] >> 8 ) | 0x99000000 ) );
+						g_rouletteChip[ playerid ] [ 0 ] [ column ] = CreateDynamicObject( 1902, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height, 0.0, 0.0, 0.0, .worldid = g_rouletteTableData[ rouletteid ] [ E_WORLD ], .priority = 9999 );
+						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 0 ] [ column ], 0, " ", .backcolor = color );
+						g_rouletteChip[ playerid ] [ 1 ] [ column ] = CreateDynamicObject(1905, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height + 0.125, 0.0, 0.0, 0.0, .worldid = g_rouletteTableData[ rouletteid ] [ E_WORLD ], .priority = 9999);
+						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 1 ] [ column ], 0, ConvertRouletteChipValue( g_rouletteChipValue[ playerid ] [ column ] ), 50, "Arial", 44, 1, color, -1, 1 );
 						g_rouletteChipLabel[ playerid ] [ column ] = CreateDynamic3DTextLabel( sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ), g_rouletteChipColor[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.15 + ( float( playerid ) / 100 ), 5.0 ); //INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, playerid );
 						//printf("(%s) CREATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
 					}
 					else
 					{
-						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height );
+						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 1 ] [ column ], 0, ConvertRouletteChipValue( g_rouletteChipValue[ playerid ] [ column ] ), 50, "Arial", 44, 1, color, -1, 1 );
+						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ 0 ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height );
+						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ 1 ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height + 0.125 );
 						UpdateDynamic3DTextLabelText( g_rouletteChipLabel[ playerid ] [ column ], g_rouletteChipColor[ playerid ], sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ) );
 						//printf("(%s) UPDATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
 					}
@@ -350,7 +360,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			if ( p_RouletteTable[ playerid ] != -1 )
 				return RemovePlayerFromRoulette( playerid );
 
-			foreach(new id : roulettetables)
+			foreach(new id : roulettetables) if ( GetPlayerVirtualWorld( playerid ) == g_rouletteTableData[ id ] [ E_WORLD ] )
 			{
 				if ( IsPlayerInRangeOfPoint( playerid, 3.1, g_rouletteTableData[ id ] [ E_X ], g_rouletteTableData[ id ] [ E_Y ], g_rouletteTableData[ id ] [ E_Z ] ) ) {
 
@@ -380,7 +390,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					new Float: offsetX = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatcos( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
 					new Float: offsetY = g_rouletteOffsets[ 0 ] [ E_OFFSET ] * floatsin( Angle + g_rouletteOffsets[ 0 ] [ E_ANGLE ], degrees );
 					DestroyDynamicObject( p_RouletteMarker[ playerid ] );
-					p_RouletteMarker[ playerid ] = CreateDynamicObject( 2992, X + offsetX, Y + offsetY, Z - 0.17, 0.00000, 0.00000, 0.0, -1, -1, playerid, .priority = 9999, .drawdistance = 10.0, .streamdistance = 12.0 );
+					p_RouletteMarker[ playerid ] = CreateDynamicObject( 2992, X + offsetX, Y + offsetY, Z - 0.17, 0.00000, 0.00000, 0.0, .worldid = g_rouletteTableData[ id ] [ E_WORLD ], .playerid = playerid, .priority = 9999, .drawdistance = 10.0, .streamdistance = 12.0 );
 
 					// starting bet
 					p_rouletteBetValue[ playerid ] = 1000;
@@ -433,7 +443,7 @@ hook InitializeTextDraws( )
 }
 
 /* ** Functions ** */
-stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
+stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world )
 {
 	new
 		id = Iter_Free(roulettetables);
@@ -444,23 +454,24 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle )
 		g_rouletteTableData[ id ] [ E_Y ] = Y;
 		g_rouletteTableData[ id ] [ E_Z ] = Z;
 		g_rouletteTableData[ id ] [ E_ROTATION ] = Angle;
+		g_rouletteTableData[ id ] [ E_WORLD ] = world;
 
 		g_rouletteTableData[ id ] [ E_SPINNING_TIMER ] = -1;
 
-		g_rouletteTableData[ id ] [ E_OBJECT ] = CreateDynamicObject( 1978, X, Y, Z, 0.00000, 0.00000, Angle, .priority = 9999 );
+		g_rouletteTableData[ id ] [ E_OBJECT ] = CreateDynamicObject( 1978, X, Y, Z, 0.00000, 0.00000, Angle, .worldid = world, .priority = 9999 );
 
 		X += 1.365 * floatcos( Angle + 98.0, degrees );
 		Y += 1.365 * floatsin( Angle + 98.0, degrees );
 
-		CreateDynamic3DTextLabel( "Press ENTER To Play\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+		CreateDynamic3DTextLabel( "Press ENTER To Play Roulette\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .worldid = world, .testlos = 0 );
 
-		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0, .priority = 9999 );
+		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0, .worldid = world, .priority = 9999 );
 		Iter_Add( roulettetables, id );
 	}
     else
     {
         static overflow;
-        printf("[ROULETTE ERROR] Reached limit of %d blackjack tables, increase to %d to fix.", MAX_ROULETTE_TABLES, MAX_ROULETTE_TABLES + ( ++ overflow ) );
+        printf("[ROULETTE ERROR] Reached limit of %d roulette tables, increase to %d to fix.", MAX_ROULETTE_TABLES, MAX_ROULETTE_TABLES + ( ++ overflow ) );
     }
 	return 1;
 }
@@ -503,6 +514,11 @@ public OnSpinRouletteTable( rouletteid, elapsed, steps )
 	{
 		new
 			iWinning = GenerateRandomRouletteNumber( rouletteid );
+
+		// play noise
+		foreach (new i : Player) if ( p_RouletteTable[ i ] == rouletteid ) {
+			PlayerPlaySound( i, randarg( 33401, 33402, 33403 ), 0.0, 0.0, 0.0 );
+		}
 
 		// Kill the timer just incase
 		KillTimer( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] );
@@ -633,7 +649,8 @@ public OnRouletteWheelStop( rouletteid, winner )
 
 			if ( beforeWin >= won ) {
 				g_rouletteChipValue[ playerid ] [ chipid ] = 0;
-				DestroyDynamicObject( g_rouletteChip[ playerid ] [ chipid ] ), g_rouletteChip[ playerid ] [ chipid ] = -1;
+				DestroyDynamicObject( g_rouletteChip[ playerid ] [ 0 ] [ chipid ] ), g_rouletteChip[ playerid ] [ 0 ] [ chipid ] = -1;
+				DestroyDynamicObject( g_rouletteChip[ playerid ] [ 1 ] [ chipid ] ), g_rouletteChip[ playerid ] [ 1 ] [ chipid ] = -1;
 				DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ chipid ] ), g_rouletteChipLabel[ playerid ] [ chipid ] = Text3D: -1;
 			}
 
@@ -833,7 +850,8 @@ stock RemovePlayerFromRoulette( playerid )
 
 	// remove chips
 	for ( new i = 0; i < sizeof( g_rouletteOffsets ); i ++ ) {
-		DestroyDynamicObject( g_rouletteChip[ playerid ] [ i ] ), g_rouletteChip[ playerid ] [ i ] = -1;
+		DestroyDynamicObject( g_rouletteChip[ playerid ] [ 0 ] [ i ] ), g_rouletteChip[ playerid ] [ 0 ] [ i ] = -1;
+		DestroyDynamicObject( g_rouletteChip[ playerid ] [ 1 ] [ i ] ), g_rouletteChip[ playerid ] [ 1 ] [ i ] = -1;
 		DestroyDynamic3DTextLabel( g_rouletteChipLabel[ playerid ] [ i ] ), g_rouletteChipLabel[ playerid ] [ i ] = Text3D: INVALID_3DTEXT_ID;
 		g_rouletteChipValue[ playerid ] [ i ] = 0;
 	}
@@ -843,6 +861,9 @@ stock RemovePlayerFromRoulette( playerid )
 		TextDrawHideForPlayer( playerid, g_rouletteNumberBG[ p_RouletteTable[ playerid ] ] );
 		TextDrawHideForPlayer( playerid, g_rouletteNumberTD[ p_RouletteTable[ playerid ] ] );
 	}
+
+	// reset sound
+	PlayerPlaySound( playerid, 33404, 0.0, 0.0, 0.0 );
 
 	// reset user variables
 	HidePlayerHelpDialog( playerid );
@@ -860,4 +881,21 @@ stock RemovePlayerFromRoulette( playerid )
 		ClearAnimations( playerid );
 	}
 	return 1;
+}
+
+stock ConvertRouletteChipValue( value ) {
+
+	new
+		Float: float_value = float( value ), string[ 16 ]; // $1000K
+
+	if ( float_value >= 1000000.0 ) {
+		float_value /= 1000000.0;
+		format( string, sizeof( string ), "$%0.1fM", float_value );
+	} else if ( float_value >= 1000.0 ) {
+		float_value /= 1000.0;
+		format( string, sizeof( string ), "$%0.0fK", float_value );
+	} else {
+		format( string, sizeof( string ), "$%0.0f", float_value );
+	}
+	return string;
 }

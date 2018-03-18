@@ -35,8 +35,8 @@
 #include < irresistible\features\visage\blackjack >
 #include < irresistible\features\visage\poker >
 // #include < irresistible\features\visage\fireworks >
-// #include < irresistible\features\visage\apartments >
-#include < irresistible\features\visage\static_casino >
+#include < irresistible\features\visage\casino >
+#include < irresistible\features\visage\apartments >
 
 // static cnr features
 #include < irresistible\cnr\static\actors >

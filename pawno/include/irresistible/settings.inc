@@ -7,9 +7,6 @@
 
 // mysqldump -u service -p82JA8LDL1JAG2GF69 sa-mp > ~/dump01.sql
 
-/* ** Includes ** */
-#include 							< YSI\y_hooks >
-
 /* ** MySQL Settings ** */
 #if !defined DEBUG_MODE
 	#define MYSQL_HOST				"127.0.0.1"
@@ -22,6 +19,14 @@
 	#define MYSQL_PASS				""
 	#define MYSQL_DATABASE			"sa-mp"
 #endif
+
+/* ** Error Checking ** */
+#if defined FILTERSCRIPT
+	#endinput
+#endif
+
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
 
 /* ** Variables ** */
 stock dbHandle;

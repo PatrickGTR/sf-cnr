@@ -88,11 +88,11 @@ stock initializeActors( )
 	for( new i = 0; i < sizeof( g_actorData ); i++ )
 	{
 		new
-			actorid = CreateActor( g_actorData[ i ] [ E_SKIN ], g_actorData[ i ] [ E_X ], g_actorData[ i ] [ E_Y ], g_actorData[ i ] [ E_Z ], g_actorData[ i ] [ E_RZ ] );
+			actorid = CreateDynamicActor( g_actorData[ i ] [ E_SKIN ], g_actorData[ i ] [ E_X ], g_actorData[ i ] [ E_Y ], g_actorData[ i ] [ E_Z ], g_actorData[ i ] [ E_RZ ] );
 
-		SetActorInvulnerable( actorid, true );
-		SetActorVirtualWorld( actorid, g_actorData[ i ] [ E_WORLD ] );
-    	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
-    	ApplyActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
+		SetDynamicActorInvulnerable( actorid, true );
+		SetDynamicActorVirtualWorld( actorid, g_actorData[ i ] [ E_WORLD ] );
+    	ApplyDynamicActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
+    	ApplyDynamicActorAnimation( actorid, g_actorData[ i ] [ E_ANIM_LIB ], g_actorData[ i ] [ E_ANIM_NAME ], 4.1, 1, 1, 1, 1, 0 );
 	}
 }
