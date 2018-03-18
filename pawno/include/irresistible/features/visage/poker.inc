@@ -486,7 +486,12 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 
 	//Table
 	TableData[handle][E_TABLE_OBJECT_IDS][0] = CreateDynamicObject(2189, X, Y, Z + T_Z_OFFSET - 0.01, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
-	TableData[handle][E_TABLE_OBJECT_IDS][1] = CreateDynamicObject(2111, X, Y, Z-0.01, 0.0, 0.0, 0.0, vworld, interior, .priority = 1);
+	TableData[handle][E_TABLE_OBJECT_IDS][1] = CreateDynamicObject(2111, X, Y, Z-0.01, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
+
+	//Textures
+	if(buy_in >= 10000000) SetDynamicObjectMaterial(TableData[handle][E_TABLE_OBJECT_IDS][0], 0, 2189, "poker_tbl", "roulette_6_256", -52310);
+	else if (buy_in >= 1000000) SetDynamicObjectMaterial(TableData[handle][E_TABLE_OBJECT_IDS][0], 0, 2189, "poker_tbl", "roulette_6_256", -16737793);
+	else if (buy_in >= 100000) SetDynamicObjectMaterial(TableData[handle][E_TABLE_OBJECT_IDS][0], 0, 2189, "poker_tbl", "roulette_6_256", -65485);
 
 	//Chairs
 	TableData[handle][E_TABLE_POT_LABEL] = CreateDynamic3DTextLabel("-", -1, X+T_CHIP_OFFSET, Y+T_CHIP_OFFSET, Z+0.5, 10.0, .worldid = vworld, .interiorid = interior);
@@ -1019,8 +1024,9 @@ stock AddPlayerToTable(playerid, handle)
 	Pos[0] = TableData[handle][E_TABLE_SEAT_POS_X][slot];
 	Pos[1] = TableData[handle][E_TABLE_SEAT_POS_Y][slot];
 	Pos[2] = TableData[handle][E_TABLE_SEAT_POS_Z][slot];
-	new const Float:angle_step = floatdiv(360.0, float(TableData[handle][E_TABLE_TOTAL_SEATS]));
-	new Float:facing_angle = (TableData[handle][E_TABLE_TOTAL_SEATS] == 2)  ? (270 - angle_step * float(slot + 1)) : angle_step * float(slot + 1);
+	//new const Float:angle_step = floatdiv(360.0, float(TableData[handle][E_TABLE_TOTAL_SEATS]));
+	//new Float:facing_angle = (TableData[handle][E_TABLE_TOTAL_SEATS] == 2)  ? (270 - angle_step * float(slot + 1)) : angle_step * float(slot + 1);
+	new Float:facing_angle = atan2(TableData[handle][E_TABLE_POS_Y] - Pos[1], TableData[handle][E_TABLE_POS_X] - Pos[0]) - 90.0;
 	DestroyDynamicObject(TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][slot]);
 	SetPlayerPos(playerid, Pos[0], Pos[1], Pos[2]);
 	SetPlayerFacingAngle(playerid, facing_angle);
@@ -1645,10 +1651,12 @@ static stock ShowChoicesToPlayer(playerid)
 	{
 		//all in and fold are the only options available
 		PlayerTextDrawSetSelectable(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][CALL], false);
+		PlayerTextDrawColor(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][CALL], COLOR_RED);
 	}
 	else
 	{
 		PlayerTextDrawSetSelectable(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][CALL], true);
+		PlayerTextDrawColor(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][CALL], -1);
 	}
 	for(new i = 0; i < 5; i++)
 	{
@@ -2274,6 +2282,8 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if(dialogid == DIALOG_BUY_IN)
 	{
 		new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
+		if(!IsValidTable(handle)) return 1;
+		if(!Iter_Contains(IT_PlayersTable<handle>, playerid)) return 1;
 		if(response)
 		{
 			GivePlayerCash(playerid, -TableData[handle][E_TABLE_BUY_IN]);
@@ -2292,6 +2302,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 			new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
 			if(!IsValidTable(handle)) return 0;
+			if(!Iter_Contains(IT_PlayersTable<handle>, playerid)) return 1;
 			if(TableData[handle][E_TABLE_CURRENT_STATE] != STATE_BEGIN)
 			{
 				SendPokerMessage(playerid, "There isn't any active game at the moment.");
@@ -2510,12 +2521,12 @@ hook OnGameModeInit()
 	AddServerVariable( "poker_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// red dragons casino
-	CreatePokerTable( 5000000, 100000, 1968.395019, 1027.808959, 991.828002, 2, 23, 10 );
-	CreatePokerTable( 2500000, 50000, 1940.795043, 1008.741027, 991.828002, 2, 23, 10 );
-	CreatePokerTable( 1000000, 20000, 1940.795043, 1027.240966, 991.828002, 3, 23, 10 );
-	CreatePokerTable( 500000, 10000, 1940.795043, 1021.075012, 991.828002, 4, 23, 10 );
-	CreatePokerTable( 250000, 5000, 1940.795043, 1014.908996, 991.828002, 4, 23, 10 );
-	CreatePokerTable( 100000, 2000, 1968.395019, 1014.609008, 991.828002, 5, 23, 10 );
+	CreatePokerTable( 25000000, 500000, 1968.395019, 1027.808959, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 10000000, 200000, 1940.795043, 1008.741027, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 5000000, 100000, 1940.795043, 1027.240966, 991.828002, 3, 23, 10 );
+	CreatePokerTable( 2500000, 50000, 1940.795043, 1021.075012, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 1000000, 20000, 1940.795043, 1014.908996, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 500000, 10000, 1968.395019, 1014.609008, 991.828002, 5, 23, 10 );
 	CreatePokerTable( 250000, 5000, 1968.395019, 1021.208984, 991.828002, 6, 23, 10 );
 	CreatePokerTable( 100000, 2000, 1968.395019, 1008.008972, 991.828002, 6, 23, 10 );
 
