@@ -46,11 +46,7 @@ native calculate_hand_worth(const hands[], count = sizeof(hands));
 
 
 
-#define T_DEBUGGING_ENABLED 									(true)
-
-#if T_DEBUGGING_ENABLED == true
-	#define T_SendWarning(%0)      		(printf(" * [TPoker]: " %0))
-#endif
+#define T_SendWarning(%0)      		(printf(" * [TPoker]: " %0))
 
 /******************************************************************************************
 	Utils
@@ -482,6 +478,12 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 	TableData[handle][E_TABLE_TOTAL_SEATS] = seats;
 	TableData[handle][E_TABLE_VIRTUAL_WORLD] = vworld;
 	TableData[handle][E_TABLE_INTERIOR] = interior;
+
+	/* Positions */
+	TableData[handle][E_TABLE_POS_X] = X;
+	TableData[handle][E_TABLE_POS_Y] = Y;
+	TableData[handle][E_TABLE_POS_Z] = Z;
+
 	/* Objects */
 
 	//Table
@@ -511,21 +513,7 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 		//Currently invisible
 		TableData[handle][E_TABLE_BET_LABELS][i] = CreateDynamic3DTextLabel("$9", T_BET_LABEL_COLOR & ~0xFF,  0.65 * floatcos(float(i) * angle_step, degrees) + X, 0.65 * floatsin(float(i) * angle_step, degrees) + Y,  c_posz, 3.0 , .worldid = vworld, .interiorid = interior);
 
-		new const Float: or_x = 0.70 * floatcos(float(i) * angle_step, degrees) + X;
-		new const Float: or_y = 0.70 * floatsin(float(i) * angle_step, degrees) + Y;
-		new const Float: or_z = c_posz - 0.076;
-
-		new Float: a_s = floatdiv(360.0, float(MAX_CHIP_DIGITS));
-
-		for(new j = 0; j < MAX_CHIP_DIGITS; j++)
-		{
-			new Float:rad = 0.11;
-			new rand = random(20);
-			TableChips[handle][i][j] = CreateDynamicObject(1902, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
-			SetDynamicObjectMaterialText(TableChips[handle][i][j], 0, " ", .backcolor = colors[j]);
-			TableChipsLabel[handle][i][j] = CreateDynamicObject(1905, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, vworld, interior, .priority = 9999);
-			SetDynamicObjectMaterialText(TableChipsLabel[handle][i][j], 0, chip_text[j], 50, "Arial", 44, 1, colors[j], -1, 1 );
-		}
+		CreateChips(handle, i);
 	}
 	new const Float: or_z = Z + 0.284; //No chips are visible
 	new Float: a_s = floatdiv(360.0, float(MAX_CHIP_DIGITS));
@@ -542,9 +530,6 @@ stock CreatePokerTable(buy_in, small_blind, Float: X, Float: Y, Float: Z, seats,
 		SetDynamicObjectMaterialText(TableData[handle][E_TABLE_CHIPS_LABEL][j],
 		0, chip_text[j], 50, "Arial", 44, 1, colors[j], -1, 1 );
 	}
-	TableData[handle][E_TABLE_POS_X] = X;
-	TableData[handle][E_TABLE_POS_Y] = Y;
-	TableData[handle][E_TABLE_POS_Z] = Z;
 	TableData[handle][E_TABLE_CURRENT_STATE] = STATE_IDLE;
 	Iter_Clear(IT_TableCardSet[handle]);
 
@@ -610,13 +595,47 @@ stock SetPotChipsValue(handle, value)
 	return 1;
 }
 
+stock CreateChips(handle, i)
+{
+	new Float:angle_step = floatdiv(360.0, float(TableData[handle][E_TABLE_TOTAL_SEATS]));
+	new const Float:c_posz = TableData[handle][E_TABLE_POS_Z] + 0.36;
+
+	new const Float: or_x = 0.70 * floatcos(float(i) * angle_step, degrees) + TableData[handle][E_TABLE_POS_X];
+	new const Float: or_y = 0.70 * floatsin(float(i) * angle_step, degrees) + TableData[handle][E_TABLE_POS_Y];
+	new const Float: or_z = c_posz - 0.076;
+
+	new Float: a_s = floatdiv(360.0, float(MAX_CHIP_DIGITS));
+
+	for(new j = 0; j < MAX_CHIP_DIGITS; j++)
+	{
+		new Float:rad = 0.11;
+		new rand = random(20);
+		TableChips[handle][i][j] = CreateDynamicObject(1902, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008, 0.0, 0.0, 0.0, TableData[handle][E_TABLE_VIRTUAL_WORLD], TableData[handle][E_TABLE_INTERIOR], .priority = 9999);
+		SetDynamicObjectMaterialText(TableChips[handle][i][j], 0, " ", .backcolor = colors[j]);
+		TableChipsLabel[handle][i][j] = CreateDynamicObject(1905, rad * floatcos(float(j) * a_s, degrees) + or_x , rad * floatsin(float(j)* a_s, degrees) + or_y, or_z + float(rand) * 0.008 + 0.1 + 0.025, 0.0, 0.0, 0.0, TableData[handle][E_TABLE_VIRTUAL_WORLD], TableData[handle][E_TABLE_INTERIOR], .priority = 9999);
+		SetDynamicObjectMaterialText(TableChipsLabel[handle][i][j], 0, chip_text[j], 50, "Arial", 44, 1, colors[j], -1, 1 );
+	}
+
+	// update users within premise
+	foreach(new playerid: Player) if(IsPlayerInRangeOfPoint(playerid, 35.0, TableData[handle][E_TABLE_POS_X], TableData[handle][E_TABLE_POS_Y], TableData[handle][E_TABLE_POS_Z])) {
+		Streamer_Update(playerid);
+	}
+	return 1;
+}
+
 stock ResetChips(handle)
 {
 	new
 		Float: base_z = TableData[handle][E_TABLE_POS_Z] + 0.284
 	;
 	new seats = TableData[handle][E_TABLE_TOTAL_SEATS];
-	for(new i = 0; i < seats; i++)
+	for(new i = 0; i < seats; i++) {
+		for(new j = 0; j < MAX_CHIP_DIGITS; j++) {
+			DestroyDynamicObject(TableChips[handle][i][j]), TableChips[handle][i][j] = -1;
+			DestroyDynamicObject(TableChipsLabel[handle][i][j]), TableChipsLabel[handle][i][j] = -1;
+		}
+	}
+	/*for(new i = 0; i < seats; i++)
 	{
 		for(new j = 0; j < MAX_CHIP_DIGITS; j++)
 		{
@@ -627,7 +646,7 @@ stock ResetChips(handle)
 			SetDynamicObjectPos(objectid, c_x, c_y, (float(rand) * 0.008) + base_z);
 			SetDynamicObjectPos(TableChipsLabel[handle][i][j], c_x, c_y, (float(rand) * 0.008) + base_z + 0.125);
 		}
-	}
+	}*/
 	for(new j = 0; j < MAX_CHIP_DIGITS; j++)
 	{
 		new rand = random(20);
@@ -645,6 +664,7 @@ stock SetChipsValue(handle, seat, value)
 		dec_pos = 0,
 		Float: base_z = TableData[handle][E_TABLE_POS_Z] + 0.284
 	;
+	if (!IsValidDynamicObject(TableChips[handle][seat][0])) CreateChips(handle, seat);
 	for(new j = 0; j < MAX_CHIP_DIGITS; j++)
 	{
 		new Float:c_x, Float:c_y, Float:c_z;
@@ -708,8 +728,8 @@ stock DestroyPokertable( handle)
 		TableData[handle][E_TABLE_SEAT_POS_Z][i] = 0.0;
 		for(new j = 0; j < MAX_CHIP_DIGITS; j++)
 		{
-			DestroyDynamicObject(TableChips[handle][i][j]);
-			DestroyDynamicObject(TableChipsLabel[handle][i][j]);
+			DestroyDynamicObject(TableChips[handle][i][j]), TableChips[handle][i][j] = -1;
+			DestroyDynamicObject(TableChipsLabel[handle][i][j]), TableChipsLabel[handle][i][j] = -1;
 		}
 	}
 	for(new j = 0; j < MAX_CHIP_DIGITS; j++)
@@ -747,7 +767,13 @@ stock KickPlayerFromTable(playerid)
 	SetPlayerPos(playerid, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot]);
 	SetCameraBehindPlayer(playerid);
 
+	// remove player chips
+	for(new j = 0; j < MAX_CHIP_DIGITS; j++) {
+		DestroyDynamicObject(TableChips[handle][slot][j]), TableChips[handle][slot][j] = -1;
+		DestroyDynamicObject(TableChipsLabel[handle][slot][j]), TableChipsLabel[handle][slot][j] = -1;
+	}
 
+	// hide textdraws
 	for(new i = 0; i < TableData[handle][E_TABLE_TOTAL_SEATS]; i++)
 	{
 		PlayerTextDrawHide(playerid, PlayerData[playerid][E_PLAYER_CARDS_TXT_1][i]);
@@ -758,8 +784,6 @@ stock KickPlayerFromTable(playerid)
 	for(new i = 0; i < 5; i++){
 		PlayerTextDrawHide(playerid, PlayerData[playerid][E_PLAYER_COMMUNITY_CARDS_TXT][i]);
 		PlayerTextDrawDestroy(playerid, PlayerData[playerid][E_PLAYER_COMMUNITY_CARDS_TXT][i]);
-	}
-	for(new i = 0; i < 5; i++){
 		PlayerTextDrawHide(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][i]);
 		PlayerTextDrawDestroy(playerid, PlayerData[playerid][E_PLAYER_CHOICES_TXT][i]);
 	}
@@ -1686,10 +1710,6 @@ static stock SendTurnMessage(handle, playerid)
 	TableData[handle][E_TABLE_CURRENT_TURN] = playerid;
 	PlayerData[playerid][E_PLAYER_TIMER_STARTED] = true;
 	PlayerData[playerid][E_PLAYER_TIMER_ID] = SetTimerEx("Timer_FoldPlayer", T_MAX_WAIT_TIME * 1000, false, "ii", handle, playerid);
-
-	/*#if T_DEBUGGING_ENABLED == true
-	T_SendWarning("[CREATE] Timer %d for playerid (%d) was created.", PlayerData[playerid][E_PLAYER_TIMER_ID], playerid );
-	#endif*/
 	ShowChoicesToPlayer(playerid);
 	return 1;
 }
@@ -1713,10 +1733,6 @@ stock KillPlayerTurnTimer(playerid, bool: callback = false)
 	if(!callback)
 		KillTimer(PlayerData[playerid][E_PLAYER_TIMER_ID]);
 
-	/*#if T_DEBUGGING_ENABLED == true
-	T_SendWarning("[DESTROY] Timer %d for playerid (%d) was destroyed.", PlayerData[playerid][E_PLAYER_TIMER_ID], playerid );
-	#endif*/
-
 	return 1;
 }
 forward Timer_FoldPlayer(handle, playerid);
@@ -1737,9 +1753,7 @@ public Timer_FoldPlayer(handle, playerid)
 
 	GetTurnAfterPlayer(handle, playerid); //Returns the playerid of the next turn (skips players that have gone all in)
 	GetTurnAfterPlayerEx(handle, playerid); //Returns the playerid of the next turn (does not skip players that went all in)
-
 */
-
 
 forward CheckRounds(handle, bool: start_showdown);
 public CheckRounds(handle, bool: start_showdown)
@@ -2351,7 +2365,6 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				PlayerData[playerid][E_PLAYER_CURRENT_BET] += raise;
 				TableData[handle][E_TABLE_LAST_BET] = PlayerData[playerid][E_PLAYER_CURRENT_BET];
 				CheckPotAndNextTurn(playerid, handle);
-
 			}
 			else
 			{
@@ -2547,7 +2560,6 @@ hook OnGameModeInit()
 	Commands
 *******************************************************************************************/
 
-
 CMD:ctable(playerid, params[])
 {
 	if(!IsPlayerAdmin(playerid)) return 0;
@@ -2564,6 +2576,7 @@ CMD:ctable(playerid, params[])
 	SendPokerMessage(playerid, "You have created table ID: %d | Small blind: %s | Big blind: %s | Buy In: %s | Seats: %d", table, ConvertPrice(small_blind), ConvertPrice(small_blind*2), ConvertPrice(buy_in), seats);
 	return 1;
 }
+
 CMD:dtable(playerid, params[])
 {
 	if(!IsPlayerAdmin(playerid)) return 0;
@@ -2582,7 +2595,6 @@ CMD:dtable(playerid, params[])
 	DestroyPokertable(ptable);
 	return 1;
 }
-
 
 CMD:agame(playerid, params[])
 {

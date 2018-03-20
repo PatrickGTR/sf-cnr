@@ -7,5 +7,8 @@
 
 	Internal Server Hooks:
 		- InitializeTextDraws( )
-			* Allows you to hook textdraws that you wish to store
+			* Where text draws get recreated
+			
+		- SetPlayerRandomSpawn( )
+			* When a player is attempting to spawn somewhere randomly
  */
