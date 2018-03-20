@@ -4112,7 +4112,7 @@ stock initializeServerObjects( )
 	SetObjectInvisible( CreateDynamicObject( 18762, 200.12614, 176.62241, 1003.03064, 0.00000, 0.00000, 0.00000 ) );
 
 	// SF Jail
- 	CreateDynamicObject( 19301, 246.23441, 117.80470, 1005.60938, 0.00000, 0.00000, 180.0000, .priority = 9999 );
+ 	CreateDynamicObject( 19301, 246.23441, 117.80470, 1005.60938, 0.00000, 0.00000, 180.0000, .streamdistance = -1.0, .priority = 9999 );
 	CreateDynamicObject( 19303, 216.47310, 112.62180, 999.29547, 0.00000, 0.00000, 0.00000 );
 	CreateDynamicObject( 19303, 220.39430, 112.62180, 999.29547, 0.00000, 0.00000, 0.00000 );
 	CreateDynamicObject( 19303, 224.38519, 112.62180, 999.29547, 0.00000, 0.00000, 0.00000 );

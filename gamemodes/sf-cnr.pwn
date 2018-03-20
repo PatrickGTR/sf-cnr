@@ -3491,113 +3491,113 @@ public OnGameModeInit()
 	CreateRobberyCheckpoint( "Hospital", 			4000, -2638.04638, 662.66967, 969.852905, -90.0000, -1 );
 
 	CreateRobberyCheckpoint( "Sex Shop", 			3000, -108.37336, -8.5235140, 1000.188232, 90.000000, 16, 32, 51, 64 );
-	CreateRobberyNPC( "Sex Shop Clerk",				1000, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
+	CreateRobberyNPC( "Sex Shop Clerk",				3000, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
 
 	CreateRobberyCheckpoint( "Off Track Betting", 	3000, 822.189086, 8.22311500, 1004.423278, 169.80003, -1 );
-	CreateRobberyNPC( "Betting Clerk",				1000, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
+	CreateRobberyNPC( "Betting Clerk",				3000, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
 
 	CreateRobberyCheckpoint( "Zero's RC Shop", 		3000, -2221.7243, 133.067214, 1035.223022, 180.00000, 6 );
-	CreateRobberyNPC( "Zero",						1000, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
+	CreateRobberyNPC( "Zero",						3000, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
 
 	CreateRobberyCheckpoint( "Prolaps", 			3000, 204.282577, -126.42620, 1002.937255, 0.0000000, 39, 36 );
-	CreateRobberyNPC( "Prolaps Clerk",				1000, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
+	CreateRobberyNPC( "Prolaps Clerk",				3000, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
 
 	CreateRobberyCheckpoint( "Disco", 				3000, 503.733581, -24.120403, 1000.119323, 270.00000, 17, 71 );
-	CreateRobberyNPC( "Disco Bartender",			1000, 501.6992,-20.5021,1000.6797,89.2442, 46, 17, 71 );
+	CreateRobberyNPC( "Disco Bartender",			3000, 501.6992,-20.5021,1000.6797,89.2442, 46, 17, 71 );
 
 	CreateRobberyCheckpoint( "Restaurant", 			3000, -221.27993, 1407.57409, 27.22343200, 0.0000000, 53, 54 );
-	CreateRobberyNPC( "Restaurant Owner",			1000, -223.3083,1403.9852,27.7734,91.9926, 168, 53, 54 );
+	CreateRobberyNPC( "Restaurant Owner",			3000, -223.3083,1403.9852,27.7734,91.9926, 168, 53, 54 );
 
 	CreateRobberyCheckpoint( "Brothel", 			3000, 972.080322, -44.324848, 1001.677368, 270.00000, 42 );
-	CreateRobberyNPC( "Brothel Manager",			1000, 970.8360, -44.8730, 1001.1172, 92.0651, 113, 42 );
+	CreateRobberyNPC( "Brothel Manager",			3000, 970.8360, -44.8730, 1001.1172, 92.0651, 113, 42 );
 
 	CreateRobberyCheckpoint( "Ammu-Nation", 		3000, 299.844482, -41.299987, 1000.945068, -137.0001, 15 );
-	CreateRobberyNPC( "Gunsdealer",					1000, 296.4001,-40.2152,1001.5156,0.9079, 179, 15 );
+	CreateRobberyNPC( "Gunsdealer",					3000, 296.4001,-40.2152,1001.5156,0.9079, 179, 15 );
 
 	CreateRobberyCheckpoint( "Ammu-Nation", 		3000, 293.467559, -83.653007, 1000.905151, 90.000000, 41, 74 );
-	CreateRobberyNPC( "Gunsdealer",					1000, 295.4592,-82.5274,1001.5156,359.9681, 179, 41, 74 );
+	CreateRobberyNPC( "Gunsdealer",					3000, 295.4592,-82.5274,1001.5156,359.9681, 179, 41, 74 );
 
 	CreateRobberyCheckpoint( "Ammu-Nation", 		3000, 313.817565, -168.97615, 999.0332640, -90.00000, 42, 45, 47, 5, 75, 32, 23, 27 );
-	CreateRobberyNPC( "Gunsdealer",					1000, 312.8466,-167.7639,999.5938,359.6548, 179, 42, 45, 47, 5, 75, 32, 23, 27 );
+	CreateRobberyNPC( "Gunsdealer",					3000, 312.8466,-167.7639,999.5938,359.6548, 179, 42, 45, 47, 5, 75, 32, 23, 27 );
 
 	CreateRobberyCheckpoint( "ZIP", 				3000, 163.403289, -79.763473, 1001.274536, -90.00000, 3, 45, 59, 27 );
-	CreateRobberyNPC( "ZIP Clerk",					1000, 162.7249, -81.1920,1001.8047, 182.6196, 217, 3, 45, 59, 27 );
+	CreateRobberyNPC( "ZIP Clerk",					3000, 162.7249, -81.1920,1001.8047, 182.6196, 217, 3, 45, 59, 27 );
 
 	CreateRobberyCheckpoint( "Binco", 				3000, 207.486953, -96.436981, 1004.707275, 0.0000000, 12, 47, 48, 53 );
-	CreateRobberyNPC( "Binco Clerk",				1000, 208.8378,-98.7054,1005.2578,183.2461, 217, 12, 47, 48, 53 );
+	CreateRobberyNPC( "Binco Clerk",				3000, 208.8378,-98.7054,1005.2578,183.2461, 217, 12, 47, 48, 53 );
 
 	CreateRobberyCheckpoint( "Victim", 				3000, 200.075378, -5.8953800, 1000.650390, 180.00000, 1, 21, 49 );
-	CreateRobberyNPC( "Victim Clerk",				1000, 204.6066, -9.2214, 1001.2109, 268.2160, 211, 1, 21, 49 );
+	CreateRobberyNPC( "Victim Clerk",				3000, 204.6066, -9.2214, 1001.2109, 268.2160, 211, 1, 21, 49 );
 
 	CreateRobberyCheckpoint( "Suburban", 			3000, 204.337600, -42.350822, 1001.254699, 180.00000, 21, 41, 39 );
-	CreateRobberyNPC( "Suburban Clerk",				1000, 203.2509,-41.6712, 1001.8047, 178.8591, 211, 21, 41, 39 );
+	CreateRobberyNPC( "Suburban Clerk",				3000, 203.2509,-41.6712, 1001.8047, 178.8591, 211, 21, 41, 39 );
 
 	CreateRobberyCheckpoint( "Bar", 				3000, 498.197845, -80.020515, 999.3255610, 180.00000, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
-	CreateRobberyNPC( "Bartender",					1000, 497.0969,-77.5612,998.7651,1.5118, 124, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
+	CreateRobberyNPC( "Bartender",					3000, 497.0969,-77.5612,998.7651,1.5118, 124, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
 
 	CreateRobberyCheckpoint( "Burger Shot", 		3000, 381.988861, -56.470348, 1000.957275, 0.0000000, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
-	CreateRobberyNPC( "Burger Worker",				1000, 376.5223,-65.8494,1001.5078,182.3066, 205, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
+	CreateRobberyNPC( "Burger Worker",				3000, 376.5223,-65.8494,1001.5078,182.3066, 205, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
 
 	CreateRobberyCheckpoint( "Cluckin' Bell", 		3000, 371.999816, -2.8117490, 1002.278808, 0.0000000, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
-	CreateRobberyNPC( "Chicken Worker",				1000, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
+	CreateRobberyNPC( "Chicken Worker",				3000, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
 
 	CreateRobberyCheckpoint( "Well Stacked Pizza", 	3000, 380.331146, -116.33708, 1000.951721, -90.00000, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
-	CreateRobberyNPC( "Pizza Worker",				1000, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
+	CreateRobberyNPC( "Pizza Worker",				3000, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
 
 	CreateRobberyCheckpoint( "24/7",      			3000, -8.1804670, -180.76544, 1002.996337, 180.00000, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
-	CreateRobberyNPC( "24/7 Worker",				1000, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
+	CreateRobberyNPC( "24/7 Worker",				3000, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
 
 	CreateRobberyCheckpoint( "Barber", 				3000, 408.697540, -56.045413, 1001.337951, 180.00000, 23, 24, 48, 21, 18, 22, 20 );
-	CreateRobberyNPC( "Barber",						1000, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
+	CreateRobberyNPC( "Barber",						3000, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
 
 	CreateRobberyCheckpoint( "Donut Shop", 			3000, 382.513519, -186.95924, 1001.132995, -90.00000, 19, 20, 10 );
-	CreateRobberyNPC( "Donut Worker",				1000, 380.7286,-189.1152,1000.6328,182.3538, 8, 19, 20, 10 );
+	CreateRobberyNPC( "Donut Worker",				3000, 380.7286,-189.1152,1000.6328,182.3538, 8, 19, 20, 10 );
 
 	CreateRobberyCheckpoint( "Strip Club", 			3000, 1211.94897, -16.312891, 1001.421752, 180.00000, 3, 22 );
-	CreateRobberyNPC( "Stripper",					1000, 1214.2621,-15.2605,1000.9219,359.1004, 246, 3, 22 );
+	CreateRobberyNPC( "Stripper",					3000, 1214.2621,-15.2605,1000.9219,359.1004, 246, 3, 22 );
 
 	CreateRobberyCheckpoint( "Otto's cars", 		3000, -1657.9169, 1206.51867, 6.709994000, 180.00000, 0 );
-	CreateRobberyNPC( "Otto",						1000, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
+	CreateRobberyNPC( "Otto",						3000, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
 
 	CreateRobberyCheckpoint( "Wang Cars", 			3000, -1950.5010, 302.176483, 34.91876200, -90.00000, 0 );
-	CreateRobberyNPC( "Salesman",					1000, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
+	CreateRobberyNPC( "Salesman",					3000, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
 
 	CreateRobberyCheckpoint( "Jizzy's", 			3000, -2664.4997, 1425.92639, 906.3808590, -90.00000, 18 );
-	CreateRobberyNPC( "Jizzy",						1000, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
+	CreateRobberyNPC( "Jizzy",						3000, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
 
 	CreateRobberyCheckpoint( "Didier Sachs", 		3000, 206.808502, -154.71282, 999.953369, 0.0000000, 14 );
-	CreateRobberyNPC( "Didier Sach Clerk",			1000, 203.2169,-157.8303,1000.5234,180.5475, 211, 14 );
+	CreateRobberyNPC( "Didier Sach Clerk",			3000, 203.2169,-157.8303,1000.5234,180.5475, 211, 14 );
 
 	CreateRobberyCheckpoint( "Steakhouse", 			3000, 441.5401, -81.9713, 999.0115, 90.00000, 53, 54, 23, 27, 22 );
-	CreateRobberyNPC( "Steakhouse Owner",			1000, 449.4273, -82.2324, 999.5547, 179.9200, 168, 53, 54, 23, 27, 22 );
+	CreateRobberyNPC( "Steakhouse Owner",			3000, 449.4273, -82.2324, 999.5547, 179.9200, 168, 53, 54, 23, 27, 22 );
 
 	CreateRobberyCheckpoint( "Church", 				3000, 1964.06933, -349.55651, 1096.640380, 0.0000000, 1 );
-	CreateRobberyNPC( "Priest",						1000, 1964.0864,-371.6995,1093.7289,358.7696, 68, 1 );
+	CreateRobberyNPC( "Priest",						3000, 1964.0864,-371.6995,1093.7289,358.7696, 68, 1 );
 
 	CreateRobberyCheckpoint( "Church", 				3000, 2391.02685, 3195.78417, 1016.920837, -90.00000, 39, 40, 41, 62, 24 );
-	CreateRobberyNPC( "Priest",						1000, 2383.1968,3193.2842,1017.7320,1.0113, 68, 39, 40, 41, 62, 24 );
+	CreateRobberyNPC( "Priest",						3000, 2383.1968,3193.2842,1017.7320,1.0113, 68, 39, 40, 41, 62, 24 );
 
 	CreateRobberyCheckpoint( "Hotel de Solanum", 	3000, -1967.8662, 1367.76819, 6.879500000, 86.700000, 0 );
-	CreateRobberyNPC( "Hotel Bartender",			1000, -1944.5562,1362.2947,7.3546,86.4801, 126, 0 );
+	CreateRobberyNPC( "Hotel Bartender",			3000, -1944.5562,1362.2947,7.3546,86.4801, 126, 0 );
 
 	CreateRobberyCheckpoint( "Vehicle Dealership",	3000, -1862.6997, -652.83700, 1001.578125, -89.80000, 0 );
-	CreateRobberyNPC( "Vehicle Dealer",				1000, -1864.9419,-648.5046,1002.1284,357.5644, 186, 0 );
+	CreateRobberyNPC( "Vehicle Dealer",				3000, -1864.9419,-648.5046,1002.1284,357.5644, 186, 0 );
 
 	CreateRobberyCheckpoint( "Vehicle Dealership",	3000, -125.97293, 122.011770, 1004.083740, 0.000000, 31, 32 );
-	CreateRobberyNPC( "Vehicle Dealer",				1000, -125.2779,121.3010,1004.7233,345.3443, 186, 31, 32 );
+	CreateRobberyNPC( "Vehicle Dealer",				3000, -125.2779,121.3010,1004.7233,345.3443, 186, 31, 32 );
 
 	CreateRobberyCheckpoint( "Bank",				3000, 2164.90844, 1649.77392, 1041.061889, 90.000000, 45, 24, 25, 78 );
-	CreateRobberyNPC( "Banker",						1000, 2157.9255,1647.9972,1041.6124,270.1911, 17, 45, 24, 25, 78 );
+	CreateRobberyNPC( "Banker",						3000, 2157.9255,1647.9972,1041.6124,270.1911, 17, 45, 24, 25, 78 );
 
 	CreateRobberyCheckpoint( "Pawnshop", 			3000, 1331.449707, -1079.761108, 967.495605, -90.00000, 11, 22, 33 );
-	CreateRobberyNPC( "Pawnbroker",					1000, 1330.7424,-1081.0117,968.0360,270.1916, 261, 11, 22, 33 );
+	CreateRobberyNPC( "Pawnbroker",					3000, 1330.7424,-1081.0117,968.0360,270.1916, 261, 11, 22, 33 );
 
 	CreateRobberyCheckpoint( "Gas Station",      	3000, -20.58315, -58.06674, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
-	CreateRobberyNPC( "Gas Cashier",				1000, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
+	CreateRobberyNPC( "Gas Cashier",				3000, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 
 	CreateRobberyCheckpoint( "Drug House", 			7000, 2201.00952, -1212.8709, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
-	CreateRobberyNPC( "Triad Boss",					2500, 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
-	CreateRobberyNPC( "Mafia Boss",					2500, 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
+	CreateRobberyNPC( "Triad Boss",					7000, 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
+	CreateRobberyNPC( "Mafia Boss",					7000, 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
 
 	CreateRobberyCheckpoint( "Film Studio", 		3000, 2327.25122, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
 	CreateRobberyCheckpoint( "Grotti Cars", 		3000, 542.361816, -1303.5104, 16.725925, 180.00000, -1 );
@@ -4317,7 +4317,7 @@ public OnGameModeInit()
 	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
 
 	// Mining
-	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = 500.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
+	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = -1.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
 
 	// Open warehouse near driving school
 	CreateDynamicObject( 19486, -2111.13, -27.23, 36.95, 0.00, 0.00, -90.00 );
@@ -5032,7 +5032,7 @@ public OnServerUpdate( )
 
 						FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
 						FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
-						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 3000, false, "ddd", playerid, clerkid, 0 );
+						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2800, false, "ddd", playerid, clerkid, 0 );
 
 						TriggerClosestCivilians( playerid, clerkid );
 					}
@@ -14131,6 +14131,7 @@ CMD:c4( playerid, params[ ] )
 		else return SendError( playerid, "You have planted the maximum C4 limit." );
 
 		p_C4Amount[ playerid ] --;
+    	PlayerPlaySound( playerid, 25800, 0.0, 0.0, 0.0 );
 		return 1;
 	}
 	else if ( !strcmp( params, "detonate", true, 8 ) )
@@ -35339,7 +35340,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 	FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
 	FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
-	return ( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 1000, false, "ddd", playerid, clerkid, step + 1 ) ), 1;
+	return ( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 800, false, "ddd", playerid, clerkid, step + 1 ) ), 1;
 }
 
 stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
