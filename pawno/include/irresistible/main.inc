@@ -29,12 +29,13 @@
 // features
 #include < irresistible\features\fps >
 #include < irresistible\features\radio >
+// #include < irresistible\features\vote >
 
 // visage casino
 #include < irresistible\features\visage\roulette >
 #include < irresistible\features\visage\blackjack >
 #include < irresistible\features\visage\poker >
-// #include < irresistible\features\visage\fireworks >
+#include < irresistible\features\visage\fireworks >
 #include < irresistible\features\visage\casino >
 #include < irresistible\features\visage\apartments >
 

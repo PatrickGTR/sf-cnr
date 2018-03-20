@@ -5,6 +5,9 @@
  * Purpose: functions that help scripting
  */
 
+/* ** Includes ** */
+#include                                    < YSI\y_va >
+
 /* ** Macros ** */
 #define function%1(%2)                      forward%1(%2); public%1(%2)
 #define RandomEx(%0,%1)                     (random((%1) - (%0)) + (%0))
@@ -17,7 +20,7 @@
 #define SetObjectInvisible(%0)              (SetDynamicObjectMaterialText(%0, 0, " ", 140, "Arial", 64, 1, -32256, 0, 1))
 #define fRandomEx(%1,%2)                    (floatrandom(%2-%1)+%1)
 #define strmatch(%1,%2)                     (!strcmp(%1,%2,true))
-#define Beep(%1)                            PlayerPlaySound(%1, 1137, 0.0, 0.0, 5.0)
+#define Beep(%1)                            PlayerPlaySound(%1, 1137, 0.0, 0.0, 0.0)
 #define StopSound(%1)                       PlayerPlaySound(%1,1186,0.0,0.0,0.0)
 #define erase(%0)                           (%0[0]='\0')
 #define positionToString(%0)                (%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
