@@ -672,13 +672,15 @@ public OnRouletteWheelStop( rouletteid, winner )
 			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from roulette!", ReturnPlayerName( playerid ), playerid, ConvertPrice( profit ) );
 		}
 
+		// give user points
+   		GivePlayerCasinoRewardsPoints( playerid, waged, .house_edge = 2.7 );
+
 		// gametext
 		if ( profit > 0 )  {
 		 	GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( profit ) ), 4000, 3 );
 			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
 		} else {
 			profit *= -1; // to improve the client message
-          	GivePlayerCasinoRewardsPoints( playerid, profit );
 		 	GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
 			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
 		}

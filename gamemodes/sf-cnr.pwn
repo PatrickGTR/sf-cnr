@@ -2173,14 +2173,17 @@ new
 ;
 
 /* ** Casino Rewards Points ** */
-#define CASINO_REWARDS_DIVISOR 		5000.0 	// (for every X in $10K, they get Y points)
-#define CASINO_REWARDS_COST_MP 		15 		// 10x the supa save costs
+#define CASINO_REWARDS_PAYOUT_PERCENT	20.0
+#define CASINO_REWARDS_DIVISOR 			10.0 	// 1000 points becomes 1 point
+#define CASINO_REWARDS_COST_MP 			0.5 	// half of the price (since it costs (1/payout_percent) times more)
 
 new
 	g_casinoRewardsShopItems[ ] = {
 		5, 6, 7, 8, 9, 10, 11
 	},
-	Float: p_CasinoRewardsPoints 	[ MAX_PLAYERS ]
+	Float: p_CasinoRewardsPoints 		[ MAX_PLAYERS ],
+	Text3D: p_RewardsLabel_4Drags		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
+	Text3D: p_RewardsLabel_Caligs		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... }
 ;
 
 /* ** Easter Eggs ** */
@@ -3314,7 +3317,7 @@ main()
 
 public OnGameModeInit()
 {
-	SetGameModeText( "Cops And Robbers" );
+	SetGameModeText( "Cops And Robbers/DM/Gangs" );
 	SetServerRule( "hostname", SERVER_NAME );
 	SetServerRule( "language", "All (English)" );
 	UsePlayerPedAnims( );
@@ -4953,6 +4956,10 @@ public OnServerUpdate( )
 			PlayerTextDrawSetString( playerid, p_LocationTD[ playerid ], GetPlayerArea( playerid ) );
 			PlayerTextDrawSetString( playerid, p_ExperienceTD[ playerid ], sprintf( "%08d", p_XP[ playerid ] ) );
 
+			// Update casino labels
+			UpdateDynamic3DTextLabelText( p_RewardsLabel_Caligs[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %0.2f rewards points!", p_CasinoRewardsPoints[ playerid ] ) );
+			UpdateDynamic3DTextLabelText( p_RewardsLabel_4Drags[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %0.2f rewards points!", p_CasinoRewardsPoints[ playerid ] ) );
+
 			// Toggle total coin bar
 			if ( !p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } )
 				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", p_IrresistibleCoins[ playerid ] ) );
@@ -6033,6 +6040,12 @@ public OnPlayerConnect( playerid )
 	initializePlayerTextDraws( playerid );
 	removeExcessiveBuildings( playerid );
 	initializePlayerInteriors( playerid );
+
+	// Create casino label
+	DestroyDynamic3DTextLabel( p_RewardsLabel_Caligs[ playerid ] );
+	DestroyDynamic3DTextLabel( p_RewardsLabel_4Drags[ playerid ] );
+	p_RewardsLabel_Caligs[ playerid ] = CreateDynamic3DTextLabel( "[CASINO REWARDS]", COLOR_GOLD, 2157.6294, 1599.4355, 1006.1797, 20.0, .playerid = playerid );
+	p_RewardsLabel_4Drags[ playerid ] = CreateDynamic3DTextLabel( "[CASINO REWARDS]", COLOR_GOLD, 1951.7191, 997.55550, 992.85940, 20.0, .playerid = playerid );
 
 	// Reset some variables
 	p_Spawned 			{ playerid } = false;
@@ -19685,16 +19698,20 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 		// readjust casino pool data
 		UpdateCasinoPoolData( poolid, .pool_increment = -iNetWin, .total_win = iNetWin );
 
+		// alert user
+		if ( iNetWin >= 10000 ) {
+   			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, ConvertPrice( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( "Caligulas" ) );
+   		} else {
+   			SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", ConvertPrice( iNetWin ) );
+   		}
+
 		// give the cash
 		GivePlayerCash( playerid, iNetWin );
 		PlayerPlaySound( playerid, 4201, 0.0, 0.0, 0.0 ); // Coin fall
-
 		GameTextForPlayer( playerid, "~w~~h~winner!", 5000, 6 );
-   		return SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino!", ReturnPlayerName( playerid ), playerid, ConvertPrice( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( "Caligulas" ) );
-		// return SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", ConvertPrice( iNetWin ) );
+   		return 1;
 	}
 
-	GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] );
 	return GameTextForPlayer( playerid, "~w~~h~no win!", 2500, 6 );
 }
 
@@ -22484,7 +22501,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    {
 	    	if ( x == listitem )
 	    	{
-	    		new Float: rewards_cost = float( g_shopItemData[ i ] [ E_PRICE ] * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
+	    		new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
 
 	    		if ( p_CasinoRewardsPoints[ playerid ] < rewards_cost )
 	    			return SendError( playerid, "You need %0.2f more rewards points for this item.", rewards_cost );
@@ -27484,8 +27501,6 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, 1579.5439, -1635.5166, 13.5609, 20.0);
 	#endif
 
-	CreateDynamic3DTextLabel("[CASINO REWARDS]", COLOR_GOLD, 2157.6294, 1599.4355, 1006.1797, 20.0);
-	CreateDynamic3DTextLabel("[CASINO REWARDS]", COLOR_GOLD, 1951.7191, 997.5555, 992.8594, 20.0);
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, -1615.2600, 685.5120, 7.1875, 20.0);
 	CreateDynamic3DTextLabel("[PAWNSHOP]", COLOR_GOLD, 1333.0847, -1080.0726, 968.0430, 20.0);
 	CreateDynamic3DTextLabel("[SHOP]", COLOR_GOLD, -29.0409,-184.7446,1003.5469, 20.0);
@@ -36049,6 +36064,7 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 			return SendError( playerid, "You must have at least %s to use this slot machine.", ConvertPrice( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
 
 		// Update casino pool
+		GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ machineid ] [ E_ENTRY_FEE ], .house_edge = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ] == 10000 ? 10.0 : 25.0 );
 		UpdateCasinoPoolData( g_slotmachineData[ machineid ] [ E_POOL_ID ], .pool_increment = poolContribute, .total_win = 0, .total_gambled = entryFee );
 
 		// Charge the player
@@ -37153,9 +37169,11 @@ stock GetBusinessAirModelIndex( modelid ) {
 	return index;
 }
 
-stock GivePlayerCasinoRewardsPoints( playerid, lost_amount ) {
-	if ( lost_amount < 0 ) print("[casino error] negative reward amount used"), lost_amount *= -1;
-	p_CasinoRewardsPoints[ playerid ] += lost_amount / CASINO_REWARDS_DIVISOR;
+stock GivePlayerCasinoRewardsPoints( playerid, bet_amount, Float: house_edge ) {
+	if ( bet_amount < 0 ) bet_amount *= -1; // profit or loss, does not matter
+	// printf("(%f * ((%f * 100.0) * (%f / 100.0))) / %f\n",bet_amount, house_edge,  CASINO_REWARDS_PAYOUT_PERCENT, CASINO_REWARDS_DIVISOR);
+	new Float: final_points = ( bet_amount * ( ( house_edge / 100.0 ) * ( CASINO_REWARDS_PAYOUT_PERCENT / 100.0 ) ) ) / CASINO_REWARDS_DIVISOR;
+	p_CasinoRewardsPoints[ playerid ] += final_points;
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS`=%f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
 	return 1;
 }
@@ -37168,7 +37186,7 @@ stock ShowPlayerRewardsMenu( playerid )
 	{
 		strcat( szString, ""COL_WHITE"Item\t"COL_WHITE"Purpose\t"COL_WHITE"Rewards Points\n" );
 		for( new i; i < sizeof( g_shopItemData ); i++ ) if ( IsCasinoRewardsShopItem( i ) ) {
-			new Float: rewards_cost = float( g_shopItemData[ i ] [ E_PRICE ] * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
+			new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
 	 		format( szString, sizeof( szString ), "%s%s\t"COL_GREY"%s\t"COL_GOLD"%0.2f points\n", szString, g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], rewards_cost );
 		}
 	}
@@ -37193,6 +37211,8 @@ stock IsCasinoRewardsShopItem( itemid ) {
 stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
 
 stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
+
+stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 
 stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 

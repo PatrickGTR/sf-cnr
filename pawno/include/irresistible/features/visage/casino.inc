@@ -10,8 +10,8 @@
 
 /* ** Constants ** */
 stock VISAGE_ENTRANCE = ITER_NONE;
-stock const VISAGE_INTERIOR = 10;
-stock const VISAGE_WORLD = 30;
+stock const VISAGE_INTERIOR = 15;
+stock const VISAGE_WORLD = 79;
 
 /* ** Hooks ** */
 hook OnGameModeInit( )

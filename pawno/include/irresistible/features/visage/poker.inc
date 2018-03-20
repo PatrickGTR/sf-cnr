@@ -1956,7 +1956,7 @@ stock CheckShowdown(handle)
 			new w_chips = floatround(float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) * (1.0 - T_POT_FEE_RATE));
 			new fee_earned = floatround((float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) / 1000.0) * T_POT_FEE_RATE);
 			UpdateServerVariable( "poker_fees", 0, GetGVarFloat( "poker_fees" ) + fee_earned, "", GLOBAL_VARTYPE_FLOAT );
-			GivePlayerCasinoRewardsPoints(high_id, fee_earned);
+			GivePlayerCasinoRewardsPoints(high_id, fee_earned, .house_edge = 100.0);
 			SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 			SendTableMessage(handle, "{9FCF30}Player {FF8000}%s {9FCF30}has won with a {377CC8}%s", ReturnPlayerName(high_id), HAND_RANKS[highest_rank >> 12]);
 			SendTableMessage(handle, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee.", ConvertPrice(w_chips), T_POT_FEE_RATE * 100.0, "%%");
@@ -1977,7 +1977,7 @@ stock CheckShowdown(handle)
 				if(!Iter_Contains(IT_PlayersInGame<handle>, p)) continue;
 				if(PlayerRanks[p] == highest_rank)
 				{
-					GivePlayerCasinoRewardsPoints(p, floatround(float(fee_earned) / float(count)));
+					GivePlayerCasinoRewardsPoints(p, floatround(float(fee_earned) / float(count)), .house_edge = 100.0);
 					SendTableMessage(handle, "{9FCF30}%s", ReturnPlayerName(p));
 					PlayerData[p][E_PLAYER_TOTAL_CHIPS] += amount;
 				}
@@ -2173,7 +2173,7 @@ stock bool: FoldPlayer(handle, playerid)
 		new w_chips = floatround(float(TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]) * (1.0 - T_POT_FEE_RATE));
 		new fee_earned = floatround((float(TableData[handle][E_TABLE_POT_CHIPS][MAIN_POT]) / 1000.0) * T_POT_FEE_RATE);
 		UpdateServerVariable( "poker_fees", 0, GetGVarFloat( "poker_fees" ) + fee_earned, "", GLOBAL_VARTYPE_FLOAT );
-		GivePlayerCasinoRewardsPoints(winner, fee_earned);
+		GivePlayerCasinoRewardsPoints(winner, fee_earned, .house_edge = 100.0);
 		SendTableMessage(handle, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", ConvertPrice(w_chips), T_POT_FEE_RATE * 100.0, "%%");
 		SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 		PlayerData[winner][E_PLAYER_TOTAL_CHIPS]  += w_chips;

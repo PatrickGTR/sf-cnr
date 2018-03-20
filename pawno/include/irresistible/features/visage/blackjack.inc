@@ -567,6 +567,7 @@ stock CheckForBlackjack( tableid )
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has been returned %s due to a push.", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
             }
             else if ( player_score == 21 ) {
@@ -578,16 +579,17 @@ stock CheckForBlackjack( tableid )
 	                SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a card count of 21!", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
                 }
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
             }
             else if ( dealer_score == 21 ) {
-                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ] );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a dealer %s.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ), IsDealerHandBlackjack( tableid, dealer_score ) ? ( "blackjack" ) : ( "21" ) );
 		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
             }
             else if ( player_score > 21 ) {
-                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ] );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
 		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
@@ -596,10 +598,11 @@ stock CheckForBlackjack( tableid )
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a dealer bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( payout ) );
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
             }
             else if ( player_score < dealer_score && dealer_score >= 17 ) {
-                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ] );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_BUST;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has lost %s due to a bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
 		 		GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
@@ -608,6 +611,7 @@ stock CheckForBlackjack( tableid )
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has won %s due to a dealer bust.", ReturnPlayerName( playerid ), playerid, ConvertPrice( g_blackjackData[ tableid ] [ E_PAYOUT ] ) );
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( payout ) ), 4000, 3 );
+                GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
             }
 
