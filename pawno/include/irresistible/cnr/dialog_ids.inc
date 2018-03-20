@@ -6,154 +6,155 @@
  */
 
 /* ** Definitions ** */
-#define DIALOG_REGISTER             0 			+ 1000
-#define DIALOG_LOGIN	            1 			+ 1000
-#define DIALOG_JOB	            	2 			+ 1000
-#define DIALOG_BOMB_SHOP            3           + 1000
-#define DIALOG_NULL                 4           + 1000
-#define DIALOG_BANNED               5           + 1000
-#define DIALOG_BANK_MENU            6           + 1000
-#define DIALOG_BANK_WITHDRAW        7           + 1000
-#define DIALOG_BANK_DEPOSIT         8           + 1000
-#define DIALOG_BANK_INFO            9           + 1000
-#define DIALOG_SHOP_MENU            10          + 1000
-#define DIALOG_HOUSES               11          + 1000
-#define DIALOG_CITY_HALL 	       	12          + 1000
-#define DIALOG_HOSPITAL             13          + 1000
-#define DIALOG_HOUSE_CONFIG         14          + 1000
-#define DIALOG_HOUSE_TITLE          15          + 1000
-#define DIALOG_HOUSE_INTERIORS      16          + 1000
-#define DIALOG_IC_MARKET            17          + 1000
-#define DIALOG_VEHICLE_SPAWN        18          + 1000
-#define DIALOG_ARENAS               19          + 1000
-#define DIALOG_BOUGHT_VEH        	20          + 1000
-#define DIALOG_PERKS                21          + 1000
-#define DIALOG_PERKS_P              22          + 1000
-#define DIALOG_VIP              	23          + 1000
-#define DIALOG_PERKS_V              24          + 1000
-#define DIALOG_DONATED           	25          + 1000
-#define DIALOG_VEHICLE_LOCATE       26          + 1000
-#define DIALOG_GANG_COLOR           27          + 1000
-#define DIALOG_GANG_COLOR_INPUT     28          + 1000
-#define DIALOG_RADIO                29          + 1000
-#define DIALOG_XPMARKET             30          + 1000
-#define DIALOG_PAINTBALL            31          + 1000
-#define DIALOG_GPS                  32          + 1000
-#define DIALOG_VIP_LOCKER           33          + 1000
-#define DIALOG_AMMU                 34          + 1000
-#define DIALOG_GARAGE_INTERIORS     35          + 1000
-#define DIALOG_GARAGE_INT_CONFIRM	36          + 1000
-#define DIALOG_GANG_LIST         	37          + 1000
-#define DIALOG_LUMBERJACK           38          + 1000
-#define DIALOG_FIGHTSTYLE           39          + 1000
-#define DIALOG_TOYS_MAIN            40          + 1000
-#define DIALOG_TOYS     			41          + 1000
-#define DIALOG_TOYS_BONE 			42          + 1000
-#define DIALOG_VIP_WEP              43          + 1000
-#define DIALOG_VIP_WEP_SELECT       44          + 1000
-#define DIALOG_GANG_LIST_RESPONSE 	45          + 1000
-#define DIALOG_CMDS                 46          + 1000
-#define DIALOG_CMDS_REDIRECT        47          + 1000
-#define DIALOG_STATS                48          + 1000
-#define DIALOG_STATS_REDIRECT       49          + 1000
-#define DIALOG_VEHDEALER            50          + 1000
-#define DIALOG_CP_MENU            	51          + 1000
-#define DIALOG_AMMU_BUY             52          + 1000
-#define DIALOG_APARTMENTS         	53          + 1000
-#define DIALOG_APARTMENTS_BUY     	54          + 1000
-#define DIALOG_FLAT_CONFIG          55          + 1000
-#define DIALOG_FLAT_CONTROL         56          + 1000
-#define DIALOG_FLAT_TITLE	        57          + 1000
-#define DIALOG_BUSINESS_TERMINAL	58          + 1000
-#define DIALOG_WEAPON_DEAL          59          + 1000
-#define DIALOG_WEAPON_DEAL_BUY      60          + 1000
-#define DIALOG_HOUSE_PW             61          + 1000
-#define DIALOG_HOUSE_SET_PW         62          + 1000
-#define DIALOG_HOUSE_WEAPONS        63          + 1000
-#define DIALOG_HOUSE_WEAPONS_ADD    64          + 1000
-#define DIALOG_BUSINESS_BUY         65          + 1000
-#define DIALOG_FURNITURE            66          + 1000
-#define DIALOG_FURNITURE_LIST 		67          + 1000
-#define DIALOG_FURNITURE_OPTION     68          + 1000
-#define DIALOG_FURNITURE_ROTATION   69          + 1000
-#define DIALOG_FURNITURE_MAN_SEL    70          + 1000
-#define DIALOG_ONLINE_JOB           71          + 1000
-#define DIALOG_ONLINE_JOB_R         72          + 1000
-#define DIALOG_FURNITURE_CATEGORY   73          + 1000
-#define DIALOG_FLAT_FURNITURE 		74         	+ 1000
-#define DIALOG_TRUNCATE_FURNITURE	75 			+ 1000
-#define DIALOG_VEHDEALER_BUY		76 			+ 1000
-#define DIALOG_VEHDEALER_OPTIONS	77 			+ 1000
-#define DIALOG_HELP 				78 			+ 1000
-#define DIALOG_HELP_CATEGORY		79 			+ 1000
-#define DIALOG_HELP_THREAD			80 			+ 1000
-#define DIALOG_HELP_BACK			81 			+ 1000
-#define DIALOG_RADIO_CUSTOM			82 			+ 1000
-#define DIALOG_GPS_CITY 			83 			+ 1000
-#define DIALOG_SPAWN_CITY			84 			+ 1000
-#define DIALOG_GATE					85  		+ 1000
-#define DIALOG_GATE_EDIT 			86 			+ 1000
-#define DIALOG_GATE_OWNER 			87 			+ 1000
-#define DIALOG_GATE_OWNER_EDIT		88 			+ 1000
-#define DIALOG_PAINTBALL_EDIT 		89 			+ 1000
-#define DIALOG_PAINTBALL_EDIT_VAL 	90 			+ 1000
-#define DIALOG_PAINTBALL_ARENAS 	91 			+ 1000
-#define DIALOG_PAINTBALL_WEP 		92 			+ 1000
-#define DIALOG_PAINTBALL_PW 		93 			+ 1000
-#define DIALOG_DONATED_PLATBRONZE 	94 			+ 1000
-#define DIALOG_SHOP_AMOUNT 			95 			+ 1000
-#define DIALOG_PAINTBALL_REFILL 	96 			+ 1000
-#define DIALOG_HOUSE_INT_CONFIRM	98 			+ 1000
-#define DIALOG_TOYS_ITEMS			99 			+ 1000
-#define DIALOG_TOYS_EDIT 			100 		+ 1000
-#define DIALOG_TOYS_BONE_EDIT 		101 		+ 1000
-#define DIALOG_TOYS_BUY 			102 		+ 1000
-#define DIALOG_TOYS_ITEMS_BUY 		103 		+ 1000
-#define DIALOG_UNBAN_CLASS 			104 		+ 1000
-#define DIALOG_GANG_BANK_WITHDRAW   105			+ 1000
-#define DIALOG_GANG_BANK_DEPOSIT    106			+ 1000
-#define DIALOG_GANG_BANK_INFO       107			+ 1000
-#define DIALOG_YOU_SURE_APART  		108			+ 1000
-#define DIALOG_YOU_SURE_VIP 		109			+ 1000
-#define DIALOG_CHANGENAME			110 		+ 1000
-#define DIALOG_GANG_LIST_OPTIONS	111 		+ 1000
-#define DIALOG_GANG_LIST_MEMBERS 	112 		+ 1000
-#define DIALOG_COMPONENTS_CATEGORY 	113 		+ 1000
-#define DIALOG_COMPONENTS			114 		+ 1000
-#define DIALOG_COMPONENT_EDIT 		115 		+ 1000
-#define DIALOG_COMPONENT_EDIT_MENU	116			+ 1000
-#define DIALOG_COMPONENT_MENU		117			+ 1000
-#define DIALOG_DONATED_DIAGOLD 		118			+ 1000
-#define DIALOG_LATEST_DONOR			119			+ 1000
-#define DIALOG_FINISHED_DONATING	120			+ 1000
-#define DIALOG_MODIFY_HITSOUND 		121			+ 1000
-#define DIALOG_VIP_NOTE				122 		+ 1000
-#define DIALOG_REGISTER_QUIT 		123 		+ 1000
-#define DIALOG_LOGIN_QUIT			124			+ 1000
-#define DIALOG_WEAPON_LOCKER		125			+ 1000
-#define DIALOG_WEAPON_LOCKER_BUY	126			+ 1000
-#define DIALOG_FEEDBACK				127			+ 1000
-#define DIALOG_IC_MARKET_2 			128			+ 1000
-#define DIALOG_BUSINESS_CAR			129 		+ 1000
-#define DIALOG_BUSINESS_HELI		130 		+ 1000
-#define DIALOG_ACC_GUARD 			131			+ 1000
-#define DIALOG_ACC_GUARD_EMAIL		132 		+ 1000
-#define DIALOG_ACC_GUARD_MODE 		133			+ 1000
-#define DIALOG_ACC_GUARD_CONFIRM	134			+ 1000
-#define DIALOG_ACC_GUARD_DEL_CANCEL	135			+ 1000
-#define DIALOG_RACE 				136			+ 1000
-#define DIALOG_RACE_MODE 			137			+ 1000
-#define DIALOG_RACE_FEE 			138			+ 1000
-#define DIALOG_RACE_POS 			139			+ 1000
-#define DIALOG_RACE_DISTANCE 		140			+ 1000
-#define DIALOG_RACE_KICK 			141			+ 1000
-#define DIALOG_RACE_DEST 			142			+ 1000
-#define DIALOG_RACE_PRESELECT 		143			+ 1000
-#define DIALOG_RACE_CUSTOM_DEST 	144			+ 1000
-#define DIALOG_BUSINESS_SELL		145			+ 1000
-#define DIALOG_BUSINESS_NAME 		146 		+ 1000
-#define DIALOG_BUSINESS_ADD_MEMBER	147			+ 1000
-#define DIALOG_BUSINESS_MEMBERS		148			+ 1000
-#define DIALOG_BUSINESS_WITHDRAW	149 		+ 1000
-#define DIALOG_BUSINESS_UPGRADES	150			+ 1000
-#define DIALOG_BUSINESSES 			151 		+ 1000
+#define DIALOG_REGISTER             		1000
+#define DIALOG_LOGIN	            		1001
+#define DIALOG_JOB	            			1002
+#define DIALOG_BOMB_SHOP            		1003
+#define DIALOG_NULL                 		1004
+#define DIALOG_BANNED               		1005
+#define DIALOG_BANK_MENU            		1006
+#define DIALOG_BANK_WITHDRAW        		1007
+#define DIALOG_BANK_DEPOSIT         		1008
+#define DIALOG_BANK_INFO            		1009
+#define DIALOG_SHOP_MENU            		1010
+#define DIALOG_HOUSES               		1011
+#define DIALOG_CITY_HALL 	       			1012
+#define DIALOG_HOSPITAL             		1013
+#define DIALOG_HOUSE_CONFIG         		1014
+#define DIALOG_HOUSE_TITLE          		1015
+#define DIALOG_HOUSE_INTERIORS      		1016
+#define DIALOG_IC_MARKET            		1017
+#define DIALOG_VEHICLE_SPAWN        		1018
+#define DIALOG_ARENAS               		1019
+#define DIALOG_BOUGHT_VEH        			1020
+#define DIALOG_PERKS                		1021
+#define DIALOG_PERKS_P              		1022
+#define DIALOG_VIP              			1023
+#define DIALOG_PERKS_V              		1024
+#define DIALOG_DONATED           			1025
+#define DIALOG_VEHICLE_LOCATE       		1026
+#define DIALOG_GANG_COLOR           		1027
+#define DIALOG_GANG_COLOR_INPUT     		1028
+#define DIALOG_RADIO                		1029
+#define DIALOG_XPMARKET             		1030
+#define DIALOG_PAINTBALL            		1031
+#define DIALOG_GPS                  		1032
+#define DIALOG_VIP_LOCKER           		1033
+#define DIALOG_AMMU                 		1034
+#define DIALOG_GARAGE_INTERIORS     		1035
+#define DIALOG_GARAGE_INT_CONFIRM			1036
+#define DIALOG_GANG_LIST         			1037
+#define DIALOG_LUMBERJACK           		1038
+#define DIALOG_FIGHTSTYLE           		1039
+#define DIALOG_TOYS_MAIN            		1040
+#define DIALOG_TOYS     					1041
+#define DIALOG_TOYS_BONE 					1042
+#define DIALOG_VIP_WEP              		1043
+#define DIALOG_VIP_WEP_SELECT       		1044
+#define DIALOG_GANG_LIST_RESPONSE 			1045
+#define DIALOG_CMDS                 		1046
+#define DIALOG_CMDS_REDIRECT        		1047
+#define DIALOG_STATS                		1048
+#define DIALOG_STATS_REDIRECT       		1049
+#define DIALOG_VEHDEALER            		1050
+#define DIALOG_CP_MENU            			1051
+#define DIALOG_AMMU_BUY             		1052
+#define DIALOG_APARTMENTS         			1053
+#define DIALOG_APARTMENTS_BUY     			1054
+#define DIALOG_FLAT_CONFIG          		1055
+#define DIALOG_FLAT_CONTROL         		1056
+#define DIALOG_FLAT_TITLE	        		1057
+#define DIALOG_BUSINESS_TERMINAL			1058
+#define DIALOG_WEAPON_DEAL          		1059
+#define DIALOG_WEAPON_DEAL_BUY      		1060
+#define DIALOG_HOUSE_PW             		1061
+#define DIALOG_HOUSE_SET_PW         		1062
+#define DIALOG_HOUSE_WEAPONS        		1063
+#define DIALOG_HOUSE_WEAPONS_ADD    		1064
+#define DIALOG_BUSINESS_BUY         		1065
+#define DIALOG_FURNITURE            		1066
+#define DIALOG_FURNITURE_LIST 				1067
+#define DIALOG_FURNITURE_OPTION     		1068
+#define DIALOG_FURNITURE_ROTATION   		1069
+#define DIALOG_FURNITURE_MAN_SEL    		1070
+#define DIALOG_ONLINE_JOB           		1071
+#define DIALOG_ONLINE_JOB_R         		1072
+#define DIALOG_FURNITURE_CATEGORY   		1073
+#define DIALOG_FLAT_FURNITURE 				1074
+#define DIALOG_TRUNCATE_FURNITURE			1075
+#define DIALOG_VEHDEALER_BUY				1076
+#define DIALOG_VEHDEALER_OPTIONS			1077
+#define DIALOG_HELP 						1078
+#define DIALOG_HELP_CATEGORY				1079
+#define DIALOG_HELP_THREAD					1080
+#define DIALOG_HELP_BACK					1081
+#define DIALOG_RADIO_CUSTOM					1082
+#define DIALOG_GPS_CITY 					1083
+#define DIALOG_SPAWN_CITY					1084
+#define DIALOG_GATE							1085
+#define DIALOG_GATE_EDIT 					1086
+#define DIALOG_GATE_OWNER 					1087
+#define DIALOG_GATE_OWNER_EDIT				1088
+#define DIALOG_PAINTBALL_EDIT 				1089
+#define DIALOG_PAINTBALL_EDIT_VAL 			1090
+#define DIALOG_PAINTBALL_ARENAS 			1091
+#define DIALOG_PAINTBALL_WEP 				1092
+#define DIALOG_PAINTBALL_PW 				1093
+#define DIALOG_DONATED_PLATBRONZE 			1094
+#define DIALOG_SHOP_AMOUNT 					1095
+#define DIALOG_PAINTBALL_REFILL 			1096
+#define DIALOG_HOUSE_INT_CONFIRM			1098
+#define DIALOG_TOYS_ITEMS					1099
+#define DIALOG_TOYS_EDIT 					1100
+#define DIALOG_TOYS_BONE_EDIT 				1101
+#define DIALOG_TOYS_BUY 					1102
+#define DIALOG_TOYS_ITEMS_BUY 				1103
+#define DIALOG_UNBAN_CLASS 					1104
+#define DIALOG_GANG_BANK_WITHDRAW   		1105
+#define DIALOG_GANG_BANK_DEPOSIT    		1106
+#define DIALOG_GANG_BANK_INFO       		1107
+#define DIALOG_YOU_SURE_APART  				1108
+#define DIALOG_YOU_SURE_VIP 				1109
+#define DIALOG_CHANGENAME					1110
+#define DIALOG_GANG_LIST_OPTIONS			1111
+#define DIALOG_GANG_LIST_MEMBERS 			1112
+#define DIALOG_COMPONENTS_CATEGORY 			1113
+#define DIALOG_COMPONENTS					1114
+#define DIALOG_COMPONENT_EDIT 				1115
+#define DIALOG_COMPONENT_EDIT_MENU			1116
+#define DIALOG_COMPONENT_MENU				1117
+#define DIALOG_DONATED_DIAGOLD 				1118
+#define DIALOG_LATEST_DONOR					1119
+#define DIALOG_FINISHED_DONATING			1120
+#define DIALOG_MODIFY_HITSOUND 				1121
+#define DIALOG_VIP_NOTE						1122
+#define DIALOG_REGISTER_QUIT 				1123
+#define DIALOG_LOGIN_QUIT					1124
+#define DIALOG_WEAPON_LOCKER				1125
+#define DIALOG_WEAPON_LOCKER_BUY			1126
+#define DIALOG_FEEDBACK						1127
+#define DIALOG_IC_MARKET_2 					1128
+#define DIALOG_BUSINESS_CAR					1129
+#define DIALOG_BUSINESS_HELI				1130
+#define DIALOG_ACC_GUARD 					1131
+#define DIALOG_ACC_GUARD_EMAIL				1132
+#define DIALOG_ACC_GUARD_MODE 				1133
+#define DIALOG_ACC_GUARD_CONFIRM			1134
+#define DIALOG_ACC_GUARD_DEL_CANCEL			1135
+#define DIALOG_RACE 						1136
+#define DIALOG_RACE_MODE 					1137
+#define DIALOG_RACE_FEE 					1138
+#define DIALOG_RACE_POS 					1139
+#define DIALOG_RACE_DISTANCE 				1140
+#define DIALOG_RACE_KICK 					1141
+#define DIALOG_RACE_DEST 					1142
+#define DIALOG_RACE_PRESELECT 				1143
+#define DIALOG_RACE_CUSTOM_DEST 			1144
+#define DIALOG_BUSINESS_SELL				1145
+#define DIALOG_BUSINESS_NAME 				1146
+#define DIALOG_BUSINESS_ADD_MEMBER			1147
+#define DIALOG_BUSINESS_MEMBERS				1148
+#define DIALOG_BUSINESS_WITHDRAW			1149
+#define DIALOG_BUSINESS_UPGRADES			1150
+#define DIALOG_BUSINESSES 					1151
+#define DIALOG_CASINO_REWARDS 				1152

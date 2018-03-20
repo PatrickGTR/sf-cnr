@@ -15,7 +15,7 @@
 #pragma compat 1
 #pragma option -d3
 #pragma dynamic 7200000
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -228,7 +228,7 @@ new stock
 #define CLASS_MEDIC              	( 3 )
 
 /* ** Checkpoints ** */
-#define ALL_CHECKPOINTS             ( 43 )
+#define ALL_CHECKPOINTS             ( 45 )
 
 #define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
@@ -273,6 +273,8 @@ new stock
 #define CP_BIZ_TERMINAL_METH 		( 40 )
 #define CP_BIZ_TERMINAL_WEED 		( 41 )
 #define CP_BIZ_TERMINAL_WEAP 		( 42 )
+#define CP_REWARDS_4DRAG 	 		( 43 )
+#define CP_REWARDS_CALIG 	 		( 44 )
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -2170,6 +2172,17 @@ new
 	}
 ;
 
+/* ** Casino Rewards Points ** */
+#define CASINO_REWARDS_DIVISOR 		5000.0 	// (for every X in $10K, they get Y points)
+#define CASINO_REWARDS_COST_MP 		15 		// 10x the supa save costs
+
+new
+	g_casinoRewardsShopItems[ ] = {
+		5, 6, 7, 8, 9, 10, 11
+	},
+	Float: p_CasinoRewardsPoints 	[ MAX_PLAYERS ]
+;
+
 /* ** Easter Eggs ** */
 #define ENABLED_EASTER_EGG 			( true )
 
@@ -3213,6 +3226,7 @@ new
 	p_VehicleBringCooldown 			[ MAX_PLAYERS ],
 	p_BusinessSpawnLocation 		[ MAX_PLAYERS ] = { -1, ... }
 ;
+
 /* ** Server Data ** */
 new
     g_Checkpoints           		[ ALL_CHECKPOINTS ],
@@ -4668,7 +4682,7 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 			}
 			UpdateGateData( gID );
 			cmd_editgate( playerid, sprintf( "%d", gID ) );
-			SyncObject( playerid );
+			Streamer_Update( playerid ); // SyncObject( playerid );
 		}
 		return 1;
 	}
@@ -6338,6 +6352,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_TicketTimestamp[ playerid ] = 0;
 	p_ExtraAssetSlots{ playerid } = 0;
 	p_HitmarkerSound{ playerid } = 0;
+	p_CasinoRewardsPoints[ playerid ] = 0.0;
 	p_OwnedBusinesses[ playerid ] = 0;
 	g_LastExportModel[ playerid ] = 0;
 	p_usingSlotMachine[ playerid ] = -1;
@@ -8447,6 +8462,17 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 
 	if ( g_CommandLogging ) printf( "[COMMAND_LOG] %s(%d) - %s", ReturnPlayerName( playerid ), playerid, cmdtext );
 	return 1;
+}
+
+CMD:casino( playerid, params[ ] )
+{
+	if ( strmatch( params, "rewards" ) ) {
+		if ( ! IsPlayerInCasino( playerid ) ) return SendError( playerid, "You need to be in a casino to use this feature." );
+		return ShowPlayerRewardsMenu( playerid );
+	} else if ( strmatch( params, "points" ) ) {
+		return SendServerMessage( playerid, "You currently have "COL_GOLD"%0.2f"COL_WHITE" casino rewards points.", p_CasinoRewardsPoints[ playerid ] );
+	}
+	return SendUsage( playerid, "/casino [REWARDS/POINTS]" );
 }
 
 CMD:b( playerid, params[ ] ) return cmd_business( playerid, params );
@@ -10582,7 +10608,7 @@ CMD:vipskin( playerid, params[ ] )
 	    if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot set your skin if you're entering a vehicle." );
 	    if ( GetPlayerState( playerid ) == PLAYER_STATE_EXIT_VEHICLE ) return SendError( playerid, "You cannot set your skin if you're exiting a vehicle." );
 		p_SkinToggled{ playerid } = true;
-		SyncObject( playerid );
+		Streamer_Update( playerid ); // SyncObject( playerid );
 		ClearAnimations( playerid );
 		SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
 		SendServerMessage( playerid, "You have toggled your V.I.P skin!" );
@@ -11278,7 +11304,7 @@ CMD:wood( playerid, params[ ] )
 
 		    new object = CreateDynamicObject( 14872, -2338.20, -106.51, 34.00, -27.78, 89.40, 1.92 );
 		    MoveDynamicObject( object, -2338.20, -106.51, 33.5, 0.10 );
-			SyncObject( playerid );
+			Streamer_Update( playerid ); // SyncObject( playerid );
             PlayerPlaySound( playerid, 1153, -2338.20, -106.51, 33.99 );
             GivePlayerCash( playerid, 500 );
 		    SetTimerEx( "lumberjack_RemoveWood", 9000, false, "d", object );
@@ -14932,7 +14958,7 @@ CMD:setskin( playerid, params[ ] )
 	    if ( GetPlayerState( pID ) == PLAYER_STATE_EXIT_VEHICLE ) return SendError( playerid, "You cannot set your skin if you're exiting a vehicle." );
 		if ( GetPlayerAnimationIndex( pID ) == 1660 ) return SendError( playerid, "The player specified is currently using a vending machine." );
 	    AddAdminLogLineFormatted( "%s(%d) has changed %s(%d)'s skin id to %d", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, skin );
-	    SyncObject( pID );
+	  	SyncObject( pID );
         SetPlayerSkin( pID, skin );
 	    if ( pID != playerid ) {
 		    SendClientMessageFormatted( pID, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) has changed your skin ID to %d.", ReturnPlayerName( playerid ), playerid, skin );
@@ -18965,6 +18991,9 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 		}
 	}
 
+	if ( checkpointid == g_Checkpoints[ CP_REWARDS_4DRAG ] || checkpointid == g_Checkpoints[ CP_REWARDS_CALIG ] )
+		return ShowPlayerRewardsMenu( playerid );
+
 	if ( checkpointid == g_Checkpoints[ CP_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_COUNTRY_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_BANK_MENU_LS ] )
  		return ShowPlayerBankMenuDialog( playerid ), 1;
 
@@ -19665,6 +19694,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 		// return SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", ConvertPrice( iNetWin ) );
 	}
 
+	GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] );
 	return GameTextForPlayer( playerid, "~w~~h~no win!", 2500, 6 );
 }
 
@@ -21210,6 +21240,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 			p_BusinessSpawnLocation[ playerid ] = cache_get_field_content_int( 0, "BUSINESS_ID", dbHandle );
+			p_CasinoRewardsPoints[ playerid ] = cache_get_field_content_float( 0, "CASINO_REWARDS", dbHandle );
 
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
 				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
@@ -22440,6 +22471,50 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	            }
 	        	else return SendError( playerid, "You don't have enough XP for this." );
 	        }
+	    }
+	}
+	if ( dialogid == DIALOG_CASINO_REWARDS && response )
+	{
+	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
+
+	    new
+	    	x = 0;
+
+	    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( i ) )
+	    {
+	    	if ( x == listitem )
+	    	{
+	    		new Float: rewards_cost = float( g_shopItemData[ i ] [ E_PRICE ] * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
+
+	    		if ( p_CasinoRewardsPoints[ playerid ] < rewards_cost )
+	    			return SendError( playerid, "You need %0.2f more rewards points for this item.", rewards_cost );
+
+	    		// shop limits
+	    		if ( g_shopItemData[ i ] [ E_LIMIT ] == LIMIT_ONE )
+	    		{
+	    			if ( i == 10 ) {
+	        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
+	        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
+	    			}
+	    		}
+	    		else
+	    		{
+	    			new iCurrentQuantity = GetShopItemVariable( playerid, i );
+		    		new iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] );
+
+		    		if ( iCurrentQuantity >= iLimit )
+		    			return SendError( playerid, "You cannot buy more of this item with your rewards points." );
+
+	    			SetShopItemVariable( playerid, i, iCurrentQuantity + 1 );
+	    		}
+
+	    		// deduct points
+				p_CasinoRewardsPoints[ playerid ] -= rewards_cost;
+				mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+				SendServerMessage( playerid, "You have bought 1x "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%0.2f"COL_WHITE" rewards points.", g_shopItemData[ i ] [ E_NAME ], rewards_cost );
+	    		return ShowPlayerRewardsMenu( playerid );
+	    	}
+	    	x ++;
 	    }
 	}
 	if ( ( dialogid == DIALOG_SHOP_MENU ) && response )
@@ -24396,7 +24471,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					SetGVarInt( "fur_w", !is_in_apartment ? hid + MAX_HOUSES : 0, o );
 					SetGVarInt( "fur_f", i, o );
 					SetGVarInt( "fur_a", aid, o );
-					SyncObject( playerid );
+					Streamer_Update( playerid ); // SyncObject( playerid );
 
 					SendServerMessage( playerid, "You have purchased a "COL_GREY"%s"COL_WHITE". "COL_ORANGE"[%d/%d]", g_houseFurniture[ i ] [ E_NAME ], totalf, vip );
 					ShowFurnitureList( playerid, p_FurnitureCategory{ playerid } );
@@ -24515,7 +24590,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 			}
 			UpdateGateData( gID );
-			SyncObject( playerid );
+			Streamer_Update( playerid ); // SyncObject( playerid );
 			cmd_gate( playerid, "edit" );
 			DeletePVar( playerid, "gate_o_edititem" );
 			DeletePVar( playerid, "gate_o_editing" );
@@ -24622,7 +24697,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 			}
 			UpdateGateData( gID );
-			SyncObject( playerid );
+			Streamer_Update( playerid ); // SyncObject( playerid );
 			cmd_editgate( playerid, sprintf( "%d", gID ) );
 			SendServerMessage( playerid, "You have successfully updated this gate." );
 		}
@@ -27360,6 +27435,8 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_BIZ_TERMINAL_METH ] = CreateDynamicCP( 2034.0669, 1001.6073, 1510.2416, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_WEED ] = CreateDynamicCP( -1742.9982, -1377.3049, 5874.1333, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_WEAP ] = CreateDynamicCP( -4236.8457, 211.4772, 1304.2739, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_REWARDS_CALIG ] = CreateDynamicCP( 2157.6294, 1599.4355, 1006.1797, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_REWARDS_4DRAG ] = CreateDynamicCP( 1951.7191, 997.5555, 992.8594, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
 	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
@@ -27407,6 +27484,8 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, 1579.5439, -1635.5166, 13.5609, 20.0);
 	#endif
 
+	CreateDynamic3DTextLabel("[CASINO REWARDS]", COLOR_GOLD, 2157.6294, 1599.4355, 1006.1797, 20.0);
+	CreateDynamic3DTextLabel("[CASINO REWARDS]", COLOR_GOLD, 1951.7191, 997.5555, 992.8594, 20.0);
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, -1615.2600, 685.5120, 7.1875, 20.0);
 	CreateDynamic3DTextLabel("[PAWNSHOP]", COLOR_GOLD, 1333.0847, -1080.0726, 968.0430, 20.0);
 	CreateDynamic3DTextLabel("[SHOP]", COLOR_GOLD, -29.0409,-184.7446,1003.5469, 20.0);
@@ -29126,7 +29205,7 @@ stock createRoadBlockStrip( playerid, type )
 		g_roadblockData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s(%d)\n"COL_GREY"Placed by %s!", g_roadblockObjectData[ type ] [ E_NAME ], ID, ReturnPlayerName( playerid ) ), COLOR_GOLD, X, Y, Z, 20.0 );
 		g_roadblockData[ ID ] [ E_CREATED ] = true;
 
-		SyncObject( playerid );
+		Streamer_Update( playerid ); // SyncObject( playerid );
 	}
 	return ID;
 }
@@ -29205,7 +29284,7 @@ stock CreateSpikeStrip( playerid, Float: X, Float: Y, Float: Z, Float: Angle )
 		g_spikestripData[ i ] [ E_SPHERE ] = CreateDynamicCircle( X, Y, 4.0 );
 
 	    if ( !bVehicle )
-	    	SyncObject( playerid ); // Shows the object instantly.
+	    	Streamer_Update( playerid ); // SyncObject( playerid ); // Shows the object instantly.
 
 	    Iter_Add(SpikeStrip, i);
 	}
@@ -37074,19 +37153,51 @@ stock GetBusinessAirModelIndex( modelid ) {
 	return index;
 }
 
-stock GetPlayerAccountID( playerid )
-	return p_AccountID[ playerid ];
+stock GivePlayerCasinoRewardsPoints( playerid, lost_amount ) {
+	if ( lost_amount < 0 ) print("[casino error] negative reward amount used"), lost_amount *= -1;
+	p_CasinoRewardsPoints[ playerid ] += lost_amount / CASINO_REWARDS_DIVISOR;
+	mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS`=%f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+	return 1;
+}
 
-stock GetPlayerVIPLevel( playerid )
-	return p_VIPLevel[ playerid ];
+stock ShowPlayerRewardsMenu( playerid )
+{
+	static szString[ 800 ];
 
-stock IsPlayerSpawned( playerid )
-	return p_Spawned{ playerid };
+	if ( szString[ 0 ] == '\0' )
+	{
+		strcat( szString, ""COL_WHITE"Item\t"COL_WHITE"Purpose\t"COL_WHITE"Rewards Points\n" );
+		for( new i; i < sizeof( g_shopItemData ); i++ ) if ( IsCasinoRewardsShopItem( i ) ) {
+			new Float: rewards_cost = float( g_shopItemData[ i ] [ E_PRICE ] * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
+	 		format( szString, sizeof( szString ), "%s%s\t"COL_GREY"%s\t"COL_GOLD"%0.2f points\n", szString, g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], rewards_cost );
+		}
+	}
+	SendServerMessage( playerid, ""COL_GREY"You currently have %0.2f casino rewards points!", p_CasinoRewardsPoints[ playerid ] );
+	return ShowPlayerDialog( playerid, DIALOG_CASINO_REWARDS, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Casino Rewards Items", szString, "Buy", "Cancel" );
+}
+
+stock IsCasinoRewardsShopItem( itemid ) {
+	for ( new i = 0; i < sizeof( g_casinoRewardsShopItems ); i ++ ) if ( itemid == g_casinoRewardsShopItems[ i ] ) {
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
+
+stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
+
+stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 
 stock UpdatePlayerEntranceExitTick( playerid, ms = 2500 ) {
 	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
 }
 
-stock CanPlayerExitEntrance( playerid ) {
-	return GetTickCount( ) > p_EntranceTickcount[ playerid ];
-}
+stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ];

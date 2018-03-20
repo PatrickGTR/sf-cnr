@@ -678,6 +678,7 @@ public OnRouletteWheelStop( rouletteid, winner )
 			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
 		} else {
 			profit *= -1; // to improve the client message
+          	GivePlayerCasinoRewardsPoints( playerid, profit );
 		 	GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
 			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
 		}

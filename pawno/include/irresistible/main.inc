@@ -23,8 +23,8 @@
 #include < irresistible\gta\weapon_data >
 
 // cnr configuration
-#include < irresistible\cnr\vip >
 #include < irresistible\cnr\dialog_ids >
+#include < irresistible\cnr\vip >
 
 // features
 #include < irresistible\features\fps >
