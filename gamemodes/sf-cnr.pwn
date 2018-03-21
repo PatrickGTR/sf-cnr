@@ -26587,6 +26587,7 @@ stock JailPlayer( playerid, seconds, admin = 0 )
 	UntiePlayer					( playerid );
 	jailDoors 					( playerid, false, true );
 	SetPlayerPosToPrison 		( playerid );
+	Player_CheckPokerGame 		( playerid, "Jailed" );
 
 	// External Functions
 	SetPlayerSpecialAction		( playerid, SPECIAL_ACTION_NONE );

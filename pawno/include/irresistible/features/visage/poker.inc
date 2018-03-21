@@ -748,10 +748,7 @@ stock DestroyPokertable( handle)
 
 stock KickPlayerFromTable(playerid)
 {
-	if(!GetPVarInt(playerid, "t_is_in_table"))
-	{
-		return 0;
-	}
+	if(!GetPVarInt(playerid, "t_is_in_table")) return 0;
 	new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
 	if(!Iter_Contains(IT_PlayersTable<handle>, playerid)) return 0;
 	new slot = PlayerData[playerid][E_PLAYER_CURRENT_CHAIR_SLOT];
@@ -1023,6 +1020,7 @@ hook OnPlayerConnect(playerid)
 stock AddPlayerToTable(playerid, handle)
 {
 	if(!Iter_Contains(IT_Tables, handle)) return 0;
+	if(GetPVarInt(playerid, "t_is_in_table")) return 0;
 	new slot = Internal_GetFreeChairSlot(handle);
 	if(slot == ITER_NONE)
 	{
@@ -1128,6 +1126,7 @@ stock SendTableMessage(handle, const format[], va_args<>)
 	foreach(new playerid: IT_PlayersTable<handle>)
 	{
 		SendClientMessage(playerid, -1, sstr);
+		// printf( "[poker_%d] %s", handle, sstr);
 	}
 	return 1;
 }
@@ -1477,7 +1476,30 @@ stock AbortGame(handle)
 		}
 		CancelSelectTextDraw(playerid);
 	}
+
+	for(new i = 0; i < 5; i++)
+	{
+		TableData[handle][E_TABLE_COM_CARDS_VALUES][i] = ITER_NONE;
+	}
+	//This will allow players to leave before the new game begins.
+	TableData[handle][E_TABLE_CURRENT_STATE] = STATE_IDLE;
+	TableData[handle][E_TABLE_STING_NEW_GAME] = false;
+
+	TableData[handle][E_TABLE_FIRST_TURN] = INVALID_PLAYER_ID;
+	TableData[handle][E_TABLE_CHECK_FIRST]  = false;
+	TableData[handle][E_TABLE_LOADING_GAME] = false;
+	ResetLabel(handle);
 	Iter_Clear(IT_TableCardSet[handle]);
+	//Never change this order
+	Iter_Clear(IT_PlayersAllIn<handle>);
+	Iter_Clear(IT_Sidepots[handle]);
+
+	for(new i = 0; i < T_MAX_CHAIRS_PER_TABLE; i++)
+	{
+		TableData[handle][E_TABLE_POT_CHIPS][i] = 0;
+		Iter_Clear(It_SidepotMembers[_IT[handle][i]]);
+	}
+
 	for(new i = 0; i < 52; i++)
 		Iter_Add(IT_TableCardSet[handle], i);
 
@@ -1718,12 +1740,12 @@ stock KillPlayerTurnTimer(playerid, bool: callback = false)
 	new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
 	if(!IsValidTable(handle))
 	{
-		T_SendWarning("[KillPlayerTurnTimer] Invalid handle passed (%d) for playerid: %d", handle, playerid);
+		//T_SendWarning("[KillPlayerTurnTimer] Invalid handle passed (%d) for playerid: %d", handle, playerid);
 		return 0;
 	}
 	if(!Iter_Contains(IT_PlayersInGame<handle>, playerid))
 	{
-		T_SendWarning("[KillPlayerTurnTimer] Invalid playerid passed: %d, handle: %d, player is not in the game.", playerid, handle);
+		//T_SendWarning("[KillPlayerTurnTimer] Invalid playerid passed: %d, handle: %d, player is not in the game.", playerid, handle);
 		return 0;
 	}
 	if(!PlayerData[playerid][E_PLAYER_TIMER_STARTED]) return 0;
@@ -2447,19 +2469,17 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath(playerid, killerid, reason)
 #endif
 {
-	if(GetPVarInt(playerid, "t_is_in_table"))
-	{
-		new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
-		if(!FoldPlayer(handle, playerid))
-			CheckPotAndNextTurn(playerid, handle);
-
-		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has died and has been kicked out from the table.", ReturnPlayerName(playerid));
-		KickPlayerFromTable(playerid);
-	}
+	Player_CheckPokerGame(playerid, "Died");
 	return 1;
 }
 
 hook OnPlayerDisconnect(playerid, reason)
+{
+	Player_CheckPokerGame(playerid, "Disconnected");
+	return 1;
+}
+
+stock Player_CheckPokerGame(playerid, const reason[32])
 {
 	if(GetPVarInt(playerid, "t_is_in_table"))
 	{
@@ -2467,7 +2487,7 @@ hook OnPlayerDisconnect(playerid, reason)
 		if(!FoldPlayer(handle, playerid))
 			CheckPotAndNextTurn(playerid, handle);
 
-		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has disconnected and has been kicked out from the table.", ReturnPlayerName(playerid));
+		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been kicked out from the table [Reason: %s].", ReturnPlayerName(playerid), reason);
 		KickPlayerFromTable(playerid);
 	}
 	return 1;
@@ -2536,24 +2556,24 @@ hook OnGameModeInit()
 	AddServerVariable( "poker_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// red dragons casino
-	CreatePokerTable( 25000000, 500000, 1968.395019, 1027.808959, 991.828002, 2, 23, 10 );
-	CreatePokerTable( 10000000, 200000, 1940.795043, 1008.741027, 991.828002, 2, 23, 10 );
-	CreatePokerTable( 5000000, 100000, 1940.795043, 1027.240966, 991.828002, 3, 23, 10 );
-	CreatePokerTable( 2500000, 50000, 1940.795043, 1021.075012, 991.828002, 4, 23, 10 );
-	CreatePokerTable( 1000000, 20000, 1940.795043, 1014.908996, 991.828002, 4, 23, 10 );
-	CreatePokerTable( 500000, 10000, 1968.395019, 1014.609008, 991.828002, 5, 23, 10 );
-	CreatePokerTable( 250000, 5000, 1968.395019, 1021.208984, 991.828002, 6, 23, 10 );
-	CreatePokerTable( 100000, 2000, 1968.395019, 1008.008972, 991.828002, 6, 23, 10 );
+	CreatePokerTable( 25000000, 250000, 1968.395019, 1027.808959, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 10000000, 100000, 1940.795043, 1008.741027, 991.828002, 2, 23, 10 );
+	CreatePokerTable( 5000000, 500000, 1940.795043, 1027.240966, 991.828002, 3, 23, 10 );
+	CreatePokerTable( 2500000, 25000, 1940.795043, 1021.075012, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 1000000, 10000, 1940.795043, 1014.908996, 991.828002, 4, 23, 10 );
+	CreatePokerTable( 500000, 5000, 1968.395019, 1014.609008, 991.828002, 5, 23, 10 );
+	CreatePokerTable( 250000, 2500, 1968.395019, 1021.208984, 991.828002, 6, 23, 10 );
+	CreatePokerTable( 100000, 1000, 1968.395019, 1008.008972, 991.828002, 6, 23, 10 );
 
 	// caliguas casino
-	CreatePokerTable( 2500000, 50000, 2273.936035, 1597.272949, 1005.568969, 2, 82, 1 );
-	CreatePokerTable( 500000, 10000, 2252.936035, 1591.272949, 1005.568969, 2, 82, 1 );
-	CreatePokerTable( 1000000, 20000, 2255.936035, 1597.272949, 1005.568969, 3, 82, 1 );
-	CreatePokerTable( 500000, 10000, 2258.936035, 1591.272949, 1005.568969, 4, 82, 1 );
-	CreatePokerTable( 250000, 5000, 2261.936035, 1597.272949, 1005.568969, 4, 82, 1 );
-	CreatePokerTable( 100000, 2000,	2264.936035, 1591.272949, 1005.568969, 5, 82, 1 );
-	CreatePokerTable( 50000, 1000, 2267.936035, 1597.272949, 1005.568969, 6, 82, 1 );
-	CreatePokerTable( 25000, 500, 2270.936035, 1591.272949, 1005.568969, 6, 82, 1 );
+	CreatePokerTable( 2500000, 25000, 2273.936035, 1597.272949, 1005.568969, 2, 82, 1 );
+	CreatePokerTable( 1000000, 10000, 2252.936035, 1591.272949, 1005.568969, 2, 82, 1 );
+	CreatePokerTable( 500000, 5000, 2255.936035, 1597.272949, 1005.568969, 3, 82, 1 );
+	CreatePokerTable( 250000, 2500, 2258.936035, 1591.272949, 1005.568969, 4, 82, 1 );
+	CreatePokerTable( 100000, 1000, 2261.936035, 1597.272949, 1005.568969, 5, 82, 1 );
+	CreatePokerTable( 50000, 500, 2264.936035, 1591.272949, 1005.568969, 5, 82, 1 );
+	CreatePokerTable( 25000, 250, 2267.936035, 1597.272949, 1005.568969, 6, 82, 1 );
+	CreatePokerTable( 12500, 125, 2270.936035, 1591.272949, 1005.568969, 6, 82, 1 );
 	T_SendWarning("TPoker by ThreeKingz has been succesfully loaded!");
 	return 1;
 }
