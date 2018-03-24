@@ -13,8 +13,12 @@
     #error "You need server variables enabled to track betting."
 #endif
 
+/*#if !defined _merrandom_included
+    #define MRandom random
+#endif*/
+
 /* ** Definitions ** */
-#define MAX_ROULETTE_TABLES 		23
+#define MAX_ROULETTE_TABLES 		29
 
 /* ** Macros ** */
 #define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)
@@ -85,7 +89,9 @@ static const
 enum E_ROULETTE_DATA
 {
 	E_OBJECT, 					E_SPINNER_OBJECT, 				E_SPINNING_TIMER,
-	bool: E_NO_MORE_BETS,		E_WORLD,
+	bool: E_NO_MORE_BETS,		E_WORLD,						E_ACTOR,
+
+	E_MAX_BET,
 
 	Float: E_X, 				Float: E_Y, 					Float: E_Z,
 	Float: E_ROTATION
@@ -226,6 +232,10 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						}
 					}
 
+					// animation
+				    ApplyDynamicActorAnimation( g_rouletteTableData[ rouletteid ] [ E_ACTOR ], "CASINO", "roulette_bet", 4.1, 0, 0, 0, 0, 0 );
+				    ApplyDynamicActorAnimation( g_rouletteTableData[ rouletteid ] [ E_ACTOR ], "CASINO", "roulette_bet", 4.1, 0, 0, 0, 0, 0 );
+
 					// allow bets
 					g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
 
@@ -249,8 +259,8 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			// increase bet
 			if ( PRESSED( KEY_JUMP  ) )
 			{
-				if ( ( p_rouletteBetValue[ playerid ] *= 2 ) > 100000 )
-					p_rouletteBetValue[ playerid ] = 100000;
+				if ( ( p_rouletteBetValue[ playerid ] *= 2 ) > g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] )
+					p_rouletteBetValue[ playerid ] = g_rouletteTableData[ rouletteid ] [ E_MAX_BET ];
 
 				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
 			}
@@ -293,8 +303,8 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					}
 
 					// Exceeded The Maximum
-					if ( totalBet + p_rouletteBetValue[ playerid ] > 100000 ) {
-						return SendError( playerid, "You are only allowed to bet a total of $100,000 per spin on this table." );
+					if ( totalBet + p_rouletteBetValue[ playerid ] > g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] ) {
+						return SendError( playerid, "You are only allowed to bet a total of %s per spin on this table.", ConvertPrice( g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] ) );
 					}
 
 					PlayerPlaySound( playerid, 1083, 0.0, 0.0, 5.0 );
@@ -444,7 +454,7 @@ hook InitializeTextDraws( )
 }
 
 /* ** Functions ** */
-stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world )
+stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world, maxbet = 100000 )
 {
 	new
 		id = Iter_Free(roulettetables);
@@ -456,6 +466,7 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world )
 		g_rouletteTableData[ id ] [ E_Z ] = Z;
 		g_rouletteTableData[ id ] [ E_ROTATION ] = Angle;
 		g_rouletteTableData[ id ] [ E_WORLD ] = world;
+		g_rouletteTableData[ id ] [ E_MAX_BET ] = maxbet;
 
 		g_rouletteTableData[ id ] [ E_SPINNING_TIMER ] = -1;
 
@@ -464,7 +475,14 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world )
 		X += 1.365 * floatcos( Angle + 98.0, degrees );
 		Y += 1.365 * floatsin( Angle + 98.0, degrees );
 
-		CreateDynamic3DTextLabel( "Press ENTER To Play Roulette\n"COL_WHITE"$1,000 Minimum", COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .worldid = world, .testlos = 0 );
+		CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Roulette\n"COL_WHITE"%s Maximum", ConvertPrice( maxbet ) ), COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .worldid = world, .testlos = 0 );
+
+		new Float: a_x = g_rouletteTableData[ id ] [ E_X ] + 1.4 * floatcos( Angle + 29.0, degrees );
+		new Float: a_y = g_rouletteTableData[ id ] [ E_Y ] + 1.4 * floatsin( Angle + 29.0, degrees );
+
+ 		g_rouletteTableData[ id ] [ E_ACTOR ] = CreateDynamicActor( randarg( 11, 172, 171 ), a_x, a_y, Z, Angle + 90.0 );
+		SetDynamicActorInvulnerable( g_rouletteTableData[ id ] [ E_ACTOR ], true );
+		SetDynamicActorVirtualWorld( g_rouletteTableData[ id ] [ E_ACTOR ], world );
 
 		g_rouletteTableData[ id ] [ E_SPINNER_OBJECT ] = CreateDynamicObject( 1979, X, Y, Z - 0.02, 0.00000, 0.00000, 0.0, .worldid = world, .priority = 9999 );
 		Iter_Add( roulettetables, id );
@@ -480,7 +498,7 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world )
 stock GenerateRandomRouletteNumber( rouletteid ) {
 
 	new
-		iRandom = random( 37 );
+		iRandom = MRandom( 37 );
 
 	if ( iRandom == 0 )
 		TextDrawSetString( g_rouletteNumberBG[ rouletteid ], "ld_roul:roulgre" );
