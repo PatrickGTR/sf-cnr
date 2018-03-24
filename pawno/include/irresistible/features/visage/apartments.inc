@@ -22,7 +22,7 @@
 #define DIALOG_VISAGE_SPAWN			17333
 
 /* ** Constants ** */
-static const Float: VISAGE_APARTMENT_ENTRANCE[ 3 ] = { 3113.1077, 2899.5190, 1056.9280 };
+static const Float: VISAGE_APARTMENT_ENTRANCE[ 3 ] = { 2670.9922, 1637.9547, 1508.3590 };
 static const Float: VISAGE_APARTMENT_EXIT[ 3 ] = { 1983.7786, 1909.4755, 84.3009 };
 
 static const VISAGE_APARTMENT_INT = 0;
