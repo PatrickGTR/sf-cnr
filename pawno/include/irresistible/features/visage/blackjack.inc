@@ -13,6 +13,10 @@
     #error "You need server variables enabled to track betting."
 #endif
 
+/*#if !defined _merrandom_included
+    #define MRandom random
+#endif*/
+
 /* ** Definitions ** */
 #define MAX_BLACKJACK_TABLES 		( 32 )
 #define MAX_BLACKJACK_CARDS 		( 5 )
@@ -329,7 +333,7 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
 function DrawPlayerBlackjackCard( tableid, player_index )
 {
     new
-        randomCard = random( sizeof( g_blackjackDealerCards ) );
+        randomCard = MRandom( sizeof( g_blackjackDealerCards ) );
 
     for ( new cardid = 0; cardid < MAX_BLACKJACK_CARDS; cardid ++ ) if ( g_blackjackPlayerCardIndex[ tableid ] [ cardid ] [ player_index ] == -1 ) {
         TextDrawSetString( g_blackjackPlayerCards[ tableid ] [ cardid ] [ player_index ], g_cardTextdrawData[ randomCard ] );
@@ -354,7 +358,7 @@ function BeginBlackJackTurn( tableid )
     }
 
     new
-        randomCard = random( sizeof( g_blackjackDealerCards ) );
+        randomCard = MRandom( sizeof( g_blackjackDealerCards ) );
 
     // dealer cards
     ApplyDynamicActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );

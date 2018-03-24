@@ -13,9 +13,13 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+// #pragma option -d3
 #pragma dynamic 7200000
-//#define DEBUG_MODE
+// #define DEBUG_MODE
+
+#if defined DEBUG_MODE
+	#pragma option -d3
+#endif
 
 /* ** SA-MP Includes ** */
 #include 							< a_samp >
@@ -38,6 +42,7 @@
 #include                            < regex >
 #include                            < gvar >
 #include 							< RouteConnector >
+#include 							< merrandom >
 #include 							< sampac >
 #include 							< MathParser >
 native WP_Hash						( buffer[ ], len, const str[ ] );
@@ -150,7 +155,7 @@ new bool: False = false;
 #define ADMIN_COMMAND_TIME 			4
 
 //#define MAX_WEAPONS                 54
-#define MAX_MACHINES 				35 // Placed top because of textdraws
+#define MAX_MACHINES 				54 // Placed top because of textdraws
 #define MAX_CLASS_BAN_WARNS			3
 #define MAX_CAR_MODS                15
 #define MAX_BURGLARY_SLOTS          8
@@ -228,7 +233,7 @@ new stock
 #define CLASS_MEDIC              	( 3 )
 
 /* ** Checkpoints ** */
-#define ALL_CHECKPOINTS             ( 45 )
+#define ALL_CHECKPOINTS             ( 46 )
 
 #define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
@@ -275,6 +280,7 @@ new stock
 #define CP_BIZ_TERMINAL_WEAP 		( 42 )
 #define CP_REWARDS_4DRAG 	 		( 43 )
 #define CP_REWARDS_CALIG 	 		( 44 )
+#define CP_REWARDS_VISAGE 			( 45 )
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -305,7 +311,7 @@ new stock
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ 51 ] [ 137 ] =
+	g_randomMessages[ ] [ 137 ] =
 	{
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
@@ -356,7 +362,10 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for strong security features!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
 		{ "SLOT_MACHINES" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a Casino and win up to 35x on the money you place on a single number!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a casino and win up to 35x on the money you place on a single number!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Play blackjack at a casino and double your money very quickly!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Play Poker with your friends at any casino! Beat your way to riches!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Get casino rewards points by gambling at any casino! Use "COL_GREY"/casino rewards"COL_WHITE" to spend them!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" }
 	},
 	killedWords[ ] [ ] =
@@ -2175,16 +2184,29 @@ new
 /* ** Casino Rewards Points ** */
 #define CASINO_REWARDS_PAYOUT_PERCENT	20.0
 #define CASINO_REWARDS_DIVISOR 			10.0 	// 1000 points becomes 1 point
-#define CASINO_REWARDS_COST_MP 			0.5 	// half of the price (since it costs (1/payout_percent) times more)
+#define CASINO_REWARDS_COST_MP 			1.0 	// half of the price (since it costs (1/payout_percent) times more)
+
+enum E_REWARDS_DATA
+{
+	E_NAME[ 32 ], 		Float: E_POINTS
+}
 
 new
+	g_casinoRewardsItems[ ] [ E_REWARDS_DATA ] = {
+		{ "Fireworks", 25000.0 },
+		{ "Highroller Access", 100000.0 }
+	},
 	g_casinoRewardsShopItems[ ] = {
 		5, 6, 7, 8, 9, 10, 11
 	},
 	Float: p_CasinoRewardsPoints 		[ MAX_PLAYERS ],
+	bool: p_IsCasinoHighRoller 			[ MAX_PLAYERS char ],
 	Text3D: p_RewardsLabel_4Drags		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	Text3D: p_RewardsLabel_Caligs		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... }
+	Text3D: p_RewardsLabel_Caligs		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
+	Text3D: p_RewardsLabel_Visage		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
+	p_HighrollersBarrier 				[ MAX_PLAYERS ] [ 2 ]
 ;
+
 
 /* ** Easter Eggs ** */
 #define ENABLED_EASTER_EGG 			( true )
@@ -2642,7 +2664,7 @@ stock const
 ;
 
 /* ** Gambling ** */
-#define MAX_SLOT_POOLS				( 2 )
+#define MAX_SLOT_POOLS				( 3 )
 #define POOL_ENTITIES				( 5 )
 
 enum E_SLOT_MACHINE_DATA
@@ -2659,6 +2681,25 @@ enum E_CASINO_POOL_DATA
 	E_SQL_ID,					E_TOTAL_WINNINGS,				E_TOTAL_GAMBLED,
 	E_POOL,						E_OBJECT[ POOL_ENTITIES ],		Text3D: E_LABEL[ POOL_ENTITIES ]
 };
+
+
+enum E_SLOT_ODD_DATA
+{
+	E_ENTRY_FEE,				E_SAMPLE_SIZE,					Float: E_TAX,
+	E_DOUBLE_BRICK,				E_SINGLE_BRICK[ 2 ], 			E_GOLD_BELLS[ 2 ],
+	E_CHERRY[ 2 ], 				E_GRAPES[ 2 ], 					E_69[ 2 ],
+	E_PAYOUTS[ 5 ]
+};
+
+static const
+	g_slotOddsPayout[ ] [ E_SLOT_ODD_DATA ] =
+	{
+		// Entry Fee 	Probability		Tax 	{Double Brick}	{Single Brick}	{Gold Bells}	{Cherry}			{Grapes}				{69}				Payouts (Single brick, gold bells, etc...)
+		{ 25000,		100000,			0.2,	99991,			{ 2, 3901 },	{ 3902, 9101 },	{ 9102, 16901 },	{ 16902, 32501 },		{ 32502, 63701 },	{ 100000, 75000, 50000, 25000, 12500 } },
+		{ 10000,		125000,			0.1,	91235,			{ 2, 2201 },	{ 2202, 6602 },	{ 6603, 15403 },	{ 15404, 37404 },		{ 37405, 81405 },	{ 100000, 50000, 25000, 10000, 5000 } },
+		{ 5000, 		40000,			0.25,	27390,			{ 1, 973 },		{ 974, 2434 },	{ 2435, 5355 },		{ 5356, 11196 },		{ 11197, 22877 },	{ 30000, 20000, 10000, 5000, 2500 } }
+	}
+;
 
 new
 	g_slotmachineData				[ MAX_MACHINES ] [ E_SLOT_MACHINE_DATA ],
@@ -4898,10 +4939,12 @@ public OnServerUpdate( )
 		if ( strmatch( g_randomMessages[ iRandomMessage ], "SLOT_MACHINES" ) )
 		{
 			new
-				iRandom = random( 2 );
+				iRandom = random( 3 );
 
-			if ( iRandom )
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Four Dragons Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", ConvertPrice( g_casinoPoolData[ 1 ] [ E_POOL ] ) );
+			if ( iRandom == 2 )
+				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" The Visage Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", ConvertPrice( g_casinoPoolData[ 2 ] [ E_POOL ] ) );
+			else if ( iRandom == 1 )
+				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Caligulas Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", ConvertPrice( g_casinoPoolData[ 1 ] [ E_POOL ] ) );
 			else
 				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Caligulas Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", ConvertPrice( g_casinoPoolData[ 0 ] [ E_POOL ] ) );
 		}
@@ -4959,6 +5002,7 @@ public OnServerUpdate( )
 			// Update casino labels
 			UpdateDynamic3DTextLabelText( p_RewardsLabel_Caligs[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %0.2f rewards points!", p_CasinoRewardsPoints[ playerid ] ) );
 			UpdateDynamic3DTextLabelText( p_RewardsLabel_4Drags[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %0.2f rewards points!", p_CasinoRewardsPoints[ playerid ] ) );
+			UpdateDynamic3DTextLabelText( p_RewardsLabel_Visage[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %0.2f rewards points!", p_CasinoRewardsPoints[ playerid ] ) );
 
 			// Toggle total coin bar
 			if ( !p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } )
@@ -4972,6 +5016,10 @@ public OnServerUpdate( )
 			if ( IsPlayerTied( playerid ) && isNotNearPlayer( playerid, p_TiedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
 				UntiePlayer( playerid );
 
+			// Check if player is near a poker table
+			if ( PlayerData[ playerid ] [ E_PLAYER_CURRENT_HANDLE ] != ITER_NONE && ! IsPlayerInRangeOfTable( playerid, PlayerData[ playerid ] [ E_PLAYER_CURRENT_HANDLE ], 3.0 ) )
+				Player_CheckPokerGame( playerid, "Out Of Range" ); // KickPlayerFromTable( playerid );
+
 			// Not near detained player then uncuff
 			if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
 				Uncuff( playerid );
@@ -4979,6 +5027,13 @@ public OnServerUpdate( )
 			// Trucking Trailers
 			if ( iState == PLAYER_STATE_DRIVER && iVehicle && p_hasTruckingJob{ playerid } && !IsTrailerAttachedToVehicle( iVehicle ) && p_TruckingCancelTimer[ playerid ] == 0xFFFF )
 		 		cancelPlayerTruckingCourier( playerid, iVehicle, .ticks = 60 );
+
+		 	// Remove invalid visage highrollers
+		 	if ( ! p_IsCasinoHighRoller{ playerid } && IsPlayerInHighRoller( playerid ) )
+		 	{
+		 		SetPlayerPos( playerid, 2597.8943, 1603.1852, 1506.1733 );
+		 		SendError( playerid, "You need to be a Highroller to access this area. Get access through Casino Rewards." );
+		 	}
 
 		 	// Surfing a criminal vehicle
 		 	if ( p_WantedLevel[ playerid ] < 6 && p_Class[ playerid ] != CLASS_POLICE )
@@ -5032,7 +5087,7 @@ public OnServerUpdate( )
 
 						FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
 						FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
-						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2800, false, "ddd", playerid, clerkid, 0 );
+						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2300, false, "ddd", playerid, clerkid, 0 );
 
 						TriggerClosestCivilians( playerid, clerkid );
 					}
@@ -6044,8 +6099,16 @@ public OnPlayerConnect( playerid )
 	// Create casino label
 	DestroyDynamic3DTextLabel( p_RewardsLabel_Caligs[ playerid ] );
 	DestroyDynamic3DTextLabel( p_RewardsLabel_4Drags[ playerid ] );
+	DestroyDynamic3DTextLabel( p_RewardsLabel_Visage[ playerid ] );
 	p_RewardsLabel_Caligs[ playerid ] = CreateDynamic3DTextLabel( "[CASINO REWARDS]", COLOR_GOLD, 2157.6294, 1599.4355, 1006.1797, 20.0, .playerid = playerid );
 	p_RewardsLabel_4Drags[ playerid ] = CreateDynamic3DTextLabel( "[CASINO REWARDS]", COLOR_GOLD, 1951.7191, 997.55550, 992.85940, 20.0, .playerid = playerid );
+	p_RewardsLabel_Visage[ playerid ] = CreateDynamic3DTextLabel( "[CASINO REWARDS]", COLOR_GOLD, 2604.1323, 1570.1182, 1508.3530, 20.0, .playerid = playerid );
+
+	// Create highroller objects
+	p_HighrollersBarrier[ playerid ] [ 0 ] = CreateDynamicObject( 19545, 2592.604980, 1610.016967, 1499.139038, 90.000000, 90.000000, 0.000000, .worldid = VISAGE_WORLD, .playerid = playerid );
+	p_HighrollersBarrier[ playerid ] [ 1 ] = CreateDynamicObject( 19545, 2592.604003, 1595.026000, 1499.140991, 90.000000, 90.000000, 0.000000, .worldid = VISAGE_WORLD, .playerid = playerid );
+	SetDynamicObjectMaterial( p_HighrollersBarrier[ playerid ] [ 0 ], 0, 11751, "enexmarkers", "enex", -9170 );
+	SetDynamicObjectMaterial( p_HighrollersBarrier[ playerid ] [ 1 ], 0, 11751, "enexmarkers", "enex", -9170 );
 
 	// Reset some variables
 	p_Spawned 			{ playerid } = false;
@@ -6377,6 +6440,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_TruckedCargo[ playerid ] = 0;
 	p_HydrogenChloride{ playerid } = 0;
 	p_Methamphetamine{ playerid } = 0;
+	p_IsCasinoHighRoller{ playerid } = false;
 	p_ApartmentEditing{ playerid } = -1;
 	p_PawnStoreExport[ playerid ] = 0xFFFF;
 	p_LastEnteredEntrance[ playerid ] = -1;
@@ -6442,6 +6506,8 @@ public OnPlayerDisconnect( playerid, reason )
 	p_accountSecurityData[ playerid ] [ E_VERIFIED ] = false;
 	p_accountSecurityData[ playerid ] [ E_ID ] = 0;
 	p_accountSecurityData[ playerid ] [ E_LAST_DISABLED ] = 0;
+	DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 0 ] ), p_HighrollersBarrier[ playerid ] [ 0 ] = -1;
+	DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
 
 	switch( reason )
 	{
@@ -17574,7 +17640,8 @@ CMD:time( playerid, params[ ] )
 	if ( sscanf( params, "d", timeid ) )
 		return SendUsage( playerid, "/time [SECONDS]" );
 
-	return ( g_WorldClockSeconds = timeid );
+	g_WorldClockSeconds = timeid;
+	return 1;
 }
 
 CMD:playsound( playerid, params[ ] )
@@ -19005,7 +19072,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 		}
 	}
 
-	if ( checkpointid == g_Checkpoints[ CP_REWARDS_4DRAG ] || checkpointid == g_Checkpoints[ CP_REWARDS_CALIG ] )
+	if ( checkpointid == g_Checkpoints[ CP_REWARDS_4DRAG ] || checkpointid == g_Checkpoints[ CP_REWARDS_CALIG ] || checkpointid == g_Checkpoints[ CP_REWARDS_VISAGE ] )
 		return ShowPlayerRewardsMenu( playerid );
 
 	if ( checkpointid == g_Checkpoints[ CP_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_COUNTRY_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_BANK_MENU_LS ] )
@@ -19246,16 +19313,6 @@ public OnPlayerAccessEntrance( playerid, entranceid )
 {
     if ( g_entranceData[ entranceid ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
         return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" ), 0;
-    }
-    if ( entranceid == VISAGE_ENTRANCE ) {
-    	static const EARLY_ACCESS[ 21 ] = { 690025, 277833, 13, 341204, 754775, 674688, 30, 435396, 493400, 688039, 1, 483892, 140, 418997, 658457, 314783, 671759, 479950, 663408, 38, 25 };
-
-    	for ( new earlybird = 0; earlybird < sizeof( EARLY_ACCESS ); earlybird ++ ) {
-    		if ( p_AccountID[ playerid ] == EARLY_ACCESS[ earlybird ] ) {
-    			return SendServerMessage( playerid, "You have permission to access this casino as you contributed early to this project." ), 1;
-    		}
-    	}
-    	return SendError( playerid, "You do not have early access to this feature on this account." ), 0;
     }
     return 1;
 }
@@ -19645,7 +19702,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 		TriggerPlayerSlotMachine( playerid, slotid );
 
 	// check combinations
-	printf("%s (%d, %d, %d)", ReturnPlayerName( playerid ), first_combo, second_combo, third_combo);
+	// printf("%s (%d, %d, %d)", ReturnPlayerName( playerid ), first_combo, second_combo, third_combo);
 	if ( first_combo == second_combo && first_combo == third_combo )
 	{
 		new
@@ -19654,46 +19711,15 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 		if ( first_combo == 0 ) iNetWin = g_casinoPoolData[ poolid ] [ E_POOL ];
 		else
 		{
-			if ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 )
-			{
-				switch( first_combo )
-				{
-					// Single bar
-					case 1: iNetWin = 100000;
+			new oddid = -1;
 
-					// Bells
-					case 2: iNetWin = 50000;
-
-					// Cherry
-					case 3: iNetWin = 25000;
-
-					// Grapes
-					case 4: iNetWin = 10000;
-
-					// 69
-					case 5: iNetWin = 5000;
-				}
+			for ( new i = 0; i < sizeof( g_slotOddsPayout ); i ++ ) if ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == g_slotOddsPayout[ i ] [ E_ENTRY_FEE ] ) {
+				oddid = i;
 			}
-			else
-			{
-				switch( first_combo )
-				{
-					// Single bar
-					case 1: iNetWin = 30000;
 
-					// Bells
-					case 2: iNetWin = 20000;
+			if ( oddid == -1 ) oddid = sizeof( g_slotOddsPayout ) - 1;
 
-					// Cherry
-					case 3: iNetWin = 10000;
-
-					// Grapes
-					case 4: iNetWin = 5000;
-
-					// 69
-					case 5: iNetWin = 2500;
-				}
-			}
+			iNetWin = g_slotOddsPayout[ oddid ] [ E_PAYOUTS ] [ first_combo - 1 ];
 		}
 
 		// readjust casino pool data
@@ -19701,7 +19727,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 
 		// alert user
 		if ( iNetWin >= 10000 ) {
-   			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, ConvertPrice( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( "Caligulas" ) );
+   			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, ConvertPrice( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 25000 ? ( "Visage" ) : ( "Caligulas" ) ) );
    		} else {
    			SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", ConvertPrice( iNetWin ) );
    		}
@@ -19719,8 +19745,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 public OnPlayerClickTextDraw(playerid, Text: clickedid)
 {
 	// Pressed ESC
-	if ( clickedid == Text: INVALID_TEXT_DRAW )
-	{
+	if ( clickedid == Text: INVALID_TEXT_DRAW ) {
 		if ( GetPVarInt( playerid, "recently_previewed" ) < GetTickCount( ) && GetPVarInt( playerid, "viewing_vehicle" ) )
 			return CancelVehicleView( playerid, 0 );
 	}
@@ -21259,11 +21284,18 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 			p_BusinessSpawnLocation[ playerid ] = cache_get_field_content_int( 0, "BUSINESS_ID", dbHandle );
 			p_CasinoRewardsPoints[ playerid ] = cache_get_field_content_float( 0, "CASINO_REWARDS", dbHandle );
+			p_IsCasinoHighRoller{ playerid } = !!cache_get_field_content_int( 0, "VISAGE_HIGHROLLER", dbHandle );
 
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
 				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
 				KickPlayerTimed( playerid );
 				return 1;
+			}
+
+			// highroller object
+			if ( p_IsCasinoHighRoller{ playerid } ) {
+				DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 0 ] ), p_HighrollersBarrier[ playerid ] [ 0 ] = -1;
+				DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
 			}
 
 			// house & biz validation
@@ -22495,44 +22527,81 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
 
-	    new
+		new
 	    	x = 0;
 
-	    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( i ) )
+	    if ( listitem >= sizeof( g_casinoRewardsShopItems ) )
 	    {
-	    	if ( x == listitem )
-	    	{
-	    		new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
+	    	// printf("Listitem %d, sizeof %d\n", listitem, sizeof( g_casinoRewardsShopItems) );
+	    	new rewards_item = listitem - sizeof( g_casinoRewardsShopItems );
+	    	new Float: rewards_points = g_casinoRewardsItems[ rewards_item ] [ E_POINTS ];
 
-	    		if ( p_CasinoRewardsPoints[ playerid ] < rewards_cost )
-	    			return SendError( playerid, "You need %0.2f more rewards points for this item.", rewards_cost );
+    		if ( p_CasinoRewardsPoints[ playerid ] < rewards_points )
+    			return SendError( playerid, "You need %0.2f more rewards points for this item.", rewards_points );
 
-	    		// shop limits
-	    		if ( g_shopItemData[ i ] [ E_LIMIT ] == LIMIT_ONE )
-	    		{
-	    			if ( i == 10 ) {
-	        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
-	        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-	    			}
-	    		}
-	    		else
-	    		{
-	    			new iCurrentQuantity = GetShopItemVariable( playerid, i );
-		    		new iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] );
+    		switch ( rewards_item )
+    		{
+    			case 0: // fireworks
+    			{
+    				return SendError( playerid, "Work In Progress." );
+    			}
+    			case 1: // highroller
+    			{
+    				if ( p_IsCasinoHighRoller{ playerid } ) return SendError( playerid, "You are already considered a casino highroller." );
+					mysql_single_query( sprintf( "UPDATE `USERS` SET `VISAGE_HIGHROLLER`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
+					DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 0 ] ), p_HighrollersBarrier[ playerid ] [ 0 ] = -1;
+					DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
+    				p_IsCasinoHighRoller{ playerid } = true;
+    			}
+    		}
 
-		    		if ( iCurrentQuantity >= iLimit )
-		    			return SendError( playerid, "You cannot buy more of this item with your rewards points." );
+    		p_CasinoRewardsPoints[ playerid ] -= rewards_points;
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+			SendServerMessage( playerid, "You have bought "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%0.2f"COL_WHITE" rewards points.", g_casinoRewardsItems[ rewards_item ] [ E_NAME ], rewards_points );
+    		return ShowPlayerRewardsMenu( playerid );
+	    }
+	    else
+	    {
+		    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( i ) )
+		    {
+		    	if ( x == listitem )
+		    	{
+		    		new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
 
-	    			SetShopItemVariable( playerid, i, iCurrentQuantity + 1 );
-	    		}
+		    		if ( p_CasinoRewardsPoints[ playerid ] < rewards_cost )
+		    			return SendError( playerid, "You need %0.2f more rewards points for this item.", rewards_cost );
 
-	    		// deduct points
-				p_CasinoRewardsPoints[ playerid ] -= rewards_cost;
-				mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
-				SendServerMessage( playerid, "You have bought 1x "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%0.2f"COL_WHITE" rewards points.", g_shopItemData[ i ] [ E_NAME ], rewards_cost );
-	    		return ShowPlayerRewardsMenu( playerid );
-	    	}
-	    	x ++;
+		    		// shop limits
+		    		if ( g_shopItemData[ i ] [ E_LIMIT ] == LIMIT_ONE )
+		    		{
+		    			if ( i == 10 ) {
+		        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
+		        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
+		    			} else if ( i == 7 ) {
+		        			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
+							if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
+		        			p_MoneyBag{ playerid } = true;
+	        			}
+		    		}
+		    		else
+		    		{
+		    			new iCurrentQuantity = GetShopItemVariable( playerid, i );
+			    		new iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] );
+
+			    		if ( iCurrentQuantity >= iLimit )
+			    			return SendError( playerid, "You cannot buy more of this item with your rewards points." );
+
+		    			SetShopItemVariable( playerid, i, iCurrentQuantity + 1 );
+		    		}
+
+		    		// deduct points
+					p_CasinoRewardsPoints[ playerid ] -= rewards_cost;
+					mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+					SendServerMessage( playerid, "You have bought 1x "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%0.2f"COL_WHITE" rewards points.", g_shopItemData[ i ] [ E_NAME ], rewards_cost );
+		    		return ShowPlayerRewardsMenu( playerid );
+		    	}
+		    	x ++;
+		    }
 	    }
 	}
 	if ( ( dialogid == DIALOG_SHOP_MENU ) && response )
@@ -22566,7 +22635,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
 					if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
         			p_MoneyBag{ playerid } = true;
-        			//SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
         		}
         		case 10:
         		{
@@ -27456,6 +27524,7 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_BIZ_TERMINAL_WEAP ] = CreateDynamicCP( -4236.8457, 211.4772, 1304.2739, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_REWARDS_CALIG ] = CreateDynamicCP( 2157.6294, 1599.4355, 1006.1797, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_REWARDS_4DRAG ] = CreateDynamicCP( 1951.7191, 997.5555, 992.8594, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_REWARDS_VISAGE ] = CreateDynamicCP( 2604.1323, 1570.1182, 1508.3530, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
 	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
@@ -28503,7 +28572,7 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 	}
 
 	// trigger the robbery bot
-	TriggerRobberyForClerks( playerid, robberyid );
+	// TriggerRobberyForClerks( playerid, robberyid );
 
 	// start the drill/c4
 	switch( type )
@@ -32125,7 +32194,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 		       	 	else if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) ) return SendError( playerid, "The safe is currently occupied by a drill." );
 		       	 	else
 		       	 	{
-		       	 		TriggerRobberyForClerks( playerid, robberyid );
+		       	 		// TriggerRobberyForClerks( playerid, robberyid );
 
 						p_UsingRobberySafe[ playerid ] = robberyid;
 		       	 		GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], X, Y, Z );
@@ -34009,6 +34078,21 @@ thread OnCasinoPoolsLoad( )
 	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 3 ] = Text3D: INVALID_3DTEXT_ID;
 	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 4 ] = Text3D: INVALID_3DTEXT_ID;
 	    			}
+
+	    			case 2:
+	    			{
+						g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 0 ] = CreateDynamicObject( 3074, 2603.550048, 1623.765014, 1506.531982, 0.000000, 8.699999, -90.0000 );
+						g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 1 ] = CreateDynamicObject( 3074, 2603.550048, 1584.136962, 1507.233032, 0.000000, 8.699999, 90.00000 );
+	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 2 ] = CreateDynamicObject( 3074, 2603.520019, 1603.123046, 1505.431030, 0.000000, 0.000000, 0.000000 );
+	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 3 ] = CreateDynamicObject( 3074, 2591.430908, 1612.844970, 1506.615966, 0.000000, 13.600000, 180.000 );
+	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 4 ] = -1;
+
+						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2609.0510, 1591.3191, 1506.1743, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2608.9717, 1615.6409, 1506.1766, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 2 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7310, 1615.8630, 1506.1765, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 3 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7532, 1591.0193, 1506.1741, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 4 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2587.2305, 1611.8252, 1506.1733, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    			}
 	    		}
 
 	    		// Update pool labels etc
@@ -34031,7 +34115,7 @@ stock UpdateCasinoPoolLabels( poolid )
 	for( new i = 0; i < POOL_ENTITIES; i ++ )
 	{
 		if ( IsValidDynamicObject( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ] ) )
-			SetDynamicObjectMaterialText( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ], 0, sprintf( "%s PRIZE", ConvertPrice( g_casinoPoolData[ poolid ] [ E_POOL ] ) ), 130, "Arial", 20, 1, 0xFF00FF00, 0, 1);
+			SetDynamicObjectMaterialText( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ], 0, sprintf( "%s PRIZE", ConvertPrice( g_casinoPoolData[ poolid ] [ E_POOL ] ) ), 130, "Arial", 20, 1, 0xFF00FF00, 0, 1 );
 
 		if ( IsValidDynamic3DTextLabel( g_casinoPoolData[ poolid ] [ E_LABEL ] [ i ] ) )
 			UpdateDynamic3DTextLabelText( g_casinoPoolData[ poolid ] [ E_LABEL ] [ i ], 0x00FF00FF, sprintf( "%s Prize Pool", ConvertPrice( g_casinoPoolData[ poolid ] [ E_POOL ] ) ) );
@@ -34137,6 +34221,11 @@ thread OnSlotMachinesLoad( )
 				// Add to iteration
 				Iter_Add(SlotMachines, id);
 			}
+	    	else
+	    	{
+		        static overflow;
+		        printf("[SLOT_MACHINE ERROR] Reached limit of %d slots machines, increase to %d to fix.", MAX_MACHINES, MAX_MACHINES + ( ++ overflow ) );
+	    	}
     	}
     }
 	printf( "[SLOT MACHINES]: %d slot machines have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
@@ -34146,76 +34235,29 @@ thread OnSlotMachinesLoad( )
 
 stock RollSlotMachine( playerid, id )
 {
-	new
-		randomChance, bool: loss = false, Float: rotation;
+	new bool: loss = false;
+	new Float: rotation;
+	new randomChance;
+	new oddid = -1;
 
-	if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == 10000 )
-	{
-		// 1 in 125k odds
-		randomChance = random( 125001 );
-		printf("random chance %d", randomChance );
-
-		// double brick
-		if ( randomChance == 91235 )
-			rotation = 0.0;
-
-		// single brick
-		else if ( 2 <= randomChance <= 2201 )
-			rotation = 40.0;
-
-		// gold bells
-		else if ( 2202 <= randomChance <= 6602 )
-			rotation = 60.0;
-
-		// cherry
-		else if ( 6603 <= randomChance <= 15403 )
-			rotation = 80.0;
-
-		// grapes
-		else if ( 15404 <= randomChance <= 37404 )
-			rotation = 100.0;
-
-		// 69s
-		else if ( 37405 <= randomChance <= 81405 )
-			rotation = 20.0;
-
-		// loss otherwise
-		else
-			loss = true;
+	for ( new i = 0; i < sizeof( g_slotOddsPayout ); i ++ ) if ( g_slotmachineData[ id ] [ E_ENTRY_FEE ] == g_slotOddsPayout[ i ] [ E_ENTRY_FEE ] ) {
+		oddid = i;
 	}
-	else
-	{
-		// 1 in 40k odds
-		randomChance = random( 40001 );
 
-		// double brick
-		if ( randomChance == 27390 )
-			rotation = 0.0;
+	if ( oddid == -1 ) oddid = sizeof( g_slotOddsPayout ) - 1;
 
-		// single brick
-		else if ( 1 <= randomChance <= 973 )
-			rotation = 40.0;
+	randomChance = random( g_slotOddsPayout[ oddid ] [ E_SAMPLE_SIZE ] + 1 );
+	printf("random chance %d", randomChance );
 
-		// gold bells
-		else if ( 974 <= randomChance <= 2434 )
-			rotation = 60.0;
+	if ( randomChance == g_slotOddsPayout[ oddid ] [ E_DOUBLE_BRICK ] ) rotation = 0.0;
+	else if ( g_slotOddsPayout[ oddid ] [ E_SINGLE_BRICK ] [ 0 ] <= randomChance <= g_slotOddsPayout[ oddid ] [ E_SINGLE_BRICK ] [ 1 ] ) rotation = 40.0;
+	else if ( g_slotOddsPayout[ oddid ] [ E_GOLD_BELLS ] [ 0 ] <= randomChance <= g_slotOddsPayout[ oddid ] [ E_GOLD_BELLS ] [ 1 ] ) rotation = 60.0;
+	else if ( g_slotOddsPayout[ oddid ] [ E_CHERRY ] [ 0 ] <= randomChance <= g_slotOddsPayout[ oddid ] [ E_CHERRY ] [ 1 ] ) rotation = 80.0;
+	else if ( g_slotOddsPayout[ oddid ] [ E_GRAPES ] [ 0 ] <= randomChance <= g_slotOddsPayout[ oddid ] [ E_GRAPES ] [ 1 ] ) rotation = 100.0;
+	else if ( g_slotOddsPayout[ oddid ] [ E_69 ] [ 0 ] <= randomChance <= g_slotOddsPayout[ oddid ] [ E_69 ] [ 1 ] ) rotation = 20.0;
+	else loss = true;
 
-		// cherry
-		else if ( 2435 <= randomChance <= 5355 )
-			rotation = 80.0;
-
-		// grapes
-		else if ( 5356 <= randomChance <= 11196 )
-			rotation = 100.0;
-
-		// 69s
-		else if ( 11197 <= randomChance <= 22877 )
-			rotation = 20.0;
-
-		// loss otherwise
-		else
-			loss = true;
-	}
+	// process loss
 	if ( loss )
 	{
 		if ( random( 2 ) == 0 )
@@ -35163,7 +35205,7 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 		if ( clerkid != ITER_NONE )
 		{
 			new
-				randomMaxLoot = RandomEx( max_loot - 25, max_loot + 175 ),
+				randomMaxLoot = RandomEx( max_loot - 100, max_loot + 100 ),
 				worldid = getarg( i );
 
 			Iter_Add(RobberyNpc, clerkid);
@@ -35287,7 +35329,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 	}
 	else
 	{
-		new
+		/*new
 			targetplayerid = GetPlayerTargetPlayer( playerid );
 
 		// If the player aint aiming at the assistant, whip out a gun
@@ -35303,10 +35345,10 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 		else
 		{
 			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is intimidated" );
-		}
+		}*/
 
 		new
-			amount = RandomEx( 7, 10 ) * floatround( floatpower( 2.0, float( step ) - 1.0 ) ),
+			amount = RandomEx( 250, 500 ),
 			robbedNpc = GetPVarInt( playerid, "robbedNpc" ) + amount
 		;
 
@@ -35319,16 +35361,19 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 				robberyid = getClosestRobberySafe( playerid, safeDistance )
 			;
 
-
 			amount += g_robberyNpcData[ clerkid ] [ E_LOOT ];
 			robbedNpc = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
 
 			if ( robberyid != INVALID_OBJECT_ID && safeDistance < 100.0 && !g_robberyData[ robberyid ] [ E_STATE ] ) {
-				g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.1;
-				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE". "COL_GREEN"(+10%s safe loot)", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
+				//g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.1;
+				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
 			} else {
 				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", ConvertPrice( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 			}
+
+			PlayerPlaySound( playerid, 5201, 0.0, 0.0, 0.0 );
+		} else {
+			PlayerPlaySound( playerid, 5205, 0.0, 0.0, 0.0 );
 		}
 
 		if ( !( 0 <= amount < 10000 ) )
@@ -36058,15 +36103,22 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 
 	if ( !g_slotmachineData[ machineid ] [ E_ROLLING ] )
 	{
-		new
-			entryFee = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ],
-			poolContribute = entryFee == 10000 ? floatround( float( entryFee ) * 0.9 ) : floatround( float( entryFee ) * 0.75 );
+		new oddid = -1;
+
+		for ( new i = 0; i < sizeof( g_slotOddsPayout ); i ++ ) if ( g_slotmachineData[ machineid ] [ E_ENTRY_FEE ] == g_slotOddsPayout[ i ] [ E_ENTRY_FEE ] ) {
+			oddid = i;
+		}
+
+		if ( oddid == -1 ) oddid = sizeof( g_slotOddsPayout ) - 1;
+
+		new entryFee = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ];
+		new poolContribute = floatround( float( entryFee ) * ( 1.0 - g_slotOddsPayout[ oddid ] [ E_TAX ] ) );
 
 		if ( GetPlayerCash( playerid ) < entryFee )
 			return SendError( playerid, "You must have at least %s to use this slot machine.", ConvertPrice( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
 
 		// Update casino pool
-		GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ machineid ] [ E_ENTRY_FEE ], .house_edge = g_slotmachineData[ machineid ] [ E_ENTRY_FEE ] == 10000 ? 10.0 : 25.0 );
+		GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ machineid ] [ E_ENTRY_FEE ], .house_edge = g_slotOddsPayout[ oddid ] [ E_TAX ] * 100.0 );
 		UpdateCasinoPoolData( g_slotmachineData[ machineid ] [ E_POOL_ID ], .pool_increment = poolContribute, .total_win = 0, .total_gambled = entryFee );
 
 		// Charge the player
@@ -37190,6 +37242,9 @@ stock ShowPlayerRewardsMenu( playerid )
 		for( new i; i < sizeof( g_shopItemData ); i++ ) if ( IsCasinoRewardsShopItem( i ) ) {
 			new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
 	 		format( szString, sizeof( szString ), "%s%s\t"COL_GREY"%s\t"COL_GOLD"%0.2f points\n", szString, g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], rewards_cost );
+		}
+		for ( new i = 0; i < sizeof( g_casinoRewardsItems ); i ++ ) {
+	 		format( szString, sizeof( szString ), "%s%s\t \t"COL_GOLD"%0.2f points\n", szString, g_casinoRewardsItems[ i ] [ E_NAME ], g_casinoRewardsItems[ i ] [ E_POINTS ] );
 		}
 	}
 	SendServerMessage( playerid, ""COL_GREY"You currently have %0.2f casino rewards points!", p_CasinoRewardsPoints[ playerid ] );

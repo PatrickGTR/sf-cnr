@@ -69,7 +69,7 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 *******************************************************************************************/
 
 //Limits
-#define T_MAX_POKER_TABLES													30
+#define T_MAX_POKER_TABLES													34
 #define T_MAX_CHAIRS_PER_TABLE												7
 #define T_CHAIR_MODEL 														2120
 #define T_MAX_CHIPS_PER_CHAIR												4
@@ -442,6 +442,7 @@ stock bool:IsPlayerInRangeOfTable(playerid, handle, Float:range)
 	if(IsPlayerInRangeOfPoint(playerid, range, TableData[handle][E_TABLE_POS_X], TableData[handle][E_TABLE_POS_Y], TableData[handle][E_TABLE_POS_Z])) return true;
 	return false;
 }
+
 
 /******************************************************************************************
 	Actual functions
@@ -2479,18 +2480,21 @@ hook OnPlayerDisconnect(playerid, reason)
 	return 1;
 }
 
-stock Player_CheckPokerGame(playerid, const reason[32])
+stock Player_CheckPokerGame(playerid, const reason[])
 {
 	if(GetPVarInt(playerid, "t_is_in_table"))
-	{
-		new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
-		if(!FoldPlayer(handle, playerid))
-			CheckPotAndNextTurn(playerid, handle);
+    {
+        new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
+        if(Iter_Contains(IT_PlayersInGame<handle>, playerid)) {
+            if(!FoldPlayer(handle, playerid)) {
+                CheckPotAndNextTurn(playerid, handle);
+            }
+        }
 
-		SendTableMessage(handle, ""COL_GREY"-- "COL_WHITE"Player %s has been kicked out from the table [Reason: %s].", ReturnPlayerName(playerid), reason);
-		KickPlayerFromTable(playerid);
-	}
-	return 1;
+        SendTableMessage(handle, "Player %s has been kicked out from the table [REASON: %s].", ReturnPlayerName(playerid), reason);
+        KickPlayerFromTable(playerid);
+    }
+    return 1;
 }
 
 hook OnGameModeExit()
