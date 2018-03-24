@@ -1984,6 +1984,7 @@ stock CheckShowdown(handle)
 			SendTableMessage(handle, "{9FCF30}Player {FF8000}%s {9FCF30}has won with a {377CC8}%s", ReturnPlayerName(high_id), HAND_RANKS[highest_rank >> 12]);
 			SendTableMessage(handle, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee.", ConvertPrice(w_chips), T_POT_FEE_RATE * 100.0, "%%");
 			SendTableMessage(handle, "{9FCF30}****************************************************************************************");
+			if (strmatch(HAND_RANKS[highest_rank >> 12], "Royal Flush")) printf("****\nRoyal Flush Player %s\n****\n", ReturnPlayerName(high_id));
 			PlayerData[high_id][E_PLAYER_TOTAL_CHIPS] += w_chips;
 		}
 		else

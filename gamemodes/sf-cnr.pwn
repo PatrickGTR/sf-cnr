@@ -34085,13 +34085,13 @@ thread OnCasinoPoolsLoad( )
 						g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 1 ] = CreateDynamicObject( 3074, 2603.550048, 1584.136962, 1507.233032, 0.000000, 8.699999, 90.00000 );
 	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 2 ] = CreateDynamicObject( 3074, 2603.520019, 1603.123046, 1505.431030, 0.000000, 0.000000, 0.000000 );
 	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 3 ] = CreateDynamicObject( 3074, 2591.430908, 1612.844970, 1506.615966, 0.000000, 13.600000, 180.000 );
-	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 4 ] = -1;
+	    				g_casinoPoolData[ poolid ] [ E_OBJECT ] [ 4 ] = CreateDynamicObject( 3074, 2016.567749, 1916.915039, 13.85102100, 0.000000, 15.600006, 0.00000 );
 
-						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2609.0510, 1591.3191, 1506.1743, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2608.9717, 1615.6409, 1506.1766, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 2 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7310, 1615.8630, 1506.1765, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 3 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7532, 1591.0193, 1506.1741, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
-	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 4 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2587.2305, 1611.8252, 1506.1733, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2609.0510, 1591.3191, 1507.1743, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+						g_casinoPoolData[ poolid ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2608.9717, 1615.6409, 1507.1766, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 2 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7310, 1615.8630, 1507.1765, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 3 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2597.7532, 1591.0193, 1507.1741, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
+	    				g_casinoPoolData[ poolid ] [ E_LABEL ] [ 4 ] = CreateDynamic3DTextLabel( "LOADING", COLOR_GREEN, 2587.2305, 1611.8252, 1507.1733, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0 );
 	    			}
 	    		}
 
@@ -34246,7 +34246,7 @@ stock RollSlotMachine( playerid, id )
 
 	if ( oddid == -1 ) oddid = sizeof( g_slotOddsPayout ) - 1;
 
-	randomChance = random( g_slotOddsPayout[ oddid ] [ E_SAMPLE_SIZE ] + 1 );
+	randomChance = MRandom( g_slotOddsPayout[ oddid ] [ E_SAMPLE_SIZE ] + 1 );
 	printf("random chance %d", randomChance );
 
 	if ( randomChance == g_slotOddsPayout[ oddid ] [ E_DOUBLE_BRICK ] ) rotation = 0.0;
