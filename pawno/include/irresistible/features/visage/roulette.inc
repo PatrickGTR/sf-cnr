@@ -228,7 +228,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						TextDrawShowForPlayer( i, g_rouletteNumberTD[ rouletteid ] );
 
 						if ( ! p_rouletteBetLocked{ i } ) {
-							SendServerMessage( i, "%s(%d) has waged %s with this spin, press SPACE to join the spin!", ReturnPlayerName( playerid ), playerid, ConvertPrice( totalBet ) );
+							SendServerMessage( i, "%s(%d) has waged %s with this spin, press SPACE to join the spin!", ReturnPlayerName( playerid ), playerid, number_format( totalBet ) );
 						}
 					}
 
@@ -243,7 +243,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, 0, 1 );
 
 					// inform other players
-					SendServerMessage( playerid, "You have begun the spin with a wager of %s. Good luck!", ConvertPrice( totalBet ) );
+					SendServerMessage( playerid, "You have begun the spin with a wager of %s. Good luck!", number_format( totalBet ) );
 				}
 				else SendServerMessage( playerid, "You have joined the spin. Good luck!" );
 			}
@@ -253,7 +253,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				if ( ( p_rouletteBetValue[ playerid ] /= 2 ) < 1000 )
 					p_rouletteBetValue[ playerid ] = 1000;
 
-				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
+				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", number_format( p_rouletteBetValue[ playerid ] ) );
 			}
 
 			// increase bet
@@ -262,7 +262,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				if ( ( p_rouletteBetValue[ playerid ] *= 2 ) > g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] )
 					p_rouletteBetValue[ playerid ] = g_rouletteTableData[ rouletteid ] [ E_MAX_BET ];
 
-				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", ConvertPrice( p_rouletteBetValue[ playerid ] ) );
+				SendServerMessage( playerid, "You are now betting %s, gamble responsibly!", number_format( p_rouletteBetValue[ playerid ] ) );
 			}
 
 			// Cancel Bets
@@ -304,7 +304,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 					// Exceeded The Maximum
 					if ( totalBet + p_rouletteBetValue[ playerid ] > g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] ) {
-						return SendError( playerid, "You are only allowed to bet a total of %s per spin on this table.", ConvertPrice( g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] ) );
+						return SendError( playerid, "You are only allowed to bet a total of %s per spin on this table.", number_format( g_rouletteTableData[ rouletteid ] [ E_MAX_BET ] ) );
 					}
 
 					PlayerPlaySound( playerid, 1083, 0.0, 0.0, 5.0 );
@@ -343,7 +343,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 0 ] [ column ], 0, " ", .backcolor = color );
 						g_rouletteChip[ playerid ] [ 1 ] [ column ] = CreateDynamicObject(1905, offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height + 0.125, 0.0, 0.0, 0.0, .worldid = g_rouletteTableData[ rouletteid ] [ E_WORLD ], .priority = 9999);
 						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 1 ] [ column ], 0, ConvertRouletteChipValue( g_rouletteChipValue[ playerid ] [ column ] ), 50, "Arial", 44, 1, color, -1, 1 );
-						g_rouletteChipLabel[ playerid ] [ column ] = CreateDynamic3DTextLabel( sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ), g_rouletteChipColor[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.15 + ( float( playerid ) / 100 ), 5.0 ); //INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, playerid );
+						g_rouletteChipLabel[ playerid ] [ column ] = CreateDynamic3DTextLabel( sprintf( "%s", number_format( g_rouletteChipValue[ playerid ] [ column ] ) ), g_rouletteChipColor[ playerid ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - 0.15 + ( float( playerid ) / 100 ), 5.0 ); //INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, playerid );
 						//printf("(%s) CREATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
 					}
 					else
@@ -351,7 +351,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						SetDynamicObjectMaterialText( g_rouletteChip[ playerid ] [ 1 ] [ column ], 0, ConvertRouletteChipValue( g_rouletteChipValue[ playerid ] [ column ] ), 50, "Arial", 44, 1, color, -1, 1 );
 						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ 0 ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height );
 						SetDynamicObjectPos( g_rouletteChip[ playerid ] [ 1 ] [ column ], offsetX, offsetY, g_rouletteTableData[ rouletteid ] [ E_Z ] - height + 0.125 );
-						UpdateDynamic3DTextLabelText( g_rouletteChipLabel[ playerid ] [ column ], g_rouletteChipColor[ playerid ], sprintf( "%s", ConvertPrice( g_rouletteChipValue[ playerid ] [ column ] ) ) );
+						UpdateDynamic3DTextLabelText( g_rouletteChipLabel[ playerid ] [ column ], g_rouletteChipColor[ playerid ], sprintf( "%s", number_format( g_rouletteChipValue[ playerid ] [ column ] ) ) );
 						//printf("(%s) UPDATED CHIP %d:%d", ReturnPlayerName( playerid ), g_rouletteChip[ playerid ] [ column ], _: g_rouletteChipLabel[ playerid ] [ column ] );
 					}
 				}
@@ -475,7 +475,7 @@ stock CreateRouletteTable( Float: X, Float: Y, Float: Z, Float: Angle, world, ma
 		X += 1.365 * floatcos( Angle + 98.0, degrees );
 		Y += 1.365 * floatsin( Angle + 98.0, degrees );
 
-		CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Roulette\n"COL_WHITE"%s Maximum", ConvertPrice( maxbet ) ), COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .worldid = world, .testlos = 0 );
+		CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Roulette\n"COL_WHITE"%s Maximum", number_format( maxbet ) ), COLOR_GREY, X, Y, Z + 0.02, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .worldid = world, .testlos = 0 );
 
 		new Float: a_x = g_rouletteTableData[ id ] [ E_X ] + 1.4 * floatcos( Angle + 29.0, degrees );
 		new Float: a_y = g_rouletteTableData[ id ] [ E_Y ] + 1.4 * floatsin( Angle + 29.0, degrees );
@@ -687,7 +687,7 @@ public OnRouletteWheelStop( rouletteid, winner )
 
 		// inform users
 		if ( profit >= 10000 ) {
-			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from roulette!", ReturnPlayerName( playerid ), playerid, ConvertPrice( profit ) );
+			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from roulette!", ReturnPlayerName( playerid ), playerid, number_format( profit ) );
 		}
 
 		// give user points
@@ -695,12 +695,12 @@ public OnRouletteWheelStop( rouletteid, winner )
 
 		// gametext
 		if ( profit > 0 )  {
-		 	GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", ConvertPrice( profit ) ), 4000, 3 );
-			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
+		 	GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", number_format( profit ) ), 4000, 3 );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and profited %s! (winning no %d)", number_format( waged ), number_format( profit ), winner );
 		} else {
 			profit *= -1; // to improve the client message
 		 	GameTextForPlayer( playerid, "~n~~n~~r~No win!", 4000, 3 );
-			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", ConvertPrice( waged ), ConvertPrice( profit ), winner );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[ROULETTE]"COL_WHITE" You have bet a total of %s and lost %s! (winning no %d)", number_format( waged ), number_format( profit ), winner );
 		}
 	}
 

@@ -231,19 +231,73 @@ stock Player_GetUnusedAttachIndex( playerid )
 }
 
 // purpose: convert integer into dollar string
-stock ConvertPrice( iValue, iCashSign = 1 )
+stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = 2, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) ) // by Slice
 {
     static
-        szNum[ 32 ];
+        s_szReturn[ 32 ],
+        s_szThousandSeparator[ 2 ] = { ' ', EOS },
+        s_iDecimalPos,
+        s_iChar,
+        s_iSepPos
+    ;
 
-    format( szNum, sizeof( szNum ), "%d", iValue < 0 ? -iValue : iValue );
+    if ( tag == tagof( bool: ) )
+    {
+        if ( variable )
+            memcpy( s_szReturn, "true", 0, 5 * ( cellbits / 8 ) );
+        else
+            memcpy( s_szReturn, "false", 0, 6 * ( cellbits / 8 ) );
 
-    for( new i = strlen( szNum ) - 3; i > 0; i -= 3 ) {
-        strins( szNum, ",", i, sizeof( szNum ) );
+        return s_szReturn;
+    }
+    else if ( tag == tagof( Float: ) )
+    {
+        if ( decimals == -1 )
+            decimals = 8;
+
+        format( s_szReturn, sizeof( s_szReturn ), "%.*f", decimals, variable );
+    }
+    else
+    {
+        format( s_szReturn, sizeof( s_szReturn ), "%d", variable );
+
+        if ( decimals > 0 )
+        {
+            strcat( s_szReturn, "." );
+
+            while ( decimals-- )
+                strcat( s_szReturn, "0" );
+        }
     }
 
-    if ( iCashSign ) strins( szNum, "$", 0 );
-    if ( iValue < 0 ) strins( szNum, "-", 0, sizeof( szNum ) );
+    s_iDecimalPos = strfind( s_szReturn, "." );
 
-    return szNum;
+    if ( s_iDecimalPos == -1 )
+        s_iDecimalPos = strlen( s_szReturn );
+    else
+        s_szReturn[ s_iDecimalPos ] = decimal_point;
+
+    if ( s_iDecimalPos >= 4 && thousand_seperator )
+    {
+        s_szThousandSeparator[ 0 ] = thousand_seperator;
+
+        s_iChar = s_iDecimalPos;
+        s_iSepPos = 0;
+
+        while ( --s_iChar > 0 )
+        {
+            if ( ++s_iSepPos == 3 )
+            {
+                strins( s_szReturn, s_szThousandSeparator, s_iChar );
+
+                s_iSepPos = 0;
+            }
+        }
+    }
+
+    if ( prefix != '\0' ) {
+        // new minus = strfind( s_szReturn, "-" );
+        strins( s_szReturn, "$", variable < 0 ); // no point finding -
+    }
+    return s_szReturn;
 }

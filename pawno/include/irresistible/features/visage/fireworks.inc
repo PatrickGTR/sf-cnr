@@ -80,6 +80,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if (dialogid == DIALOG_FIREWORKS)
 	{
+		if ( GetPlayerFireworks( playerid ) < 1 ) return SendError( playerid, "You do not have any fireworks." );
 		switch ( listitem )
 		{
 			case 0:
@@ -117,6 +118,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	else if ( dialogid == DIALOG_FIREWORKS_COLOR )
 	{
+		if ( GetPlayerFireworks( playerid ) < 1 ) return SendError( playerid, "You do not have any fireworks." );
+
 		if ( ! response )
 		{
 			DeletePVar(playerid, "FW_Color1");
@@ -511,46 +514,24 @@ public FW_MainCreateEnd(playerid, firework)
 		GetXYInFrontOfPlayer(playerid, fwX, fwY, Z, 1.0);
 		new Float: R = atan2( fwY - plY, fwX - fwX ) - 90.0; // GetAngleToPos(plX, plY, fwX, fwY);
 
-		switch(firework)
+		switch( firework )
 		{
-			case FW_UNKNOWN: return SendError( playerid, "Fireworks couldn't be created!" ), 0;
-			case FW_FOUNTAIN:
-			{
-				FW_FountainCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
-				DeletePVar(playerid, "FW_Color1");
-				DeletePVar(playerid, "FW_Color2");
-				return 1;
-			}
-			case FW_ROCKET:
-			{
-				FW_RocketCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
-				DeletePVar(playerid, "FW_Color1");
-				DeletePVar(playerid, "FW_Color2");
-				return 1;
-			}
-			case FW_SPLITTER:
-			{
-				FW_SplitterCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
-				DeletePVar(playerid, "FW_Color1");
-				DeletePVar(playerid, "FW_Color2");
-				return 1;
-			}
-			case FW_UMBRELLA:
-			{
-				FW_UmbrelllaCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
-				DeletePVar(playerid, "FW_Color1");
-				DeletePVar(playerid, "FW_Color2");
-				return 1;
-			}
-			case FW_CAKE:
-			{
-				FW_CakeCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
-				DeletePVar(playerid, "FW_Color1");
-				DeletePVar(playerid, "FW_Color2");
-				return 1;
-			}
+			case FW_FOUNTAIN: FW_FountainCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
+			case FW_ROCKET: FW_RocketCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
+			case FW_SPLITTER: FW_SplitterCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
+			case FW_UMBRELLA: FW_UmbrelllaCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
+			case FW_CAKE: FW_CakeCreate(playerid, fw, fwX, fwY, Z, R, GetPVarInt(playerid, "FW_Color1"), GetPVarInt(playerid, "FW_Color2"));
 			default: return SendError( playerid, "Fireworks couldn't be created!" );
 		}
+
+		// reset colors
+		DeletePVar(playerid, "FW_Color1");
+		DeletePVar(playerid, "FW_Color2");
+
+		// give a less firework
+		GivePlayerFireworks( playerid, -1 );
+		SendServerMessage( playerid, "You have placed a firework. You now have %d remaining fireworks.", GetPlayerFireworks( playerid ) );
+		return 1;
 	}
 	return SendError( playerid, "Server limit is reached! Light some before you place more." ), 0;
 }
@@ -1144,7 +1125,7 @@ stock RemoveWeaponFromSlot(playerid, weaponslot)
 /* ** Commands ** */
 CMD:fireworks( playerid, params[] )
 {
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	if ( GetPlayerFireworks( playerid ) < 1 ) return SendError( playerid, "You do not have any fireworks." );
 	ShowPlayerDialog( playerid, DIALOG_FIREWORKS, DIALOG_STYLE_LIST, ""COL_WHITE"Fireworks", "Fountain\nRocket\nSplitter\nUmbrella\nCake", "Select", "Back" );
 	return 1;
 }

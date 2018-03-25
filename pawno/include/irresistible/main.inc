@@ -38,6 +38,7 @@
 #include < irresistible\features\visage\fireworks >
 #include < irresistible\features\visage\casino >
 #include < irresistible\features\visage\apartments >
+// #include < irresistible\features\visage\boxing >
 
 // static cnr features
 #include < irresistible\cnr\static\actors >
