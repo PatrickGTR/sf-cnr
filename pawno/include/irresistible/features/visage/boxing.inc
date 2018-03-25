@@ -22,7 +22,6 @@
 
 /* ENUMS */
 enum E_BOXER_DATA {
-	E_ACCOUNT_ID,
 	E_WINS,
 	E_LOSSES,
 	E_TOTAL_FIGHTS,
@@ -51,15 +50,27 @@ new g_boxingArenaData[ E_ARENA_DATA ];
 new g_boxingArenaObjects[ 9 ];
 
 public OnPlayerConnect( playerid ) {
-
-	Boxing_SetValues( playerid );
-
+	g_boxingMatchData[ playerid ][ E_FIGHTING ] = false;
+	g_boxingMatchData[ playerid ][ E_OPPONENT ] = -1;
+	g_boxingMatchData[ playerid ][ E_INVITED ] = false;
+	g_boxingMatchData[ playerid ][ E_ROUNDS_SET ] = 1;
+	g_boxingMatchData[ playerid ][ E_BET_AMOUNT_SET ] = 0;
+	g_boxingMatchData[ playerid ][ E_IS_HOST ] = false;
+	g_boxingMatchData[ playerid ][ E_SCORE ] = 0;
 }
 
 public OnPlayerDisconnect( playerid, reason ) {
-
-	Boxing_ResetValues( playerid );
-
+	g_boxingMatchData[ playerid ][ E_WINS ] = 0;
+	g_boxingMatchData[ playerid ][ E_LOSSES ] = 0;
+	g_boxingMatchData[ playerid ][ E_TOTAL_FIGHTS ] = 0;
+	g_boxingMatchData[ playerid ][ E_FIGHTING ] = false;
+	g_boxingMatchData[ playerid ][ E_OPPONENT ] = -1;
+	g_boxingMatchData[ playerid ][ E_INVITED ] = false;
+	g_boxingMatchData[ playerid ][ E_INVITE_TIMER ] = 0;
+	g_boxingMatchData[ playerid ][ E_ROUNDS_SET ] = 1;
+	g_boxingMatchData[ playerid ][ E_BET_AMOUNT_SET ] = 0;
+	g_boxingMatchData[ playerid ][ E_IS_HOST ] = false;
+	g_boxingMatchData[ playerid ][ E_SCORE ] = 0;
 }
 
 /* BOXING COMMANDS */
@@ -279,7 +290,6 @@ stock ResetBoxingPlayerVariables( playerid, targetID ) {
 	g_boxingMatchData[ targetID ][ E_FIGHTING ] = false;
 	g_boxingMatchData[ targetID ][ E_SCORE ] = 0;
 	TogglePlayerControllable( targetID, 1 );
-
 	return true;
 
 }
@@ -294,8 +304,7 @@ stock ResetBoxingArenaVariables() {
 
 }
 
-forward KillInviteTimer( playerid );
-public KillInviteTimer( playerid ) {
+function KillInviteTimer( playerid ) {
 
 	new opponent = g_boxingMatchData[ playerid ][ E_OPPONENT ];
 
@@ -311,10 +320,8 @@ public KillInviteTimer( playerid ) {
 
 }
 
-/* MATCH FUNCTIONS */
-
-forward StartMatch( playerid, targetID );
-public StartMatch( playerid, targetID ) {
+/* ** Functions ** */
+function StartMatch( playerid, targetID ) {
 
 	if ( g_boxingMatchData[ playerid ][ E_FIGHTING ] == true && g_boxingMatchData[ playerid ][ E_FIGHTING ] ) {
 
@@ -356,20 +363,16 @@ public StartMatch( playerid, targetID ) {
 
 }
 
-forward NextRound( playerid, targetID );
-public NextRound( playerid, targetID ) {
+function NextRound( playerid, targetID ) {
 
 	SetBoxingPlayerConfig( playerid, targetID );
 
 	KillTimer( g_boxingArenaData[ E_CD_TIMER ] );
 	g_boxingArenaData[ E_CD_TIMER ] = SetTimerEx( "boxingCountDown", 960, false, "d", 8 );
-
 	return true;
-
 }
 
-forward EndMatch( playerid, targetID );
-public EndMatch( playerid, targetID ) {
+function EndMatch( playerid, targetID ) {
 
 	if ( g_boxingArenaData[ E_BET ] == 0 ) {
 
@@ -411,8 +414,7 @@ public EndMatch( playerid, targetID ) {
 
 }
 
-forward ForfeitMatch( playerid, targetID );
-public ForfeitMatch( playerid, targetID ) {
+function ForfeitMatch( playerid, targetID ) {
 
 	if ( g_boxingArenaData[ E_BET ] == 0 ) {
 
@@ -444,8 +446,7 @@ public ForfeitMatch( playerid, targetID ) {
 
 }
 
-forward SetBoxingPlayerConfig( playerid, targetID );
-public SetBoxingPlayerConfig( playerid, targetID ) {
+function SetBoxingPlayerConfig( playerid, targetID ) {
 
 	SetPlayerPos( playerid, 2238.29, 1679.2426, 1009.188 );
 	SetPlayerPos( targetID, 2234.3279, 1675.3125, 1009.188 );
@@ -472,8 +473,7 @@ public SetBoxingPlayerConfig( playerid, targetID ) {
 
 }
 
-forward boxingCountDown( time );
-public boxingCountDown( time ) {
+function boxingCountDown( time ) {
 
 	if ( !time ) {
 
@@ -517,7 +517,7 @@ public boxingCountDown( time ) {
 
 /* ONPLAYER GIVE/TAKE DAMAGE HANDLING */
 
-public OnPlayerTakeDamage( playerid, issuerid, Float:amount, weaponid, bodypart ) {
+hook OnPlayerTakeDamage( playerid, issuerid, Float:amount, weaponid, bodypart ) {
 
 	if ( g_boxingMatchData[ playerid ][ E_FIGHTING ] == true ) {
 
@@ -668,48 +668,6 @@ stock DestroyBoxingArena() {
 		DestroyDynamicObject( g_boxingArenaObjects[ i ] );
 	}
 
-}
-
-/* MYSQL PLAYER RELATED */
-stock Boxing_SetValues( playerid ) {
-
-	// TODO: player variable setting
-	g_boxingMatchData[ playerid ][ E_ACCOUNT_ID ] = playerid;
-	// ^ so it doesn't spit a warning
-
-	g_boxingMatchData[ playerid ][ E_FIGHTING ] = false;
-	g_boxingMatchData[ playerid ][ E_OPPONENT ] = -1;
-	g_boxingMatchData[ playerid ][ E_INVITED ] = false;
-	g_boxingMatchData[ playerid ][ E_ROUNDS_SET ] = 1;
-	g_boxingMatchData[ playerid ][ E_BET_AMOUNT_SET ] = 0;
-	g_boxingMatchData[ playerid ][ E_IS_HOST ] = false;
-	g_boxingMatchData[ playerid ][ E_SCORE ] = 0;
-
-}
-
-stock Boxing_SaveValues( playerid ) {
-
-	// TODO: player variable saving
-	g_boxingMatchData[ playerid ][ E_ACCOUNT_ID ] = playerid;
-	// ^ so it doesn't spit a warning
-
-}
-
-stock Boxing_ResetValues( playerid ) {
-
-	g_boxingMatchData[ playerid ][ E_ACCOUNT_ID ] = -1;
-	g_boxingMatchData[ playerid ][ E_WINS ] = 0;
-	g_boxingMatchData[ playerid ][ E_LOSSES ] = 0;
-	g_boxingMatchData[ playerid ][ E_TOTAL_FIGHTS ] = 0;
-	g_boxingMatchData[ playerid ][ E_FIGHTING ] = false;
-	g_boxingMatchData[ playerid ][ E_OPPONENT ] = -1;
-	g_boxingMatchData[ playerid ][ E_INVITED ] = false;
-	g_boxingMatchData[ playerid ][ E_INVITE_TIMER ] = 0;
-	g_boxingMatchData[ playerid ][ E_ROUNDS_SET ] = 1;
-	g_boxingMatchData[ playerid ][ E_BET_AMOUNT_SET ] = 0;
-	g_boxingMatchData[ playerid ][ E_IS_HOST ] = false;
-	g_boxingMatchData[ playerid ][ E_SCORE ] = 0;
-	return 1;
 }
 
 /* MESSAGE FUNCTIONS */
