@@ -26,6 +26,7 @@
 #define positionToString(%0)                (%0==1?("st"):(%0==2?("nd"):(%0==3?("rd"):("th"))))
 #define SetPlayerPosEx(%0,%1,%2,%3,%4)      SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
 #define mysql_single_query(%0)              mysql_function_query(dbHandle,(%0),true,"","")
+#define points_format(%0)                   (number_format(%0, .prefix = '\0', .decimals = 2))
 
 // Defines
 #define KEY_AIM                             (128)
@@ -73,12 +74,15 @@ stock trimString( strSrc[ ] )
 }
 
 // purpose: get distance between players
-stock Float: GetDistanceBetweenPlayers( iPlayer1, iPlayer2, &Float: fDistance = Float: 0x7F800000 )
+stock Float: GetDistanceBetweenPlayers( iPlayer1, iPlayer2, &Float: fDistance = Float: 0x7F800000, bool: bAllowNpc = false )
 {
     static
     	Float: fX, Float: fY, Float: fZ;
 
-    if( GetPlayerVirtualWorld( iPlayer1 ) == GetPlayerVirtualWorld( iPlayer2 ) && GetPlayerPos( iPlayer2, fX, fY, fZ ) && !IsPlayerNPC( iPlayer1 ) && !IsPlayerNPC( iPlayer2 ) )
+    if ( ! bAllowNpc && ( IsPlayerNPC( iPlayer1 ) || IsPlayerNPC( iPlayer2 ) ) ) // since this command is designed for players
+        return fDistance;
+
+    if( GetPlayerVirtualWorld( iPlayer1 ) == GetPlayerVirtualWorld( iPlayer2 ) && GetPlayerPos( iPlayer2, fX, fY, fZ ) )
 		fDistance = GetPlayerDistanceFromPoint( iPlayer1, fX, fY, fZ );
 
     return fDistance;
@@ -167,7 +171,7 @@ stock strreplacechar(string[], oldchar, newchar)
     return matches;
 }
 
-// purpose: replaces a phrase in a string with whatever specified
+// purpose: replaces a phrase in a string with whatever specified (credit Slice)
 stock strreplace(string[], const search[], const replacement[], bool:ignorecase = false, pos = 0, limit = -1, maxlength = sizeof(string)) {
     // No need to do anything if the limit is 0.
     if (limit == 0)
@@ -231,7 +235,7 @@ stock Player_GetUnusedAttachIndex( playerid )
 }
 
 // purpose: convert integer into dollar string
-stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = 2, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) ) // by Slice
+stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = -1, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) ) // by Slice
 {
     static
         s_szReturn[ 32 ],

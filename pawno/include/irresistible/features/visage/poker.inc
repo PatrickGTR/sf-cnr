@@ -78,6 +78,7 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 #define T_SAVE_PLAYER_POS 													true
 //Max number the chips can express 10^(MAX_CHIP_DIGITS) - 1
 #define MAX_CHIP_DIGITS														7
+#define T_TABLE_TICK_INTERVAL												500 //(in ms) half a second
 #define T_POT_FEE_RATE 														0.04
 
 
@@ -87,8 +88,8 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 #define T_Z_CAMERA_OFFSET													3.0
 #define T_CHIP_OFFSET														0.13
 //Length and width of cards
-#define T_CARD_X_SIZE														21.000000
-#define T_CARD_Y_SIZE														29.000000
+#define T_CARD_X_SIZE														23.0 // 21.000000
+#define T_CARD_Y_SIZE														31.0 // 29.000000
 
 
 #define T_TWO_CARD_DISTANCE													23.904725 //Distance between the two cards each player receives
@@ -718,6 +719,9 @@ stock DestroyPokertable( handle)
 	DestroyDynamicObject(TableData[handle][E_TABLE_OBJECT_IDS][1]);
 	TableData[handle][E_TABLE_OBJECT_IDS][1] = INVALID_OBJECT_ID;
 
+	KillTimer(TableData[handle][E_TABLE_TIMER_ID]);
+	TableData[handle][E_TABLE_TIMER_ID] = 0;
+
 	DestroyDynamic3DTextLabel(TableData[handle][E_TABLE_POT_LABEL]);
 	for(new i = 0; i < TableData[handle][E_TABLE_TOTAL_SEATS]; i++)
 	{
@@ -761,6 +765,8 @@ stock KickPlayerFromTable(playerid)
 	//Create the chair object again:
 	TableData[handle][E_TABLE_CHAIR_OBJECT_IDS][slot] = CreateDynamicObject(T_CHAIR_MODEL, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot], 0.0, 0.0, angle_step * float(slot), TableData[handle][E_TABLE_VIRTUAL_WORLD], TableData[handle][E_TABLE_INTERIOR], .priority = 9999);
 	Internal_RemoveChairSlot(handle, slot);
+	Iter_Remove(IT_PlayersTable<handle>, playerid);
+	if(Iter_Contains(IT_PlayersInGame<handle>, playerid)) Iter_Remove(IT_PlayersInGame<handle>, playerid);
 	SetPlayerPos(playerid, TableData[handle][E_TABLE_SEAT_POS_X][slot], TableData[handle][E_TABLE_SEAT_POS_Y][slot], TableData[handle][E_TABLE_SEAT_POS_Z][slot]);
 	SetCameraBehindPlayer(playerid);
 
@@ -791,11 +797,6 @@ stock KickPlayerFromTable(playerid)
 	DestroyDynamic3DTextLabel(PlayerData[playerid][E_PLAYER_3D_LABEL]);
 
 	UpdateDynamic3DTextLabelText(TableData[handle][E_TABLE_BET_LABELS][slot], 0, " ");
-
-	Iter_Remove(IT_PlayersTable<handle>, playerid);
-
-	if(Iter_Contains(IT_PlayersInGame<handle>, playerid))
-		Iter_Remove(IT_PlayersInGame<handle>, playerid);
 
 	GivePlayerCash(playerid, PlayerData[playerid][E_PLAYER_TOTAL_CHIPS]);
 
@@ -1185,6 +1186,8 @@ public Poker_StartGame(handle, dealer)
 	}
 	TableData[handle][E_TABLE_LOADING_GAME] = true;
 	//Add these two players to (currently playing iterator)
+	Iter_Clear(IT_PlayersInGame<handle>);
+	Iter_Clear(IT_PlayersAllIn<handle>);
 	foreach(new i: IT_PlayersTable<handle>)
 	{
 		Player_Clearchat(i);
@@ -1292,7 +1295,7 @@ public Poker_KickPlayers(handle)
 {
 	for(new i = 0; i < MAX_PLAYERS; i++)
 	{
-		if(!Iter_Contains(IT_PlayersInGame<handle>, i)) continue;
+		if(!Iter_Contains(IT_PlayersTable<handle>, i)) continue;
 		if(!PlayerData[i][E_PLAYER_TOTAL_CHIPS])
 		{
 			if(GetPlayerCash(i) < TableData[handle][E_TABLE_BUY_IN])
@@ -1308,7 +1311,7 @@ public Poker_KickPlayers(handle)
 			}
 		}
 	}
-	Iter_Clear(IT_PlayersInGame<handle>);
+	//Iter_Clear(IT_PlayersInGame<handle>);
 	return 1;
 }
 
@@ -1318,13 +1321,17 @@ stock StartNewPokerGame(handle, time)
 		TableData[handle][E_TABLE_COM_CARDS_VALUES][i] = ITER_NONE;
 	}
 
+	foreach(new i: IT_PlayersInGame<handle>) {
+		HidePlayerChoices(i);
+	}
+
 	//This will allow players to leave before the new game begins.
 	TableData[handle][E_TABLE_CURRENT_STATE] = STATE_IDLE;
 	TableData[handle][E_TABLE_STING_NEW_GAME] = true;
 
 	TableData[handle][E_TABLE_FIRST_TURN] = INVALID_PLAYER_ID;
 	TableData[handle][E_TABLE_CHECK_FIRST]  = false;
-
+	TableData[handle][E_TABLE_CURRENT_TURN] = INVALID_PLAYER_ID;
 	TableData[handle][E_TABLE_LOADING_GAME] = false;
 	ResetLabel(handle);
 
@@ -1344,6 +1351,7 @@ stock StartNewPokerGame(handle, time)
 		TableData[handle][E_TABLE_POT_CHIPS][i] = 0;
 		Iter_Clear(It_SidepotMembers[_IT[handle][i]]);
 	}
+	Iter_Clear(IT_PlayersInGame<handle>);
 
 	if(Iter_Count(IT_PlayersTable<handle>) >= 2)
 	{
@@ -2232,6 +2240,10 @@ hook OnPlayerClickPlayerTD(playerid, PlayerText:playertextid)
 
 		if(GetPlayerClickedTxt(playerid)) return 1;
 		new handle = PlayerData[playerid][E_PLAYER_CURRENT_HANDLE];
+		if(TableData[handle][E_TABLE_CURRENT_TURN] != playerid) {
+			HidePlayerChoices(playerid);
+			return 1;
+		}
 		if(playertextid == PlayerData[playerid][E_PLAYER_CHOICES_TXT][FOLD])
 		{
 			//Fold

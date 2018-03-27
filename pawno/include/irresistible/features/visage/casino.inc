@@ -35,8 +35,8 @@ hook OnGameModeInit( )
 	CreatePokerTable( 50000, 500, 2619.504882, 1615.672973, 1505.548950, 6, VISAGE_WORLD, VISAGE_INTERIOR );
 
 	// Robbery Info
-	CreateRobberyNPC( "Visage Cashier", 3000, 2601.9226, 1567.5959, 1508.3521, 0.0, 11, VISAGE_WORLD ); // Mafia
-	CreateRobberyNPC( "Visage Cashier",	3000, 2607.0059, 1567.5959, 1508.3521, 0.0, 172, VISAGE_WORLD ); // Mafia
+	CreateRobberyNPC( "Visage Cashier", 2500, 2601.9226, 1567.5959, 1508.3521, 0.0, 11, VISAGE_WORLD ); // Mafia
+	CreateRobberyNPC( "Visage Cashier",	2500, 2607.0059, 1567.5959, 1508.3521, 0.0, 172, VISAGE_WORLD ); // Mafia
 	CreateRobberyCheckpoint( "Visage Casino - Safe 1", 	4000, 2609.208984, 1566.640014, 1507.802001, -90.00000, 79 );
 	CreateRobberyCheckpoint( "Visage Casino - Safe 2", 	4000, 2609.208984, 1565.798950, 1507.802001, -90.00000, 79 );
 
