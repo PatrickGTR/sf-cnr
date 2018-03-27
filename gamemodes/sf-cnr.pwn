@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+// #pragma option -d3
 #pragma dynamic 7200000
 // #define DEBUG_MODE
 
@@ -1275,7 +1275,7 @@ new
 ;
 
 /* ** ATM System ** */
-#define MAX_ATMS 					46
+#define MAX_ATMS 					48
 
 enum E_ATM_DATA
 {
@@ -2934,7 +2934,7 @@ new
 		{ "Weed",	 -1719.1877, -1377.3049, 5874.8721, -1734.094, -1374.4567, 5874.1475, 10000, 12, MAX_WEED_AMOUNT, 2500000 },
 		{ "Meth",	 2040.54810, 1011.41470, 1513.2777, 2029.2456, 1003.55200, 1510.2416, 18000, 16, MAX_METH_AMOUNT, 4000000 },
 		{ "Coke",  	 2566.50070, -1273.2887, 1143.7203, 2558.5261, -1290.6298, 1143.7242, 50000, 20, MAX_COKE_AMOUNT, 7500000 },
-		{ "Weapons", -5362.4058, -269.47140, 836.5154, -5369.4609, -247.57190, 836.5154, 125000, 48, MAX_WEAPON_AMOUNT, 16000000 }
+		{ "Weapons", -6962.5542, -269.4713, 836.5154, -6969.2417, -248.1167, 836.5154, 125000, 48, MAX_WEAPON_AMOUNT, 16000000 }
 	},
 	g_businessCarModelData[ ] [ E_BUSINESS_VEHICLE_DATA ] =
 	{
@@ -9903,7 +9903,7 @@ CMD:meth( playerid, params[ ] )
 			return SendError( playerid, "This is restricted to civilians only." );
 
 		new
-			cashEarned = p_Methamphetamine{ playerid } * ( 3500 + random( 1000 ) );
+			cashEarned = p_Methamphetamine{ playerid } * ( 5000 + random( 1000 ) );
 
 		GivePlayerCash( playerid, cashEarned );
 		SendServerMessage( playerid, "You have exported %d bags of meth, earning you "COL_GOLD"%s"COL_WHITE".", p_Methamphetamine{ playerid }, number_format( cashEarned ) );
@@ -10250,20 +10250,30 @@ CMD:getmytax( playerid, params[ ] )
 
 CMD:gettotalcash( playerid, params[ ] )
 {
-	mysql_function_query( dbHandle, "SELECT SUM(`BANKMONEY`) + SUM(`CASH`) AS `total_cash` FROM `USERS`", true, "gettotalcash", "i", playerid );
+	mysql_function_query( dbHandle, "SELECT USER_CASH, BIZ_CASH, GANG_CASH FROM (SELECT (SUM(BANKMONEY)+SUM(CASH)) USER_CASH FROM USERS) A CROSS JOIN (SELECT SUM(BANK) BIZ_CASH FROM BUSINESSES) B CROSS JOIN (SELECT SUM(BANK) GANG_CASH FROM GANGS) C", true, "gettotalcash", "i", playerid );
 	return 1;
 }
 
 thread gettotalcash( playerid )
 {
 	new
-		rows, fields, Field[ 12 ];
+		rows;
 
-    cache_get_data( rows, fields );
+    cache_get_data( rows, tmpVariable );
 	if ( rows )
 	{
-		cache_get_field_content( 0, "total_cash", Field );
-		SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( strval( Field ) ), number_format( floatround( strval( Field ) / 1000 * GetTaxRate( ) ) ) );
+		new user_cash = cache_get_field_content_int( 0, "USER_CASH", dbHandle );
+		new biz_cash = cache_get_field_content_int( 0, "BIZ_CASH", dbHandle );
+		new gang_cash = cache_get_field_content_int( 0, "GANG_CASH", dbHandle );
+
+		new total_cash = user_cash + biz_cash + gang_cash;
+		new tax_rate = floatround( float( total_cash ) / 1000.0 * GetTaxRate( ) );
+
+		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s\nTax Rate (24 min)\t"COL_GOLD"%s",
+				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ), number_format( tax_rate ) );
+
+		SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( total_cash ), number_format( tax_rate ) );
+  		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}SF-CNR Economy", szLargeString, "Close", "" );
 	}
 	else SendError( playerid, "An error has occurred, try again later." );
 	return 1;
@@ -15094,7 +15104,7 @@ CMD:getstats( playerid, params[ ] )
 	else
 	{
 	    p_ViewingStats[ playerid ] = pID;
-		ShowPlayerDialog( playerid, DIALOG_STATS, DIALOG_STYLE_LIST, "{FFFFFF}Statistics", "General Statistics\nGame Statistics\nItem Statistics\nStreak Statistics\nAchievements", "Okay", "Cancel" );
+		ShowPlayerDialog( playerid, DIALOG_STATS, DIALOG_STYLE_LIST, "{FFFFFF}Statistics", "General Statistics\nGame Statistics\nItem Statistics\nStreak Statistics\nWeapon Statistics\nAchievements", "Okay", "Cancel" );
 	}
    	return 1;
 }
@@ -23615,7 +23625,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 	}
 	if ( ( dialogid == DIALOG_STATS_REDIRECT ) && !response ) {
-		ShowPlayerDialog( playerid, DIALOG_STATS, DIALOG_STYLE_LIST, "{FFFFFF}Statistics", "General Statistics\nGame Statistics\nItem Statistics\nStreak Statistics\nAchievements", "Okay", "Cancel" );
+		ShowPlayerDialog( playerid, DIALOG_STATS, DIALOG_STYLE_LIST, "{FFFFFF}Statistics", "General Statistics\nGame Statistics\nItem Statistics\nStreak Statistics\nWeapon Statistics\nAchievements", "Okay", "Cancel" );
 	}
 	if ( ( dialogid == DIALOG_VEHDEALER ) && response ) {
 		ShowBuyableVehiclesTypeDialog( playerid, listitem + 1 );
@@ -27572,7 +27582,7 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_BIZ_TERMINAL_COKE ] = CreateDynamicCP( 2563.5728, -1310.5925, 1143.7242, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_METH ] = CreateDynamicCP( 2034.0669, 1001.6073, 1510.2416, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_WEED ] = CreateDynamicCP( -1742.9982, -1377.3049, 5874.1333, 1.0, -1, -1, -1, 30.0 );
-	g_Checkpoints[ CP_BIZ_TERMINAL_WEAP ] = CreateDynamicCP( -5342.8770, -247.8264, 837.5850, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_BIZ_TERMINAL_WEAP ] = CreateDynamicCP( -6942.8770, -247.7294, 837.5850, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_REWARDS_CALIG ] = CreateDynamicCP( 2157.6294, 1599.4355, 1006.1797, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_REWARDS_4DRAG ] = CreateDynamicCP( 1951.7191, 997.5555, 992.8594, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_REWARDS_VISAGE ] = CreateDynamicCP( 2604.1323, 1570.1182, 1508.3530, 1.0, -1, -1, -1, 30.0 );
@@ -27652,7 +27662,7 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2563.5728, -1310.5925, 1143.7242, 20.0);
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2034.0669, 1001.6073, 1510.2416, 20.0);
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -1742.9982, -1377.3049, 5874.1333, 20.0);
-	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -5342.8770, -247.8264, 837.5850, 20.0);
+	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -6942.8770, -247.7294, 837.5850, 20.0);
 }
 
 stock DestroyAllPlayerC4s( playerid, bool: resetc4 = false )
@@ -28734,7 +28744,7 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 
 	GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], fX, fY, fZ );
 
-	if ( ( p_Robberies[ playerid ] <= 10 ? 0 : random( 101 ) ) < 80 )
+	if ( ( p_Robberies[ playerid ] <= 20 ? 0 : random( 101 ) ) < 90 )
 	{
 		new
 			Float: iLoot = float( RandomEx( 1000, g_robberyData[ robberyid ] [ E_ROB_VALUE ] ) );
@@ -33760,6 +33770,7 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 }
 
 stock IsPlayerInCasino( playerid ) {
+	if ( GetPlayerState( playerid ) != PLAYER_STATE_ONFOOT ) return 0;
 	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && GetPlayerVirtualWorld( playerid ) == VISAGE_WORLD ) return 1; // visage itself
 	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && GetPlayerVirtualWorld( playerid ) != 0 ) return 1; // visage apartments
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );

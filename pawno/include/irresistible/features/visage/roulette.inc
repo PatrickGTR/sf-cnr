@@ -240,6 +240,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					g_rouletteTableData[ rouletteid ] [ E_NO_MORE_BETS ] = false;
 
 					// fire the spin table
+					KillTimer( g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] );
 					g_rouletteTableData[ rouletteid ] [ E_SPINNING_TIMER ] = SetTimerEx( "OnSpinRouletteTable", 25, false, "ddd", rouletteid, 0, 1 );
 
 					// inform other players

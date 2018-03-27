@@ -42,6 +42,8 @@ hook OnGameModeInit( )
 
 	// Create ATM
 	CreateATM( 2557.137939, 1576.037963, 1508.003051, -90.000000 );
+	CreateATM( 2630.107177, 1647.757324, 1507.968750, -90.000000 );
+	CreateATM( 2641.666992, 1649.718994, 1507.968750, 90.0000000 );
 
 	// Create Roulette Tables
 	CreateRouletteTable( 2641.445068, 1619.609008, 1506.227050, 90.000000, VISAGE_WORLD, .maxbet = 250000 );
@@ -321,6 +323,8 @@ static stock InitializeCasinoInterior( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18762, 2609.367919, 1564.864990, 1505.781982, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorwall02_128", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19940, 2609.099121, 1566.212036, 1508.271972, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorwall02_128", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19940, 2609.529052, 1566.202026, 1508.271972, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorwall02_128", -16 );
+	CreateDynamicObject( 19324, 2630.107177, 1649.759155, 1507.968750, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	CreateDynamicObject( 19324, 2641.666992, 1647.757324, 1507.968750, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
 }
 
 stock IsPlayerInHighRoller( playerid )
