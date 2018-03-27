@@ -1,0 +1,9 @@
+(+) Adds some helpful text within the meth RV vans.
+(+) "/gettotalcash" is now more accurate, taking into account gang and business accounts.
+(*) Robbery loot should instantly appear when you successfully open it.
+(/) New bunker interior for businesses.
+(/) Highroller slot machines are double the price, but have double the chance of winning.
+(/) Your wanted level will not be removed slowly if you are distant from police.
+(/) Safe robbery has been DOUBLED and a bit faster to pick.
+(/) Highroller and firework cost have been changed.
+(/) Thermal drill now lasts an additional 5 safes.

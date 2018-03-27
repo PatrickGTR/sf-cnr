@@ -47,6 +47,7 @@ gamemodes/*
 scriptfiles/**/*
 !scriptfiles/COD/
 !scriptfiles/COD/**
+!scriptfiles/updates.txt
 
 # npc
 npcmodes/**/*
