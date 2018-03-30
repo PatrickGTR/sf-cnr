@@ -4943,7 +4943,7 @@ stock initializeServerObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 3037, -253.831680, -18.242807, 2218.315185, 0.000000, 0.000000, 360.000000 ), 0, 1676, "wshxrefpump", "black64", 0 );
 
 	// Army base carrier
-	CreateDynamicObject(10771, 1232.47021, -2649.28809, 5.44530,   0.00000, 0.00000, 271.00000, .streamdistance = 500.0, .priority = 10);
+	CreateDynamicObject(10771, 1232.47021, -2649.28809, 5.44530,   0.00000, 0.00000, 271.00000, .streamdistance = -1.0, .priority = 11);
 	CreateDynamicObject(10772, 1232.32056, -2650.55811, 17.27340,   0.00000, 0.00000, 271.00000, .streamdistance = 500.0, .priority = 10);
 	CreateDynamicObject(10770, 1224.96631, -2652.61230, 38.67970,   0.00000, 0.00000, 271.00000, .streamdistance = 500.0, .priority = 10);
 	CreateDynamicObject(3115, 1230.74536, -2550.27563, 16.95340,   0.00000, 0.00000, 271.00000, .streamdistance = 500.0, .priority = 10);

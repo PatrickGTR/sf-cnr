@@ -128,10 +128,7 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer( playerid, 5964, 1160.9609, -1180.5781, 70.4141, 0.25 );
 	RemoveBuildingForPlayer( playerid, 10850, -1875.0234, -65.3281, 15.0625, 0.25 );
 	RemoveBuildingForPlayer( playerid, 10919, -1875.0234, -65.3281, 15.0625, 0.25 );
-	RemoveBuildingForPlayer( playerid, 11289, -1839.3281, -106.4531, 11.146, 0.25 );
-	RemoveBuildingForPlayer( playerid, 16590, 199.34380, 1943.7891, 18.2031, 0.25 );
-	RemoveBuildingForPlayer( playerid, 16660, 215.92190, 1865.1797, 13.0234, 0.25 );
-	RemoveBuildingForPlayer( playerid, 16203, 199.34380, 1943.7891, 18.2031, 0.25 ); // From remove Static Buildings
+	RemoveBuildingForPlayer( playerid, 11289, -1839.3281, -106.4531, 11.146, 0.25 ); // From remove Static Buildings
 	RemoveBuildingForPlayer( playerid, 1411, -1846.8516, -193.1797, 18.8516, 50.0 ); // Dope HQ
 	RemoveBuildingForPlayer( playerid, 985, 2497.4063, 2777.0703, 11.5313, 0.25 ); // K.A.C.C. Gates
 	RemoveBuildingForPlayer( playerid, 986, 2497.4063, 2769.1094, 11.5313, 0.25 ); // K.A.C.C. Gates
