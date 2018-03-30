@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-// #pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
 // #define DEBUG_MODE
 
@@ -49,9 +49,6 @@ native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
 
-/* ** irresistible gaming ** */
-#include 							< irresistible\main >
-
 /* ** Anticheat ** */
 #if !defined AC_INCLUDED
 	#include 						< anticheat\global >
@@ -71,6 +68,9 @@ native gpci 						( playerid, serial[ ], len );
 
 	#define AC_INCLUDED
 #endif
+
+/* ** irresistible gaming ** */
+#include 							< irresistible\main >
 
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
@@ -146,7 +146,7 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.10.20"
+#define FILE_BUILD                	"v11.11.25"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -162,6 +162,7 @@ new bool: False = false;
 #define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_EXTRA_SLOTS 			5
+#define MAX_VEH_ATTACHED_OBJECTS  	2
 #define sscanf_u					"u"
 
 #define EXCHANGE_XPCASH             10 // Per 1 XP for cash.
@@ -233,7 +234,7 @@ new stock
 #define CLASS_MEDIC              	( 3 )
 
 /* ** Checkpoints ** */
-#define ALL_CHECKPOINTS             ( 49 )
+#define ALL_CHECKPOINTS             ( 50 )
 
 #define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
@@ -284,6 +285,7 @@ new stock
 #define CP_AIRPORT_SF 				( 46 )
 #define CP_AIRPORT_LS 				( 47 )
 #define CP_AIRPORT_LV 				( 48 )
+#define CP_CASINO_BAR 				( 49 )
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -1271,7 +1273,7 @@ enum E_GPS_DATA
 };
 
 new
-	g_gpsData						[ 61 ] [ E_GPS_DATA ]
+	g_gpsData						[ 62 ] [ E_GPS_DATA ]
 ;
 
 /* ** ATM System ** */
@@ -2517,7 +2519,8 @@ new
 		{ -1589.4668, 115.8173, 3.54950, 0xFFFF, "{FFFFFF}Dirty Mechanics can export vehicles and receive money based on the material that can be taken from a vehicle!" },	 		// Car Jacker
 		{ -2767.3765, 1257.077, 11.7703, 0xFFFF, "{FFFFFF}You can mine ores and store your ores in dunes for exportation! Use the /ore command to see its usage!" },				// Mining
 		{ 1954.71890, 1038.251, 992.859, 0xFFFF, "{FFFFFF}Test out your luck on the slot machines, maybe you might win the mega jackpot!" },										// Slots
-		{ 1955.69070, 1005.167, 992.468, 0xFFFF, "{FFFFFF}Roulette can payout up to $3.5M! Single bets return 35x your money whereas outside bets can return 2x to 3x!" }			// Roulette
+		{ 1955.69070, 1005.167, 992.468, 0xFFFF, "{FFFFFF}Roulette can payout up to $3.5M! Single bets return 35x your money whereas outside bets can return 2x to 3x!" },			// Roulette
+		{ 2085.5896, 1239.4589, 414.745, 0xFFFF, "{FFFFFF}Buy materials at a convience store and cook meth! Aim and shoot each ingredient to add them as you /meth cook!" } 		// Meth Cook
 	}
 ;
 
@@ -3381,7 +3384,6 @@ public OnGameModeInit()
 
 	/* ** Intalize Data ** */
 	initializeCheckpoints( );
-	initializeVehicles( );
 	initializeServerObjects( );
 	initializeObjects( );
 	initializeVendingMachines( );
@@ -3522,7 +3524,7 @@ public OnGameModeInit()
 
 	/* ** Robbery Points ** */
 	static const ROBBERY_BOT_PAY = 2500; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 5500; // max pay from robbing safes
+	static const ROBBERY_SAFE_PAY = 5000; // max pay from robbing safes
 
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.84180, 862.85895, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateRobberyCheckpoint( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.84180, 861.17932, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -4029,16 +4031,17 @@ public OnGameModeInit()
 	CreateNavigation( "Police Department", 		2288.0063, 2429.8960, 10.8203, CITY_LV ); // 8
 	CreateNavigation( "4 Dragons Casino",		2025.3047, 1008.4356, 10.3846, CITY_LV ); // 8
 	CreateNavigation( "Caligula's Casino", 		2191.3186, 1677.9497, 11.9736, CITY_LV ); // 10
-	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 11
-	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 12
-	CreateNavigation( "Quarry", 				343.09180, 877.98650, 20.4063, CITY_LV ); // 13
-	CreateNavigation( "V.I.P Lounge", 			1966.8428, 1623.2175, 12.8621, CITY_LV ); // 14
-	CreateNavigation( "Pawnshop",				2482.4395, 1326.4077, 10.8203, CITY_LV ); // 15
-	CreateNavigation( "Fort Carson", 			-135.5214, 1148.3502, 19.5938, CITY_LV ); // 16
-	CreateNavigation( "Ammu-Nation F.C.", 		-311.6576, 830.07060, 14.2422, CITY_LV ); // 17
-	CreateNavigation( "Las Payasadas", 			-233.0320, 2700.0896, 62.5391, CITY_LV ); // 18
-	CreateNavigation( "El Quebrados", 			-1491.172, 2603.0425, 55.6897, CITY_LV ); // 19
-	CreateNavigation( "Las Barrancas",          -805.4283, 1539.6168, 26.9609, CITY_LV ); // 20
+	CreateNavigation( "The Visage Casino", 		2017.1334, 1916.4141, 12.3424, CITY_LV ); // 11
+	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 12
+	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 13
+	CreateNavigation( "Quarry", 				343.09180, 877.98650, 20.4063, CITY_LV ); // 14
+	CreateNavigation( "V.I.P Lounge", 			1966.8428, 1623.2175, 12.8621, CITY_LV ); // 15
+	CreateNavigation( "Pawnshop",				2482.4395, 1326.4077, 10.8203, CITY_LV ); // 16
+	CreateNavigation( "Fort Carson", 			-135.5214, 1148.3502, 19.5938, CITY_LV ); // 17
+	CreateNavigation( "Ammu-Nation F.C.", 		-311.6576, 830.07060, 14.2422, CITY_LV ); // 18
+	CreateNavigation( "Las Payasadas", 			-233.0320, 2700.0896, 62.5391, CITY_LV ); // 19
+	CreateNavigation( "El Quebrados", 			-1491.172, 2603.0425, 55.6897, CITY_LV ); // 20
+	CreateNavigation( "Las Barrancas",          -805.4283, 1539.6168, 26.9609, CITY_LV ); // 21
 	#endif
 
 	#if ENABLE_CITY_LS == true
@@ -4320,7 +4323,6 @@ public OnGameModeInit()
 
  	// Random replacements made by sa-mp
 	CreateDynamicObject( 19794, 1787.13281, -1565.67969, 11.96880, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
-	CreateDynamicObject( 11692, 199.343800, 1943.789060, 18.20310, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
 	CreateDynamicObject( 19484, -1875.02344, -65.328130, 15.06250, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
 	CreateDynamicObject( 19595, 1160.96094, -1180.57813, 70.41406, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
 	CreateDynamicObject( 19798, 1160.96094, -1180.57813, 20.50000, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
@@ -7001,6 +7003,10 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 					case 573: Damage /= 6.0; // Dune
 					case 508: Damage /= 4.0; // Journey
 					case 498: Damage /= 2.0; // Boxville
+					case 432: Damage /= 15.0; // Rhino
+					case 433, 427: Damage /= 4.0; // barracks/enforcer
+					case 601, 428: Damage /= 5.0; // swat tank, securicar
+					case 407, 544, 406: Damage /= 2.0; // firetruck a, firetruck b, dumper
 				}
 
 				if ( Health >= 250.0 ) {
@@ -7185,6 +7191,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 	if ( IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerDetained( playerid ) || IsPlayerKidnapped( playerid ) || IsPlayerTied( playerid ) || IsPlayerLoadingObjects( playerid ) || IsPlayerAdminOnDuty( playerid ) || p_AntiSpawnKillEnabled{ playerid } )
 		return 0;
+
+	// Boxing immunity
+	if ( IsPlayerBoxing( playerid ) && ! IsPlayerBoxing( issuerid ) )
+		 return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage a boxing player!" ), 0;
 
 	// Rhino damage invulnerable
 	if ( p_Class[ playerid ] == CLASS_POLICE && IsPlayerInAnyVehicle( playerid ) && GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 432 )
@@ -7610,8 +7620,9 @@ public OnVehicleSpawn( vehicleid )
     ResetVehicleBurglaryData( vehicleid );
     ResetVehicleMethlabData( vehicleid, true );
 
-	if ( g_buyableVehicle{ vehicleid } == true )
+	if ( g_buyableVehicle{ vehicleid } == true ) {
 		RespawnBuyableVehicle( vehicleid );
+	}
 	return 1;
 }
 
@@ -7658,6 +7669,47 @@ public OnVehicleDeath( vehicleid, killerid )
     ResetVehicleBurglaryData( vehicleid );
     KillEveryoneInShamal( vehicleid );
     ResetVehicleMethlabData( vehicleid, true );
+	return 1;
+}
+
+public OnVehicleCreated( vehicleid, model_id )
+{
+	new
+		attached_objects[ MAX_VEH_ATTACHED_OBJECTS ] = { -1, ... };
+
+	switch ( model_id )
+	{
+		// journey help text
+		case 508:
+		{
+			attached_objects[ 0 ] = CreateDynamicObject( 19861, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+			attached_objects[ 1 ] = CreateDynamicObject( 19861, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+			SetDynamicObjectMaterialText( attached_objects[ 0 ], 0, "Meth Van\n{ffffff}Press G", 140, "Impact", 40, 0, -65536, 0, 1 );
+			SetDynamicObjectMaterialText( attached_objects[ 1 ], 0, "Meth Van\n{ffffff}Press G", 140, "Impact", 40, 0, -65536, 0, 1 );
+			AttachDynamicObjectToVehicle( attached_objects[ 0 ], vehicleid, 1.350000, -2.200000, 1.799999, 0.000000, 0.000000, 90.00000 );
+			AttachDynamicObjectToVehicle( attached_objects[ 1 ], vehicleid, -1.35000, -2.200000, 1.799999, 0.000000, 0.000000, -90.0000 );
+			SetGVarInt( "vehicle_objects_0", attached_objects[ 0 ], vehicleid );
+			SetGVarInt( "vehicle_objects_1", attached_objects[ 1 ], vehicleid );
+		}
+	}
+	return 1;
+}
+
+public OnVehicleDestroyed( vehicleid )
+{
+	if ( GetGVarType( "vehicle_objects_0", vehicleid ) != GLOBAL_VARTYPE_NONE )
+	{
+		// remove all objects
+		for ( new i = 0; i < MAX_VEH_ATTACHED_OBJECTS; i ++ )
+		{
+			new object_id = GetGVarInt( sprintf( "vehicle_objects_%d", i ), vehicleid );
+
+			if ( object_id ) {
+				DestroyDynamicObject( object_id );
+				DeleteGVar( sprintf( "vehicle_objects_%d", i ), vehicleid );
+			}
+		}
+	}
 	return 1;
 }
 
@@ -8049,7 +8101,7 @@ public OnPlayerProgressUpdate( playerid, progressid, params )
 	}
 	if ( progressid == PROGRESS_CHEMICAL || progressid == PROGRESS_GRAB_METH )
 	{
-		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) || !IsPlayerInMethlab( playerid ) || canceled )
+		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) || !IsPlayerInMethlab( playerid ) || canceled )
 			return DeletePVar( playerid, "pouring_chemical" ), StopProgressBar( playerid ), 1;
 	}
 #if ENABLED_SECURE_TRUCK == true
@@ -8274,7 +8326,7 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 		}
 		case PROGRESS_CHEMICAL:
 		{
-			if ( IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) && IsPlayerInMethlab( playerid ) )
+			if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) )
 			{
 				new
 					chemical = GetPVarInt( playerid, "pouring_chemical" ),
@@ -8310,14 +8362,14 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 					AttachDynamicObjectToVehicle( GetGVarInt( "meth_smoke", vehicleid ), vehicleid, -0.524999, -0.974999, -0.375000, 0.000000, 0.000000, 0.000000 );
 
 					ShowPlayerHelpDialog( playerid, 5000, "Okay, okay, everything seems to be cooking fine. Wait till for the next chemical to be added." );
-	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.irresistiblegaming.com/game_sounds/cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
-					SetGVarInt( "meth_cooktimer", SetTimerEx( "OnMethamphetamineCooking", 20000, false, "ddd", playerid, vehicleid, chemical ), vehicleid );
+	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.irresistiblegaming.com/game_sounds/meth_cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
+					SetGVarInt( "meth_cooktimer", SetTimerEx( "OnMethamphetamineCooking", 10000, false, "ddd", playerid, vehicleid, chemical ), vehicleid );
 				}
 			}
 		}
 		case PROGRESS_GRAB_METH:
 		{
-			if ( IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) && IsPlayerInMethlab( playerid ) )
+			if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) )
 			{
 				new
 					vehicleid = GetPlayerMethLabVehicle( playerid ),
@@ -8417,7 +8469,9 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 			GivePlayerWantedLevel( playerid, 12 );
 			GivePlayerScore( playerid, 3, .multiplier = 0.30 );
 			Achievement::HandleMethYielded( playerid );
-			SetGVarInt( "meth_yield", CreateDynamicObject( 1579, 1477.72449, 1464.36450, 1011.78589, 0.00000, 0.00000, 0.00000, GetPlayerVirtualWorld( playerid ) ), vehicleid );
+			SetGVarInt( "meth_yield", CreateDynamicObject( 1579, 2083.684082, 1233.945922, 414.875244, 0.000000, 0.000000, 90.000000, GetPlayerVirtualWorld( playerid ) ), vehicleid );
+			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
+			Streamer_Update( playerid );
 		}
 		else
 		{
@@ -8437,6 +8491,7 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 			SetGVarInt( "meth_ingredient", iMethIngredient, vehicleid );
 
 			SendServerMessage( playerid, "Okay, let's cook. New chemical to be added." );
+			PlayerPlaySound( playerid, 1056, 0.0, 0.0, 0.0 );
 		}
 	}
 	else
@@ -8531,8 +8586,10 @@ stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( arr
 
 public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 {
-	if ( !success )
+	if ( !success ) {
+		AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
 		return SendError( playerid, "You have entered an invalid command. To display the command list type /commands or /cmds." );
+	}
 
 	return 1;
 }
@@ -9850,7 +9907,7 @@ CMD:meth( playerid, params[ ] )
 		;
 		if ( IsValidVehicle( vehicleid ) && GetVehicleModel( vehicleid ) == 508 )
 		{
-			if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) )
+			if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) )
 				return SendError( playerid, "You're not near the lab." );
 
 			if ( GetGVarInt( "meth_soda", vehicleid ) != 0 || GetGVarInt( "meth_acid", vehicleid ) != 0 || GetGVarInt( "meth_chloride", vehicleid ) != 0 )
@@ -9892,9 +9949,6 @@ CMD:meth( playerid, params[ ] )
 	{
 		if ( GetPlayerInterior( playerid ) != 9 )
 			return SendError( playerid, "You must be inside Cluckin' Bell to use this command." );
-
-		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 364.9201, -5.3505, 1001.8516 ) )
-			return SendError( playerid, "You need to near the kitchen door inside Cluckin' Bell." );
 
 		if ( !p_Methamphetamine{ playerid } )
 			return SendError( playerid, "You don't have any meth to export." );
@@ -18622,7 +18676,7 @@ public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
     		{
 		        if ( GetPlayerVirtualWorld( playerid ) == 0 ) // Place in Methlab
 		    	{
-		            SetPlayerPos( playerid, 1475.8126, 1460.5450, 1011.8170 );
+		            SetPlayerPos( playerid, 2087.2339, 1233.6448, 414.7454 );
 		            SetPlayerInterior( playerid, VW_METH ); // Li
 		            SetPlayerVirtualWorld( playerid, vehicleid + VW_METH );
 		            SetPVarInt( playerid, "inMethLab", 1 );
@@ -19099,6 +19153,9 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( checkpointid == g_Checkpoints[ CP_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_COUNTRY_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_BANK_MENU_LS ] )
  		return ShowPlayerBankMenuDialog( playerid ), 1;
+
+ 	if ( checkpointid == g_Checkpoints[ CP_CASINO_BAR ] )
+ 		return ShowPlayerDialog( playerid, DIALOG_CASINO_BAR, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Casino Bar", ""COL_WHITE"Bar Item\t"COL_WHITE"Casino Rewards Points\nBeer\t"COL_GOLD"20.0 Points\nCigar\t"COL_GOLD"20.0 Points\nWine\t"COL_GOLD"20.0 Points", "Buy", "Close" ), 1;
 
 	if ( checkpointid == g_Checkpoints[ CP_CHANGE_JOB ] )
  		return ShowPlayerDialog( playerid, DIALOG_CITY_HALL, DIALOG_STYLE_LIST, "{FFFFFF}City Hall", ""COL_GOLD"$5,000"COL_WHITE"\t\tChange Job\n"COL_GOLD"free"COL_WHITE"\t\tChange City", "Select", "Close" ), 1;
@@ -20522,12 +20579,12 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			}
 		}
 
-		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 1476.0264, 1463.6255, 1011.8170 ) && IsPlayerInMethlab( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
+		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
 		{
 			new
 				vehicleid = GetPlayerMethLabVehicle( playerid ),
 				objectid = GetGVarInt( "meth_yield", vehicleid ),
-				Float: fAimDistance = 0.25
+				Float: fAimDistance = 0.4
 			;
 
 			if ( IsValidDynamicObject( objectid ) && Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID ) == 1579 )
@@ -20542,7 +20599,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			{
 				if ( GetGVarType( "meth_chef", vehicleid ) != GLOBAL_VARTYPE_NONE && IsPlayerConnected( GetGVarInt( "meth_chef", vehicleid ) ) && GetGVarType( "meth_cooktimer", vehicleid ) == GLOBAL_VARTYPE_NONE && !p_ProgressStarted{ playerid } )
 				{
-					if ( IsPlayerAimingAt( playerid, 1477.07068, 1464.22253, 1011.95422, fAimDistance ) )
+					if ( IsPlayerAimingAt( playerid, 2083.489990, 1234.743041, 414.821014, fAimDistance ) )
 					{
 						if ( !p_CausticSoda{ playerid } )
 							return SendError( playerid, "You don't have any caustic soda." );
@@ -20551,7 +20608,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						ApplyAnimation( playerid, "CARRY", "putdwn105", 4.0, 1, 0, 0, 1, 0 );
 						ShowProgressBar( playerid, "Pouring Caustic Soda", PROGRESS_CHEMICAL, 250, 0x3E7EFFFF );
 					}
-					else if ( IsPlayerAimingAt( playerid, 1476.64514, 1464.43201, 1012.21051, fAimDistance ) )
+					else if ( IsPlayerAimingAt( playerid, 2083.282958, 1234.025024, 415.028009, fAimDistance ) )
 					{
 						if ( !p_HydrogenChloride{ playerid } )
 							return SendError( playerid, "You don't have any hydrogen chloride." );
@@ -20560,7 +20617,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						ApplyAnimation( playerid, "CARRY", "putdwn105", 4.0, 1, 0, 0, 1, 0 );
 						ShowProgressBar( playerid, "Pouring Hydrogen Chloride", PROGRESS_CHEMICAL, 250, 0xEE9911FF );
 					}
-					else if ( IsPlayerAimingAt( playerid, 1475.14404, 1464.33667, 1012.11896, fAimDistance ) )
+					else if ( IsPlayerAimingAt( playerid, 2083.638916, 1233.254028, 415.020996, fAimDistance ) )
 					{
 						if ( !p_MuriaticAcid{ playerid } )
 							return SendError( playerid, "You don't have any muriatic acid." );
@@ -20708,7 +20765,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	    			vehicleid = GetPlayerVirtualWorld( playerid ) - VW_METH
 				;
 
-	    		if ( IsValidVehicle( vehicleid ) && IsPlayerInRangeOfPoint( playerid, 1.5, 1475.8126, 1460.5450, 1011.8170 ) )
+	    		if ( IsValidVehicle( vehicleid ) && IsPlayerInRangeOfPoint( playerid, 1.5, 2087.2339, 1233.6448, 414.7454 ) )
 	    		{
 			        GetVehiclePos( vehicleid, X, Y, Z );
 			        GetVehicleZAngle( vehicleid, Angle );
@@ -22505,7 +22562,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
 					GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
 					p_DamageSpamCount{ playerid } = 0;
-	                RepairVehicle( GetPlayerVehicleID( playerid ) );
+	                RepairVehicle( vehicleid );
 					GivePlayerXP( playerid, -200 );
 					SendServerMessage( playerid, "You have fixed and flipped your vehicle for 200 XP." );
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
@@ -22539,9 +22596,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	        {
 	            if ( p_XP[ playerid ] >= 120 )
 	            {
+	            	new vehicleid = GetPlayerVehicleID( playerid );
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 					p_DamageSpamCount{ playerid } = 0;
-	                RepairVehicle( GetPlayerVehicleID( playerid ) );
+	                RepairVehicle( vehicleid );
 					GivePlayerXP( playerid, -120 );
 					SendServerMessage( playerid, "You have repaired your car for 120 XP." );
 	            }
@@ -22626,6 +22684,24 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    	x ++;
 		    }
 	    }
+	    return 1;
+	}
+	if ( dialogid == DIALOG_CASINO_BAR && response )
+	{
+		if ( p_CasinoRewardsPoints[ playerid ] < 20.0 ) return SendError( playerid, "You need 20.0 casino rewards points to buy an item from the casino's bar." );
+
+		// what did they buy
+		switch ( listitem )
+		{
+			case 0: SetPlayerSpecialAction( playerid, 20 ), SendServerMessage( playerid, "You have bought a beer for "COL_GOLD"20.0 casino rewards points"COL_WHITE"." );
+			case 1: SetPlayerSpecialAction( playerid, 21 ), SendServerMessage( playerid, "You have bought a cigar for "COL_GOLD"20.0 casino rewards points"COL_WHITE"." );
+			case 2: SetPlayerSpecialAction( playerid, 22 ), SendServerMessage( playerid, "You have bought wine for "COL_GOLD"20.0 casino rewards points"COL_WHITE"." );
+		}
+
+		// update account
+		p_CasinoRewardsPoints[ playerid ] -= 20.0;
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+		return 1;
 	}
 	if ( ( dialogid == DIALOG_SHOP_MENU ) && response )
     {
@@ -27589,6 +27665,7 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_AIRPORT_LV ] = CreateDynamicCP( 1672.53640, 1447.86160, 10.7881, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_AIRPORT_LS ] = CreateDynamicCP( 1642.22740, -2335.4978, 13.5469, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_AIRPORT_SF ] = CreateDynamicCP( -1422.4063, -286.50810, 14.1484, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_CASINO_BAR ] = CreateDynamicCP( 2655.8694, 1591.1545, 1506.1793, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
 	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
@@ -27636,6 +27713,7 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, 1579.5439, -1635.5166, 13.5609, 20.0);
 	#endif
 
+	CreateDynamic3DTextLabel("[CASINO BAR]", COLOR_GOLD,  2655.8694, 1591.1545, 1506.1793, 50.0);
 	CreateDynamic3DTextLabel("[AIRPORT]", COLOR_GOLD,  1672.53640, 1447.86160, 10.7881, 50.0);
 	CreateDynamic3DTextLabel("[AIRPORT]", COLOR_GOLD,  1642.22740, -2335.4978, 13.5469, 50.0);
 	CreateDynamic3DTextLabel("[AIRPORT]", COLOR_GOLD,  -1422.4063, -286.50810, 14.1484, 50.0);
@@ -27734,8 +27812,8 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 			{
 				if ( g_iTime > g_bankvaultData[ j ] [ E_TIMESTAMP ] )
 				{
-					g_bankvaultData[ j ] [ E_TIMESTAMP_CLOSE ]	= g_iTime + 120;
-			    	g_bankvaultData[ j ] [ E_TIMESTAMP ] 		= g_iTime + 300;
+					g_bankvaultData[ j ] [ E_TIMESTAMP_CLOSE ]	= g_iTime + 240; // time to close
+			    	g_bankvaultData[ j ] [ E_TIMESTAMP ] 		= g_iTime + 600; // time to restore
 			    	g_bankvaultData[ j ] [ E_DISABLED ] 		= true;
 
 					MoveDynamicObject( g_bankvaultData[ j ] [ E_OBJECT ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 2 ], 2.0, g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 2 ] );
@@ -33761,6 +33839,9 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 			dW = p_WantedLevel[ damagedid ], 	dC = p_Class[ damagedid ]
 		;
 
+		if ( IsPlayerBoxing( issuerid ) )
+			return false;
+
 		if ( !IsPlayerInCasino( issuerid ) || !IsPlayerInCasino( damagedid ) )
 			return false; // applies only to casinos
 
@@ -35396,7 +35477,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 		}
 
 		CreateCrimeReport( playerid );
-		DeletePVar( playerid, "robbedNpc" );
+		DeletePVar( playerid, sprintf( "robbedNpc_%d", clerkid ) );
 		PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is intimidated" );
 		UpdateDynamic3DTextLabelText( g_robberyNpcData[ clerkid ] [ E_LABEL ], COLOR_GOLD, sprintf( "%s\n"COL_GREY"Currently Being Robbed", g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] ) );
 	}
@@ -35422,7 +35503,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 		new
 			amount = RandomEx( 250, 500 ),
-			robbedNpc = GetPVarInt( playerid, "robbedNpc" ) + amount
+			robbedNpc = GetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ) ) + amount
 		;
 
 		g_robberyNpcData[ clerkid ] [ E_LOOT ] -= amount;
@@ -35433,9 +35514,9 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 			robbedNpc = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
 
 			if ( GetPlayerLocation( playerid, szCity, szLocation ) ) {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
+				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
 			} else {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 			}
 
 			/*new Float: safeDistance = 99999.99;
@@ -35456,7 +35537,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 			return SendError( playerid, "A money exploit occurred. Contact Lorenc ASAP." );
 
 		GivePlayerCash( playerid, amount );
-		SetPVarInt( playerid, "robbedNpc", robbedNpc );
+		SetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ), robbedNpc );
 		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", number_format( robbedNpc ) ) );
 	}
 
@@ -35468,7 +35549,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
 {
 	// Reset variables
-	DeletePVar( playerid, "robbedNpc" );
+	DeletePVar( playerid, sprintf( "robbedNpc_%d", clerkid ) );
 
 	// Hide textdraws
 	PlayerTextDrawHide( playerid, p_RobberyRiskTD[ playerid ] );
@@ -37350,6 +37431,7 @@ stock GivePlayerFireworks( playerid, fireworks ) {
 
 
 
+stock GetServerTime( ) return g_iTime;
 
 stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
 
