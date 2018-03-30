@@ -71,7 +71,7 @@
 			p_FlyHacksWarns 		{ playerid } = 3;
 			p_cbugWarns 			{ playerid } = 0;
 
-			for ( new i = 0; i < MAX_WEAPONS; i++ )
+			for ( new i = 0; i < AC_MAX_WEAPONS; i++ )
 				p_PlayerHasWeapon 	[ playerid ] { i } = false;
 		}
 
@@ -114,7 +114,7 @@
 			new
 				weaponid = mAvailableSpawns[ p_SelectedClassID[ playerid ] ] [ E_WEAPONS ] [ i ];
 
-			if( weaponid != -1 && weaponid < MAX_WEAPONS )
+			if( weaponid != -1 && weaponid < AC_MAX_WEAPONS )
 				p_PlayerHasWeapon[ playerid ] { weaponid } = true;
 		}
 
@@ -151,7 +151,7 @@
 				new
 					customKiller = GetPVarInt( playerid, "KillerID" );
 
-		  		OnPlayerDeathEx( playerid, customKiller != playerid ? customKiller : INVALID_PLAYER_ID, GetPVarInt( playerid, "WeaponID" ), 3.3, 3 );
+		  		CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, customKiller != playerid ? customKiller : INVALID_PLAYER_ID, GetPVarInt( playerid, "WeaponID" ), 3.3, 3 );
 
 			    DeletePVar( playerid, "KillerID" );
 			    DeletePVar( playerid, "WeaponID" );
@@ -164,7 +164,7 @@
 					p_LastDamageIssuer[ playerid ] = INVALID_PLAYER_ID, p_LastWeaponIssuer[ playerid ] = 51;
 
 				p_acSpawned{ playerid } = false; // They're dead!
-				OnPlayerDeathEx( playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
+				CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
 		    }
 
 			// General
@@ -235,11 +235,13 @@
 
 					if( ( p_PlayerHealth[ playerid ] [ E_POINTS ] -= tmp_amount ) < 0.0 ) {
 						p_acSpawned{ playerid } = false; // They're dead!
-						OnPlayerDeathEx( playerid, issuerid, weaponid, amount, bodypart );
+						CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, issuerid, weaponid, amount, bodypart );
 					}
 
 					SetPlayerArmour( playerid, p_PlayerArmour[ playerid ] [ E_POINTS ] );
 					SetPlayerHealth( playerid, p_PlayerHealth[ playerid ] [ E_POINTS ] );
+
+					CallRemoteFunction( "OnPlayerDamagePlayer", "ddfdd", issuerid, playerid, amount, weaponid, bodypart );
 				}
 			}
 			else
@@ -261,7 +263,7 @@
 				if( ( p_PlayerHealth[ playerid ] [ E_POINTS ] -= tmp_amount ) <= ( weaponid == 37 ? 0.99999 : 0.0 ) ) {
 					p_acSpawned{ playerid } = false; // They're dead!
 					if ( weaponid == 37 ) SetPlayerHealth( playerid, -1 );
-					OnPlayerDeathEx( playerid, issuerid, weaponid, amount, bodypart );
+					CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, issuerid, weaponid, amount, bodypart );
 				}
 			}
 		}
@@ -319,7 +321,7 @@
 			{
 				new
 					Float: tmp,
-					Float: distance = GetDistanceBetweenPlayers( playerid, damagedid ), // Calc distance between players
+					Float: distance = ac_GetDistanceBetweenPlayers( playerid, damagedid ), // Calc distance between players
 					Float: tmp_amount = amount // this amount is extremely unreliable
 				;
 				//printf("Proposed dmg %f kinda %f (min: %f, max: %f, rng: %f)", amount, tmp_amount, GetWeaponMinRange( weaponid ), GetWeaponMaxRange( weaponid ), distance );
@@ -340,11 +342,13 @@
 
 				if( ( p_PlayerHealth[ damagedid ] [ E_POINTS ] -= tmp_amount ) < 0.0 ) {
 					p_acSpawned{ damagedid } = false; // They're dead!
-					OnPlayerDeathEx( damagedid, playerid, weaponid, amount, bodypart );
+					CallRemoteFunction( "OnPlayerDeathEx", "ddfd", damagedid, playerid, weaponid, amount, bodypart );
 				}
 
 				SetPlayerArmour( damagedid, p_PlayerArmour[ damagedid ] [ E_POINTS ] );
 				SetPlayerHealth( damagedid, p_PlayerHealth[ damagedid ] [ E_POINTS ] );
+
+				CallRemoteFunction( "OnPlayerDamagePlayer", "ddfdd", playerid, damagedid, amount, weaponid, bodypart );
 			}
 		}
 

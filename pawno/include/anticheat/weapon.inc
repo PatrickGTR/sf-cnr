@@ -33,10 +33,10 @@
 stock AC_GivePlayerWeapon( playerid, weaponid, ammo )
 {
 	//p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
-	
-	if( weaponid < MAX_WEAPONS ) 
+
+	if( weaponid < AC_MAX_WEAPONS )
 		p_PlayerHasWeapon[ playerid ] { weaponid } = true;
-    
+
     return GivePlayerWeapon( playerid, weaponid, ammo );
 }
 
@@ -51,12 +51,12 @@ stock AC_GivePlayerWeapon( playerid, weaponid, ammo )
 
 stock AC_ResetPlayerWeapons( playerid )
 {
-	new 
+	new
 		bReset = ResetPlayerWeapons( playerid );
 
 	//p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
 
-	for ( new i = 0; i < MAX_WEAPONS; i++ ) 
+	for ( new i = 0; i < AC_MAX_WEAPONS; i++ )
 		p_PlayerHasWeapon[ playerid ] { i } = false;
 
     return bReset;
@@ -73,9 +73,9 @@ stock AC_ResetPlayerWeapons( playerid )
 
 stock AC_SetSpawnInfo( playerid, team, skin, Float: x, Float: y, Float: z, Float: Angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo )
 {
-	if ( weapon1 != -1 && weapon1 < MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon1 } = true;
-	if ( weapon2 != -1 && weapon2 < MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon2 } = true;
-	if ( weapon3 != -1 && weapon3 < MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon3 } = true;
+	if ( weapon1 != -1 && weapon1 < AC_MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon1 } = true;
+	if ( weapon2 != -1 && weapon2 < AC_MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon2 } = true;
+	if ( weapon3 != -1 && weapon3 < AC_MAX_WEAPONS ) p_PlayerHasWeapon[ playerid ] { weapon3 } = true;
 
     return SetSpawnInfo( playerid, team, skin, x, y, z, Angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo );
 }
@@ -91,7 +91,7 @@ stock AC_SetSpawnInfo( playerid, team, skin, Float: x, Float: y, Float: z, Float
 
 stock AC_AddPlayerClass( skin, Float: x, Float: y, Float: z, Float: Angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo )
 {
-	new 
+	new
 		classid = Iter_Free(classes);
 
 	if( classid != -1 )
@@ -121,7 +121,7 @@ stock AC_AddPlayerClass( skin, Float: x, Float: y, Float: z, Float: Angle, weapo
 
 stock AC_AddPlayerClassEx( teamid, skin, Float:x, Float:y, Float:z, Float:Angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo )
 {
-	new 
+	new
 		classid = Iter_Free(classes);
 
 	if( classid != -1 )
@@ -151,12 +151,12 @@ stock AC_AddPlayerClassEx( teamid, skin, Float:x, Float:y, Float:z, Float:Angle,
 
 stock AC_CreateDynamicPickup( modelid, type, Float: x, Float: y, Float: z, worldid = -1, interiorid = -1, playerid = -1, Float: streamdistance = 100.0 )
 {
-	new 
+	new
 		id = CreateDynamicPickup( modelid, type, x, y, z, worldid, interiorid, playerid, streamdistance );
 
 	if( type == 2 || type == 3 || type == 15 || type == 22 )
 	{
-        for( new i = 0; i < MAX_WEAPONS; i ++ ) 
+        for( new i = 0; i < AC_MAX_WEAPONS; i ++ )
         	if( GetWeaponModel( i ) == modelid )
         		SetGVarInt( "ac_WeaponPickup", i, id );
 	}
@@ -178,7 +178,7 @@ stock vWeaponHackCheck( playerid, keys )
 		new
 			iWeapon = GetPlayerWeapon( playerid );
 
-		if( iWeapon > -1 && iWeapon < MAX_WEAPONS )
+		if( iWeapon > -1 && iWeapon < AC_MAX_WEAPONS )
 		{
 			if( !p_PlayerHasWeapon[ playerid ] { iWeapon } && ( iWeapon != 0 && iWeapon != 40 ) ) {
 				CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_WEAPON );
@@ -192,7 +192,7 @@ stock vWeaponHackCheck( playerid, keys )
 {
 	if( iTicks > p_PlayerWeaponUpdateTime[ playerid ] )
 	{
-		new 
+		new
 			iWeapon, iAmmo;
 
 		for( new iSlot = 0; iSlot != 13; iSlot++ )

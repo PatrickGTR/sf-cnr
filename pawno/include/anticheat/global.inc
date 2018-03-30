@@ -36,8 +36,8 @@
 	#define MAX_CLASSES 			( 300 )
 #endif
 
-#if !defined MAX_WEAPONS
-	#define MAX_WEAPONS 			( 55 )
+#if !defined AC_MAX_WEAPONS
+	#define AC_MAX_WEAPONS 			( 55 )
 #endif
 
 // Variables (Global)
@@ -239,6 +239,7 @@ stock
 // Forwards (Global)
 
 public OnPlayerCheatDetected( playerid, detection );
+public OnPlayerDamagePlayer( playerid, damagedid, Float: amount, weaponid, bodypart );
 
 // Functions (Global)
 
@@ -266,3 +267,14 @@ stock ac_IsPointInArea( Float: X, Float: Y, Float: minx, Float: maxx, Float: min
 
 stock Float: ac_PointDistance( Float: X, Float: Y, Float: dstX, Float: dstY )
 	return ( ( X - dstX ) * ( X - dstX ) ) + ( ( Y - dstY ) * ( Y - dstY ) );
+
+stock Float: ac_GetDistanceBetweenPlayers( iPlayer1, iPlayer2, &Float: fDistance = Float: 0x7F800000 )
+{
+    static
+    	Float: fX, Float: fY, Float: fZ;
+
+    if( GetPlayerVirtualWorld( iPlayer1 ) == GetPlayerVirtualWorld( iPlayer2 ) && GetPlayerPos( iPlayer2, fX, fY, fZ ) )
+		fDistance = GetPlayerDistanceFromPoint( iPlayer1, fX, fY, fZ );
+
+    return fDistance;
+}

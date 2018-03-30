@@ -57,7 +57,7 @@ new
 	p_LastWeaponIssuer 				[ MAX_PLAYERS ],
 
 	// Weapon Hacks
-	bool: p_PlayerHasWeapon 		[ MAX_PLAYERS ] [ MAX_WEAPONS char ],
+	bool: p_PlayerHasWeapon 		[ MAX_PLAYERS ] [ AC_MAX_WEAPONS char ],
 	//p_PlayerWeaponUpdateTime 		[ MAX_PLAYERS ],
 	p_SelectedClassID 				[ MAX_PLAYERS ],
 
