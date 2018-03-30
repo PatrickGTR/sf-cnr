@@ -234,8 +234,8 @@ stock Player_GetUnusedAttachIndex( playerid )
     return cellmin;
 }
 
-// purpose: convert integer into dollar string
-stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = -1, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) ) // by Slice
+// purpose: convert integer into dollar string (large credit to Slice - i just added a prefix parameter)
+stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = -1, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) )
 {
     static
         s_szReturn[ 32 ],
