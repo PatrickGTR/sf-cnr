@@ -79,7 +79,7 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 //Max number the chips can express 10^(MAX_CHIP_DIGITS) - 1
 #define MAX_CHIP_DIGITS														7
 #define T_TABLE_TICK_INTERVAL												500 //(in ms) half a second
-#define T_POT_FEE_RATE 														0.04
+#define T_POT_FEE_RATE 														0.02
 
 
 //Layout and design

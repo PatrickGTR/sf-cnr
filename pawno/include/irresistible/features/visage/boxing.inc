@@ -242,6 +242,7 @@ stock StartMatch( playerid, targetID ) {
 
 		new Float:health_P, Float:armour_P, Float:health_T, Float:armour_T;
 
+		ClearAnimations( playerid );
 		GetPlayerHealth( playerid, health_P );
 		GetPlayerArmour( playerid, armour_P );
 		g_boxingPlayerData[ playerid ] [ E_PRIOR_HEALTH ] = health_P;
@@ -249,6 +250,7 @@ stock StartMatch( playerid, targetID ) {
 		g_boxingPlayerData[ playerid ] [ E_PRIOR_SKIN ] = GetPlayerSkin( playerid );
 		SetPlayerSkin( playerid, 81 );
 
+		ClearAnimations( targetID );
 		GetPlayerHealth( targetID, health_T );
 		GetPlayerArmour( targetID, armour_T );
 		g_boxingPlayerData[ targetID ] [ E_PRIOR_HEALTH ] = health_T;
