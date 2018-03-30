@@ -5,7 +5,68 @@
  * Purpose: static vehicle placement data
  */
 
-stock initializeVehicles( )
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
+/* ** Forwards ** */
+forward OnVehicleDestroyed 			( vehicleid );
+forward OnVehicleCreated  			( vehicleid, model_id );
+
+/* ** Hooked Callbacks ** */
+hook OnGameModeInit( )
+{
+	InitializeServerVehicles( );
+	return 1;
+}
+
+/* ** Hooked Functions ** */
+// Hook AddStaticVehicle
+stock _cnr_AddStaticVehicle( modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, color1, color2 ) {
+	new vehicleid = AddStaticVehicle( modelid, spawn_x, spawn_y, spawn_z, z_angle, color1, color2 );
+	CallLocalFunction( "OnVehicleCreated", "dd", vehicleid, modelid );
+	return vehicleid;
+}
+
+#if defined _ALS_AddStaticVehicle
+    #undef AddStaticVehicle
+#else
+    #define _ALS_AddStaticVehicle
+#endif
+
+#define AddStaticVehicle _cnr_AddStaticVehicle
+
+// Hook CreateVehicle
+stock _cnr_CreateVehicle( vehicletype, Float:x, Float:y, Float:z, Float:rotation, color1, color2, respawn_delay, addsiren=0 ) {
+	new vehicleid = CreateVehicle( vehicletype, x, y, z, rotation, color1, color2, respawn_delay, addsiren );
+	CallLocalFunction( "OnVehicleCreated", "dd", vehicleid, vehicletype );
+	return vehicleid;
+}
+
+#if defined _ALS_CreateVehicle
+    #undef CreateVehicle
+#else
+    #define _ALS_CreateVehicle
+#endif
+
+#define CreateVehicle _cnr_CreateVehicle
+
+// Hook DestroyVehicle
+stock _cnr_DestroyVehicle( vehicleid )
+{
+	CallLocalFunction( "OnVehicleDestroyed", "d", vehicleid );
+	return DestroyVehicle( vehicleid );
+}
+
+#if defined _ALS_DestroyVehicle
+    #undef DestroyVehicle
+#else
+    #define _ALS_DestroyVehicle
+#endif
+
+#define DestroyVehicle _cnr_DestroyVehicle
+
+/* ** Functions ** */
+static stock InitializeServerVehicles( )
 {
 	AddStaticVehicle( 411, -1958.4182, 259.0814, 35.1984, 89.6989,-1, -1 );
 	AddStaticVehicle( 541, -1958.5038, 272.1982, 35.0937, 88.7196,-1, -1 );
