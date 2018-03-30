@@ -1,12 +1,9 @@
-(+) Adds some helpful text within the meth RV vans.
-(+) "/gettotalcash" is now more accurate, taking into account gang and business accounts.
-(+) Adds two atms near the entrance of the Visage casino.
-(*) Robbery loot should instantly appear when you successfully open it.
-(/) New bunker interior for businesses.
-(/) Highroller slot machines are double the price, but have double the chance of winning.
-(/) Your wanted level will not be removed slowly if you are distant from police.
-(/) Safe robbery has been DOUBLED and a bit faster to pick.
-(/) Highroller and firework cost have been changed.
-(/) Thermal drill now lasts an additional 5 safes.
-(/) 10% more luck when opening a safe for loot.
-(/) Meth payout increased by 30%.
+(+) Implements boxing at the Visage casino! Box your friend for free, or for a wager through "/boxing fight". (Thanks Damen!)
+(+) Every Journey vehicle has a text object attached on the sides to indicate it's a Meth Van.
+(+) The bar in the visage casino is accessible as long as you have casino rewards points.
+(+) You no longer need to be near the Kitchen of cluckin' bell to export.
+(+) Adds The Visage Casino to "/gps".
+(+) Random City is now a valid option for City Selection.
+(*) 4 Dragons and Caliguas casino poker tables have had their blinds readjusted appropriately.
+(/) Meth cooking time halved, profit doubled and sound replaced.
+(/) New Meth Van/Journey interior thanks to Gal!

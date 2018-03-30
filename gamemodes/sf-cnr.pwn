@@ -146,7 +146,7 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.11.25"
+#define FILE_BUILD                	"v11.11.30"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -8590,7 +8590,6 @@ public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 		AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
 		return SendError( playerid, "You have entered an invalid command. To display the command list type /commands or /cmds." );
 	}
-
 	return 1;
 }
 
