@@ -364,7 +364,7 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Check out what your favourite weapon is with "COL_GREY"/weaponstats"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for strong security features!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for free 5 IC and strong security features!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
 		{ "SLOT_MACHINES" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a casino and win up to 35x on the money you place on a single number!" },
@@ -3276,7 +3276,8 @@ new
 	p_InBusiness 					[ MAX_PLAYERS ] = { -1, ... },
 	p_VehicleBringCooldown 			[ MAX_PLAYERS ],
 	p_BusinessSpawnLocation 		[ MAX_PLAYERS ] = { -1, ... },
-	p_Fireworks 					[ MAX_PLAYERS ]
+	p_Fireworks 					[ MAX_PLAYERS ],
+	bool: p_AddedEmail 				[ MAX_PLAYERS char ]
 ;
 
 /* ** Server Data ** */
@@ -6435,6 +6436,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_AccountID		[ playerid ] = 0;
 	p_DeathMessage	[ playerid ] [ 0 ] = '\0';
 	p_Fireworks 	[ playerid ] = 0;
+	p_AddedEmail 	{ playerid } = false;
 	p_TicketTimestamp[ playerid ] = 0;
 	p_ExtraAssetSlots{ playerid } = 0;
 	p_HitmarkerSound{ playerid } = 0;
@@ -21367,6 +21369,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_CasinoRewardsPoints[ playerid ] = cache_get_field_content_float( 0, "CASINO_REWARDS", dbHandle );
 			p_IsCasinoHighRoller{ playerid } = !!cache_get_field_content_int( 0, "VISAGE_HIGHROLLER", dbHandle );
 			p_Fireworks[ playerid ] = cache_get_field_content_int( 0, "FIREWORKS", dbHandle );
+			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
 
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
 				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
@@ -21588,7 +21591,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				p_OwnedVehicles[ playerid ] = 0;
 				p_IrresistibleCoins[ playerid ] = 0;
 				p_Burglaries[ playerid ] = 0;
-				ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+				ShowPlayerDialog( playerid, DIALOG_ACC_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Account Email", ""COL_WHITE"Would you like to assign an email to your account for security?\n\nWe'll keep you also informed on in-game and community associated events!", "Confirm", "Cancel" );
                 SendServerMessage( playerid, "You have "COL_GREEN"successfully{FFFFFF} registered! You have been automatically logged in!" );
             }
         }
@@ -21669,7 +21672,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             p_JobSet{ playerid } = true;
 
             if ( !p_CitySet{ playerid } )
-            	ShowPlayerDialog( playerid, DIALOG_SPAWN_CITY, DIALOG_STYLE_LIST, "{FFFFFF}Select Spawning City", "San Fierro\nLas Venturas\nLos Santos", "Select", "" );
+            	ShowPlayerDialog( playerid, DIALOG_SPAWN_CITY, DIALOG_STYLE_LIST, "{FFFFFF}Select Spawning City", "San Fierro\nLas Venturas\nLos Santos\nRandom City", "Select", "" );
 
            	SendServerMessage( playerid, "Your job has been set to %s. you can change it at the City Hall for "COL_GOLD"$5,000"COL_WHITE".", GetJobName( p_Job{ playerid } ) );
 		}
@@ -22042,7 +22045,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( !response )
 		{
 			if ( !p_CitySet{ playerid } )
-            	return ShowPlayerDialog( playerid, DIALOG_SPAWN_CITY, DIALOG_STYLE_LIST, "{FFFFFF}Select Spawning City", "San Fierro\nLas Venturas\nLos Santos", "Select", "" ), 1;
+            	return ShowPlayerDialog( playerid, DIALOG_SPAWN_CITY, DIALOG_STYLE_LIST, "{FFFFFF}Select Spawning City", "San Fierro\nLas Venturas\nLos Santos\nRandom City", "Select", "" ), 1;
 
        		return ShowPlayerDialog( playerid, DIALOG_CITY_HALL, DIALOG_STYLE_LIST, "{FFFFFF}City Hall", ""COL_GOLD"$5,000"COL_WHITE"\t\tChange Job\n"COL_GOLD"free"COL_WHITE"\t\tChange City", "Select", "Close" ), 1;
 		}
@@ -23920,7 +23923,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( ( dialogid == DIALOG_ACC_GUARD ) && response )
 	{
-		if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] )
+		if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 			return SendError( playerid, "You must be verified to use this feature." );
 
 		switch ( listitem )
@@ -23938,6 +23941,18 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				format( szBigString, sizeof( szBigString ), "SELECT * FROM `EMAILS` WHERE `ID`=%d", p_accountSecurityData[ playerid ] [ E_ID ] );
 				mysql_function_query( dbHandle, szBigString, true, "OnAccountGuardDelete", "d", playerid );
+			}
+			case 3:
+			{
+				if ( p_AddedEmail{ playerid } )
+					return SendError( playerid, "You already added an email to your account before." );
+
+				Beep( playerid );
+				p_AddedEmail{ playerid } = true;
+				p_IrresistibleCoins[ playerid ] += 5.0;
+				mysql_single_query( sprintf( "UPDATE `USERS` SET `USED_EMAIL`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
+				SendGlobalMessage( COLOR_BLUE, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_BLUE"/email"COL_GREY" and received free 5.0 IC!", ReturnPlayerName( playerid ), playerid );
+ 				return 1;
 			}
 		}
 		return 1;
@@ -23989,11 +24004,39 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		SendServerMessage( playerid, "Your Irresistible Guard mode is now set to "COL_GREY"%s"COL_WHITE".", SecurityModeToString( listitem ) );
 		return ShowPlayerAccountGuard( playerid );
 	}
-	if ( dialogid == DIALOG_ACC_GUARD_EMAIL )
-	{
-		if ( ! response )
-			return SendError( playerid, "Nothing to show!" );
+	if ( dialogid == DIALOG_ACC_EMAIL ) {
 
+		if ( ! response ) {
+			ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+			SendServerMessage( playerid, "If you ever wish to assign an email to your account in the future, use "COL_GREY"/email"COL_WHITE"." );
+			return 1;
+		}
+
+		new
+			email[ 64 ];
+
+		if ( sscanf( inputtext, "s[64]", email ) )  {
+			ShowPlayerDialog( playerid, DIALOG_ACC_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Account Email", ""COL_WHITE"Would you like to assign an email to your account for security?\n\nWe'll keep you also informed on in-game and community associated events!\n\n"COL_RED"Your email must be between 4 and 64 characters long.", "Confirm", "Cancel" );
+			return SendError( playerid, "Your email must be between 4 and 64 characters long." );
+		}
+
+		if ( ! ( 3 < strlen( email ) < 64 ) ) {
+			ShowPlayerDialog( playerid, DIALOG_ACC_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Account Email", ""COL_WHITE"Would you like to assign an email to your account for security?\n\nWe'll keep you also informed on in-game and community associated events!\n\n"COL_RED"Your email must be between 4 and 64 characters long.", "Confirm", "Cancel" );
+			return SendError( playerid, "Your email must be between 4 and 64 characters long." );
+		}
+
+		if ( ! regex_match( email, "[a-zA-Z0-9_\\.]+@([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,4}" ) ) {
+			ShowPlayerDialog( playerid, DIALOG_ACC_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Account Email", ""COL_WHITE"Would you like to assign an email to your account for security?\n\nWe'll keep you also informed on in-game and community associated events!\n\n"COL_RED"Your email must be valid (foo@example.com).", "Confirm", "Cancel" );
+			return SendError( playerid, "Your email must be valid (foo@example.com)." );
+		}
+
+	    format( szBigString, sizeof( szBigString ), "INSERT INTO `EMAIL_VERIFY`(`USER_ID`, `EMAIL`) VALUES (%d, '%s') ON DUPLICATE KEY UPDATE `EMAIL`='%s',`DATE`=CURRENT_TIMESTAMP", p_AccountID[ playerid ], mysql_escape( email ), mysql_escape( email ) );
+	    mysql_function_query( dbHandle, szBigString, true, "OnQueueEmailVerification", "ds", playerid, email );
+		ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+	   	return 1;
+	}
+	if ( dialogid == DIALOG_ACC_GUARD_EMAIL && response )
+	{
 		new
 			email[ 64 ];
 
@@ -31531,7 +31574,7 @@ stock returnCityName( city )
 		case CITY_SF: string = "San Fierro";
 		case CITY_LV: string = "Las Venturas";
 		case CITY_LS: string = "Los Santos";
-		default: string = "Unknown City";
+		default: string = "Random City";
 	}
 	return string;
 }
@@ -35893,6 +35936,11 @@ stock ShowPlayerAccountGuard( playerid )
 		} else {
 			format( szBigString, sizeof( szBigString ), ""COL_WHITE"Your account email is "COL_GREEN"confirmed\t \nConfirm Email\t"COL_GREEN"%s\nSecurity Mode\t%s\n"COL_RED"Remove Irresistible Guard\t"COL_RED"approx. 24h", CensoreString( p_accountSecurityData[ playerid ] [ E_EMAIL ] ), SecurityModeToString( p_accountSecurityData[ playerid ] [ E_MODE ] ) );
 		}
+
+		// award user for adding their email
+		if ( p_AddedEmail{ playerid } == false ) {
+			strcat( szBigString, "\n"COL_GOLD"Claim Free 5 IC For Confirming!\t \t"COL_GOLD">>>" );
+		}
 	} else {
 		szBigString = ""COL_WHITE"Your account email is "COL_RED"unconfirmed\t \nConfirm Email\t"COL_GREY">>>";
 	}
@@ -35979,6 +36027,10 @@ thread OnAccountEmailVerify( playerid, login_force )
 		// assign last time
 		timestamp = cache_get_field_content_int( 0, "DATE", dbHandle );
 	}
+
+	// No point making a disabled user validate
+	if ( login_force && p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_DISABLED )
+		return 1;
 
 	// No point forcing a mild mode user to validate
 	if ( login_force && p_accountSecurityData[ playerid ] [ E_MODE ] == SECURITY_MODE_MILD )

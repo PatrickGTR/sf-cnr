@@ -17,11 +17,6 @@ public OnFilterScriptInit()
 	return 1;
 }
 
-CMD:visagelol( playerid, params[] )
-{
-	return 1;
-}
-
 public OnFilterScriptExit()
 {
 	return 1;
