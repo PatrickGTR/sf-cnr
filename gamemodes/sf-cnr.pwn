@@ -14202,6 +14202,7 @@ CMD:c4( playerid, params[ ] )
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
+		if ( IsPlayerInCasino( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a casino." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're in paintball." );
 		if ( p_C4Amount[ playerid ] < 1 ) return SendError( playerid, "You don't have any C4's" );
 
@@ -30783,6 +30784,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	else if ( IsPlayerPlayingPoker( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing poker." );
 	else if ( IsPlayerInWater( playerid ) )      return SendError( playerid, "You cannot use this command since you're in water." );
 	else if ( IsPlayerMining( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're mining." );
+	else if ( IsPlayerBoxing( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're boxing." );
 	else if ( IsPlayerInEvent( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're in an event." );
     else if ( GetPlayerAnimationIndex( playerid ) == 1660 ) return SendError( playerid, "You cannot use this command since you're using a vending machine." );
 	else if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );

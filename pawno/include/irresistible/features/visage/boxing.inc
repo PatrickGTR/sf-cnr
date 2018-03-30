@@ -62,9 +62,17 @@ hook OnPlayerConnect( playerid ) {
 }
 
 hook OnPlayerDisconnect( playerid, reason ) {
-	if ( g_boxingPlayerData[ playerid ] [ E_FIGHTING ] ) {
-		boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] );
-	}
+	boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] );
+	return 1;
+}
+
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath( playerid, killerid, reason )
+#endif
+{
+	boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] );
 	return 1;
 }
 
@@ -224,13 +232,10 @@ CMD:boxing( playerid, params[ ] ) {
 		return ResetBoxingPlayerVariables( playerid, opponent );
 
 	} else if ( !strcmp( params, "forfeit", true, 7 ) ) {
-
-		new opponent = g_boxingPlayerData[ playerid ] [ E_OPPONENT ];
-
-		if ( g_boxingPlayerData[ playerid ] [ E_FIGHTING ] == false )
+		if ( ! boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] ) ) {
 			return SendError( playerid, "You're not fighting anyone." );
-
-		return boxing_ForfeitMatch( playerid, opponent );
+		}
+		return 1;
 	}
 	return SendUsage( playerid, "/boxing [FIGHT/CANCEL/ACCEPT/DECLINE/FORFEIT]" );
 }
@@ -305,7 +310,7 @@ stock EndMatch( playerid, targetID ) {
 	if ( g_boxingArenaData[ E_BET ] <= 0 ) {
 		SendBoxingGlobal( "%s has won a boxing match against %s with a final score of %i!", ReturnPlayerName( winnerid ), ReturnPlayerName( loserid ), g_boxingPlayerData[ winnerid ] [ E_SCORE ] );
 	} else {
-		new winning_prize = floatround( float( g_boxingArenaData[ E_BET ] ) * 1.8 ); // We take 10% of the total pot
+		new winning_prize = floatround( float( g_boxingArenaData[ E_BET ] ) * 1.9 ); // We take 5% of the total pot
 		GivePlayerCash( winnerid, winning_prize );
 		SendBoxingGlobal( "%s has won a boxing match against %s for %s with a final score of %i!", ReturnPlayerName( winnerid ), ReturnPlayerName( loserid ), number_format( g_boxingArenaData[ E_BET ] ), g_boxingPlayerData[ winnerid ] [ E_SCORE ] );
 	}
@@ -324,6 +329,11 @@ stock EndMatch( playerid, targetID ) {
 
 stock boxing_RestorePlayer( playerid )
 {
+	// user reported 0xff health, maybe spawn protection
+	if ( g_boxingPlayerData[ playerid ] [ E_PRIOR_HEALTH ] > 100.0 ) g_boxingPlayerData[ playerid ] [ E_PRIOR_HEALTH ] = 100.0;
+	if ( g_boxingPlayerData[ playerid ] [ E_PRIOR_ARMOUR ] > 100.0 ) g_boxingPlayerData[ playerid ] [ E_PRIOR_ARMOUR ] = 100.0;
+
+	// set prior health
 	SetPlayerHealth( playerid, g_boxingPlayerData[ playerid ] [ E_PRIOR_HEALTH ] );
 	SetPlayerArmour( playerid, g_boxingPlayerData[ playerid ] [ E_PRIOR_ARMOUR ] );
 	SetPlayerSkin( playerid, g_boxingPlayerData[ playerid ] [ E_PRIOR_SKIN ] );
@@ -335,6 +345,8 @@ stock boxing_RestorePlayer( playerid )
 }
 
 stock boxing_ForfeitMatch( playerid, targetID ) {
+	if ( ! g_boxingPlayerData[ playerid ] [ E_FIGHTING ] ) return 0;
+
 	if ( g_boxingArenaData[ E_BET ] == 0 ) {
 		SendBoxingGlobal( "%s has won a boxing match by forfeit against %s.", ReturnPlayerName( targetID ), ReturnPlayerName( playerid ) );
 	} else if ( g_boxingArenaData[ E_BET ] > 0 ) {
@@ -352,7 +364,6 @@ stock boxing_ForfeitMatch( playerid, targetID ) {
 
 	ResetBoxingArenaVariables();
 	ResetBoxingPlayerVariables( playerid, targetID );
-
 	UpdateDynamic3DTextLabelText( arenaLabel, COLOR_GREY, "Boxing Arena\n"COL_WHITE"/boxing fight" );
 	return 1;
 }
