@@ -29,6 +29,7 @@
 // features
 #include < irresistible\features\fps >
 #include < irresistible\features\radio >
+#include < irresistible\features\cash_cards >
 // #include < irresistible\features\vote >
 
 // visage casino

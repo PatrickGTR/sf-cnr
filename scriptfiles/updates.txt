@@ -1,11 +1,1 @@
-(+) Implements boxing at the Visage casino! Box your friend for free, or for a wager through "/boxing fight". (Thanks Damen!)
-(+) Every Journey vehicle has a text object attached on the sides to indicate it's a Meth Van.
-(+) The bar in the visage casino is accessible as long as you have casino rewards points.
-(+) You no longer need to be near the Kitchen of cluckin' bell to export.
-(+) Adds The Visage Casino to "/gps".
-(+) Random City is now a valid option for City Selection.
-(+) As soon as a user registers, they will be prompted a dialog to enter their email.
-(*) 4 Dragons and Caliguas casino poker tables have had their blinds readjusted appropriately.
-(*) If you disabled Irresistible Guard, you will not be required to put a code when you login.
-(/) Meth cooking time halved, profit doubled and sound replaced.
-(/) New Meth Van/Journey interior thanks to Gal!
+(+) Implements cash cards. A way for prizes to be given out to members easily. Use /cashcard to redeem.
