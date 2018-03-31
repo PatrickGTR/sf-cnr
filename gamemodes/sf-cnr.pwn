@@ -13,9 +13,9 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+// #pragma option -d3
 #pragma dynamic 7200000
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -364,14 +364,15 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Check out what your favourite weapon is with "COL_GREY"/weaponstats"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for free 5 IC and strong security features!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for security features and free 3 days of VIP!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
 		{ "SLOT_MACHINES" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a casino and win up to 35x on the money you place on a single number!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Play blackjack at a casino and double your money very quickly!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Play Poker with your friends at any casino! Beat your way to riches!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Get casino rewards points by gambling at any casino! Use "COL_GREY"/casino rewards"COL_WHITE" to spend them!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Want 3 days of free V.I.P? Add an "COL_GREY"/email"COL_WHITE" to your account!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -1119,20 +1120,23 @@ new
 #endif
 
 /* ** Road Blocks ** */
-#define MAX_ROADBLOCKS              ( 20 )
+#define MAX_ROADBLOCKS              ( 32 )
 
 enum E_ROADBLOCK_DATA
 {
-	bool: E_CREATED,    E_OBJECT_ID,                Text3D: E_LABEL
+	E_OBJECT_ID,               		Text3D: E_LABEL,				E_CREATOR,
+
+	Float: E_X, 					Float: E_Y, 					Float: E_Z
 };
 
 enum E_ROADBLOCK_OBJ_DATA
 {
 	E_NAME[ 17 ],		E_MODEL,					Float: E_OFFSET
-}
+};
 
 new
 	g_roadblockData                 [ MAX_ROADBLOCKS ] [ E_ROADBLOCK_DATA ],
+	Iterator: roadblocks 			< MAX_ROADBLOCKS >,
 
 	g_roadblockObjectData 			[ ] [ E_ROADBLOCK_OBJ_DATA ] =
 	{
@@ -1146,16 +1150,19 @@ new
 ;
 
 /* ** Spike Strips ** */
-#define MAX_SPIKESTRIPS          	( 20 )
+#define MAX_SPIKESTRIPS          	( 32 )
 
 enum E_SPIKE_STRIP_DATA
 {
-	E_OBJECT_ID,     	Text3D: E_LABEL,			E_SPHERE
+	E_OBJECT_ID,     				Text3D: E_LABEL,				E_SPHERE,
+	E_CREATOR,
+
+	Float: E_X, 					Float: E_Y, 					Float: E_Z
 };
 
 new
 	g_spikestripData                [ MAX_SPIKESTRIPS ] [ E_SPIKE_STRIP_DATA ],
-	Iterator:SpikeStrip< MAX_SPIKESTRIPS >
+	Iterator: spikestrips 			< MAX_SPIKESTRIPS >
 ;
 
 /* ** Gang System ** */
@@ -1273,7 +1280,7 @@ enum E_GPS_DATA
 };
 
 new
-	g_gpsData						[ 62 ] [ E_GPS_DATA ]
+	g_gpsData						[ 63 ] [ E_GPS_DATA ]
 ;
 
 /* ** ATM System ** */
@@ -4012,7 +4019,7 @@ public OnGameModeInit()
 	CreateNavigation( "City Hall", 				-2766.4087, 375.5447, 6.33470, CITY_SF ); // 9
 	CreateNavigation( "Supa Save", 				-2446.3350, 752.2393, 35.1719, CITY_SF ); // 10
 	CreateNavigation( "Vehicle Dealership", 	-2521.1895, -624.942, 132.780, CITY_SF ); // 11
-	//CreateNavigation( "Vehicle Impound", 		-1370.2954, -206.7451, 6.0000, CITY_SF ); // 12
+	CreateNavigation( "Trucking", 				-2127.8599, -228.7343, 35.3203, CITY_SF ); // 12
 	CreateNavigation( "Paintball", 				-2172.2017, 252.1113, 35.3388, CITY_SF ); // 13
 	CreateNavigation( "Airport",                -1422.4063, -286.5081, 14.148, CITY_SF ); // 15
 	CreateNavigation( "V.I.P Lounge",           -1880.7598, 822.3964, 35.1778, CITY_SF ); // 16
@@ -5011,6 +5018,10 @@ public OnServerUpdate( )
 			UpdateDynamic3DTextLabelText( p_RewardsLabel_4Drags[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %s rewards points!", points_format( p_CasinoRewardsPoints[ playerid ] ) ) );
 			UpdateDynamic3DTextLabelText( p_RewardsLabel_Visage[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %s rewards points!", points_format( p_CasinoRewardsPoints[ playerid ] ) ) );
 
+			// Remove spike strips & roadblocks
+			if ( p_Class[ playerid ] == CLASS_POLICE )
+				ClearPlayerRoadblocks( playerid );
+
 			// Toggle total coin bar
 			if ( !p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } )
 				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", p_IrresistibleCoins[ playerid ] ) );
@@ -5036,8 +5047,7 @@ public OnServerUpdate( )
 		 		cancelPlayerTruckingCourier( playerid, iVehicle, .ticks = 60 );
 
 		 	// Remove invalid visage highrollers
-		 	if ( ! p_IsCasinoHighRoller{ playerid } && IsPlayerInHighRoller( playerid ) )
-		 	{
+		 	if ( ! p_IsCasinoHighRoller{ playerid } && IsPlayerInHighRoller( playerid ) ) {
 		 		SetPlayerPos( playerid, 2597.8943, 1603.1852, 1506.1733 );
 		 		SendError( playerid, "You need to be a Highroller to access this area. Get access through Casino Rewards." );
 		 	}
@@ -5635,9 +5645,6 @@ public ZoneTimer( )
 
 		for( new i; i < 20; i++ )
 		{
-			if ( g_roadblockData[ i ] [ E_CREATED ] ) 	destroyRoadBlockStrip( i );
-			if ( Iter_Contains( SpikeStrip, i ) ) 		destroySpikeStrip( i );
-
 			if ( i < MAX_TREES )
 			{
 				if ( g_treeData[ i ] [ E_CREATED ] == true && g_treeData[ i ] [ E_CHOPPED ] == true )
@@ -6337,6 +6344,7 @@ public OnPlayerDisconnect( playerid, reason )
 	resetPlayerStreaks( playerid );
 	StopPlayerTruckingCourier( playerid );
     RemovePlayerFromRace( playerid );
+	ClearPlayerRoadblocks( playerid, .distance_check = false );
 	p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
@@ -7348,6 +7356,7 @@ public OnPlayerDeath( playerid, killerid, reason )
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
+	ClearPlayerRoadblocks( playerid, .distance_check = false );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
 	p_WeaponDealer[ playerid ] = INVALID_PLAYER_ID;
@@ -8589,7 +8598,7 @@ stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( arr
 public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 {
 	if ( !success ) {
-		AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
+		AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s\r\n", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
 		return SendError( playerid, "You have entered an invalid command. To display the command list type /commands or /cmds." );
 	}
 	return 1;
@@ -12363,18 +12372,30 @@ CMD:bj( playerid, params[ ] )
 
 CMD:dssall( playerid, params[ ] )
 {
-	if ( !p_inFBI{ playerid } && !p_AdminLevel[ playerid ] )
+	new removed = 0;
+	new is_admin = p_AdminLevel[ playerid ];
+
+	if ( ! p_inFBI{ playerid } && ! is_admin )
 		return SendError( playerid, "You are not in the FBI." );
 
-	if ( !Iter_Count(SpikeStrip) )
-		return SendError( playerid, "There is nothing left to destroy." );
+	foreach ( new handle : spikestrips )
+	{
+		if ( ! is_admin && g_spikestripData[ handle ] [ E_CREATOR ] != playerid )
+			continue;
 
-	for( new i = 0; i < MAX_SPIKESTRIPS; i++ ) if ( Iter_Contains( SpikeStrip, i ) )
- 		destroySpikeStrip( i );
+		new
+			cur = handle;
 
-	SendServerMessage( playerid, "You have succesfully destroyed all spike strips." );
-	SendClientMessageToCops( -1, ""COL_BLUE"[SPIKE STRIPS CLEARED]"COL_WHITE" %s(%d) has destroyed all spike strips set!", ReturnPlayerName( playerid ), playerid );
-	return 1;
+		destroySpikeStrip( handle, .remove_iter = false );
+		Iter_SafeRemove( spikestrips, cur, handle );
+		removed ++;
+	}
+
+	if ( removed ) {
+		return SendServerMessage( playerid, "You have removed all your spike strips." );
+	} else {
+		return SendError( playerid, "There are no spike strips to remove by you." );
+	}
 }
 
 CMD:dss( playerid, params[ ] )
@@ -12386,7 +12407,8 @@ CMD:dss( playerid, params[ ] )
 	if ( !p_inFBI{ playerid } ) return SendError( playerid, "You are not in the FBI." );
 	else if ( sscanf( params, "d", rbID ) ) return SendUsage( playerid, "/dss [SPIKE_STRIP_ID]" );
 	else if ( rbID < 0 || rbID >= MAX_SPIKESTRIPS ) return SendError( playerid, "Invalid Spike Strip ID." );
-	else if ( !Iter_Contains( SpikeStrip, rbID ) ) return SendError( playerid, "Invalid Spike Strip ID." );
+	else if ( !Iter_Contains( spikestrips, rbID ) ) return SendError( playerid, "Invalid Spike Strip ID." );
+	else if ( g_spikestripData[ rbID ] [ E_CREATOR ] != playerid ) return SendError( playerid, "You have not created this spike strip." );
 	else
 	{
 	    destroySpikeStrip( rbID );
@@ -12400,6 +12422,7 @@ CMD:spike( playerid, params[ ] ) return cmd_setspike( playerid, params );
 CMD:setspike( playerid, params[ ] )
 {
 	if ( GetPlayerInterior( playerid ) != 0 || GetPlayerVirtualWorld( playerid ) != 0 ) return SendError( playerid, "You cannot use this command inside buildings." );
+	else if ( GetPlayerScore( playerid ) < 250 ) return SendError( playerid, "You need at least 250 score to use this feature." );
 	else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You are jailed, you cannot do this." );
 	else if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
@@ -12665,18 +12688,30 @@ stock SwitchHouseOwners( ID, playerid, buyerid )
 
 CMD:drball( playerid, params[ ] )
 {
-	if ( !p_inFBI{ playerid } && !p_AdminLevel[ playerid ] ) return SendError( playerid, "You are not in the FBI." );
-	new count = 0;
-	for( new i; i < MAX_ROADBLOCKS; i++ ) {
-	    if ( g_roadblockData[ i ] [ E_CREATED ] ) count++, destroyRoadBlockStrip( i );
-	}
-	if ( count > 0 )
+	new removed = 0;
+	new is_admin = p_AdminLevel[ playerid ];
+
+	if ( ! p_inFBI{ playerid } && ! is_admin )
+		return SendError( playerid, "You are not in the FBI." );
+
+	foreach ( new handle : roadblocks )
 	{
-		SendServerMessage( playerid, "You have succesfully destroyed all road blocks." );
-		SendClientMessageToCops( -1, ""COL_BLUE"[ROAD BLOCKS CLEARED]"COL_WHITE" %s(%d) has destroyed all road blocks set!", ReturnPlayerName( playerid ), playerid );
+		if ( ! is_admin && g_roadblockData[ handle ] [ E_CREATOR ] != playerid )
+			continue;
+
+		new
+			cur = handle;
+
+		destroyRoadBlockStrip( handle, .remove_iter = false );
+		Iter_SafeRemove( roadblocks, cur, handle );
+		removed ++;
 	}
-	else SendError( playerid, "There is nothing left to destroy." );
-	return 1;
+
+	if ( removed ) {
+		return SendServerMessage( playerid, "You have removed all your roadblocks." );
+	} else {
+		return SendError( playerid, "There are no roadblocks to remove by you." );
+	}
 }
 
 CMD:drb( playerid, params[ ] )
@@ -12686,9 +12721,11 @@ CMD:drb( playerid, params[ ] )
 	;
 
 	if ( !p_inFBI{ playerid } ) return SendError( playerid, "You are not in the FBI." );
+	else if ( GetPlayerScore( playerid ) < 250 ) return SendError( playerid, "You need at least 250 score to use this feature." );
 	else if ( sscanf( params, "d", rbID ) ) return SendUsage( playerid, "/drb [ROADBLOCK_ID]" );
 	else if ( rbID < 0 || rbID > MAX_ROADBLOCKS ) return SendError( playerid, "Invalid road block ID." );
-	else if ( g_roadblockData[ rbID ] [ E_CREATED ] == false ) return SendError( playerid, "Invalid road block ID." );
+	else if ( Iter_Contains( roadblocks, rbID ) ) return SendError( playerid, "Invalid road block ID." );
+	else if ( g_roadblockData[ rbID ] [ E_CREATOR ] != playerid ) return SendError( playerid, "You have not created this spike strip." );
 	else
 	{
 	    destroyRoadBlockStrip( rbID );
@@ -19415,7 +19452,7 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
     		iModel = GetVehicleModel( iVehicle );
 
     	// spike strip system
-		foreach(new i : SpikeStrip) if ( g_spikestripData[ i ] [ E_SPHERE ] == areaid ) {
+		foreach(new i : spikestrips) if ( g_spikestripData[ i ] [ E_SPHERE ] == areaid ) {
             GetVehicleDamageStatus( iVehicle, panels, doors, lights, tires );
             UpdateVehicleDamageStatus( iVehicle, panels, doors, lights, ( tires = encode_tires( 1, 1, 1, 1 ) ) );
 			destroySpikeStrip( i );
@@ -21519,12 +21556,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         szBigQuery[ 764 ]
     ;
 
-    if ( response == 1 ) PlayerPlaySound( playerid, 1083, 0.0, 0.0, 0.0 ); // Confirmation sound
-    else 				PlayerPlaySound( playerid, 1084, 0.0, 0.0, 0.0 ); // Cancellation sound
-
 	if ( g_DialogLogging ) printf( "[DIALOG_LOG] %s(%d) - %d, %d, %d, %s", ReturnPlayerName( playerid ), playerid, dialogid, response, listitem, inputtext );
-
-	if ( strlen( inputtext ) ) strreplacechar( inputtext, '%', '#' ); // The percentage injection crasher (critical)
 
     if ( dialogid == DIALOG_LOGIN )
     {
@@ -23950,9 +23982,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				Beep( playerid );
 				p_AddedEmail{ playerid } = true;
-				p_IrresistibleCoins[ playerid ] += 5.0;
+				//p_IrresistibleCoins[ playerid ] += 5.0;
+				SetPlayerVipLevel( playerid, VIP_REGULAR, .gifted = false, .cash_xp = false, .interval = 259560 ); // 3 days of vip
 				mysql_single_query( sprintf( "UPDATE `USERS` SET `USED_EMAIL`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
-				SendGlobalMessage( COLOR_BLUE, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_BLUE"/email"COL_GREY" and received free 5.0 IC!", ReturnPlayerName( playerid ), playerid );
+				SendGlobalMessage( COLOR_GOLD, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_GOLD"/email"COL_GREY" and received 3 days of V.I.P!", ReturnPlayerName( playerid ), playerid );
  				return 1;
 			}
 		}
@@ -29438,50 +29471,46 @@ stock GetXYInFrontOfPlayer(playerid, &Float:x, &Float:y, &Float:z, Float:distanc
 	y += (distance * floatcos(-a, degrees));
 }
 
-stock getRoadBlockSlot( )
+stock destroyRoadBlockStrip( rbid, bool: remove_iter = false )
 {
-	for( new i; i < MAX_ROADBLOCKS; i++ )
-	{
-	    if ( !g_roadblockData[ i ] [ E_CREATED ] )
-	        return i;
-	}
-	return -1;
-}
-
-stock destroyRoadBlockStrip( rbid )
-{
-	if ( rbid == -1 && !g_roadblockData[ rbid ] [ E_CREATED ] )
+	if ( ! Iter_Contains( roadblocks, rbid ) )
 	    return 0;
 
 	DestroyDynamicObject( g_roadblockData[ rbid ] [ E_OBJECT_ID ] );
 	DestroyDynamic3DTextLabel( g_roadblockData[ rbid ] [ E_LABEL ] );
 
-	g_roadblockData[ rbid ] [ E_CREATED ] 	= false;
-	g_roadblockData[ rbid ] [ E_LABEL ] 	= Text3D: 0xFFFF;
+	g_roadblockData[ rbid ] [ E_LABEL ] = Text3D: INVALID_3DTEXT_ID;
 	g_roadblockData[ rbid ] [ E_OBJECT_ID ] = INVALID_OBJECT_ID;
+
+	if ( remove_iter ) Iter_Remove( roadblocks, rbid );
 	return 1;
 }
 
 stock createRoadBlockStrip( playerid, type )
 {
 	new
- 		ID = getRoadBlockSlot( ),
+ 		ID = Iter_Free( roadblocks ),
 		Float: X, Float: Y, Float: Z, Float: Degree
 	;
 
-	if ( ID != -1 )
+	if ( ID != ITER_NONE )
 	{
 	    GetXYInFrontOfPlayer( playerid, X, Y, Z, 2.0 );
 		GetPlayerFacingAngle( playerid, Degree );
+
+		g_roadblockData[ ID ] [ E_CREATOR ] = playerid;
+		g_roadblockData[ ID ] [ E_X ] = X;
+		g_roadblockData[ ID ] [ E_Y ] = Y;
+		g_roadblockData[ ID ] [ E_Z ] = Z;
 
 		DestroyDynamicObject( g_roadblockData[ ID ] [ E_OBJECT_ID ] );
 		DestroyDynamic3DTextLabel( g_roadblockData[ ID ] [ E_LABEL ] );
 
 		g_roadblockData[ ID ] [ E_OBJECT_ID ] = CreateDynamicObject( g_roadblockObjectData[ type ] [ E_MODEL ], X, Y, Z - g_roadblockObjectData[ type ] [ E_OFFSET ], 0, 0, Degree + 180.0 );
 		g_roadblockData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s(%d)\n"COL_GREY"Placed by %s!", g_roadblockObjectData[ type ] [ E_NAME ], ID, ReturnPlayerName( playerid ) ), COLOR_GOLD, X, Y, Z, 20.0 );
-		g_roadblockData[ ID ] [ E_CREATED ] = true;
 
-		Streamer_Update( playerid ); // SyncObject( playerid );
+		Streamer_Update( playerid );
+		Iter_Add( roadblocks, ID );
 	}
 	return ID;
 }
@@ -29525,7 +29554,7 @@ stock SetObjectFacePoint(iObjectID, Float: fX, Float: fY, Float: fOffset, bool: 
 	}
 }
 
-stock destroySpikeStrip( i )
+stock destroySpikeStrip( i, bool: remove_iter = true )
 {
 	if ( i == -1 )
 	    return 0;
@@ -29538,7 +29567,7 @@ stock destroySpikeStrip( i )
 	g_spikestripData[ i ] [ E_OBJECT_ID ]	= INVALID_OBJECT_ID;
 	g_spikestripData[ i ] [ E_LABEL ]		= Text3D: 0xFFFF;
 
-	Iter_Remove(SpikeStrip, i);
+	if ( remove_iter ) Iter_Remove( spikestrips, i );
 	return 1;
 }
 
@@ -29546,7 +29575,7 @@ stock CreateSpikeStrip( playerid, Float: X, Float: Y, Float: Z, Float: Angle )
 {
 	new
 		bVehicle = IsPlayerInAnyVehicle( playerid ),
-		i = Iter_Free(SpikeStrip)
+		i = Iter_Free( spikestrips )
 	;
 
 	if ( i != ITER_NONE )
@@ -29555,16 +29584,49 @@ stock CreateSpikeStrip( playerid, Float: X, Float: Y, Float: Z, Float: Angle )
 		DestroyDynamicObject		( g_spikestripData[ i ] [ E_OBJECT_ID ] );
 		DestroyDynamic3DTextLabel	( g_spikestripData[ i ] [ E_LABEL ] );
 
+		g_spikestripData[ i ] [ E_CREATOR ] = playerid;
+		g_spikestripData[ i ] [ E_X ] = X;
+		g_spikestripData[ i ] [ E_Y ] = Y;
+		g_spikestripData[ i ] [ E_Z ] = Z;
+
 		g_spikestripData[ i ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "Spike Strip(%d)\n"COL_GREY"Placed by %s!", i, ReturnPlayerName( playerid ) ), COLOR_GOLD, X, Y, Z, 20.0 );
 	    g_spikestripData[ i ] [ E_OBJECT_ID ] = CreateDynamicObject( 2899, X, Y, Z - ( bVehicle ? 0.6 : 0.9 ), 0, 0, Angle - 90.0);
 		g_spikestripData[ i ] [ E_SPHERE ] = CreateDynamicCircle( X, Y, 4.0 );
 
-	    if ( !bVehicle )
-	    	Streamer_Update( playerid ); // SyncObject( playerid ); // Shows the object instantly.
-
-	    Iter_Add(SpikeStrip, i);
+	   	Streamer_Update( playerid );
+	    Iter_Add( spikestrips, i );
 	}
   	return i;
+}
+
+stock ClearPlayerRoadblocks( playerid, bool: distance_check = true )
+{
+	// remove spike strips
+	foreach ( new handle : spikestrips ) if ( g_spikestripData[ handle ] [ E_CREATOR ] == playerid ) {
+		if ( distance_check && GetPlayerDistanceFromPoint( playerid, g_spikestripData[ handle ] [ E_X ], g_spikestripData[ handle ] [ E_Y ], g_spikestripData[ handle ] [ E_Z ] ) < 75.0 ) {
+			continue;
+		}
+
+		new
+			cur = handle;
+
+		destroySpikeStrip( handle, .remove_iter = false );
+		Iter_SafeRemove( spikestrips, cur, handle );
+	}
+
+	// remove roadblocks
+	foreach ( new handle : roadblocks ) if ( g_roadblockData[ handle ] [ E_CREATOR ] == playerid ) {
+		if ( distance_check && GetPlayerDistanceFromPoint( playerid, g_roadblockData[ handle ] [ E_X ], g_roadblockData[ handle ] [ E_Y ], g_roadblockData[ handle ] [ E_Z ] ) < 100.0 ) {
+			continue;
+		}
+
+		new
+			cur = handle;
+
+		destroyRoadBlockStrip( handle, .remove_iter = false );
+		Iter_SafeRemove( roadblocks, cur, handle );
+	}
+	return 1;
 }
 
 stock encode_tires( tires1, tires2, tires3, tires4 )
@@ -32267,60 +32329,63 @@ stock hasBadDrivebyWeapon( playerid )
 	return false;
 }
 
-stock SetPlayerVipLevel( pID, level, bool: gifted = false )
+stock SetPlayerVipLevel( pID, level, bool: gifted = false, bool: cash_xp = true, interval = 2595600 )
 {
 	if ( !IsPlayerConnected( pID ) )
 		return;
 
-	switch( level )
+	if ( cash_xp )
 	{
-	    case VIP_REGULAR: GivePlayerXP( pID, 2000 ), 	GivePlayerCash( pID, 500000 );
-	    case VIP_BRONZE:
-	    {
-			if ( !gifted ) {
-	    		SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house & Land Vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Bronze)" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Land Vehicle (Bronze)" #COL_WHITE );
-	    	}
-	    	GivePlayerXP( pID, 5000 ), 	GivePlayerCash( pID, 2500000 );
-	    }
-	    case VIP_GOLD:
-	    {
-			if ( !gifted ) {
-				SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Gold)" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
-	    	}
-	      	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 10000 ), GivePlayerCash( pID, 5000000 );
-	    }
-	    case VIP_PLATINUM:
-	    {
-			if ( !gifted ) {
-				SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house, garage and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Platinum)" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Garage" #COL_WHITE );
-	    	}
-	    	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 25000 ), GivePlayerCash( pID, 12500000 );
-	    }
-	    case VIP_DIAMOND:
-	    {
-			if ( !gifted ) {
-				SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house, garage, gate and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Diamond)" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Garage" #COL_WHITE );
-	    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Gate" #COL_WHITE );
-	    	}
-	    	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 50000 ), GivePlayerCash( pID, 25000000 );
-	    }
-	    default: printf("VIP NOT FOUND %d LEVEL SPECIFIED", level);
+		switch( level )
+		{
+		    case VIP_REGULAR: GivePlayerXP( pID, 2000 ), 	GivePlayerCash( pID, 500000 );
+		    case VIP_BRONZE:
+		    {
+				if ( !gifted ) {
+		    		SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house & Land Vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Bronze)" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Land Vehicle (Bronze)" #COL_WHITE );
+		    	}
+		    	GivePlayerXP( pID, 5000 ), 	GivePlayerCash( pID, 2500000 );
+		    }
+		    case VIP_GOLD:
+		    {
+				if ( !gifted ) {
+					SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Gold)" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
+		    	}
+		      	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 10000 ), GivePlayerCash( pID, 5000000 );
+		    }
+		    case VIP_PLATINUM:
+		    {
+				if ( !gifted ) {
+					SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house, garage and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Platinum)" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Garage" #COL_WHITE );
+		    	}
+		    	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 25000 ), GivePlayerCash( pID, 12500000 );
+		    }
+		    case VIP_DIAMOND:
+		    {
+				if ( !gifted ) {
+					SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP house, garage, gate and vehicle. (/viewnotes)", ReturnPlayerName( pID ), pID );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P House (Diamond)" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Vehicle" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Garage" #COL_WHITE );
+		    		AddPlayerNote( pID, -1, ""COL_GOLD"V.I.P Gate" #COL_WHITE );
+		    	}
+		    	SetPlayerArmour( pID, 100.0 ), GivePlayerXP( pID, 50000 ), GivePlayerCash( pID, 25000000 );
+		    }
+		    default: printf("VIP NOT FOUND %d LEVEL SPECIFIED", level);
+		}
 	}
 
 	if ( p_VIPLevel[ pID ] < level ) p_VIPLevel[ pID ] = level;
 	if ( level > 0 ) {
-	    if ( p_VIPExpiretime[ pID ] > g_iTime ) p_VIPExpiretime[ pID ] += 2595600;
-	    else p_VIPExpiretime[ pID ] += ( g_iTime + 2595600 );
+	    if ( p_VIPExpiretime[ pID ] > g_iTime ) p_VIPExpiretime[ pID ] += interval;
+	    else p_VIPExpiretime[ pID ] += ( g_iTime + interval );
 	}
 	else { p_VIPExpiretime[ pID ] = 0; }
 }
@@ -35941,7 +36006,7 @@ stock ShowPlayerAccountGuard( playerid )
 
 		// award user for adding their email
 		if ( p_AddedEmail{ playerid } == false ) {
-			strcat( szBigString, "\n"COL_GOLD"Claim Free 5 IC For Confirming!\t \t"COL_GOLD">>>" );
+			strcat( szBigString, "\n"COL_GOLD"Claim Free 3 Days Of Regular VIP!\t"COL_GOLD">>>" );
 		}
 	} else {
 		szBigString = ""COL_WHITE"Your account email is "COL_RED"unconfirmed\t \nConfirm Email\t"COL_GREY">>>";
