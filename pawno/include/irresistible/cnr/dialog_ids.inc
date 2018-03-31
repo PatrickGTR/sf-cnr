@@ -5,6 +5,9 @@
  * Purpose:
  */
 
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
 /* ** Definitions ** */
 #define DIALOG_REGISTER             		1000
 #define DIALOG_LOGIN	            		1001
@@ -161,3 +164,15 @@
 #define DIALOG_AIRPORT 						1153
 #define DIALOG_CASINO_BAR 					1154
 #define DIALOG_ACC_EMAIL 					1155
+
+/* ** Hooks ** */
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	// make a confirmation/cancellation sound between dialogs
+    if ( response ) PlayerPlaySound( playerid, 1083, 0.0, 0.0, 0.0 ); // Confirmation sound
+    else PlayerPlaySound( playerid, 1084, 0.0, 0.0, 0.0 ); // Cancellation sound
+
+    // replace % with # in dialogs
+	if ( strlen( inputtext ) ) strreplacechar( inputtext, '%', '#' ); // The percentage injection crasher (critical)
+    return 1;
+}
