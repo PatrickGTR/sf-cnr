@@ -16,6 +16,7 @@
 #define SendUsage(%0,%1)                    (SendClientMessageFormatted(%0,-1,"{FFAF00}[USAGE]{FFFFFF} " # %1))
 #define SendError(%0,%1) 			        (SendClientMessageFormatted(%0,-1,"{F81414}[ERROR]{FFFFFF} " # %1))
 #define SendServerMessage(%0,%1)            (SendClientMessageFormatted(%0,-1,"{C0C0C0}[SERVER]{FFFFFF} " # %1))
+#define SendClientMessageToAllFormatted(%0) (SendClientMessageFormatted(INVALID_PLAYER_ID, %0))
 #define sprintf(%1)                         (format(g_szSprintfBuffer, sizeof(g_szSprintfBuffer), %1), g_szSprintfBuffer)
 #define SetObjectInvisible(%0)              (SetDynamicObjectMaterialText(%0, 0, " ", 140, "Arial", 64, 1, -32256, 0, 1))
 #define fRandomEx(%1,%2)                    (floatrandom(%2-%1)+%1)
@@ -49,11 +50,11 @@ stock SendClientMessageFormatted( playerid, colour, format[ ], va_args<> )
 
     va_format( out, sizeof( out ), format, va_start<3> );
 
-	if ( !IsPlayerConnected( playerid ) ) {
-		SendClientMessageToAll( colour, out );
-		return 0;
-	}
- 	return SendClientMessage( playerid, colour, out );
+	if ( playerid == INVALID_PLAYER_ID ) {
+		return SendClientMessageToAll( colour, out );
+	} else {
+        return SendClientMessage( playerid, colour, out );
+    }
 }
 
 // purpose: trim a string

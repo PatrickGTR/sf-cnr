@@ -1,5 +1,8 @@
 (+) Implements cash cards. A way for prizes to be given out to members easily. Use /cashcard to redeem.
+(+) Businesses can now be robbed by burglars. Businesses must purchase security upgrades to prevent theft!!!
 (+) Adds Trucking to the San Fierro GPS.
 (/) Roadblocks and spike strips can be created by players, and won't be removed unless they are not near them.
 (/) /drball will only remove your roadblocks (unless you're an admin).
 (/) You need at least 250 score to use "/setspike" and "/crb".
+(/) Safes now open more smoothly, and look visually more appealing!
+(/) "/richlist" shows all administrators.

@@ -164,6 +164,7 @@
 #define DIALOG_AIRPORT 						1153
 #define DIALOG_CASINO_BAR 					1154
 #define DIALOG_ACC_EMAIL 					1155
+#define DIALOG_BUSINESS_SECURITY 			1156
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
