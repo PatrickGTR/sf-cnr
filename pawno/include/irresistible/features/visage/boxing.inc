@@ -72,7 +72,7 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] );
+	printf("BOXING MATCH DEATH BY %s -> RETURN %d\n", ReturnPlayerName(playerid), boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] ));
 	return 1;
 }
 
@@ -243,13 +243,14 @@ CMD:boxing( playerid, params[ ] ) {
 /* ** Functions ** */
 stock StartMatch( playerid, targetID ) {
 
-	if ( g_boxingPlayerData[ playerid ] [ E_FIGHTING ] == true && g_boxingPlayerData[ playerid ] [ E_FIGHTING ] ) {
+	if ( g_boxingPlayerData[ playerid ] [ E_FIGHTING ] && g_boxingPlayerData[ targetID ] [ E_FIGHTING ] ) {
 
 		new Float:health_P, Float:armour_P, Float:health_T, Float:armour_T;
 
 		ClearAnimations( playerid );
 		GetPlayerHealth( playerid, health_P );
 		GetPlayerArmour( playerid, armour_P );
+		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
 		g_boxingPlayerData[ playerid ] [ E_PRIOR_HEALTH ] = health_P;
 		g_boxingPlayerData[ playerid ] [ E_PRIOR_ARMOUR ] = armour_P;
 		g_boxingPlayerData[ playerid ] [ E_PRIOR_SKIN ] = GetPlayerSkin( playerid );
@@ -258,6 +259,7 @@ stock StartMatch( playerid, targetID ) {
 		ClearAnimations( targetID );
 		GetPlayerHealth( targetID, health_T );
 		GetPlayerArmour( targetID, armour_T );
+		SetPlayerSpecialAction( targetID, SPECIAL_ACTION_NONE );
 		g_boxingPlayerData[ targetID ] [ E_PRIOR_HEALTH ] = health_T;
 		g_boxingPlayerData[ targetID ] [ E_PRIOR_ARMOUR ] = armour_T;
 		g_boxingPlayerData[ targetID ] [ E_PRIOR_SKIN ] = GetPlayerSkin( targetID );
@@ -358,8 +360,8 @@ stock boxing_ForfeitMatch( playerid, targetID ) {
 	SetPlayerPos( playerid, 2658.3181, 1607.2100, 1507.1793 );
 
 	if ( 0 <= targetID < MAX_PLAYERS ) {
-		SetPlayerPos( targetID, 2652.0947, 1607.2100, 1507.1793 );
 		boxing_RestorePlayer( targetID );
+		SetPlayerPos( targetID, 2652.0947, 1607.2100, 1507.1793 );
 	}
 
 	ResetBoxingArenaVariables();
@@ -409,7 +411,7 @@ function boxingCountDown( time ) {
 
 	} else {
 		foreach( new playerid : Player ) {
-			if ( g_boxingPlayerData[ playerid ] [E_FIGHTING ] == true ) {
+			if ( g_boxingPlayerData[ playerid ] [ E_FIGHTING ] == true ) {
 				format( szNormalString, sizeof( szNormalString ), "~y~%d", time );
 				GameTextForPlayer( playerid, szNormalString, 2000, 3 );
 				PlayerPlaySound( playerid, 1056, 0.0, 0.0, 0.0 );

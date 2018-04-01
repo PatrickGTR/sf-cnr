@@ -350,7 +350,7 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Never share your password, not even with the server owner!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Discord server at {7289da}sfcnr.com/discord" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Locate ChuffSec's security truck with "COL_GREY"/chuffloc{FFFFFF} and rob his security truck for cash!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a "COL_GREY"Money Case{FFFFFF} to double up your robbery loot from Supa Save or a 24/7 store! " },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a "COL_GREY"Money Case{FFFFFF} to increase your robbery loot from Supa Save or a 24/7 store! " },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Grab a truck, connect it to a trailer then begin to "COL_GREY"/work{FFFFFF}! It's rewarding!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Looking for something to do? Work on your "COL_GREY"/achievements"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Check your global SF-CNR rank with "COL_GREY"/rank"COL_WHITE"!" },
@@ -845,6 +845,7 @@ new
 #define MAX_ROBBERIES 				( 500 )
 #define MAX_ROBBERY_WAIT            ( 300 )
 #define MAX_DRILL_STRENGTH 			( 200 )
+#define ROBBERY_MONEYCASE_BONUS		( 1.5 )
 
 #define STATE_NONE 					( 0 )
 #define STATE_ROBBED 				( 1 )
@@ -2184,7 +2185,7 @@ new
  		{ false, "Secure Wallet", 		"Less Being Robbed Chance",  	LIMIT_ONE,		600  }, // 4
  		{ true , "Scissors", 			"/cuttie", 					 	LIMIT_SCISSORS,	750  }, // 5
  		{ true , "Bobby Pin", 			"/breakcuff",				 	LIMIT_PINS,		1200 }, // 6 [1000] -makecopgreatagain
- 		{ false, "Money Case", 			"Doubles Robbing Amount", 	 	LIMIT_ONE,		1500 }, // 7 [1250]
+ 		{ false, "Money Case", 			"Increases Robbing Amount", 	 LIMIT_ONE,		1500 }, // 7 [1250]
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	1750 }, // 8 [1500]
  		{ true , "Aluminium Foil", 		"Deflects EMP",				 	LIMIT_FOIL,		1750 }, // 9
  		{ true , "Thermal Drill", 		"Halves Safe Cracking Time",  	LIMIT_ONE,		5000 }, // 10
@@ -2220,7 +2221,7 @@ new
 
 
 /* ** Easter Eggs ** */
-#define ENABLED_EASTER_EGG 			( true )
+#define ENABLED_EASTER_EGG 			( false )
 
 #if ENABLED_EASTER_EGG == true
 	#define EASTEREGG_LABEL 			"[EASTER EGG]"
@@ -7130,8 +7131,10 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 								g_atmData[ i ] [ E_PICKUP ] = CreateDynamicPickup( 1550, 1, X + 1.0 * -floatsin( -rZ, degrees ), Y + 1.0 * -floatcos( -rZ, degrees ), Z + 0.33 );
 								g_atmData[ i ] [ E_LOOT ] = RandomEx( 320, 750 );
 
-								if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true )
-									g_atmData[ i ] [ E_LOOT ] *= 2;
+								if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
+									new extra_loot = floatround( float( g_atmData[ i ] [ E_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
+									g_atmData[ i ] [ E_LOOT ] = extra_loot;
+								}
 
 								SendServerMessage( playerid, "You've breached an ATM! Rob the money that has been dispensed for quick pocket change!" );
 							}
@@ -7157,6 +7160,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 {
 	if ( !IsPlayerStreamedIn( issuerid, playerid ) || IsPlayerAFK( issuerid ) )
 		return 0;
+
+	// Boxing immunity
+	if ( IsPlayerBoxing( playerid ) && ! IsPlayerBoxing( issuerid ) )
+		 return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage a boxing player!" ), 0;
 
 	if ( IsPlayerJailed( playerid ) || IsPlayerJailed( issuerid ) )
 		return 0;
@@ -7206,10 +7213,6 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 	if ( IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerDetained( playerid ) || IsPlayerKidnapped( playerid ) || IsPlayerTied( playerid ) || IsPlayerLoadingObjects( playerid ) || IsPlayerAdminOnDuty( playerid ) || p_AntiSpawnKillEnabled{ playerid } )
 		return 0;
-
-	// Boxing immunity
-	if ( IsPlayerBoxing( playerid ) && ! IsPlayerBoxing( issuerid ) )
-		 return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage a boxing player!" ), 0;
 
 	// Rhino damage invulnerable
 	if ( p_Class[ playerid ] == CLASS_POLICE && IsPlayerInAnyVehicle( playerid ) && GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 432 )
@@ -8277,7 +8280,10 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 
 	    				new businessid = g_robberyData[ robberyid ] [ E_BUSINESS_ID ];
 
-						if ( businessid == -1 && IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] *= 2;
+						if ( businessid == -1 && IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
+							new extra_loot = floatround( float( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
+							g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = extra_loot;
+						}
 
 						if ( GetPlayerInterior( playerid ) != 0 )
 						{
@@ -8476,7 +8482,10 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 					GivePlayerScore			( playerid, 5 );
 
 					if ( random( 101 ) >= 20 ) {
-						if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) g_secureTruckData[ E_LOOT ] *= 2;
+						if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
+							new extra_loot = floatround( float( g_secureTruckData[ E_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
+							g_secureTruckData[ E_LOOT ] = extra_loot;
+						}
 
 						Achievement::HandlePlayerRobbery( playerid );
 					    SplitPlayerCashForGang( playerid, float( g_secureTruckData[ E_LOOT ] ) );
@@ -10000,7 +10009,7 @@ CMD:meth( playerid, params[ ] )
 		if ( GetPlayerInterior( playerid ) != 9 )
 			return SendError( playerid, "You must be inside Cluckin' Bell to use this command." );
 
-		if ( !p_Methamphetamine{ playerid } )
+		if ( ! p_Methamphetamine{ playerid } )
 			return SendError( playerid, "You don't have any meth to export." );
 
 		if ( p_Class[ playerid ] != CLASS_CIVILIAN )
@@ -29042,9 +29051,10 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 	}
 
 	printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
-	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 0.0 : random_chance ) > 10.0 )
+	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 0.0 : random_chance ) > 5.0 )
 	{
-		new Float: iLoot = float( RandomEx( 1000, g_robberyData[ robberyid ] [ E_ROB_VALUE ] ) );
+		new Float: iRobAmount = float( g_robberyData[ robberyid ] [ E_ROB_VALUE ] );
+		new Float: iLoot = fRandomEx( iRobAmount / 2.0, iRobAmount );
 
 		// Apply multiplier
 		iLoot *= g_robberyData[ robberyid ] [ E_MULTIPLIER ];
@@ -37161,6 +37171,7 @@ thread OnUpdateBusinessTitle( businessid )
 
 	// update robbery checkpoints
 	foreach ( new robberyid : RobberyCount ) if ( robberyid == g_businessData[ businessid ] [ E_ROBBERY_ID ] ) {
+		format( g_robberyData[ robberyid ] [ E_NAME ], 32, "%s", g_businessData[ businessid ] [ E_NAME ] );
 		UpdateDynamic3DTextLabelText( g_robberyData[ robberyid ] [ E_LABEL ], COLOR_GREY, sprintf( "%s\n"COL_WHITE"Left ALT To Crack Safe", g_businessData[ businessid ] [ E_NAME ] ) );
 	}
 

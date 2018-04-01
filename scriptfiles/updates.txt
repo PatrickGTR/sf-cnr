@@ -6,3 +6,5 @@
 (/) You need at least 250 score to use "/setspike" and "/crb".
 (/) Safes now open more smoothly, and look visually more appealing!
 (/) "/richlist" shows all administrators.
+(/) Minimum amount robbed from stores has been tremendously increased.
+(/) Money case has been reduced from a 2x on profit to 1.5x.
