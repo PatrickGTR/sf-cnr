@@ -28,7 +28,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( sscanf( inputtext, "s[32]", cash_card ) )
 		{
 			SendError( playerid, "Your cash card must be between 1 and 32 characters." );
-			ShowPlayerDialog( playerid, DIALOG_STYLE_INPUT, DIALOG_STYLE_LIST, ""COL_GREEN"Redeem Cash Card", ""COL_WHITE"Redeem your cash card by entering the code down below:\n\n"COL_RED"Your cash card code must be between 1 and 32 characters.", "Redeem", "Cancel" );
+			ShowPlayerDialog( playerid, DIALOG_CASH_CARD, DIALOG_STYLE_INPUT, ""COL_GREEN"Redeem Cash Card", ""COL_WHITE"Redeem your cash card by entering the code down below:\n\n"COL_RED"Your cash card code must be between 1 and 32 characters.", "Redeem", "Cancel" );
 			return 1;
 		}
 
