@@ -1,10 +1,2 @@
-(+) Implements cash cards. A way for prizes to be given out to members easily. Use /cashcard to redeem.
-(+) Businesses can now be robbed by burglars. Businesses must purchase security upgrades to prevent theft!!!
-(+) Adds Trucking to the San Fierro GPS.
-(/) Roadblocks and spike strips can be created by players, and won't be removed unless they are not near them.
-(/) /drball will only remove your roadblocks (unless you're an admin).
-(/) You need at least 250 score to use "/setspike" and "/crb".
-(/) Safes now open more smoothly, and look visually more appealing!
-(/) "/richlist" shows all administrators.
-(/) Minimum amount robbed from stores has been tremendously increased.
-(/) Money case has been reduced from a 2x on profit to 1.5x.
+Each business security level extends burglar crackpw cooldown. Low, 4h. Medium, 8h. High, 12h. None is 5 minutes default.
+Business safes will always pay out an amount to the player, regardless if there is no money in a safe.

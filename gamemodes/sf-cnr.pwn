@@ -109,6 +109,7 @@ native gpci 						( playerid, serial[ ], len );
 #define INVALID_TIMER_ID			(-1)
 #define IsPlayerUnderCover(%0)		((p_AccountID[%0] == 577142 || p_AccountID[%0] == 536230 || p_AccountID[%0] == 668504) && p_PlayerLogged{%0}) // StefiTV852, Shepard23, JamesComey
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
+#define GetBusinessSecurity(%0) 	(g_businessSecurityData[%0][E_LEVEL])
 
 // #define ITER_NONE 					-1
 
@@ -2944,6 +2945,12 @@ enum E_BUSINESS_VEHICLE_DATA
 	E_COST
 };
 
+
+enum E_SECURITY_LEVEL_DATA
+{
+	E_LEVEL[ 17 ],				E_COST,						E_BREAKIN_COOLDOWN
+};
+
 new
 	g_businessInteriorData 			[ 4 ] [ E_BUSINESS_INT_DATA ] =
 	{
@@ -2977,6 +2984,13 @@ new
 		{ 15, "Maverick", 	487, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 25000000 },
 		{ 16, "Rustler", 	476, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30000000 },
 		{ 17, "Seasparrow",	447, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1337 }
+	},
+	g_businessSecurityData[ 4 ] [ E_SECURITY_LEVEL_DATA ] =
+	{
+		{ ""COL_RED"NONE", 		0,			300 },
+		{ ""COL_ORANGE"LOW", 	5000000,	14400 },
+		{ ""COL_YELLOW"Medium", 15000000, 	28800 },
+		{ ""COL_GREEN"High", 	35000000,	43200 }
 	},
 	Float: g_roadBusinessExportData[ 3 ] [ 20 ] [ 3 ] =
 	{
@@ -8213,8 +8227,9 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 		{
 			new szLocation[ MAX_ZONE_NAME ];
 			new businessid = GetPVarInt( playerid, "crackpw_biz" );
+			new security_level = g_businessData[ businessid ] [ E_SECURITY_LEVEL ];
 		   	g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
-			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 300;
+			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + g_businessSecurityData[ security_level ] [ E_BREAKIN_COOLDOWN ];
 
 			if ( random( 100 ) < 75 )
 			{
@@ -8222,8 +8237,8 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
 				}
 				g_businessData[ businessid ] [ E_CRACKED ] = true;
-			   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 120;
-				SendServerMessage( playerid, "You have successfully cracked this business' password. You have two minutes to do your thing." );
+			   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 180;
+				SendServerMessage( playerid, "You have successfully cracked this business' password. It will not be accessible in 3 minutes." );
 				GivePlayerWantedLevel( playerid, 12 );
 				GivePlayerScore( playerid, 2 );
 				Achievement::HandleBurglaries( playerid );
@@ -26117,17 +26132,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( ! response )
 			return ShowBusinessTerminal( playerid );
 
-		static const business_costs[ ] = { 0, 5000000, 15000000, 35000000 };
-
-		if ( GetPlayerCash( playerid ) < business_costs[ listitem ] ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", number_format( business_costs[ listitem ] ) );
+		if ( GetPlayerCash( playerid ) < g_businessSecurityData[ listitem ] [ E_COST ] ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", number_format( g_businessSecurityData[ listitem ] [ E_COST ] ) );
 		else if ( listitem < g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You cannot downgrade your security level." );
 		else if ( listitem == g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You have already upgraded your business to this security level." );
 		else
 		{
 			g_businessData[ businessid ] [ E_SECURITY_LEVEL ] = listitem;
 			UpdateBusinessData( businessid );
-			GivePlayerCash( playerid, -business_costs[ listitem ] );
-			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurityLevel( listitem ), number_format( business_costs[ listitem ] ) );
+			GivePlayerCash( playerid, -g_businessSecurityData[ listitem ] [ E_COST ] );
+			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurity( listitem ), number_format( g_businessSecurityData[ listitem ] [ E_COST ] ) );
 			return 1;
 		}
 		return ShowBusinessSecurityUpgrades( playerid );
@@ -29085,6 +29098,9 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 
             // tax 10 percent for me
             iLoot *= 0.9;
+
+            // add loot anyway under 3k
+            if ( iLoot < 3000 ) iLoot = RandomEx( 1500, 3000 );
 		}
 
 		// Loose 50% because of impact
@@ -37318,7 +37334,7 @@ stock ShowBusinessUpgrades( playerid, businessid )
 		business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
 
 	format( szBigString, sizeof( szBigString ), "Security Level\t%s\nUpgrade Car\t"COL_GREY"%s\nUpgrade Air Vehicle\t"COL_GREY"%s\n",
-		GetBusinessSecurityLevel( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ), GetVehicleName( g_businessData[ businessid ] [ E_CAR_MODEL_ID ] ), GetVehicleName( g_businessData[ businessid ] [ E_HELI_MODEL_ID ] ) );
+		GetBusinessSecurity( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ), GetVehicleName( g_businessData[ businessid ] [ E_CAR_MODEL_ID ] ), GetVehicleName( g_businessData[ businessid ] [ E_HELI_MODEL_ID ] ) );
 
 	format( szBigString, sizeof( szBigString ), "%sUpgrade Production\t"COL_GREEN"%s\nAdd Member Slot\t"COL_GREEN"%s\n", szBigString,
 		g_businessData[ businessid ] [ E_UPGRADES ] >= 1 ? ( "MAXED" ) : ( number_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) ), g_businessData[ businessid ] [ E_EXTRA_MEMBERS ] >= 4 ? ( "MAXED" ) : ( "$500,000" ) );
@@ -37327,18 +37343,6 @@ stock ShowBusinessUpgrades( playerid, businessid )
 		g_businessData[ businessid ] [ E_CAR_NOS ] ? ( "ADDED" ) : ( "$250,000" ), g_businessData[ businessid ] [ E_CAR_RIMS ] ? ( "ADDED" ) : ( "$250,000" ) );
 
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_UPGRADES, DIALOG_STYLE_TABLIST, ""COL_GREY"Business System", szBigString, "Select", "Back" );
-}
-
-stock GetBusinessSecurityLevel( level ) {
-	static security_level[ 17 ];
-	switch ( level )
-	{
-		case 0: security_level = ""COL_RED"NONE";
-		case 1: security_level = ""COL_ORANGE"LOW";
-		case 2: security_level = ""COL_YELLOW"Medium";
-		case 3: security_level = ""COL_GREEN"High";
-	}
-	return security_level;
 }
 
 stock IsBusinessAssociate( playerid, businessid )
@@ -37783,13 +37787,12 @@ stock ShowBusinessSecurityUpgrades( playerid )
 	{
 		security = ""COL_WHITE"Security Level\t"COL_WHITE"Protection\t"COL_WHITE"Price\n";
 		format( security, sizeof( security ), "%s"COL_RED"NONE\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"$0\n", security, "%", "%" );
-		format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"$5,000,000\n", security, "%", "%" );
-		format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t60%s Safe Security + 12.5%s chance of breaking in\t"COL_GOLD"$15,000,000\n", security, "%", "%" );
-		format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t90%s Safe Security + 6.25%s chance of breaking in\t"COL_GOLD"$35,000,000\n", security, "%", "%" );
+		format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 1 ] [ E_COST ] ) );
+		format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t60%s Safe Security + 12.5%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 2 ] [ E_COST ] ) );
+		format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t90%s Safe Security + 6.25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 3 ] [ E_COST ] ) );
 	}
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }
-
 
 
 stock GetServerTime( ) return g_iTime;
