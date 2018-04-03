@@ -8211,12 +8211,16 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 		}
 		case PROGRESS_CRACKING_BIZ:
 		{
+			new szLocation[ MAX_ZONE_NAME ];
 			new businessid = GetPVarInt( playerid, "crackpw_biz" );
 		   	g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
 			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 300;
 
 			if ( random( 100 ) < 75 )
 			{
+				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
+					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
+				}
 				g_businessData[ businessid ] [ E_CRACKED ] = true;
 			   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 120;
 				SendServerMessage( playerid, "You have successfully cracked this business' password. You have two minutes to do your thing." );
@@ -8226,7 +8230,9 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 			}
 			else
 			{
-				new szLocation[ MAX_ZONE_NAME ];
+				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
+					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) failed to break in business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
+				}
 				GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
 				SendClientMessageToCops( -1, ""COL_BLUE"[BURGLARY]"COL_WHITE" %s has failed to crack a business' password near %s.", ReturnPlayerName( playerid ), szLocation );
 				SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have failed to crack this business' password." );
@@ -10285,9 +10291,9 @@ CMD:burglar( playerid, params[ ] )
 				if ( g_businessData[ handle ] [ E_CRACKED ] || g_businessData[ handle ] [ E_BEING_CRACKED ] )
 				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
 
-				// alert owners
+				// alert
 				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, handle ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ handle ] [ E_NAME ] );
+					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) is attempting to break into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ handle ] [ E_NAME ] );
 				}
 
 				// crack pw
@@ -26121,7 +26127,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			g_businessData[ businessid ] [ E_SECURITY_LEVEL ] = listitem;
 			UpdateBusinessData( businessid );
 			GivePlayerCash( playerid, -business_costs[ listitem ] );
-			SendServerMessage( playerid, "You have upgraded your business security to %s for "COL_GOLD"%s"COL_WHITE".", SecurityModeToString( listitem ), number_format( business_costs[ listitem ] ) );
+			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurityLevel( listitem ), number_format( business_costs[ listitem ] ) );
 			return 1;
 		}
 		return ShowBusinessSecurityUpgrades( playerid );
@@ -28956,6 +28962,7 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 			g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 15000, false, "dddd", playerid, robberyid, type, 0 );
 
 			p_drillStrength[ playerid ] -= 10;
+			Streamer_Update( playerid );
 			return 1;
 		}
 
@@ -29100,16 +29107,19 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 		{
 		    new
 				szLocation[ MAX_ZONE_NAME ],
-				id = p_LastEnteredEntrance[ playerid ]
+				id = p_LastEnteredEntrance[ playerid ],
+				business_id = g_robberyData[ robberyid ] [ E_BUSINESS_ID ]
 			;
 
 			if ( id != -1 ) // Sometimes the player isn't even inside a home.
 				GetZoneFromCoordinates( szLocation, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] );
+			else if ( business_id != -1 )
+				GetZoneFromCoordinates( szLocation, g_businessData[ business_id ] [ E_X ], g_businessData[ business_id ] [ E_Y ], g_businessData[ business_id ] [ E_Z ] );
 
 			if ( GetPlayerInterior( playerid ) != 0 )
-		    	SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s near %s, suspect is bound to leave any time now.", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ], szLocation );
+		    	SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s"COL_WHITE" near %s.", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ], szLocation );
 			else
-				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s, suspect is bound to leave any time now.", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ] );
+				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s"COL_WHITE".", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ] );
 
 			SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" No loot, and the alarm went off. Cops have been alerted." );
 			GivePlayerWantedLevel( playerid, 6 );
