@@ -18,7 +18,7 @@
 #endif*/
 
 /* ** Definitions ** */
-#define MAX_ROULETTE_TABLES 		29
+#define MAX_ROULETTE_TABLES 		30
 
 /* ** Macros ** */
 #define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)

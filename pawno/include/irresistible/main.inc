@@ -30,6 +30,7 @@
 #include < irresistible\features\fps >
 #include < irresistible\features\radio >
 #include < irresistible\features\cash_cards >
+#include < irresistible\features\furniture >
 // #include < irresistible\features\vote >
 
 // visage casino
@@ -45,6 +46,5 @@
 #include < irresistible\cnr\static\actors >
 #include < irresistible\cnr\static\server_vehicles >
 #include < irresistible\cnr\static\removed_buildings >
-#include < irresistible\cnr\static\removed_furniture >
 #include < irresistible\cnr\static\server_objects >
 #include < irresistible\cnr\static\player_objects >

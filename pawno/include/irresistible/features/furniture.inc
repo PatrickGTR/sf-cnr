@@ -1,12 +1,18 @@
 /*
  * Irresistible Gaming 2018
  * Developed by Lorenc Pekaj
- * Module: static_cnr\removed_furniture.inc
+ * Module: static_cnr\furniture.inc
  * Purpose: removals of static furniture objects in buildings or player interiors
  */
 
+/* ** Hooks ** */
+hook OnPlayerConnect( playerid ) {
+	initializePlayerInteriors( playerid );
+	return 1;
+}
+
 /* ** Functions ** */
-stock initializePlayerInteriors( playerid )
+static stock initializePlayerInteriors( playerid )
 {
 	//Katie - 271.884979,306.631988,999.148437 - DEFAULT - 2
 	RemoveBuildingForPlayer( playerid, 2251, 266.4531, 303.3672, 998.9844, 0.25 );
@@ -323,6 +329,7 @@ stock initializePlayerInteriors( playerid )
 	RemoveBuildingForPlayer( playerid, 2117, 150.4297, 1383.5938, 1082.8516, 0.25 );
 	RemoveBuildingForPlayer( playerid, 1739, 151.5469, 1383.7500, 1083.7500, 0.25 );
 	RemoveBuildingForPlayer( playerid, 1739, 149.2266, 1383.8203, 1083.7500, 0.25 );
+	RemoveBuildingForPlayer( playerid, 2312, 151.818466, 1369.827148, 1083.859375, 19994.000 );
 	// Lorem
 	RemoveBuildingForPlayer( playerid, 2524, 219.6719, 1072.9922, 1083.1641, 0.25 );
 	RemoveBuildingForPlayer( playerid, 2525, 219.6250, 1074.4844, 1083.1875, 0.25 );

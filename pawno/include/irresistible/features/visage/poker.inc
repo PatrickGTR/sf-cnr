@@ -69,7 +69,7 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 *******************************************************************************************/
 
 //Limits
-#define T_MAX_POKER_TABLES													34
+#define T_MAX_POKER_TABLES													35
 #define T_MAX_CHAIRS_PER_TABLE												7
 #define T_CHAIR_MODEL 														2120
 #define T_MAX_CHIPS_PER_CHAIR												4
