@@ -114,7 +114,7 @@ native gpci 						( playerid, serial[ ], len );
 // #define ITER_NONE 					-1
 
 /* Dynamic Macros */
-#define GetTaxRate()				(GetGVarFloat("taxrate"))
+//#define GetTaxRate()				(GetGVarFloat("taxrate"))
 #define IsDoubleXP()				(GetGVarInt("doublexp")!=0)
 #define IsProxiesBanned()			(GetGVarInt("proxyban")!=0)
 
@@ -434,7 +434,6 @@ new
 	PlayerText: p_RobberyRiskTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
-
 	PlayerText: p_VehiclePreviewTD 	[ 7 ] = { PlayerText: INVALID_TEXT_DRAW, ... }
 ;
 
@@ -539,6 +538,7 @@ stock const
 
 /* ** House System ** */
 #define MAX_HOUSES                  ( 2000 )
+#define MAX_FURNITURE 				( 50 )
 #define MAX_HOUSE_WEAPONS           ( 7 ) // Don't change...
 #define HOUSE_MAPICON_RADIUS 		( 25.0 )
 
@@ -566,10 +566,6 @@ enum E_HOUSE_DATA
 	bool: E_CRACKED, 	bool: E_BEING_CRACKED,  E_CRACKED_TS,
 	E_CRACKED_WAIT,		E_MAP_ICON
 };
-
-new
-	g_houseData                     [ MAX_HOUSES ] [ E_HOUSE_DATA ]
-;
 
 enum E_HINTERIOR_DATA
 {
@@ -689,6 +685,7 @@ new
 	    { FC_ELECTRONIC,	"Black Guitar",       	19319, 700 },
 	    { FC_ELECTRONIC,	"8 Bit TV", 			1748, 700 },
 	    { FC_ELECTRONIC,	"VCR Player", 			1719, 900 },
+	    { FC_ELECTRONIC, 	"Gaming Console",		2028, 1000 },
 	    { FC_ELECTRONIC, 	"Small TV with VCR",	2595, 1100 },
 		{ FC_ELECTRONIC, 	"Laptop", 				19893, 1250 },
 	    { FC_ELECTRONIC,	"TV Small", 			1518, 1575 },
@@ -793,10 +790,14 @@ new
 		{ FC_FOODRINK, 		"Premium Brandy", 		19820, 190 },
 		{ FC_FOODRINK, 		"Premium Wine", 		19822, 220 }
 	},
+	g_houseData                     [ MAX_HOUSES ] [ E_HOUSE_DATA ],
 	szg_houseInteriors				[ 24 * sizeof( g_houseInteriors ) ],
 	g_HouseWeapons					[ MAX_HOUSES ] [ MAX_HOUSE_WEAPONS ],
 	g_HouseWeaponAmmo				[ MAX_HOUSES ] [ MAX_HOUSE_WEAPONS ],
-	g_HouseFurnitureCount			[ MAX_HOUSES ]
+
+	// furniture v2
+	g_houseFurnitureData 			[ MAX_HOUSES ] [ MAX_FURNITURE ],
+	Iterator: housefurniture 		[ MAX_HOUSES ] < MAX_FURNITURE >
 ;
 
 /* ** Bribe Data ** */
@@ -2056,7 +2057,6 @@ enum E_FLAT_DATA
 
 new
 	g_apartmentData                 [ 19 ] [ E_FLAT_DATA ], // A1 = 19 Floors
-	g_ApartmentFurnitureCount		[ sizeof( g_apartmentData ) ],
 	g_apartmentElevator             = INVALID_OBJECT_ID,
 	g_apartmentElevatorGate         = INVALID_OBJECT_ID,
     g_apartmentElevatorLevel        = 0,
@@ -2709,8 +2709,8 @@ static const
 	g_slotOddsPayout[ ] [ E_SLOT_ODD_DATA ] =
 	{
 		// Entry Fee 	Probability		Tax 	{Double Brick}	{Single Brick}	{Gold Bells}	{Cherry}			{Grapes}				{69}				Payouts (Single brick, gold bells, etc...)
-		{ 50000,        50000,          0.2,    49995,          { 1, 400 },     { 401, 1199},   { 1200, 2797 },     { 2798, 10787 },     	{ 10788, 26767 },   { 1000000, 500000, 250000, 50000, 25000 } },
-		{ 25000,		100000,			0.2,	99991,			{ 1, 799 },	    { 800, 2397 },	{ 2398, 6392 },	    { 6393, 22372 },		{ 22373, 54332 },	{ 500000, 250000, 100000, 25000, 12500 } },
+		{ 50000,        50000,          0.2,    -1,          	{ 1, 400 },     { 401, 1199},   { 1200, 2797 },     { 2798, 10787 },     	{ 10788, 26767 },   { 1000000, 500000, 250000, 50000, 25000 } },
+		{ 25000,		100000,			0.2,	-1,				{ 1, 799 },	    { 800, 2397 },	{ 2398, 6392 },	    { 6393, 22372 },		{ 22373, 54332 },	{ 500000, 250000, 100000, 25000, 12500 } },
 		{ 10000,		62500,			0.2,	62488,			{ 1, 994 },	    { 995, 2982 },	{ 2983, 6957 },	    { 6958, 16895 },		{ 16896, 36770 },	{ 100000, 50000, 25000, 10000, 5000 } },
 		{ 5000, 		40000,			0.25,	27390,			{ 1, 596 },		{ 597, 1788 },	{ 1789, 4768 },		{ 4769, 10728 },		{ 10729, 22648 },	{ 50000, 25000, 10000, 5000, 2500 } }
 	}
@@ -3195,7 +3195,6 @@ new
 	p_PingImmunity                  [ MAX_PLAYERS char ],
 	p_Fires                         [ MAX_PLAYERS ],
 	p_ApartmentEnter                [ MAX_PLAYERS char ],
-	p_ApartmentEditing              [ MAX_PLAYERS ],
 	p_ApartmentSpawnLocation        [ MAX_PLAYERS ] = { -1, ... },
 	p_AntiTieSpam                   [ MAX_PLAYERS ],
 	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
@@ -3226,7 +3225,6 @@ new
 	p_HouseWeaponAddSlot            [ MAX_PLAYERS char ],
 	Text3D: p_AdminLabel         	[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
 	bool: p_AdminOnDuty             [ MAX_PLAYERS char ],
-	p_SelectedFurniture				[ MAX_PLAYERS ] [ 2 ],
 	p_FurnitureCategory             [ MAX_PLAYERS char ],
 	p_FurnitureRotAxis              [ MAX_PLAYERS char ],
 	Float: p_ProgressStatus         [ MAX_PLAYERS ],
@@ -3329,7 +3327,6 @@ new
 	log__Text						[ 6 ][ 90 ],
 	szReportsLog 					[ 8 ][ 128 ],
 	szQuestionsLog 					[ 8 ][ 128 ],
-	g_preloadedObjectCount          = 0,
 	bool: g_CommandLogging			= false,
 	bool: g_DialogLogging			= false,
 	szRules							[ 3300 ],
@@ -3551,8 +3548,8 @@ public OnGameModeInit()
 	#endif
 
 	/* ** Robbery Points ** */
-	static const ROBBERY_BOT_PAY = 2500; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 5000; // max pay from robbing safes
+	static const ROBBERY_BOT_PAY = 2400; // max pay from robbing bots
+	static const ROBBERY_SAFE_PAY = 4800; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -4538,7 +4535,6 @@ public OnGameModeInit()
 	printf( "[ROBBERIES]: %d robberies have been successfully loaded.", Iter_Count(RobberyCount) );
 	printf( "[ROBBERIES]: %d robbery NPCs have been successfully loaded.", Iter_Count(RobberyNpc) );
 
- 	g_preloadedObjectCount = Streamer_GetUpperBound( STREAMER_TYPE_OBJECT ); // To look more efficiently, preloaded doesn't worry that way.
 	mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "OnApartmentLoad", "" );
@@ -4698,30 +4694,34 @@ public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, 
 
 public OnPlayerSelectDynamicObject( playerid, objectid, modelid, Float:x, Float:y, Float:z )
 {
-    if ( p_InHouse[ playerid ] != -1 ) {
-   	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-    } else {
-	    if ( IsValidApartment( p_ApartmentEditing{ playerid } ) ) {
-	    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-	    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-    }
+	new houseid = p_InHouse[ playerid ];
+
+	if ( houseid == -1 )
+		return SendError( playerid, "You're not inside any house." );
+
+	if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+		return SendError( playerid, "You are not the owner of this house." );
 
 	if ( isFurnitureObject( modelid ) )
-    	p_SelectedFurniture[ playerid ][ 0 ] = objectid, p_SelectedFurniture[ playerid ][ 1 ] = modelid, ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
-	else
-		SendError( playerid, "This is not a piece of furniture." ), ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture\nSelect Furniture Nearest", "Confirm", "Back" );
+	{
+		new fhandle;
 
+		// check the handle of the modelid
+		foreach ( fhandle : housefurniture[ houseid ] ) {
+			new furniture_model = Streamer_GetIntData( STREAMER_TYPE_OBJECT, g_houseFurnitureData[ houseid ] [ fhandle ], E_STREAMER_MODEL_ID );
+			if ( furniture_model == modelid ) break;
+		}
+
+		// notify
+		if ( fhandle != ITER_NONE ) {
+			SetPVarInt( playerid, "furniture_house", houseid );
+			SetPVarInt( playerid, "furniture_id", fhandle );
+			ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
+		}
+		else SendError( playerid, "This furniture item cannot be edited as its model is unrecogized in the house." );
+	}
 	CancelEdit( playerid );
 	return 1;
-}
-
-stock Float: getFloorZOffset( floor )
-	return ( 14.9689 + ( floor * 5.42 ) );
-
-stock IsPlayerInApartmentArea( playerid, floor )
-{
-	new Float: apartmentZ = getFloorZOffset( floor );
-	return ( IsPlayerInArea3D( playerid, -2007.4579, -1915.5035, 1325.3346, 1384.0671, apartmentZ, apartmentZ + 5.5 ) && GetPlayerInterior( playerid ) == 0 );
 }
 
 public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz )
@@ -4859,18 +4859,22 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 	}
 #endif
 
-    if ( p_InHouse[ playerid ] != -1 ) {
-   	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-    } else {
-	    if ( p_ApartmentEditing{ playerid } != -1 ) {
-	    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-	    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-    }
+ 	new editing_house = GetPVarInt( playerid, "furniture_house" );
+ 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
 
-	new
-		Float: lastX, Float: lastY, Float: lastZ,
- 		Float: lastRX, Float: lastRY, Float: lastRZ
- 	;
+	new houseid = p_InHouse[ playerid ];
+
+    if ( houseid == -1 )
+   		return SendError( playerid, "You're not inside any house." );
+
+    if ( houseid != editing_house )
+   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
+
+   	if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	static Float: lastX, Float: lastY, Float: lastZ;
+	static Float: lastRX, Float: lastRY, Float: lastRZ;
 	GetDynamicObjectPos( objectid, lastX, lastY, lastZ );
 	GetDynamicObjectRot( objectid, lastRX, lastRY, lastRZ );
 
@@ -4878,29 +4882,10 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 	{
 	    case EDIT_RESPONSE_FINAL:
 	    {
-	    	if ( IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ))
-	    	{
-		    	new Float: apartmentZ = getFloorZOffset( p_ApartmentEditing{ playerid } );
-
-		    	if ( IsPointInPolygon( x, y, -1956.6293,1364.0175, -1956.6394,1367.0598, -1953.5428,1367.0598, -1953.5472,1364.0171 ) )
-		    	{
-		    		SendError( playerid, "You cannot place furniture within the elevator area. Doing so will remove your apartment!" );
-		    		goto cancel_editing;
-		    	}
-
-		    	if ( !IsPointInPolygon( x, y,
-						-2003.7538,1331.1801, -2004.5574,1332.0103, -2004.5818,1380.1896, -2003.7008,1381.0961, -1979.9607,1381.2789, -1979.5481,1375.6516, -1946.1802,1375.4758, -1942.3969,1374.2631, -1940.0063,1372.0107, -1938.4290,1368.7505, -1938.3868,1361.0717, -1939.0577,1358.9238,
-						-1940.5144,1357.2417, -1942.4861,1356.2926, -1967.5673,1356.2303, -1979.4148,1345.7229, -1979.5145,1337.6086, -1980.3810,1334.8680, -1982.6312,1332.4343, -1984.9004,1331.3530
-					) || z < apartmentZ || z > ( apartmentZ + 5.42 ) )
-		    	{
-		    		SendError( playerid, "The furniture you place must be within the apartment's area.");
-		    		goto cancel_editing;
-		    	}
-		    }
 			SetDynamicObjectPos( objectid, x, y, z );
 			SetDynamicObjectRot( objectid, rx, ry, rz );
 
-			format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `X`='%f',`Y`='%f',`Z`='%f',`RX`='%f',`RY`='%f',`RZ`='%f' WHERE `X`='%f' AND `Y`='%f'", x, y, z, rx, ry, rz, lastX, lastY );
+			format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `X`=%f,`Y`=%f,`Z`=%f,`RX`=%f,`RY`=%f,`RZ`=%f WHERE `ID`=%d AND `HOUSE_ID`=%d", x, y, z, rx, ry, rz, editing_furniture, editing_house );
 			mysql_single_query( szBigString );
 
 			SendServerMessage( playerid, "Furniture has been successfully updated." );
@@ -4908,13 +4893,10 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 		}
 		case EDIT_RESPONSE_CANCEL:
 		{
+			SetDynamicObjectPos( objectid, lastX, lastY, lastZ );
+			SetDynamicObjectRot( objectid, lastRX, lastRY, lastRZ );
 			SendServerMessage( playerid, "You have canceled editing the piece of furniture selected." );
-			cancel_editing:
-			{
-				SetDynamicObjectPos( objectid, lastX, lastY, lastZ );
-				SetDynamicObjectRot( objectid, lastRX, lastRY, lastRZ );
-	        	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
-			}
+        	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 		}
 	}
 	return 1;
@@ -6131,7 +6113,6 @@ public OnPlayerConnect( playerid )
 	// Create player textdraws and remove buildings
 	initializePlayerTextDraws( playerid );
 	removeExcessiveBuildings( playerid );
-	initializePlayerInteriors( playerid );
 
 	// Create casino label
 	DestroyDynamic3DTextLabel( p_RewardsLabel_Caligs[ playerid ] );
@@ -6481,7 +6462,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_HydrogenChloride{ playerid } = 0;
 	p_Methamphetamine{ playerid } = 0;
 	p_IsCasinoHighRoller{ playerid } = false;
-	p_ApartmentEditing{ playerid } = -1;
 	p_PawnStoreExport[ playerid ] = 0xFFFF;
 	p_LastEnteredEntrance[ playerid ] = -1;
 	p_ViewingGangTalk[ playerid ] = -1;
@@ -6624,7 +6604,6 @@ public OnPlayerSpawn( playerid )
    	p_Tied{ playerid } = false;
 	p_InHouse[ playerid ] = -1;
 	p_InGarage[ playerid ] = -1;
-	p_ApartmentEditing{ playerid } = -1;
 	StopSound( playerid );
 	CancelEdit( playerid );
 	loadPlayerToys( playerid );
@@ -7324,12 +7303,26 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 function hidedamagetd_Timer( playerid )
 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
-stock getPlayerTax( playerid )
+stock getPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
 {
-	new
-		iTax = floatround( ( p_Cash[ playerid ] + ( p_BankMoney[ playerid ] * 0.6 ) ) / 1000 * GetTaxRate( ) );
+	// http://www.analyzemath.com/parabola/three_points_para_calc.html
+	// (0.1, 0), (10, 3), (50, 6) where x = money/1M, y = percentage
+	new Float: player_money = float( p_Cash[ playerid ] ) + ( float( p_BankMoney[ playerid ] ) * 0.6 );
+	new Float: player_millions = player_money / 1000000.0; // working off $1,000,000s
 
-	return iTax > 0 ? iTax : 0;
+	// check player money to avoid intensive calculations
+	if ( player_millions < 0.1 ) tax_percentage_formula = 0.0;
+	else if ( player_millions > 50.0 ) tax_percentage_formula = 6.0; // max 6 percent
+	else tax_percentage_formula = -0.002 * floatpower( player_millions, 2 ) + 0.22 * player_millions - 0.022;
+
+	// limit of 6% per hour, or 0.0% fixed
+	if ( tax_percentage_formula > 6.0 ) tax_percentage_formula = 6.0;
+	if ( tax_percentage_formula < 0.0 ) tax_percentage_formula = 0.0;
+
+	//printf("%f -> %0.2f tax -> %0.0f\n", player_money, tax_percentage_formula, player_money * tax_percentage_formula/100.0 );
+	// return final tax
+	new final_tax = floatround( ( tax_percentage_formula / 100.0 ) * player_money );
+	return final_tax > 0 ? final_tax : 0;
 }
 
 #if defined AC_INCLUDED
@@ -8668,7 +8661,7 @@ stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( arr
 public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 {
 	if ( !success ) {
-		AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s\r\n", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
+		if ( GetPlayerScore( playerid ) < 1000 ) AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s\r\n", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
 		return SendError( playerid, "You have entered an invalid command. To display the command list type /commands or /cmds." );
 	}
 	return 1;
@@ -10355,26 +10348,37 @@ CMD:burglar( playerid, params[ ] )
 	}
 	else if ( strmatch( params, "steal" ) )
 	{
-	    new
-	        Float: distance = 99999.99,
-			furnitureID = getClosestFurniture( playerid, distance )
-		;
-	    if ( p_InHouse[ playerid ] == -1 ) return SendError( playerid, "You're not inside any house." );
-    	if ( strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You can't steal a piece of furniture from your house!" );
-    	if ( furnitureID == INVALID_OBJECT_ID ) return SendError( playerid, "No furniture is in this house." );
-		if ( distance > 3.0 ) return SendError( playerid, "You are not close to any furniture." );
-		if ( g_houseFurniture[ GetGVarInt( "fur_f", furnitureID ) ] [ E_CATEGORY ] != FC_ELECTRONIC ) return SendError( playerid, "The furniture you're near is not an electronic." );
-		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return SendError( playerid, "Your hands are busy at the moment." );
+		new houseid = p_InHouse[ playerid ];
 
-		new
-			houseid = p_InHouse[ playerid ];
+	    if ( houseid == -1 )
+	    	return SendError( playerid, "You're not inside any house." );
+
+    	if ( strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+    		return SendError( playerid, "You can't steal a piece of furniture from your house!" );
+
+	    new Float: distance = 99999.99, furniture_slot = ITER_NONE;
+		new objectid = GetClosestFurniture( houseid, playerid, distance, furniture_slot );
+		new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
+		new furniture_id = getFurnitureID( modelid );
+
+    	if ( objectid == INVALID_OBJECT_ID || furniture_slot == ITER_NONE )
+    		return SendError( playerid, "No furniture is in this house." );
+
+		if ( distance > 3.0 )
+			return SendError( playerid, "You are not close to any furniture." );
+
+		if ( g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_ELECTRONIC && g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_WEAPONS )
+			return SendError( playerid, "The furniture you're near is not an electronic." );
+
+		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
+			return SendError( playerid, "Your hands are busy at the moment." );
 
 		if ( IsPointToPoint( 150.0, g_houseData[ houseid ] [ E_EX ], g_houseData[ houseid ] [ E_EY ], g_houseData[ houseid ] [ E_EZ ], -2480.1426, 5.5302, 25.6172 ) )
 			return SendError( playerid, "This house is prohibited from burglarly features as it is too close to the Pawn Store." );
 
-		SendServerMessage( playerid, "You have stolen a "COL_GREY"%s"COL_WHITE". Store it in a Boxville to transport the item.", g_houseFurniture[ GetGVarInt( "fur_f", furnitureID ) ] [ E_NAME ] );
+		SendServerMessage( playerid, "You have stolen a "COL_GREY"%s"COL_WHITE". Store it in a Boxville to transport the item.", g_houseFurniture[ furniture_id ] [ E_NAME ] );
 		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
-		SetPVarInt( playerid, "stolen_fid", GetGVarInt( "fur_f", furnitureID ) );
+		SetPVarInt( playerid, "stolen_fid", furniture_id );
 		SetPlayerAttachedObject( playerid, 3, 1220, 5, 0.043999, 0.222999, 0.207000, 14.400002, 15.799994, 0.000000, 0.572999, 0.662000, 0.665000 );
 	}
 	else if ( strmatch( params, "store" ) )
@@ -10409,9 +10413,14 @@ CMD:playerjobs( playerid, params[ ] )
 	return 1;
 }
 
-CMD:getmytax( playerid, params[ ] )
+
+CMD:gettaxrate( playerid, params[ ] ) return cmd_tax( playerid, params );
+CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
+CMD:tax( playerid, params[ ] )
 {
-	SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" per 24 minutes.", number_format( getPlayerTax( playerid ) ) );
+	new Float: tax_rate = 0.0;
+	new tax_amount = getPlayerTax( playerid, tax_rate );
+	SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s per 24 minutes.", number_format( tax_amount ), tax_rate, "%%" );
 	return 1;
 }
 
@@ -10432,23 +10441,15 @@ thread gettotalcash( playerid )
 		new user_cash = cache_get_field_content_int( 0, "USER_CASH", dbHandle );
 		new biz_cash = cache_get_field_content_int( 0, "BIZ_CASH", dbHandle );
 		new gang_cash = cache_get_field_content_int( 0, "GANG_CASH", dbHandle );
-
 		new total_cash = user_cash + biz_cash + gang_cash;
-		new tax_rate = floatround( float( total_cash ) / 1000.0 * GetTaxRate( ) );
 
-		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s\nTax Rate (24 min)\t"COL_GOLD"%s",
-				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ), number_format( tax_rate ) );
+		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s",
+				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ) );
 
-		SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( total_cash ), number_format( tax_rate ) );
+		// SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( total_cash ), number_format( tax_rate ) );
   		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}SF-CNR Economy", szLargeString, "Close", "" );
 	}
 	else SendError( playerid, "An error has occurred, try again later." );
-	return 1;
-}
-
-CMD:gettaxrate( playerid, params[ ] )
-{
-	SendServerMessage( playerid, "The tax rate is currently on "COL_GREY"%0.2f"COL_WHITE".", GetTaxRate( ) );
 	return 1;
 }
 
@@ -11338,7 +11339,7 @@ CMD:lean( playerid, params[ ] )
 
 CMD:sleep( playerid, params[ ] )
 {
-	CreateLoopingAnimation( playerid, "INT_HOUSE", "BED_Loop_L", 4.0, 1, 0, 0, 0, 0 );
+	CreateLoopingAnimation( playerid, "CRACK", "crckidle2", 4.0, 1, 0, 0, 0, 0 );
 	return 1;
 }
 
@@ -12647,6 +12648,7 @@ CMD:h( playerid, params[ ] )
 			SaveHouseWeaponStorage( ID );
 			GivePlayerCash( playerid, ( g_houseData[ ID ] [ E_COST ] / 2 ) );
 			destroyAllFurniture( ID );
+			FillHomeWithFurniture( ID, 0 );
 			g_houseData[ ID ] [ E_TX ] = g_houseInteriors[ 0 ] [ E_EX ];
 			g_houseData[ ID ] [ E_TY ] = g_houseInteriors[ 0 ] [ E_EY ];
 			g_houseData[ ID ] [ E_TZ ] = g_houseInteriors[ 0 ] [ E_EZ ];
@@ -12710,7 +12712,8 @@ CMD:h( playerid, params[ ] )
 			p_OwnedHouses[ sellerid ] --;
 			p_OwnedHouses[ playerid ] ++;
 
-		    destroyAllFurniture( houseid );
+		    // destroyAllFurniture( houseid );
+		    mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", p_AccountID[ playerid ], houseid ) );
 			SetHouseOwner( houseid, ReturnPlayerName( playerid ) );
 
 			GivePlayerCash( playerid, -sellingprice );
@@ -17710,17 +17713,18 @@ CMD:playaction( playerid, params[ ] )
 
 CMD:playanimation( playerid, params[ ] )
 {
-	if ( p_AdminLevel[ playerid ] < 6 )
+	if ( p_AdminLevel[ playerid ] < 6 && p_AccountID[ playerid ] != 819507 )
 		return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	new
-		pID,
-		szAnimation[ 2 ][ 64 ];
+	new pID;
+	new szAnimation[ 2 ][ 64 ];
+	new loop, lockx, locky, freeze, time, force_sync;
 
-	if ( sscanf(params, ""#sscanf_u"s[64]s[64]", pID, szAnimation[ 0 ], szAnimation[ 1 ] ) )
-		return SendUsage( playerid, "/playanimation [PLAYER_ID] [LIBRARY] [ANIM_NAME]");
+	if ( sscanf(params, ""#sscanf_u"s[64]s[64]D(0)D(0)D(0)D(0)D(0)D(0)", pID, szAnimation[ 0 ], szAnimation[ 1 ], loop, lockx, locky, freeze, time, force_sync ) )
+		return SendUsage( playerid, "/playanimation [PLAYER_ID] [LIBRARY] [ANIM_NAME] [LOOP (0)] [LOCK_X (0)] [LOCK_Y (0)] [FREEZE (0)] [TIME (0)] [FORCE_SYNC (0)]" );
 
-	ApplyAnimation( pID, szAnimation[0], szAnimation[1], 4.1, 0, 0, 0, 0, 0, 0 );
+	ApplyAnimation( pID, szAnimation[0], szAnimation[1], 4.1, loop, lockx, locky, freeze, time, force_sync );
+	AddAdminLogLineFormatted( "%s(%d) played animation %s %s on %s(%d)", ReturnPlayerName( playerid ), playerid, szAnimation[0], szAnimation[1], ReturnPlayerName( pID ), pID );
 	return 1;
 }
 
@@ -17791,6 +17795,25 @@ CMD:weather( playerid, params[ ] )
 }
 
 /* Level RCON */
+CMD:furnishhomes( playerid, params[ ] ) {
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	for ( new i = 0; i < MAX_HOUSES; i ++ ) if ( g_houseData[ i ] [ E_CREATED ] ) {
+		new interior = GetInteriorType( i );
+		if ( interior != -1 ) FillHomeWithFurniture( i, interior );
+		else SendServerMessage( playerid, "House ID %d has an invalid inteiror", i );
+	}
+	SendServerMessage( playerid, "All houses have been furnished." );
+	return 1;
+}
+
+stock GetInteriorType( houseid ) {
+	for ( new i = 0; i < sizeof( g_houseInteriors ); i ++ ) {
+		if ( IsPointToPoint( 2.0, g_houseInteriors[ i ] [ E_EX ], g_houseInteriors[ i ] [ E_EY ], g_houseInteriors[ i ] [ E_EZ ], g_houseData[ houseid ] [ E_TX ], g_houseData[ houseid ] [ E_TY ], g_houseData[ houseid ] [ E_TZ ] ) )
+			return i;
+	}
+	return -1;
+}
+
 CMD:updatepool( playerid, params[ ] )
 {
 	new
@@ -18110,7 +18133,7 @@ CMD:logdialog( playerid, params[ ] )
 	return 1;
 }
 
-CMD:settaxrate( playerid, params[ ] )
+/*CMD:settaxrate( playerid, params[ ] )
 {
 	new Float: rate;
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
@@ -18122,7 +18145,7 @@ CMD:settaxrate( playerid, params[ ] )
 		UpdateServerVariable( "taxrate", 0, rate, "", GLOBAL_VARTYPE_FLOAT );
     }
 	return 1;
-}
+}*/
 
 CMD:givewanted( playerid, params[ ] )
 {
@@ -19685,7 +19708,10 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			{
 				format( szSmallString, sizeof( szSmallString ), "vburg_%d_%d", vehicleid, i );
 				if ( GetGVarInt( szSmallString ) != 0 )
-				    cashEarned += floatround( g_houseFurniture[ GetGVarInt( szSmallString ) ] [ E_COST ] / 3 ), DeleteGVar( szSmallString );
+				{
+				    cashEarned += floatround( float( g_houseFurniture[ GetGVarInt( szSmallString ) ] [ E_COST ] ) * 0.5 );
+				    DeleteGVar( szSmallString );
+				}
 			}
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
@@ -19950,7 +19976,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 		UpdateCasinoPoolData( poolid, .pool_increment = -iNetWin, .total_win = iNetWin );
 
 		// alert user
-		if ( iNetWin >= 10000 ) {
+		if ( iNetWin > g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] ) {
    			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, number_format( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] >= 25000 ? ( "Visage" ) : ( "Caligulas" ) ) );
    		} else {
    			SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", number_format( iNetWin ) );
@@ -21055,14 +21081,22 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 							if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] )
 								g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
-					        if ( !g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+							new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
+
+					        if ( !g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
 							{
 							    p_PasswordedHouse[ playerid ] = i;
 							    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
 								return 1;
 							}
+
+							if ( ! is_owner && p_Job[ playerid ] == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
+								new has_objects = Iter_Count( housefurniture[ i ] );
+								if ( has_objects ) ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
+								else ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
+							}
+
 							p_InHouse[ playerid ] = i;
-							p_ApartmentEditing{ playerid } = -1;
 							SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
 						  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
 							SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
@@ -21071,7 +21105,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						else if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 1 ] ) )
 						{
 							p_InHouse[ playerid ] = -1;
-							p_ApartmentEditing{ playerid } = -1;
 							CancelEdit( playerid );
 							TogglePlayerControllable( playerid, 0 );
 							SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
@@ -21906,12 +21939,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
             }
-            case 4:
+            /*case 4:
             {
                 format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
-            }
-            case 5:
+            }*/
+            case 4:
             {
                 format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back");
@@ -22026,7 +22059,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         else
         {
         	new
-        		iAfterTax = floatround( iWithdraw * 0.9 );
+        		iAfterTax = floatround( iWithdraw * 0.975 );
 
             g_gangData[ gangid ] [ E_BANK ] -= iWithdraw;
             GivePlayerCash( playerid, iAfterTax );
@@ -22037,13 +22070,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	     	mysql_single_query( szNormalString );
 
 	     	// withdraw
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s (inc. 10%s fee) from the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iAfterTax ), "%%" );
+            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s (inc. 2.5%s fee) from the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iAfterTax ), "%%" );
             format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iWithdraw ), number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
         return 1;
     }
-    if ( dialogid == DIALOG_GANG_BANK_DEPOSIT )
+    /*if ( dialogid == DIALOG_GANG_BANK_DEPOSIT )
 	{
 		if ( !response )
 			return ShowPlayerBankMenuDialog( playerid );
@@ -22093,7 +22126,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
         return 1;
-    }
+    }*/
 	if ( ( dialogid == DIALOG_HOUSES ) && response )
 	{
 	    if ( listitem == 0 )
@@ -22380,6 +22413,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						    SendServerMessage( playerid, "You have successfully reset your interior to the default interior." );
 
 		                destroyAllFurniture( houseid );
+						FillHomeWithFurniture( houseid, intid );
 						g_houseData[ houseid ] [ E_TX ] = g_houseInteriors[ intid ] [ E_EX ];
 					    g_houseData[ houseid ] [ E_TY ] = g_houseInteriors[ intid ] [ E_EY ];
 					    g_houseData[ houseid ] [ E_TZ ] = g_houseInteriors[ intid ] [ E_EZ ];
@@ -23570,7 +23604,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				strcat( szCMDS, ""COL_GREY"/admins{FFFFFF} - Displays the current online administrators.\n"\
 								""COL_GREY"/vip{FFFFFF} - View the list of VIP packages for this server.\n"\
 								""COL_GREY"/donated{FFFFFF} - Redeem VIP after donating with a transaction id.\n"\
-								""COL_GREY"/gettaxrate{FFFFFF} - See what the tax rate is currently set to.\n"\
+								""COL_GREY"/gettaxrate{FFFFFF} - See what your tax rate is currently set to.\n"\
 								""COL_GREY"/gettotalcash{FFFFFF} - View the total sum of money in the server.\n" );
 				strcat( szCMDS, ""COL_GREY"/calc(ulator){FFFFFF} - Calculate mathematical expressions in-game.\n"\
 								""COL_GREY"/eventbank{FFFFFF} - Help fund events by donating to the event bank.\n"\
@@ -24461,9 +24495,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 		       	if ( x == listitem )
 		      	{
-					p_ApartmentEditing{ playerid } = id;
+					SetPVarInt( playerid, "flat_editing", id );
 		      	    SendServerMessage( playerid, "You are now controlling the settings over "COL_GREY"%s", g_apartmentData[ id ] [ E_NAME ] );
-		      		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+		      		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 		      		break;
 				}
 		      	x++;
@@ -24479,33 +24513,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 		    case 0:
 		    {
-		       	p_ApartmentSpawnLocation[ playerid ] = p_ApartmentEditing{ playerid };
+		       	p_ApartmentSpawnLocation[ playerid ] = GetPVarInt( playerid, "flat_editing" );
 				SendServerMessage( playerid, "You have set your spawning location to the specified apartment. To stop this you can use \"/flat stopspawn\"." );
-				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 			}
 			case 1:
 			{
-		        new id = p_ApartmentEditing{ playerid };
+		        new id = GetPVarInt( playerid, "flat_editing" );
              	g_apartmentData[ id ] [ E_LOCKED ] = ( g_apartmentData[ id ] [ E_LOCKED ] == 1 ? 0 : 1 );
 				format( Query, 100, "UPDATE `APARTMENTS` SET `LOCKED`=%d WHERE `ID`=%d", g_apartmentData[ id ] [ E_LOCKED ], id );
 				mysql_single_query( Query );
 				SendServerMessage( playerid, "You have %s the specified apartment.", g_apartmentData[ id ] [ E_LOCKED ] == 1 ? ( "locked" ) : ( "unlocked" ) );
-				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 			}
 		    case 2:
 		    {
 		   		ShowPlayerDialog( playerid, DIALOG_FLAT_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Owned Apartments", ""COL_WHITE"Input the apartment title you want to change with:", "Submit", "Back" );
 			}
 		    case 3: ShowPlayerDialog( playerid, DIALOG_YOU_SURE_APART, DIALOG_STYLE_MSGBOX, "{FFFFFF}Owned Apartments", ""COL_WHITE"Are you sure that you want to sell your apartment?", "Yes", "No" );
-		    case 4: ShowPlayerDialog( playerid, DIALOG_FLAT_FURNITURE, DIALOG_STYLE_MSGBOX, ""COL_RED"Important Notice!", ""COL_WHITE"We are strict with furniture in apartments! So listen up!\n\nPlease ensure your furniture is not placed:\n\n* Inside a tenants apartment.\n* Outside your apartment's walkable area.\n"COL_ORANGE"* Do not place furniture within the elevator's area.\n\n"COL_WHITE"Stick to the rules, and keep your apartment and avoid the fines!", "I accept", "Back" );
 		}
 	}
 	if ( dialogid == DIALOG_YOU_SURE_APART )
 	{
 		if ( !response )
-   			return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+   			return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 
-        new id = p_ApartmentEditing{ playerid };
+		new id = GetPVarInt( playerid, "flat_editing" );
         p_ApartmentSpawnLocation[ playerid ] = -1;
 
 		g_apartmentData[ id ] [ E_CREATED ] = false;
@@ -24514,91 +24547,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		format( g_apartmentData[ id ] [ E_NAME ], 30, "Apartment %d", id );
 		g_apartmentData[ id ] [ E_LOCKED ] = 0;
 
-		destroyAllFurniture( id, true );
-
 		format( szNormalString, 40, "DELETE FROM `APARTMENTS` WHERE `ID`=%d", id );
 	    mysql_single_query( szNormalString );
 
         GivePlayerCash( playerid, 3000000 );
-		p_ApartmentEditing{ playerid } = -1;
 
    		return SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have successfully sold your apartment for "COL_GOLD"$3,000,000"COL_WHITE".");
-	}
-	if ( dialogid == DIALOG_FLAT_FURNITURE )
-	{
-		if ( response ) ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
-		else ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
 	}
 	if ( ( dialogid == DIALOG_FLAT_TITLE ) )
 	{
 	    if ( !response )
-	        return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+	        return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 
 		if ( !strlen( inputtext ) )
 			return ShowPlayerDialog( playerid, DIALOG_FLAT_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Owned Apartments", ""COL_WHITE"Input the apartment title you want to change with:\n\n"COL_RED"Must be more than 0 characters.", "Submit", "Back" );
 
-		new id = p_ApartmentEditing{ playerid };
-		format( Query, sizeof( Query ), "UPDATE `APARTMENTS` SET `NAME`='%s' WHERE `ID`=%d", mysql_escape( inputtext ), id );
-		mysql_single_query( Query );
+		new id = GetPVarInt( playerid, "flat_editing" );
+		mysql_single_query( sprintf( "UPDATE `APARTMENTS` SET `NAME`='%s' WHERE `ID`=%d", mysql_escape( inputtext ), id ) );
 		format( g_apartmentData[ id ] [ E_NAME ], 30, "%s", inputtext );
  		SendServerMessage( playerid, "You have successfully changed the name of your apartment." );
-  		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment\nFurniture", "Select", "Back" );
+  		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 	}
-	/*if ( ( dialogid == DIALOG_POLICE_TUTORIAL ) )
-	{
-	    if ( response )
-	    {
-		    if ( g_iTime > p_CopTutorialTick[ playerid ] )
-		     	p_CopTutorialProgress{ playerid }++, p_CopTutorialTick[ playerid ] = g_iTime + 25;
-			else
-				SendServerMessage( playerid, "You can press %s in %d seconds.", p_CopTutorialProgress{ playerid } == 3 ? ( "finish" ) : ( "next" ), p_CopTutorialTick[ playerid ] - g_iTime );
-		}
-
-		switch( p_CopTutorialProgress{ playerid } )
-		{
-			case 0:
-			{
-				szLargeString[ 0 ] = '\0';
-				strcat( szLargeString, "{FFFFFF}Welcome! This is a tutorial that every player must complete at some point in time! Within this tutorial, you'll be taught how become a successful\nlaw enforcement officer. Player colors are the most important thing to remember as an officer. You can view the player colors by simply typing '/pc'.\n\n" );
-				strcat( szLargeString, "You can view a list of commands by typing '/commands (/cmds)' in the chat box, then selecting the 'Police Commands' option." );
-				ShowPlayerDialog( playerid, DIALOG_POLICE_TUTORIAL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Law Enforcement Officer Tutorial", szLargeString, "Next", "" );
-			}
-			case 1:
-			{
-		    	szLargeString[ 0 ] = '\0';
-				strcat( szLargeString, "{FFFFFF}If you plan on arresting a player, you must use the following commands in the order provided to successfully arrest them. First you must /taze the\nsuspect, /cuff them and then finally /arrest (/ar) them.\n\n" );
-				strcat( szLargeString, "Detaining is ideal for experienced players. It promotes fun, and is challenging as you must travel your suspect to the drop off zone at any police\nstation without their friends helping the suspect break free.\n\n" );
-				strcat( szLargeString, "Note: The system will uncuff a criminal after 5 minutes of being cuffed.\nTip: Detaining a player pays more than arresting. Arresting pays more than killing." );
-				ShowPlayerDialog( playerid, DIALOG_POLICE_TUTORIAL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Law Enforcement Officer Tutorial", szLargeString, "Next", "" );
-			}
-			case 2:
-			{
-				szLargeString[ 0 ] = '\0';
-				strcat( szLargeString, "{FFFFFF}Do not ever shoot an innocent player, they will be wanted automatically if they attack you.\n\nYou will be jailed for 200 seconds if you are caught attacking an innocent. By killing them, you will be both cop-banned and jailed for 200 seconds.\n\n" );
-				strcat( szLargeString, "Abusing the cop class can lead to a cop-ban which disables your ability to use the cop class. Every player may receive up to 3 warns until they are\ncop-banned. If you have been banned from the cop-class, you may pay to be unbanned through the command /unbanme.\n\n" );
-				strcat( szLargeString, "Note: You will lose 1 score and $1,000 if you kill anyone that is under 5 wanted, but you will not be jailed." );
-				ShowPlayerDialog( playerid, DIALOG_POLICE_TUTORIAL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Law Enforcement Officer Tutorial", szLargeString, "Next", "" );
-			}
-			case 3:
-			{
-				szLargeString[ 0 ] = '\0';
-				strcat( szLargeString, "{FFFFFF}If you have any questions, make sure you use /ask. An admin will answer you as soon as possible.\n\nIf you need to re-read this cop tutorial at anytime, feel free to /ask an admin to send you into the cop tutorial.\n\n" );
-				strcat( szLargeString, "Thank you for reading the law enforcement officer tutorial, we hope that you've understood what to do. Have a fun and safe time playing on the server!\n\nCheck out our website at {00CCFF}"#SERVER_WEBSITE"{FFFFFF} for more information, discussion, and other stuff!" );
-				ShowPlayerDialog( playerid, DIALOG_POLICE_TUTORIAL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Law Enforcement Officer Tutorial", szLargeString, "Finish", "" );
-			}
-			case 4:
-			{
-				// Completed the tutorial
-				format( szNormalString, 100, "UPDATE `USERS` SET `COP_TUTORIAL`=1 WHERE `NAME`='%s'", mysql_escape( ReturnPlayerName( playerid ) ) );
-				mysql_single_query( szNormalString );
-			    p_CopTutorial{ playerid } = 1;
-			    TogglePlayerSpectating( playerid, 0 );
-				p_inMovieMode{ playerid } = true;
-				cmd_moviemode( playerid, "" ); // Show textdraws...
-				SendServerMessage( playerid, "You have finished the law enforcement officer tutorial. You can view it again by typing "COL_GREY"/policetutorial" );
-			}
-		}
-	}*/
 	if ( ( dialogid == DIALOG_HOUSE_PW ) && response )
 	{
 		new i = p_PasswordedHouse[ playerid ];
@@ -24608,49 +24577,35 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if ( !IsPlayerInRangeOfPoint( playerid, 3.0, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] ) ) return SendError( playerid, "You are not near the house entrance!" );
 			SendServerMessage( playerid, "Password correct. Access has been granted." );
 			p_InHouse[ playerid ] = i;
-			p_ApartmentEditing{ playerid } = -1;
 			SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
 		  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
 			SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
 		}
 	}
-	/*if ( ( dialogid == DIALOG_VIEW_LEO_TUT ) && response )
-	{
-		format( szNormalString, 100, "UPDATE `USERS` SET `COP_TUTORIAL`=0 WHERE `ID`=%d'", p_AccountID[ playerid ] );
-		mysql_single_query( szNormalString );
-		p_CopTutorial{ playerid } = 0;
-
-	    if ( p_Class[ playerid ] != CLASS_POLICE )
-			SendServerMessage( playerid, "The law enforcement tutorial will be shown as soon as you spawn with a police class." );
-		else
-			SpawnPlayer( playerid );
-	}*/
 	if ( dialogid == DIALOG_FURNITURE )
 	{
-        if ( p_InHouse[ playerid ] != -1 ) {
-       	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-	    } else {
-		    if ( p_ApartmentEditing{ playerid } != -1 && GetPlayerInterior( playerid ) == 0 ) {
-		    	if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) return SendError( playerid, "You're not inside this apartment!" );
-		    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-		    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-	    }
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+		if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
 
 	    if ( response )
 	    {
-	    	new if_check = ( p_ApartmentEditing{ playerid } != -1 && GetPlayerInterior( playerid ) == 0 );
-
 			switch( listitem )
 			{
 			    case 0: ShowFurnitureCategory( playerid );
 			    case 1: SendServerMessage( playerid, "You are now editing your furniture. Simply drag your mouse over a piece of furniture and click to edit." ), SelectObject( playerid );
-				case 2: ShowOwnedFurnitureList( playerid, if_check ? p_ApartmentEditing{ playerid } : p_InHouse[ playerid ], if_check ? true : false );
+				case 2: ShowOwnedFurnitureList( playerid, houseid );
 				case 3:
 				{
-				    new i = getClosestFurniture( playerid );
-				    if ( i == INVALID_OBJECT_ID ) return SendError( playerid, "There are no nearby furniture." );
-					p_SelectedFurniture[ playerid ][ 0 ] = i;
-					p_SelectedFurniture[ playerid ][ 1 ] = Streamer_GetIntData( STREAMER_TYPE_OBJECT, i, E_STREAMER_MODEL_ID );
+					new fhandle = ITER_NONE;
+				    new i = GetClosestFurniture( houseid, playerid, .furniture_handle = fhandle );
+				    if ( i == INVALID_OBJECT_ID || fhandle == ITER_NONE ) return SendError( playerid, "There are no nearby furniture." );
+			    	SetPVarInt( playerid, "furniture_house", houseid );
+			    	SetPVarInt( playerid, "furniture_id", fhandle );
 					ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
       			}
       			case 4: ShowPlayerDialog( playerid, DIALOG_TRUNCATE_FURNITURE, DIALOG_STYLE_MSGBOX, "Furniture", ""COL_WHITE"Are you sure you want to truncate your furniture?", "Confirm", "Back" );
@@ -24664,21 +24619,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( dialogid == DIALOG_TRUNCATE_FURNITURE )
 	{
-        if ( p_InHouse[ playerid ] != -1 ) {
-       	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-	    } else {
-		    if ( p_ApartmentEditing{ playerid } != -1 && GetPlayerInterior( playerid ) == 0 ) {
-		    	if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) return SendError( playerid, "You're not inside this apartment!" );
-		    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-		    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-	    }
+	    if ( p_InHouse[ playerid ] == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
 
-		ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+		if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
 		if ( response )
-		{
-			if ( IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) destroyAllFurniture( p_ApartmentEditing{ playerid }, true );
-			else destroyAllFurniture( p_InHouse[ playerid ] );
-		}
+	   	 	destroyAllFurniture( p_InHouse[ playerid ] );
+
+		return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 	}
 	if ( dialogid == DIALOG_FURNITURE_CATEGORY )
 	{
@@ -24690,28 +24640,26 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 	    if ( response )
 	    {
-	        if ( p_InHouse[ playerid ] != -1 ) {
-	       	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-		    } else {
-			    if ( p_ApartmentEditing{ playerid } != -1 && GetPlayerInterior( playerid ) == 0 ) {
-			    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-			    	if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) return SendError( playerid, "You're not inside this apartment!" );
-			    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-		    }
+	    	new houseid = p_InHouse[ playerid ];
 
-		    new is_in_apartment = IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } );
+		    if ( houseid == -1 )
+		   		return SendError( playerid, "You're not inside any house." );
 
-			for( new i = g_preloadedObjectCount, x = 0, j = Streamer_GetUpperBound( STREAMER_TYPE_OBJECT ); i < j; i++ )
+			if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+		   	 	return SendError( playerid, "You are not the owner of this house." );
+
+		   	new x = 0;
+
+		   	foreach ( new fhandle : housefurniture[ houseid ] )
 			{
-				if ( IsValidDynamicObject( i ) )
-				{
-					if ( is_in_apartment && GetGVarInt( "fur_a", i ) != p_ApartmentEditing{ playerid } ) continue;
-					if ( !is_in_apartment && GetGVarInt( "fur_w", i ) != p_InHouse[ playerid ] + MAX_HOUSES ) continue;
+				new objectid = g_houseFurnitureData[ houseid ] [ fhandle ];
 
+				if ( IsValidDynamicObject( objectid ) )
+				{
 				    if ( x == listitem )
 				    {
-						p_SelectedFurniture[ playerid ][ 0 ] = i;
-						p_SelectedFurniture[ playerid ][ 1 ] = Streamer_GetIntData( STREAMER_TYPE_OBJECT, i, E_STREAMER_MODEL_ID );
+				    	SetPVarInt( playerid, "furniture_house", houseid );
+				    	SetPVarInt( playerid, "furniture_id", fhandle );
 						ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
 				        break;
 				    }
@@ -24723,40 +24671,48 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( dialogid == DIALOG_FURNITURE_OPTION )
 	{
-	    if ( !response ) return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	    if ( !response )
+	    	return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+
+	 	new editing_house = GetPVarInt( playerid, "furniture_house" );
+	 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
+
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+	    if ( houseid != editing_house )
+	   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
+
+	   	if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	 	new objectid = g_houseFurnitureData[ editing_house ] [ editing_furniture ];
+	 	new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
+
         switch( listitem )
         {
-            case 0: EditDynamicObject( playerid, p_SelectedFurniture[ playerid ][ 0 ] );
-            case 1..3: p_FurnitureRotAxis{ playerid } = listitem, ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.", "Confirm", "Back" );
+            case 0: EditDynamicObject( playerid, objectid );
+            case 1 .. 3:
+            {
+            	p_FurnitureRotAxis{ playerid } = listitem;
+            	ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.", "Confirm", "Back" );
+            }
             case 4:
             {
-				new
-					i = getFurnitureID( p_SelectedFurniture[ playerid ] [ 1 ] ),
-					Float: X, Float: Y, Float: Z
-				;
+				new i = getFurnitureID( modelid );
 
-		        if ( p_InHouse[ playerid ] != -1 ) {
-		       	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-		        	if ( !g_HouseFurnitureCount[ p_InHouse[ playerid ] ] ) return SendError( playerid, "There is no furniture left to sell." );
-			    } else {
-				    if ( p_ApartmentEditing{ playerid } != -1 && GetPlayerInterior( playerid ) == 0 ) {
-				    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-				    	if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) return SendError( playerid, "You're not inside this apartment!" );
-		        		if ( !g_ApartmentFurnitureCount[ p_ApartmentEditing{ playerid } ] ) return SendError( playerid, "There is no furniture left to sell." );
-				    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-			    }
+		        if ( ! Iter_Count( housefurniture[ houseid ] ) )
+		        	return SendError( playerid, "There is no furniture left to sell." );
 
-				if ( i == 0xFF ) return SendError( playerid, "Unable to sell furniture due to an unexpected error (0x8F)." );
-				GetDynamicObjectPos( p_SelectedFurniture[ playerid ] [ 0 ], X, Y, Z );
-                DestroyDynamicObject( p_SelectedFurniture[ playerid ][ 0 ] );
+				if ( i == -1 )
+					return SendError( playerid, "Unable to sell furniture due to an unexpected error (0x8F)." );
 
-				format( szNormalString, 100, "DELETE FROM `FURNITURE` WHERE `X`='%f' AND `Y`='%f' AND `Z`='%f'", X, Y, Z ), mysql_single_query( szNormalString );
+                DestroyDynamicObject( objectid );
+				mysql_single_query( sprintf( "DELETE FROM `FURNITURE` WHERE `ID`=%d AND `HOUSE_ID`=%d", editing_furniture, editing_house ) );
 
-				if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) g_HouseFurnitureCount[ p_InHouse[ playerid ] ] --;
-				else g_ApartmentFurnitureCount[ p_ApartmentEditing{ playerid } ] --;
-
-				new
-					iNetProfit = floatround( g_houseFurniture[ i ] [ E_COST ] / 2 );
+				new iNetProfit = floatround( g_houseFurniture[ i ] [ E_COST ] / 2 );
 
 				GivePlayerCash( playerid, iNetProfit );
 				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[FURNITURE]"COL_WHITE" You have successfully sold your "COL_WHITE"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_houseFurniture[ i ] [ E_NAME ], number_format( iNetProfit ) );
@@ -24766,22 +24722,42 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( dialogid == DIALOG_FURNITURE_ROTATION )
 	{
-		new Float: angle;
-	    if ( !response ) return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
-		if ( sscanf( inputtext, "f", angle ) ) return ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.\n\n"COL_RED"Invalid Value!", "Confirm", "Back" );
+	 	new editing_house = GetPVarInt( playerid, "furniture_house" );
+	 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
 
-		new Float: rotX, Float: rotY, Float: rotZ, Float: X, Float: Y;
-		GetDynamicObjectPos( p_SelectedFurniture[ playerid ] [ 0 ], X, Y, rotZ );
-	    GetDynamicObjectRot( p_SelectedFurniture[ playerid ] [ 0 ], rotX, rotY, rotZ );
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+	    if ( houseid != editing_house )
+	   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
+
+	   	if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	 	new objectid = g_houseFurnitureData[ editing_house ] [ editing_furniture ];
+
+	    if ( !response )
+	    	return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+
+		new Float: angle;
+
+		if ( sscanf( inputtext, "f", angle ) )
+			return ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.\n\n"COL_RED"Invalid Value!", "Confirm", "Back" );
+
+		new Float: rotX, Float: rotY, Float: rotZ;
+	    GetDynamicObjectRot( objectid, rotX, rotY, rotZ );
 
 	    switch( p_FurnitureRotAxis{ playerid } )
 	    {
-			case 1: SetDynamicObjectRot( p_SelectedFurniture[ playerid ] [ 0 ], angle, rotY, rotZ );
-			case 2: SetDynamicObjectRot( p_SelectedFurniture[ playerid ] [ 0 ], rotX, angle, rotZ );
-			case 3: SetDynamicObjectRot( p_SelectedFurniture[ playerid ] [ 0 ], rotX, rotY, angle );
+			case 1: SetDynamicObjectRot( objectid, angle, rotY, rotZ );
+			case 2: SetDynamicObjectRot( objectid, rotX, angle, rotZ );
+			case 3: SetDynamicObjectRot( objectid, rotX, rotY, angle );
 	    }
 
-		format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `RX`='%f',`RY`='%f',`RZ`='%f' WHERE `X`='%f' AND `Y`='%f'", rotX, rotY, rotZ, X, Y );
+	    GetDynamicObjectRot( objectid, rotX, rotY, rotZ ); // finalize
+		format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `RX`=%f,`RY`=%f,`RZ`=%f WHERE `ID`=%d AND `HOUSE_ID`=%d", rotX, rotY, rotZ, editing_furniture, editing_house );
 		mysql_single_query( szBigString );
 
 		SendServerMessage( playerid, "Furniture has been successfully updated." );
@@ -24791,20 +24767,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 	    if ( !response ) return ShowFurnitureCategory( playerid );
 
-		new vip = ( p_VIPLevel[ playerid ] == 0 ? 20 : ( ( p_VIPLevel[ playerid ] + 1 ) * 6 ) + 20 ), totalf;
+		new houseid = p_InHouse[ playerid ];
 
-	    if ( p_InHouse[ playerid ] != -1 ) {
-	   	 	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-			if ( ( totalf = g_HouseFurnitureCount[ p_InHouse[ playerid ] ] ) > vip ) return SendError( playerid, "You have reached the maximum furniture limit." );
-	    } else {
-		    if ( p_ApartmentEditing{ playerid } != -1 ) {
-		    	if ( !strmatch( g_apartmentData[ p_ApartmentEditing{ playerid } ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this apartment." );
-				if ( !IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } ) ) return SendError( playerid, "You're not inside this apartment!" );
-				vip += 50; // 50 more slots for Apartments!
-				if ( ( totalf = g_ApartmentFurnitureCount[ p_ApartmentEditing{ playerid } ] ) > vip ) return SendError( playerid, "You have reached the maximum furniture limit." );
-		    } else return SendError( playerid, "You're not inside any house or not editing any specific apartment." );
-	    }
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
 
+	   	if ( !strmatch( g_houseData[ houseid ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+		new vip_slots = 20 + ( p_VIPLevel[ playerid ] * 6 );
+		new total_furniture = Iter_Count( housefurniture[ houseid ] );
+
+		if ( total_furniture > vip_slots )
+			return SendError( playerid, "You have reached the maximum furniture limit of %d.", vip_slots );
 
 	    for( new i, x = 0; i < sizeof( g_houseFurniture ); i++ )
 		{
@@ -24817,31 +24792,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						ShowFurnitureList( playerid, p_FurnitureCategory{ playerid } );
 				        return SendError( playerid, "You don't have enough money for this piece of furniture." );
 				    }
-				    new
-						hid = p_InHouse[ playerid ],
-						aid = p_ApartmentEditing{ playerid },
-						Float: X, Float: Y, Float: Z
-					;
+
+					new Float: X, Float: Y, Float: Z;
 					GetXYInFrontOfPlayer( playerid, X, Y, Z, 2.0 );
+
+					new fhandle = CreateFurniture( houseid, g_houseFurniture[ i ] [ E_MODEL ], X, Y, Z, 0.0, 0.0, 0.0, .creator = p_AccountID[ playerid ] );
+
+					if ( fhandle == ITER_NONE )
+						return SendError( playerid, "You do not have any more slots available to add furniture." );
+
 					GivePlayerCash( playerid, -g_houseFurniture[ i ] [ E_COST ] );
-
-		    		new is_in_apartment = IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } );
-
-					if ( !is_in_apartment )
-						aid = -1, g_HouseFurnitureCount[ hid ] ++;
-					else
-						hid = -1, g_ApartmentFurnitureCount[ aid ] ++;
-
-					format( szBigString, sizeof( szBigString ), "INSERT INTO `FURNITURE` (`H_ID`,`A_ID`,`OWNER`,`MODEL`,`X`,`Y`,`Z`,`RX`,`RY`,`RZ`) VALUES (%d,%d,%d,%d,'%f','%f','%f','%f','%f','%f')", hid, aid, p_AccountID[ playerid ], g_houseFurniture[ i ] [ E_MODEL ], X, Y, Z, 0, 0, 0 );
-					mysql_single_query( szBigString );
-
-					new o = CreateDynamicObject( g_houseFurniture[ i ] [ E_MODEL ], X, Y, Z, 0.0, 0.0, 0.0, !is_in_apartment ? hid + MAX_HOUSES : 0 );
-					SetGVarInt( "fur_w", !is_in_apartment ? hid + MAX_HOUSES : 0, o );
-					SetGVarInt( "fur_f", i, o );
-					SetGVarInt( "fur_a", aid, o );
 					Streamer_Update( playerid ); // SyncObject( playerid );
 
-					SendServerMessage( playerid, "You have purchased a "COL_GREY"%s"COL_WHITE". "COL_ORANGE"[%d/%d]", g_houseFurniture[ i ] [ E_NAME ], totalf, vip );
+					SendServerMessage( playerid, "You have purchased a "COL_GREY"%s"COL_WHITE". "COL_ORANGE"[%d/%d]", g_houseFurniture[ i ] [ E_NAME ], total_furniture + 1, vip_slots );
 					ShowFurnitureList( playerid, p_FurnitureCategory{ playerid } );
 				 	break;
 	      		}
@@ -27755,7 +27718,6 @@ function SetPlayerRandomSpawn( playerid )
 
 		p_InHouse[ playerid ] = -1;
 		p_InBusiness[ playerid ] = businessid;
-		p_ApartmentEditing{ playerid } = -1;
 
 		pauseToLoad( playerid );
 		SetPlayerPos( playerid, g_businessInteriorData[ type ] [ E_X ], g_businessInteriorData[ type ] [ E_Y ], g_businessInteriorData[ type ] [ E_Z ] );
@@ -27774,7 +27736,6 @@ function SetPlayerRandomSpawn( playerid )
 	    {
 			p_InHouse[ playerid ] = ID;
 			p_InBusiness[ playerid ] = -1;
-			p_ApartmentEditing{ playerid } = -1;
 			//pauseToLoad( playerid );
 		    SetPlayerPos( playerid, g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ] + 1 );
 			SetPlayerVirtualWorld( playerid, g_houseData[ ID ] [ E_WORLD ] );
@@ -28389,6 +28350,7 @@ stock CreateHouse( cost, Float: eX, Float: eY, Float: eZ, Float: tX = H_DEFAULT_
 	format( g_houseData[ hID ] [ E_HOUSE_NAME ], 5, "Home" );
 	format( g_houseData[ hID ] [ E_PASSWORD ], 4, "N/A" );
 	format( g_houseData[ hID ] [ E_OWNER ], 7, "No-one" );
+	FillHomeWithFurniture( hID, 0 );
 
 	for( new i; i < MAX_HOUSE_WEAPONS; i++ )
 	    g_HouseWeapons[ hID ] [ i ] = 0, g_HouseWeaponAmmo[ hID ] [ i ] = -1;
@@ -28427,7 +28389,6 @@ stock DestroyHouse( houseid )
 	}
 	format( query, sizeof( query ), "DELETE FROM HOUSES WHERE ID=%d", houseid );
 	mysql_single_query( query );
-
     destroyAllFurniture( houseid );
 	g_houseData[ houseid ] [ E_HOUSE_NAME ] [ 0 ] = '\0';
 	g_houseData[ houseid ] [ E_OWNER ] [ 0 ] = '\0';
@@ -28468,6 +28429,7 @@ stock SetHouseForAuction( ID )
 	g_houseData[ ID ] [ E_TZ ] = g_houseInteriors[ 0 ] [ E_EZ ];
 	g_houseData[ ID ] [ E_INTERIOR_ID ] = 2;
 	destroyAllFurniture( ID );
+	FillHomeWithFurniture( ID, 0 );
 	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='No-one',PASSWORD='N/A',NAME='Home',TX=%f,TY=%f,TZ=%f,INTERIOR=%d WHERE ID=%d", g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], g_houseData[ ID ] [ E_INTERIOR_ID ], ID );
     mysql_single_query( query );
 	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, number_format( g_houseData[ ID ] [ E_COST ] ) );
@@ -28921,8 +28883,8 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 	if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) || g_robberyData[ robberyid ] [ E_STATE ] )
 		return 0xBC; // Currently picking/being robbed/being picked
 
-	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] )
-		return 0xBF; // has $0 in bank as biz
+	//if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] )
+	//	return 0xBF; // has $0 in bank as biz
 
 	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) )
 		return 0xCB; // must be burglar to rob safe
@@ -29071,7 +29033,7 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 	}
 
 	printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
-	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 0.0 : random_chance ) > 5.0 )
+	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 100.0 : random_chance ) > 5.0 )
 	{
 		new Float: iRobAmount = float( g_robberyData[ robberyid ] [ E_ROB_VALUE ] );
 		new Float: iLoot = fRandomEx( iRobAmount / 2.0, iRobAmount );
@@ -31329,38 +31291,55 @@ stock UpdateBuyableVehicleMods( playerid, v )
 
 thread OnFurnitureLoad( )
 {
-	new
-		rows, fields, i = -1, hID, aID,
-	    Field[ 12 ], // 00000.00000
-		Float: g_FurnitureData[ 6 ], // Loading stuff,
-		g_FurnitureModel,
-	    loadingTick = GetTickCount( )
-	;
+	new rows, i = -1;
+	new loadingTick = GetTickCount( );
 
-	cache_get_data( rows, fields );
+	cache_get_data( rows, tmpVariable );
 	if ( rows )
 	{
 		while( ++i < rows )
 		{
-			cache_get_field_content( i, "H_ID", Field ),	hID = strval( Field );
-			cache_get_field_content( i, "A_ID", Field ),	aID = strval( Field );
-		    cache_get_field_content( i, "MODEL", Field ),  	g_FurnitureModel = strval( Field );
-		    cache_get_field_content( i, "X", Field ),     	g_FurnitureData[ 0 ] = floatstr( Field );
-		    cache_get_field_content( i, "Y", Field ),       g_FurnitureData[ 1 ] = floatstr( Field );
-		    cache_get_field_content( i, "Z", Field ),       g_FurnitureData[ 2 ] = floatstr( Field );
-		    cache_get_field_content( i, "RX", Field ),      g_FurnitureData[ 3 ] = floatstr( Field );
-		    cache_get_field_content( i, "RY", Field ),      g_FurnitureData[ 4 ] = floatstr( Field );
-		    cache_get_field_content( i, "RZ", Field ),      g_FurnitureData[ 5 ] = floatstr( Field );
-		  	new iObjectID = CreateDynamicObject( g_FurnitureModel, g_FurnitureData[ 0 ], g_FurnitureData[ 1 ], g_FurnitureData[ 2 ], g_FurnitureData[ 3 ], g_FurnitureData[ 4 ], g_FurnitureData[ 5 ], hID + MAX_HOUSES );
-			SetGVarInt( "fur_w", hID + MAX_HOUSES, iObjectID );
-			SetGVarInt( "fur_f", getFurnitureID( g_FurnitureModel ), iObjectID );
-			SetGVarInt( "fur_a", aID, iObjectID );
-			if ( aID == -1 ) g_HouseFurnitureCount[ hID ] ++;
-			else g_ApartmentFurnitureCount[ aID ] ++;
+			new fhandle = CreateFurniture(
+				cache_get_field_content_int( i, "HOUSE_ID", dbHandle ),
+				cache_get_field_content_int( i, "MODEL", dbHandle ),
+				cache_get_field_content_float( i, "X", dbHandle ),
+				cache_get_field_content_float( i, "Y", dbHandle ),
+				cache_get_field_content_float( i, "Z", dbHandle ),
+				cache_get_field_content_float( i, "RX", dbHandle ),
+				cache_get_field_content_float( i, "RY", dbHandle ),
+				cache_get_field_content_float( i, "RZ", dbHandle ),
+				cache_get_field_content_int( i, "ID", dbHandle ),
+				.creator = -1
+			);
+			if ( fhandle == ITER_NONE ) printf( "[FURNITURE ERROR] Too much furniture created for house id %d.", fhandle );
 		}
 	}
 	printf( "[FURNITURE]: %d objects have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 	return 1;
+}
+
+stock CreateFurniture( houseid, modelid, Float: x, Float: y, Float: z, Float: rx, Float: ry, Float: rz, fhandle = ITER_NONE, creator = 0 )
+{
+	if ( ! ( 0 <= houseid < MAX_HOUSES ) )
+		return ITER_NONE;
+
+	if ( fhandle == ITER_NONE ) // find free slot if not preloaded
+		fhandle = Iter_Free( housefurniture[ houseid ] );
+
+	if ( fhandle != ITER_NONE )
+	{
+		// insert into iterator
+		Iter_Add( housefurniture[ houseid ], fhandle );
+		g_houseFurnitureData[ houseid ] [ fhandle ] = CreateDynamicObject( modelid, x, y, z, rx, ry, rz, houseid + MAX_HOUSES );
+
+		// insert into database
+		if ( creator >= 0 )
+		{
+			format( szBigString, sizeof ( szBigString ), "INSERT INTO `FURNITURE`(`ID`,`HOUSE_ID`,`OWNER`,`MODEL`,`X`,`Y`,`Z`,`RX`,`RY`,`RZ`) VALUES (%d,%d,%d,%d,%f,%f,%f,%f,%f,%f)", fhandle, houseid, creator, modelid, x, y, z, rx, ry, rz );
+			mysql_single_query( szBigString );
+		}
+	}
+	return fhandle;
 }
 
 stock isFurnitureObject( modelid )
@@ -31372,7 +31351,7 @@ stock isFurnitureObject( modelid )
 	return false;
 }
 
-stock destroyAllFurniture( houseid, bool: apartment=false )
+stock destroyAllFurniture( houseid )
 {
 	if ( houseid == -1 )
 		return 0;
@@ -31380,24 +31359,12 @@ stock destroyAllFurniture( houseid, bool: apartment=false )
 	if ( g_houseData[ houseid ] [ E_CREATED ] == false )
 	    return 0;
 
-	for( new i = g_preloadedObjectCount, j = Streamer_GetUpperBound( STREAMER_TYPE_OBJECT ); i < j; i++ ) if ( IsValidDynamicObject( i ) )
-	{
-		if ( apartment && GetGVarInt( "fur_a", i ) != houseid ) continue;
-		if ( !apartment && GetGVarInt( "fur_w", i ) != houseid + MAX_HOUSES ) continue;
-		DestroyDynamicObject( i );
-		DeleteGVar( "fur_w", i );
-		DeleteGVar( "fur_f", i );
-		DeleteGVar( "fur_a", i );
+	foreach ( new fhandle : housefurniture[ houseid ] ) {
+		DestroyDynamicObject( g_houseFurnitureData[ houseid ] [ fhandle ] ), g_houseFurnitureData[ houseid ] [ fhandle ] = -1;
+		Iter_SafeRemove( housefurniture[ houseid ], fhandle, fhandle );
 	}
 
-	// df6f242
-	if ( apartment == false )
-		g_HouseFurnitureCount[ houseid ] = 0;
-	else
-		g_ApartmentFurnitureCount[ houseid ] = 0;
-
-	format( szNormalString, sizeof( szNormalString ), "DELETE FROM `FURNITURE` WHERE %s=%d", apartment == true ? ("`A_ID`") : ("`H_ID`"), houseid );
-	mysql_single_query( szNormalString );
+	mysql_single_query( sprintf( "DELETE FROM `FURNITURE` WHERE `HOUSE_ID`=%d", houseid ) );
 	return 1;
 }
 
@@ -31406,26 +31373,26 @@ stock getFurnitureID( modelid )
 	for( new i = 0; i < sizeof( g_houseFurniture ); i++ )
 		if ( modelid == g_houseFurniture[ i ] [ E_MODEL ] ) return i;
 
-	return 0xFF;
+	return -1;
 }
 
-stock ShowOwnedFurnitureList( playerid, houseid, bool: apartment = false )
+stock ShowOwnedFurnitureList( playerid, houseid )
 {
-	new count = 0, j = Streamer_GetUpperBound( STREAMER_TYPE_OBJECT );
-	erase( szLargeString );
-	printf("Preloaded objects %d | upperbound %d", g_preloadedObjectCount, j );
-	for( new i = g_preloadedObjectCount; i < j; i++ ) if ( IsValidDynamicObject( i ) )
+	if ( Iter_Count( housefurniture[ houseid ] ) > 0 )
 	{
-		if ( apartment == true && GetGVarInt( "fur_a", i ) != houseid ) continue;
-		if ( apartment == false && ( GetGVarInt( "fur_w", i ) - MAX_HOUSES ) != houseid ) continue;
-		count++;
-		format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseFurniture[ GetGVarInt( "fur_f", i ) ] [ E_NAME ] );
+		szLargeString = ""COL_WHITE"Furniture Item\n";
+		foreach ( new fhandle : housefurniture[ houseid ] ) {
+			new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, g_houseFurnitureData[ houseid ] [ fhandle ], E_STREAMER_MODEL_ID );
+			new furniture_item = getFurnitureID( modelid );
+			format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseFurniture[ furniture_item ] [ E_NAME ] );
+		}
+		ShowPlayerDialog( playerid, DIALOG_FURNITURE_MAN_SEL, DIALOG_STYLE_TABLIST_HEADERS, "Furniture", szLargeString, "Select", "Back" );
 	}
-
-	if ( !count )
-		SendError( playerid, "You don't own any furniture." ), ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 	else
-		ShowPlayerDialog( playerid, DIALOG_FURNITURE_MAN_SEL, DIALOG_STYLE_LIST, "Furniture", szLargeString, "Select", "Back" );
+	{
+		SendError( playerid, "You don't own any furniture." );
+		ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	}
 }
 
 stock ShowFurnitureCategory( playerid )
@@ -31587,26 +31554,24 @@ stock RemovePlayerStolensFromHands( playerid )
 	return 1;
 }
 
-stock getClosestFurniture( playerid, &Float: dis = 99999.99 )
+stock GetClosestFurniture( houseid, playerid, &Float: dis = 99999.99, &furniture_handle = ITER_NONE )
 {
 	new
 		Float: dis2,
 		object = INVALID_OBJECT_ID,
-		Float: X, Float: Y, Float: Z,
-		is_in_apartment = IsPlayerInApartmentArea( playerid, p_ApartmentEditing{ playerid } )
+		Float: X, Float: Y, Float: Z
 	;
-    for( new i = g_preloadedObjectCount; i < Streamer_GetUpperBound( STREAMER_TYPE_OBJECT ); i++ )
+	foreach ( new fhandle : housefurniture[ houseid ] )
 	{
-		if ( IsValidDynamicObject( i ) )
+		new objectid = g_houseFurnitureData[ houseid ] [ fhandle ];
+		if ( IsValidDynamicObject( objectid ) )
 		{
-			if ( is_in_apartment && GetGVarInt( "fur_a", i ) != p_ApartmentEditing{ playerid } ) continue;
-			if ( !is_in_apartment && GetGVarInt( "fur_w", i ) != p_InHouse[ playerid ] + MAX_HOUSES ) continue;
-
-			GetDynamicObjectPos( i, X, Y, Z );
+			GetDynamicObjectPos( objectid, X, Y, Z );
 	    	dis2 = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
 	    	if ( dis2 < dis && dis2 != -1.00 ) {
 	    	    dis = dis2;
-	    	    object = i;
+	    	    object = objectid;
+	    	    furniture_handle = fhandle;
 			}
 		}
 	}
@@ -32643,7 +32608,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 		       	 	else if ( p_InAnimation{ playerid } ) return 1; //SendError( playerid, "You mustn't be using an animation." );
 		       	 	else if ( g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF ) return SendError( playerid, "This safe is currently busy." );
 		       	 	else if ( p_Class[ playerid ] == CLASS_POLICE ) return SendError( playerid, "You cannot pick this safe as a law enforcement officer." );
-		       	 	else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] ) return SendError( playerid, "There is nothing to rob from this business safe." );
+		       	 	// else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] ) return SendError( playerid, "There is nothing to rob from this business safe." );
 		       	 	else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You need to be a burglar to rob this safe." );
 					else if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) ) return SendError( playerid, "You are an associate of this business, you cannot rob it!" );
 		       	 	else if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) ) return SendError( playerid, "The safe is currently occupied by a drill." );
@@ -34226,7 +34191,7 @@ stock ShowPlayerBankMenuDialog( playerid )
 		gangid = p_GangID[ playerid ];
 
 	if ( gangid != -1 && Iter_Contains( gangs, gangid ) )
-		return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information\n"COL_GREEN"Gang Bank Withdraw\n"COL_GREEN"Gang Bank Deposit\n"COL_GREEN"Gang Bank Balance", "Select", "Cancel" );
+		return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information\n"COL_GREEN"Gang Bank Withdraw\n"COL_GREEN"Gang Bank Balance", "Select", "Cancel" );
 
 	return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information", "Select", "Cancel" );
 }
@@ -37793,6 +37758,125 @@ stock ShowBusinessSecurityUpgrades( playerid )
 	}
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }
+
+stock FillHomeWithFurniture( houseid, interior_id ) {
+	if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Cattus Interior" ) ) {
+		CreateFurniture( houseid, 2181, 273.795989, 304.962005, 998.148010, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 19317, 273.561004, 307.549011, 998.896972, -8.899999, 0.000000, -44.599998 );
+		CreateFurniture( houseid, 1745, 269.713012, 305.380004, 998.057983, 0.000000, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Assum Interior" ) ) {
+		CreateFurniture( houseid, 1745, 246.465103, 302.465484, 998.127441, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 1717, 244.388854, 301.269592, 998.117431, 0.000000, 0.000000, 47.600032 );
+		CreateFurniture( houseid, 1742, 250.075302, 305.350036, 998.127441, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 349, 248.876480, 302.361389, 998.922302, -95.399993, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Fossor Interior" ) ) {
+		CreateFurniture( houseid, 11720, 2210.785888, -1072.437988, 1049.422973, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 2100, 2214.089111, -1078.663940, 1049.483032, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 19317, 2212.149902, -1072.442993, 1051.865966, 0.000000, -45.000000, -90.000000 );
+		CreateFurniture( houseid, 19317, 2212.149902, -1072.442993, 1051.865966, 0.000000, 45.000000, -90.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Angusto Interior" ) ) {
+		CreateFurniture( houseid, 11743, 265.862518, 1290.442016, 1080.305175, 0.000000, 0.000000, 180.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Organum Interior" ) ) {
+		CreateFurniture( houseid, 2297, 308.390014, 300.296997, 1002.294006, 0.000000, 0.000000, 135.000000 );
+		CreateFurniture( houseid, 1754, 308.322998, 303.714996, 1002.304016, 0.000000, 0.000000, -15.600000 );
+		CreateFurniture( houseid, 1754, 306.437988, 303.539001, 1002.304016, 0.000000, 0.000000, 33.099998 );
+		CreateFurniture( houseid, 19631, 303.839996, 302.459014, 1002.731994, 70.099998, 93.000000, 94.300003 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Bulbus Interior" ) ) {
+		CreateFurniture( houseid, 19893, -69.010528, 1362.585815, 1079.770507, 0.000000, 0.000000, -110.200012 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Vindemia Interior" ) ) {
+		CreateFurniture( houseid, 1518, 292.440887, 1472.344360, 1080.087646, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1748, 288.720428, 1490.140014, 1079.787353, 0.000000, 0.000000, 45.699871 );
+		CreateFurniture( houseid, 19893, 302.293579, 1475.090209, 1079.957519, 0.000000, 0.000000, -160.199905 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Aurora Interior" ) ) {
+		CreateFurniture( houseid, 1828, -2165.865966, 644.096984, 1056.583007, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 11743, -2162.052978, 637.107971, 1057.515991, 0.000000, 0.000000, 129.699996 );
+		CreateFurniture( houseid, 19830, -2158.127929, 637.051025, 1057.505981, 0.000000, 0.000000, -147.300003 );
+		CreateFurniture( houseid, 19893, -2161.440917, 643.953002, 1057.384033, 0.000000, 0.000000, -85.699996 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Fragor Interior" ) ) {
+		CreateFurniture( houseid, 2563, 307.286010, 1121.037963, 1082.881958, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2313, 318.532989, 1124.858032, 1082.871948, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1786, 319.161987, 1125.123046, 1083.342041, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1828, 323.757995, 1129.447021, 1082.871948, 0.000000, 0.000000, 90.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Mundus Interior" ) ) {
+		CreateFurniture( houseid, 19893, 26.778570, 1347.625488, 1088.554687, 0.000000, 0.000000, 124.699920 );
+		CreateFurniture( houseid, 356, 31.855621, 1346.810668, 1083.904663, 85.500068, -65.499977, -2.500000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Artus Interior" ) ) {
+		CreateFurniture( houseid, 19786, 2242.808105, -1065.896972, 1049.543945, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 2313, 2242.090087, -1066.394042, 1048.050048, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1702, 2243.757080, -1069.983032, 1047.969970, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1704, 2244.997070, -1067.770996, 1047.969970, 0.000000, 0.000000, -102.800003 );
+		CreateFurniture( houseid, 1704, 2240.719970, -1068.850952, 1047.969970, 0.000000, 0.000000, 95.699996 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Caelum Interior" ) ) {
+		CreateFurniture( houseid, 11720, 2230.312988, -1106.276000, 1049.852050, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2235.194091, -1110.384033, 1049.881958, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 321, 2230.624023, -1107.496948, 1049.881958, 90.000000, 90.000000, 0.000000 );
+		CreateFurniture( houseid, 362, 2226.039062, -1110.713012, 1050.806030, 0.000000, -5.199999, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Rotta Interior" ) ) {
+		CreateFurniture( houseid, 11743, 2501.027099, -1707.707031, 1014.861999, 0.000000, 0.000000, -91.699996 );
+		CreateFurniture( houseid, 2181, 2492.664062, -1704.439941, 1013.742004, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1717, 2492.029052, -1694.394042, 1013.786987, 0.000000, 0.000000, -36.900001 );
+		CreateFurniture( houseid, 1755, 2494.482910, -1695.970947, 1013.721984, 0.000000, 0.000000, -124.000000 );
+		CreateFurniture( houseid, 1755, 2492.474121, -1696.670043, 1013.721984, 0.000000, 0.000000, 160.500000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Ascensor Interior" ) ) {
+		CreateFurniture( houseid, 19786, 2325.875000, -1017.260986, 1051.161987, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1743, 2325.341064, -1018.752990, 1049.219970, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1828, 2325.969970, -1022.057983, 1049.189941, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 11720, 2324.851074, -1008.127014, 1053.727050, 0.000000, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Colonel Interior" ) ) {
+		CreateFurniture( houseid, 2100, 2810.426025, -1164.852050, 1024.578979, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 2297, 2812.813964, -1171.582031, 1024.578979, 0.000000, 0.000000, -135.000000 );
+		CreateFurniture( houseid, 1704, 2810.127929, -1171.822021, 1024.548950, 0.000000, 0.000000, 72.099998 );
+		CreateFurniture( houseid, 1745, 2817.600097, -1167.550048, 1028.151000, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 19319, 2817.147949, -1171.015991, 1030.425048, 0.000000, 45.000000, 180.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Godfather Interior" ) ) {
+		CreateFurniture( houseid, 358, 150.524795, 1370.906127, 1083.410156, -78.500221, 37.299991, -99.299461 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Recens Interior" ) ) {
+		CreateFurniture( houseid, 2229, 2257.180908, -1221.848999, 1048.001953, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2181, 2257.602050, -1224.232055, 1047.991943, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 19318, 2258.295898, -1219.160034, 1048.699951, -10.199999, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 357, 2262.698974, -1225.001953, 1048.322998, 0.000000, -90.000000, 0.000000 );
+		CreateFurniture( houseid, 19832, 2262.360107, -1224.750976, 1048.021972, 0.000000, 0.000000, -24.799999 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Novus Interior" ) ) {
+		CreateFurniture( houseid, 1745, 2364.553955, -1122.925048, 1049.864013, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2363.528076, -1129.816040, 1049.874023, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1416, 2374.649902, -1132.967041, 1050.415039, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 372, 2374.791015, -1133.095947, 1050.974975, 90.000000, 90.000000, 0.000000 );
+		CreateFurniture( houseid, 372, 2374.615966, -1133.433959, 1050.974975, 90.000000, 90.000000, -27.100000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Securuse Interior" ) ) {
+		CreateFurniture( houseid, 1745, 2311.577880, -1139.357055, 1053.293945, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 2181, 2310.585937, -1135.288940, 1053.303955, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1702, 2322.388916, -1141.819946, 1049.468994, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1702, 2326.492919, -1139.828002, 1049.468994, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 1742, 2318.163085, -1140.253051, 1049.708984, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1742, 2318.163085, -1141.673950, 1049.708984, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2328.367919, -1137.057006, 1049.489013, 0.000000, 0.000000, 0.000000 );
+	}
+	// else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Lorem Interior" ) )
+	// else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Domus Interior" ) )
+}
+
+
+
+
+
 
 
 stock GetServerTime( ) return g_iTime;
