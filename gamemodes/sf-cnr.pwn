@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-// #pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
 // #define DEBUG_MODE
 
@@ -191,18 +191,6 @@ new stock
 	Float: a_vipCoinRequirements[ ] = { 0.0, 500.0, 1500.0, 2500.0, 5000.0, 10000.0 }
 ;
 
-/* ** Cities ** */
-#define ENABLE_CITY_LV 				true
-#define ENABLE_CITY_LS 				true
-
-#define MAX_CITIES 					3
-
-#define CITY_SF 					0
-#define CITY_LV						1
-#define CITY_LS						2
-#define CITY_DESERTS 				3
-#define CITY_COUNTRY				4
-
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
 #define PROGRESS_BRUTEFORCE 		1
@@ -228,6 +216,17 @@ new stock
 #define JOB_BURGLAR              	( 8 )
 
 /* ** Class ID's ** */
+static const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA", "Paramedic", "Fireman" };
+static const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF, 0x4DFF4DFF, 0xA83434FF };
+
+static CLASS_CIVILIAN_RANGE			[ 2 ];
+static CLASS_POLICE_RANGE			[ 2 ];
+static CLASS_FBI_RANGE				[ 2 ];
+static CLASS_CIA_RANGE 				[ 2 ];
+static CLASS_FIRE_RANGE 			[ 2 ];
+static CLASS_MEDIC_RANGE 			[ 2 ];
+static CLASS_ARMY_RANGE;
+
 #define CLASS_CIVILIAN              ( 0 )
 #define CLASS_POLICE              	( 1 )
 #define CLASS_FIREMAN               ( 2 )
@@ -381,12 +380,13 @@ stock const
 ;
 
 /* ** Textdraw Data ** */
+new Text: g_classTextdrawBox[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
+new Text: g_classTextdrawDescription[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
+new Text: g_classTextdrawName[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
+
 new
 	Text:  g_ClassBoxTD        		= Text: INVALID_TEXT_DRAW,
-	Text:  g_ClassBoxTD1        	= Text: INVALID_TEXT_DRAW,
 	Text:  g_ObjectLoadTD         	= Text: INVALID_TEXT_DRAW,
-	Text:  p_ClassTitleTD      		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_ClassInfoTD       		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_JailTimeTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_TrackPlayerTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_WebsiteTD        		= Text: INVALID_TEXT_DRAW,
@@ -421,6 +421,7 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
+	Text:  g_ZoneOwnerTD         	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -527,13 +528,6 @@ stock const
 		{ 2295.62960, 2468.796, 10.8203, 90.000, 	0, 0 },
 		{ 1528.58340, -1677.49, 5.89060, 270.00, 	0, 0 }
 	}
-
-	/*g_MayorSpawns[ MAX_CITIES ] [ E_RANDOM_SPAWNS ] =
-	{
-		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 1 },
-		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 2 },
-		{ 354.7187, 172.4094, 1025.7964, 180.000, 	3, 5 }
-	}*/
 ;
 
 /* ** House System ** */
@@ -1168,23 +1162,6 @@ new
 ;
 
 /* ** Gang System ** */
-#define MAX_GANGS                   ( MAX_PLAYERS )
-#define TURF_TAKEOVER_TIME          ( 60 )
-#define TAKEOVER_NEEDED_PEOPLE		( 3 )
-#define TURF_PAYOUT 				( 1250 )
-#define INVALID_GANG_ID             ( -1 )
-#define MAX_COLEADERS				( 3 )
-
-enum E_ZONE_DATA
-{
-	Float: E_MIN_X,
-	Float: E_MIN_Y,
-	Float: E_MAX_X,
-	Float: E_MAX_Y,
-	E_GANG_OWNER,
-	E_COLOR
-};
-
 enum e_gang_data
 {
 	E_SQL_ID,
@@ -1210,57 +1187,10 @@ enum E_GANG_LEAVE_REASON
 };
 
 new
-	g_gangzoneData[ ] [ E_ZONE_DATA ] =
-	{
-		#if ENABLE_CITY_LV == true
-		// Las Venturas
-		{ 2071.2890, 1201.171, 2217.773, 1368.16, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2071.2890, 1646.484, 2129.882, 1719.72, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1297.8515, 2100.585, 1394.531, 2197.26, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2293.9453, 2238.281, 2416.992, 2402.34, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1989.2578, 1508.789, 2012.695, 1573.24, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1376.9531, 2603.515, 1488.281, 2671.87, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2433.5937, 1863.281, 2494.140, 1962.89, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2437.5000, 1261.718, 2517.578, 1306.64, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1101.5625, 1205.078, 1177.734, 1361.32, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2798.8281, 1222.656, 2859.375, 1382.81, INVALID_GANG_ID, COLOR_GANGZONE },
-		#endif
-
-		#if ENABLE_CITY_LS == true
-		{ 2433.593, -1730.468, 2546.875, -1632.812, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1867.187, -1265.625, 2062.500, -1140.625, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1066.406, -1570.312, 1183.593, -1414.062, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 148.4375, -1902.343, 355.4687, -1777.343, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 664.0625, -1320.312, 789.0625, -1230.468, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 640.6250, -1582.031, 765.6250, -1421.875, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 2218.750, -1480.468, 2269.531, -1398.437, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1832.031, -2164.062, 1957.031, -2066.406, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1941.406, -1746.093, 2074.218, -1531.250, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ 1675.781, -2003.906, 1843.750, -1871.093, INVALID_GANG_ID, COLOR_GANGZONE },
-		#endif
-
-		// San Fierro
-	    { -2510.152, 576.531, -2392.935, 700.782, INVALID_GANG_ID, COLOR_GANGZONE },
-	    { -1476.562, 1481.25, -1345.315, 1516.40, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -2074.275, 578.905, -2010.937, 728.906, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -1495.312, 834.375, -1420.312, 1017.18, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -2756.252, 328.125, -2646.093, 431.251, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -2392.965, 75.1234, -2285.156, 236.718, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -1988.281, 859.375, -1906.250, 916.015, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -1988.281, 87.8906, -1931.640, 216.796, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -2528.320, 1529.29, -2285.156, 1584.96, INVALID_GANG_ID, COLOR_GANGZONE },
-		{ -1947.265, 1095.70, -1888.671, 1167.96, INVALID_GANG_ID, COLOR_GANGZONE }
-	},
-	g_gangColors[ ] =
-	{
+	g_gangColors[ ] = {
 		0x99FF00FF, 0x00CC00FF, 0x009999FF, 0x0033CCFF, 0x330099FF, 0x660099FF, 0xCC0099FF
 	},
 
-	g_gangzoneID					[ sizeof( g_gangzoneData ) ],
-	g_gangzoneAttacker				[ sizeof( g_gangzoneData ) ] = { INVALID_GANG_ID, ... },
-	g_gangzoneAttackCount           [ sizeof( g_gangzoneData ) ],
-	g_gangzoneAttackTimeout			[ sizeof( g_gangzoneData ) ],
-	Text: g_ZoneOwnerTD             [ sizeof( g_gangzoneData ) ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	g_gangData						[ MAX_GANGS ] [ e_gang_data ],
 	p_GangID                        [ MAX_PLAYERS ],
@@ -3129,7 +3059,6 @@ new
 	p_InfoLabelString               [ MAX_PLAYERS ] [ 32 ],
 	bool: p_inMovieMode             [ MAX_PLAYERS char ],
 	bool: p_inCIA                   [ MAX_PLAYERS char ],
-	// bool: p_inMayor					[ MAX_PLAYERS char ],
 	p_AntiEmpSpam                   [ MAX_PLAYERS ],
 	bool: p_inPaintBall           	[ MAX_PLAYERS char ],
 	p_Scissors                      [ MAX_PLAYERS ],
@@ -3398,10 +3327,13 @@ public OnGameModeInit()
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
 	DisableInteriorEnterExits( );
+
+	#if defined DEBUG_MODE
+	mysql_log( LOG_ERROR | LOG_WARNING );
+	#endif
 	// Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 950 );
 	// MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
-	// mysql_log( LOG_ALL );
 	//SetBannedWeapons( 17, 35, 36, 37, 38, 39, 44, 45 );
 
 	//EnableVehicleFriendlyFire( );
@@ -3442,7 +3374,7 @@ public OnGameModeInit()
 	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 
 	/* ** CIVILIAN ** */
-	AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
+	CLASS_CIVILIAN_RANGE[ 0 ] = AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
 	AddPlayerClass( 289, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 1
 	AddPlayerClass( 273, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 2
 	AddPlayerClass( 271, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 3
@@ -3482,7 +3414,6 @@ public OnGameModeInit()
 	AddPlayerClass( 48, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	37
 	AddPlayerClass( 59, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	38
 	AddPlayerClass( 60, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	39
-
 	AddPlayerClass( 63, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	40
 	AddPlayerClass( 64, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	41
 	AddPlayerClass( 152, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	42
@@ -3492,45 +3423,41 @@ public OnGameModeInit()
 	AddPlayerClass( 134, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 46
 	AddPlayerClass( 100, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 47
 	AddPlayerClass( 101, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 48
-	AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
+	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
 
 	/* ** FBI ** */
-	AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 50
+	CLASS_FBI_RANGE[ 0 ] = AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 50
 	AddPlayerClass( 71, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );  // 51
-	AddPlayerClass( 285, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 52
+	CLASS_FBI_RANGE[ 1 ] = AddPlayerClass( 285, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 52
 
 	/* ** ARMY ** */
-	AddPlayerClass( 287, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 53
+	CLASS_ARMY_RANGE = AddPlayerClass( 287, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 53
 
 	/* ** CIA ** */
-	AddPlayerClass( 303, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 54
+	CLASS_CIA_RANGE[ 0 ] = AddPlayerClass( 303, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 54
 	AddPlayerClass( 304, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 55
-	AddPlayerClass( 305, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 56
+	CLASS_CIA_RANGE[ 1 ] = AddPlayerClass( 305, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 56
 
 	/* ** FIRE ** */
-	AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 57
+	CLASS_FIRE_RANGE[ 0 ] = AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 57
 	AddPlayerClass( 278, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 58
-	AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 59
+	CLASS_FIRE_RANGE[ 1 ] = AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 59
 
 	/* ** MEDIC ** */
-	AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
+	CLASS_MEDIC_RANGE[ 0 ] = AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
 	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 61
 	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
-	AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
-
-	/* ** MAYOR ** */
-	// AddPlayerClass( 187, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 64
-	// AddPlayerClass( 148, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 65
+	CLASS_MEDIC_RANGE[ 1 ] = AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
 
 	/* ** POLICE ** */
-	AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
+	CLASS_POLICE_RANGE[ 0 ] = AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
 	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 67
 	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 68
 	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 69
 	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 70
 	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 71
 	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 72
-	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
+	CLASS_POLICE_RANGE[ 1 ] = AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
  	/* ** Discord configuration ** */
  	#if ENABLE_DISCORD == true
@@ -5589,12 +5516,9 @@ stock GetGangCapturedTurfs( gangid )
 		z,
 		c;
 
-	for( z = 0; z < sizeof( g_gangzoneData ); z++ )
-	{
-		if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] != INVALID_GANG_ID && g_gangzoneData[ z ] [ E_GANG_OWNER ] == gangid )
-			c++;
+	for( z = 0; z < MAX_TURFS; z++ ) if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ z ] [ E_OWNER ] == gangid ) {
+		c++;
 	}
-
 	return c;
 }
 
@@ -5631,17 +5555,23 @@ public ZoneTimer( )
 		foreach(new g : gangs)
 		{
 			new
-				iPlayers = GetOnlineGangMembers( g );
+				afk_members, online_members = GetOnlineGangMembers( g, .afk_members = afk_members );
 
-			if ( iPlayers >= TAKEOVER_NEEDED_PEOPLE )
+			if ( online_members >= TAKEOVER_NEEDED_PEOPLE )
 			{
 				new
-					iCaptured = GetGangCapturedTurfs( g ) * TURF_PAYOUT;
+					profit = 0;
 
-				g_gangData[ g ] [ E_BANK ] += iCaptured;
+				for( new zoneid = 0; zoneid < MAX_TURFS; zoneid++ ) if ( g_gangTurfData[ zoneid ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == g ) {
+					profit += Zone_GetProfitability( zoneid, online_members - afk_members );
+				}
 
-		    	if ( iCaptured )
-		    		SaveGangData( g ), SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", number_format( iCaptured ) );
+				g_gangData[ g ] [ E_BANK ] += profit;
+
+		    	if ( profit > 0 ) {
+		    		SaveGangData( g );
+		    		SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", number_format( profit ) );
+		    	}
     		}
     	}
 
@@ -5661,32 +5591,40 @@ public ZoneTimer( )
 				}
 			}
 		}
-
-		// Update All Map Tax Labels
-		// mysql_function_query( dbHandle, "SELECT `MAP_TAX`.`ID`,`MAP_TAX`.`USER_ID`,`USERS`.`NAME` as `USERNAME` FROM `MAP_TAX` INNER JOIN `USERS` ON `USERS`.`ID` = `MAP_TAX`.`USER_ID`", true, "UpdateMapTaxNames", "" );
 	}
 
 
 	new
 		oCount = 0;
 
-    for( new z; z < sizeof( g_gangzoneData ); z++ )
+    for( new z; z < MAX_TURFS; z++ )
 	{
 	    if ( g_gangzoneAttacker[ z ] != INVALID_GANG_ID )
 	    {
-	        if ( GetPlayersInGangZone( z, g_gangzoneAttacker[ z ] ) >= TAKEOVER_NEEDED_PEOPLE )
+	    	new
+	    		attacker_member_count = GetPlayersInGangZone( z, g_gangzoneAttacker[ z ] );
+
+	        if ( attacker_member_count >= TAKEOVER_NEEDED_PEOPLE )
 	        {
-	          	if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] != INVALID_GANG_ID )
-		        {
-					oCount = GetPlayersInGangZone( z, g_gangzoneData[ z ] [ E_GANG_OWNER ] );
-		        }
-	            if ( g_gangzoneAttackCount[ z ] < TURF_TAKEOVER_TIME && oCount == 0 )
+	          	if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
+			      	oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] );
+
+				new
+					attacker_time_required = -5 * attacker_member_count + TURF_TAKEOVER_TIME;
+
+				if ( attacker_time_required < TURF_TAKEOVER_TIME_MIN )
+					attacker_time_required = TURF_TAKEOVER_TIME_MIN;
+
+	            if ( g_gangzoneAttackCount[ z ] < attacker_time_required && oCount == 0 )
 	            {
+	            	foreach ( new i : Player ) if ( p_GangID[ i ] == g_gangzoneAttacker[ z ] && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) ) {
+	            		ShowPlayerHelpDialog( i, 1500, "~r~Control~w~ the area for %d seconds!", attacker_time_required - g_gangzoneAttackCount[ z ] );
+	            	}
 	            	g_gangzoneAttackCount[ z ] ++;
                  	g_gangzoneAttackTimeout[ z ] = 0;
 					continue;
 				}
-	            else if ( g_gangzoneAttackCount[ z ] >= TURF_TAKEOVER_TIME )
+	            else if ( g_gangzoneAttackCount[ z ] >= attacker_time_required )
 	            {
 	            	static
 	            		szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
@@ -5694,128 +5632,131 @@ public ZoneTimer( )
 				    Get2DCity 				( szCity, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MIN_Y ] );
 				    GetZoneFromCoordinates 	( szLocation, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MIN_Y ] );
 
-	                GangZoneStopFlashForAll	( g_gangzoneID[ z ] );
-					GangZoneShowForAll 		( g_gangzoneID[ z ], setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 ) );
+	                GangZoneStopFlashForAll	( g_gangTurfData[ z ] [ E_ID ] );
+					GangZoneShowForAll 		( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 ) );
 
                     SendClientMessageToGang	( g_gangzoneAttacker[ z ], g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s!", szLocation, szCity );
 
-                 	// Give Gangmembers XP & Wanted
-					foreach(new d : Player)
-					{
-						if ( IsPlayerSpawned( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == g_gangzoneAttacker[ z ] && !p_inPaintBall{ d } )
-						{
-							GivePlayerScore( d, 2, .multiplier = 0.5 );
-							GivePlayerWantedLevel( d, 6 );
-						}
-					}
-
-					g_gangzoneData[ z ] [ E_COLOR ]  	 = setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 );
-	                g_gangzoneData[ z ] [ E_GANG_OWNER ] = g_gangzoneAttacker[ z ];
+					g_gangTurfData[ z ] [ E_COLOR ] = setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 );
+	                g_gangTurfData[ z ] [ E_OWNER ] = g_gangzoneAttacker[ z ];
 
                  	g_gangzoneAttacker 		[ z ] = INVALID_GANG_ID;
 	                g_gangzoneAttackCount	[ z ] = 0;
                  	g_gangzoneAttackTimeout	[ z ] = 0;
+
+                 	// Give Gangmembers XP & Wanted
+					foreach(new d : Player)
+					{
+						new in_area = IsPlayerInDynamicArea( d, g_gangTurfData[ z ] [ E_AREA ] );
+
+						if ( in_area )
+							TextDrawSetString( g_ZoneOwnerTD[ d ], sprintf( "~r~~h~(TERRITORY)~n~~w~~h~%s", ReturnGangName( g_gangTurfData[ z ] [ E_OWNER ] ) ) );
+
+						if ( IsPlayerSpawned( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == g_gangTurfData[ z ] [ E_OWNER ] && ! p_inPaintBall{ d } )
+						{
+							PlayerPlaySound( d, 36205, 0.0, 0.0, 0.0 );
+							GivePlayerScore( d, in_area ? 2 : 1, .multiplier = 0.5 );
+							GivePlayerWantedLevel( d, 6 );
+						}
+					}
 				}
 	        }
 	        else
 	        {
 	        	if ( !g_gangzoneAttackTimeout[ z ] ) {
 	        		g_gangzoneAttackTimeout[ z ] = g_iTime + 10;
-                    SendClientMessageToGang( g_gangzoneAttacker[ z ], g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], "[GANG]{FFFFFF} Warning! You have 5 seconds to have three gang members in the area until the turf war is stopped!" );
+                    SendClientMessageToGang( g_gangzoneAttacker[ z ], g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have 10 seconds to get back in the area until the turf war is stopped!" );
 	        	}
 	        	else if ( g_iTime > g_gangzoneAttackTimeout[ z ] )
 				{
 		         	g_gangzoneAttackCount[ z ] = 0;
 		         	g_gangzoneAttackTimeout[ z ] = 0;
-		     		GangZoneStopFlashForAll( g_gangzoneID[ z ] );
+		     		GangZoneStopFlashForAll( g_gangTurfData[ z ] [ E_ID ] );
 		            g_gangzoneAttacker[ z ] = INVALID_GANG_ID;
 				}
 	        }
 		}
-		foreach(new playerid : Player)
+	}
+
+	// Looping every 1000 MS
+	foreach(new playerid : Player)
+	{
+		if ( ! p_PlayerLogged{ playerid } )
+			continue;
+
+		SetPlayerWeather( playerid, ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) ) ? 1 : g_WorldWeather );
+		UpdatePlayerTime( playerid );
+
+		// Remove Anti-Spawn Kill
+		if ( p_AntiSpawnKillEnabled{ playerid } && g_iTime > p_AntiSpawnKill[ playerid ] )
 		{
-			if ( !p_PlayerLogged{ playerid } )
-				continue;
+			DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
+			SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } == true ? float( INVALID_PLAYER_ID ) : 100.0 );
+			Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
+			p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+			p_AntiSpawnKillEnabled{ playerid } = false;
+		}
 
-		    if ( GetPlayerInterior( playerid ) == 0 && GetPlayerVirtualWorld( playerid ) == 0 && !p_inMovieMode{ playerid } )
-		    {
-			    if ( IsPlayerInArea( playerid, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MAX_X ], g_gangzoneData[ z ] [ E_MIN_Y ], g_gangzoneData[ z ] [ E_MAX_Y ] ) )
-	   			{
-	   			    format( szNormalString, sizeof( szNormalString ), "~r~~h~(TERRITORY)~n~~w~~h~%s", ReturnGangName( g_gangzoneData[ z ] [ E_GANG_OWNER ] ) );
-				    TextDrawSetString( g_ZoneOwnerTD[ z ], szNormalString );
-				    TextDrawShowForPlayer( playerid, g_ZoneOwnerTD[ z ] );
-			    }
-				else
-				{
-				    TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ z ] );
-				}
-			}
-			else TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ z ] );
-
-			// OTHER CODE THAT DO NOT REQUIRE ZONE LOOP
-	  		if ( !z ) // I'm an efficient cunt.
+		// Increment Variables Whilst Not AFK
+		if ( !IsPlayerAFK( playerid ) ) // New addition
+		{
+			// Increase Time Online
+			switch( ++ p_Uptime[ playerid ] )
 			{
-				SetPlayerWeather( playerid, ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) ) ? 1 : g_WorldWeather );
-				UpdatePlayerTime( playerid );
+			    //case 300: 	ShowAchievement( playerid, "You have been online for ~r~5~w~~h~ minutes!", 1 );
+			    case 1200: 	ShowAchievement( playerid, "You have been online for ~r~20~w~~h~ minutes!", 2 );
+			    case 3600: 	ShowAchievement( playerid, "You have been online for ~r~1~w~~h~ hour!", 4 );
+			    case 18000: ShowAchievement( playerid, "You have been online for ~r~5~w~~h~ hours!", 6 );
+			    case 36000: ShowAchievement( playerid, "You have been online for ~r~10~w~~h~ hours!", 8 );
+			    case 54000: ShowAchievement( playerid, "You have been online for ~r~15~w~~h~ hours!", 10 );
+			    case 72000: ShowAchievement( playerid, "You have been online for ~r~20~w~~h~ hours!", 12 );
+			    case 86400: ShowAchievement( playerid, "You have been online for ~r~1~w~~h~ day!", 15 );
+			}
 
-				if ( g_iTime > p_AntiSpawnKill[ playerid ] && p_AntiSpawnKillEnabled{ playerid } )
-				{
-					DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
-					SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } == true ? float( INVALID_PLAYER_ID ) : 100.0 );
-					Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
-					p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-					p_AntiSpawnKillEnabled{ playerid } = false;
-				}
+			// Increase Irresistible Coins (1/20 = cred/min)
+			if ( GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 )
+			{
+				if ( iKeys != 0 || iUpDownKeys != 0 || iLeftRightKeys != 0 ) { // GetPlayerScore( playerid ) > 10 &&
 
-				// Increment Variables Whilst Not AFK
-				if ( !IsPlayerAFK( playerid ) ) // New addition
-				{
-					// Increase Time Online
-					p_Uptime[ playerid ]++;
+					new
+						Float: iCoinGenRate = 35.0;
 
-					// Increase Irresistible Coins (1/20 = cred/min)
-   					if ( GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 )
-					{
-						if ( iKeys != 0 || iUpDownKeys != 0 || iLeftRightKeys != 0 ) { // GetPlayerScore( playerid ) > 10 &&
+					// VIP check
+					if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND )
+						iCoinGenRate *= 0.75; // Reduce by 25% if Diamond
 
-							new
-								Float: iCoinGenRate = 35.0;
+					else if ( p_VIPLevel[ playerid ] == VIP_PLATINUM )
+						iCoinGenRate *= 0.90; // Reduce by 10% if Diamond
 
-							// VIP check
-							if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND )
-								iCoinGenRate *= 0.75; // Reduce by 25% if Diamond
+					// Happy Hour
+					if ( g_HappyHour && ( 0.0 <= g_HappyHourRate <= 0.25 ) )
+						iCoinGenRate *= 1.0 - g_HappyHourRate;
 
-							else if ( p_VIPLevel[ playerid ] == VIP_PLATINUM )
-								iCoinGenRate *= 0.90; // Reduce by 10% if Diamond
-
-							// Happy Hour
-							if ( g_HappyHour && ( 0.0 <= g_HappyHourRate <= 0.25 ) )
-								iCoinGenRate *= 1.0 - g_HappyHourRate;
-
-							p_IrresistibleCoins[ playerid ] += ( 1.0 / iCoinGenRate ) / 60.0; // Prev 25.92
-						}
-					}
-				}
-
-				// CIA Visible On Radar after firing a shot
-				if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
-					SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
-
-				// Player Online Achievemnt
-				switch( p_Uptime[ playerid ] )
-				{
-				    //case 300: 	ShowAchievement( playerid, "You have been online for ~r~5~w~~h~ minutes!", 1 );
-				    case 1200: 	ShowAchievement( playerid, "You have been online for ~r~20~w~~h~ minutes!", 2 );
-				    case 3600: 	ShowAchievement( playerid, "You have been online for ~r~1~w~~h~ hour!", 4 );
-				    case 18000: ShowAchievement( playerid, "You have been online for ~r~5~w~~h~ hours!", 6 );
-				    case 36000: ShowAchievement( playerid, "You have been online for ~r~10~w~~h~ hours!", 8 );
-				    case 54000: ShowAchievement( playerid, "You have been online for ~r~15~w~~h~ hours!", 10 );
-				    case 72000: ShowAchievement( playerid, "You have been online for ~r~20~w~~h~ hours!", 12 );
-				    case 86400: ShowAchievement( playerid, "You have been online for ~r~1~w~~h~ day!", 15 );
+					p_IrresistibleCoins[ playerid ] += ( 1.0 / iCoinGenRate ) / 60.0; // Prev 25.92
 				}
 			}
 		}
+
+		// CIA Visible On Radar after firing a shot
+		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
+			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
 	}
+	return 1;
+}
+
+public OnPlayerEnterGangZone( playerid, zoneid )
+{
+	if ( ! p_inMovieMode{ playerid } )
+	{
+		// if ( p_GangID[ playerid ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == INVALID_GANG_ID ) ShowPlayerHelpDialog( playerid, 2000, "You can take over this turf by typing ~g~/takeover" );
+		TextDrawSetString( g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(TERRITORY)~n~~w~~h~%s", ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
+	}
+	return 1;
+}
+
+public OnPlayerExitGangZone( playerid, zoneid )
+{
+	TextDrawSetString( g_ZoneOwnerTD[ playerid ], "_" );
 	return 1;
 }
 
@@ -5851,11 +5792,10 @@ public OnPlayerRequestClass( playerid, classid )
 {
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
     TextDrawShowForPlayer( playerid, g_ClassBoxTD );
-    TextDrawShowForPlayer( playerid, g_ClassBoxTD1 );
-	TextDrawShowForPlayer( playerid, p_ClassTitleTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
+	TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -5863,7 +5803,6 @@ public OnPlayerRequestClass( playerid, classid )
 	PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
-	TextDrawShowForPlayer( playerid, p_ClassInfoTD[ playerid ] );
 	KillTimer( p_TrackingTimer[ playerid ] );
 	p_TrackingTimer[ playerid ] = INVALID_TIMER_ID;
 	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
@@ -5879,135 +5818,125 @@ public OnPlayerRequestClass( playerid, classid )
 	p_MoneyBag{ playerid } = false;
 	RemovePlayerAttachedObject( playerid, 1 );
 
-	SetPlayerPos(			playerid, 	-1971.1536, 129.4870, 27.6875 );
-	SetPlayerInterior(		playerid, 	0);
-	SetPlayerFacingAngle(	playerid,	90.0 );
+	// SetPlayerPos( playerid, 	-1971.1536, 129.4870, 27.6875 );
+	// SetPlayerFacingAngle( playerid,	90.0 );
+	SetPlayerPos( playerid, 229.613998, 87.164001, 1005.039978 );
+	SetPlayerFacingAngle( playerid, -90.000000 );
+	SetPlayerInterior( playerid, 0 );
+	SetPlayerVirtualWorld( playerid, 0 );
 	//SetPlayerCameraPos(		playerid, 	-1974.1431, 133.3700, 29.7107 );
 	//SetPlayerCameraLookAt(	playerid, 	-1970.6431, 129.3700, 28.2107 );
 
 	if ( p_ClassSelection{ playerid } == false )
 	{
-		InterpolateCameraPos( playerid, -1976.4252, 119.9899, 30.0, -1974.0302, 133.0427, 27.6940, 10000, CAMERA_MOVE );
-		InterpolateCameraLookAt( playerid, -1974.0302,133.0427,27.6940, -1971.1536,129.4870,27.6875, 10000, CAMERA_MOVE );
+		static const Float: START_POS[ 3 ] = { 243.5, 87.23, 1005.9 };
+		static const Float: FINAL_POS[ 3 ] = { 231.9, 87.23, 1005.9 };
+
+		InterpolateCameraPos( playerid, START_POS[ 0 ], START_POS[ 1 ], START_POS[ 2 ], FINAL_POS[ 0 ], FINAL_POS[ 1 ], FINAL_POS[ 2 ], 17500, CAMERA_MOVE );
+		InterpolateCameraLookAt( playerid, FINAL_POS[ 0 ], FINAL_POS[ 1 ], FINAL_POS[ 2 ], FINAL_POS[ 0 ] - 0.4, FINAL_POS[ 1 ], FINAL_POS[ 2 ] - 0.05, 15000, CAMERA_MOVE );
+
+		// InterpolateCameraPos( playerid, -1976.4252, 119.9899, 30.0, -1974.0302, 133.0427, 27.6940, 10000, CAMERA_MOVE );
+		// InterpolateCameraLookAt( playerid, -1974.0302,133.0427,27.6940, -1971.1536,129.4870,27.6875, 10000, CAMERA_MOVE );
 
 		p_ClassSelection{ playerid } = true;
 	}
 
-	//ApplyAnimation( playerid, "FOOD", "FF_Sit_Look", 4.0, 1, 0, 0, 0, 0 );
-	ApplyAnimation( playerid, "MISC", "SEAT_TALK_02", 2.0, 1, 0, 0, 0, 0 );
+	SetPlayerAttachedObject( playerid, 1, 19560, 6, 0.084999, 0.060998, -0.164999, 3.8, 81.6001, -19.3, .materialcolor1 = 0xFF000000 );
+	Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
+
+	// ApplyAnimation( playerid, "MISC", "SEAT_TALK_02", 2.0, 1, 0, 0, 0, 0 );
+	if ( GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_CARRY ) {
+		TogglePlayerControllable( playerid, 0 );
+		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
+	}
 
 	p_Spawned				{ playerid } = false;
 	p_InfectedHIV			{ playerid } = false;
 
-	switch( classid )
+	if ( CLASS_CIVILIAN_RANGE[ 0 ] <= classid <= CLASS_CIVILIAN_RANGE[ 1 ] )
+    {
+		p_Class[ playerid ] = ( CLASS_CIVILIAN );
+		//SetPlayerTeam( playerid, NO_TEAM );
+		SetPlayerColorToTeam( playerid );
+		p_inFBI{ playerid } = false;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = false;
+		ShowPlayerClassTextdraw( playerid, 0 );
+    }
+	else if ( CLASS_POLICE_RANGE[ 0 ] <= classid <= CLASS_POLICE_RANGE[ 1 ] )
+    {
+		p_Class[ playerid ] = ( CLASS_POLICE );
+		SetPlayerColor( playerid, COLOR_POLICE );
+		//SetPlayerTeam( playerid, CLASS_POLICE );
+		p_inFBI{ playerid } = false;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = false;
+
+		ShowPlayerClassTextdraw( playerid, 1 );
+    }
+    else if ( CLASS_FBI_RANGE[ 0 ] <= classid <=  CLASS_FBI_RANGE[ 1 ] )
+    {
+		p_Class[ playerid ] = ( CLASS_POLICE );
+		//SetPlayerTeam( playerid, CLASS_POLICE );
+		SetPlayerColor( playerid, COLOR_FBI );
+		p_inFBI{ playerid } = true;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = false;
+		ShowPlayerClassTextdraw( playerid, 2 );
+    }
+    else if ( classid == CLASS_ARMY_RANGE )
+    {
+		p_Class[ playerid ] = ( CLASS_POLICE );
+		SetPlayerColor( playerid, COLOR_ARMY );
+		//SetPlayerTeam( playerid, CLASS_POLICE );
+		p_inFBI{ playerid } = true;
+		p_inArmy{ playerid } = true;
+		p_inCIA{ playerid } = true;
+		ShowPlayerClassTextdraw( playerid, 3 );
+    }
+    else if ( CLASS_CIA_RANGE[ 0 ] <= classid <= CLASS_CIA_RANGE[ 1 ] )
+    {
+		p_Class[ playerid ] = ( CLASS_POLICE );
+		SetPlayerColor( playerid, COLOR_CIA );
+		//SetPlayerTeam( playerid, CLASS_POLICE );
+		p_inFBI{ playerid } = true;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = true;
+		ShowPlayerClassTextdraw( playerid, 4 );
+    }
+    else if ( CLASS_FIRE_RANGE[ 0 ] <= classid <= CLASS_FIRE_RANGE[ 1 ] )
 	{
-	    case 0..49:
-	    {
-			p_Class[ playerid ] = ( CLASS_CIVILIAN );
-			//SetPlayerTeam( playerid, NO_TEAM );
-			SetPlayerColorToTeam( playerid );
-			p_inFBI{ playerid } = false;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Select different types of Jobs~n~> Can rob places for score~n~> Can team up with players" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Civilian" );
-	    }
-	    case 50..52:
-	    {
-			p_Class[ playerid ] = ( CLASS_POLICE );
-			//SetPlayerTeam( playerid, CLASS_POLICE );
-			SetPlayerColor( playerid, COLOR_FBI );
-			p_inFBI{ playerid } = true;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Needs ~r~10000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~Federal Bureau of Investigation" );
-	    }
-	    case 53:
-	    {
-			p_Class[ playerid ] = ( CLASS_POLICE );
-			SetPlayerColor( playerid, COLOR_ARMY );
-			//SetPlayerTeam( playerid, CLASS_POLICE );
-			p_inFBI{ playerid } = true;
-			p_inArmy{ playerid } = true;
-			p_inCIA{ playerid } = true;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Can use strong air support~n~> Needs ~r~20000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~San Fierro Army" );
-	    }
-	    case 54..56:
-	    {
-			p_Class[ playerid ] = ( CLASS_POLICE );
-			SetPlayerColor( playerid, COLOR_CIA );
-			//SetPlayerTeam( playerid, CLASS_POLICE );
-			p_inFBI{ playerid } = true;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = true;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people~n~> Can set roadblocks on roads~n~> Can set spike traps~n~> Can turn electronic devices off~n~> Needs ~r~15000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~~n~Central Intelligence Agency" );
-	    }
-	    case 57..59:
-		{
-			p_Class[ playerid ] = ( CLASS_FIREMAN );
-			SetPlayerColor( playerid, COLOR_FIREMAN );
-			//SetPlayerTeam( playerid, NO_TEAM );
-			p_inFBI{ playerid } = false;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from fires~n~> Can extinguish fires~n~> Needs ~r~1000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Fire Man" );
-		}
-		case 60..63:
-		{
-			p_Class[ playerid ] = ( CLASS_MEDIC );
-			SetPlayerColor( playerid, COLOR_MEDIC );
-			//SetPlayerTeam( playerid, NO_TEAM );
-			p_inFBI{ playerid } = false;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Can cure diseases~n~> Can heal players~n~> Needs ~r~2000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Paramedic" );
-		}
-	    /*case 64..65:
-	    {
-			p_Class[ playerid ] = ( CLASS_POLICE );
-			SetPlayerColor( playerid, COLOR_MAYOR );
-			//SetPlayerTeam( playerid, CLASS_POLICE );
-			p_inFBI{ playerid } = false;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			p_inMayor{ playerid } = true;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Enforces police agenda~n~> Dictates the law in the game~n~> Can issue warrants~n~> Can jail/arrest people~n~> Limited to 1 person every 60 min~n~> Needs ~r~5000~w~ XP or more" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~r~~h~ The Mayor" );
-	    }
-	  	case 66..73:*/
-	  	case 64..73:
-	    {
-			p_Class[ playerid ] = ( CLASS_POLICE );
-			SetPlayerColor( playerid, COLOR_POLICE );
-			//SetPlayerTeam( playerid, CLASS_POLICE );
-			p_inFBI{ playerid } = false;
-			p_inArmy{ playerid } = false;
-			p_inCIA{ playerid } = false;
-			// p_inMayor{ playerid } = false;
-
-			TextDrawSetString( p_ClassInfoTD[ playerid ], "~g~~h~CLASS INFORMATION:~w~~n~> Protect the City from criminals~n~> Has access to many features~n~> Can call enforcements~n~> Can jail/arrest people" );
-	    	TextDrawSetString( p_ClassTitleTD[ playerid ], "~g~~h~CLASS NAME:~w~ Police Officer" );
-	    }
+		p_Class[ playerid ] = ( CLASS_FIREMAN );
+		SetPlayerColor( playerid, COLOR_FIREMAN );
+		//SetPlayerTeam( playerid, NO_TEAM );
+		p_inFBI{ playerid } = false;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = false;
+		ShowPlayerClassTextdraw( playerid, 6 );
+	}
+    else if ( CLASS_MEDIC_RANGE[ 0 ] <= classid <= CLASS_MEDIC_RANGE[ 1 ] )
+	{
+		p_Class[ playerid ] = ( CLASS_MEDIC );
+		SetPlayerColor( playerid, COLOR_MEDIC );
+		//SetPlayerTeam( playerid, NO_TEAM );
+		p_inFBI{ playerid } = false;
+		p_inArmy{ playerid } = false;
+		p_inCIA{ playerid } = false;
+		ShowPlayerClassTextdraw( playerid, 5 );
 	}
 	return 1;
+}
+
+stock ShowPlayerClassTextdraw( playerid, classid ) {
+	for ( new i = 0; i < sizeof( CLASS_COLORS ); i ++ ) if ( i != classid ) {
+		TextDrawHideForPlayer( playerid, g_classTextdrawBox[ i ] );
+		TextDrawHideForPlayer( playerid, g_classTextdrawDescription[ i ] );
+		TextDrawHideForPlayer( playerid, g_classTextdrawName[ i ] );
+	}
+
+	TextDrawShowForPlayer( playerid, g_classTextdrawBox[ classid ] );
+	TextDrawShowForPlayer( playerid, g_classTextdrawDescription[ classid ] );
+	TextDrawShowForPlayer( playerid, g_classTextdrawName[ classid ] );
 }
 
 public OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
@@ -6568,11 +6497,8 @@ public OnPlayerSpawn( playerid )
 		return 1;
 
 	UpdatePlayerTime( playerid );
+	DeletePVar( playerid, "attached_mugshot" );
 
-	TextDrawHideForPlayer( playerid, g_ClassBoxTD);
-    TextDrawHideForPlayer( playerid, g_ClassBoxTD1 );
-	TextDrawHideForPlayer( playerid, p_ClassTitleTD[ playerid ] );
-	TextDrawHideForPlayer( playerid, p_ClassInfoTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	HidePlayerTogglableTextdraws( playerid );
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
@@ -6588,6 +6514,7 @@ public OnPlayerSpawn( playerid )
 		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
+		TextDrawShowForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
 		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -6619,8 +6546,9 @@ public OnPlayerSpawn( playerid )
 		RemovePlayerAttachedObject( playerid, 1 ), SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 
 	// Gang Zones
-	for( new i = 0; i < sizeof( g_gangzoneData ); i++ )
-		GangZoneShowForPlayer( playerid, g_gangzoneID[ i ], g_gangzoneData[ i ] [ E_COLOR ] );
+	for( new i = 0; i < MAX_TURFS; i++ ) {
+		GangZoneShowForPlayer( playerid, g_gangTurfData[ i ] [ E_ID ], g_gangTurfData[ i ] [ E_COLOR ] );
+	}
 
 	// VIP Skin
 	if ( p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] )
@@ -7212,7 +7140,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 0;
 
 	// Anti RDM and gang member damage
-	if ( !IsPlayerInEvent( playerid ) && !IsPlayerInPaintBall( playerid ) )
+	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) )
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
@@ -7406,6 +7334,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
+	TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -7433,14 +7362,23 @@ public OnPlayerDeath( playerid, killerid, reason )
 		format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in medical fees", number_format( iMoney ) );
 		GivePlayerCash( playerid, -( iMoney ) );
 
-		if ( p_TaxTime{ playerid } == true )
+		if ( p_TaxTime{ playerid } == true && p_inPaintBall{ playerid } != true )
 		{
-		    new iTax = p_inPaintBall{ playerid } == true ? 0 : getPlayerTax( playerid );
-			GivePlayerCash( playerid, -iTax );
-			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + floatround( iTax * 0.10 ), 0.0, "", GLOBAL_VARTYPE_INT );
-			if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, number_format( iTax ) );
-			else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", number_format( iTax ) );
-			p_TaxTime{ playerid } = false;
+		    new
+		    	player_tax = getPlayerTax( playerid );
+
+		    if ( player_tax > 0 )
+		    {
+				p_TaxTime{ playerid } = false;
+				GivePlayerCash( playerid, -player_tax );
+
+				// only add >10K to event bank, lessen queries
+				if ( player_tax > 10000 ) UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + floatround( float( player_tax ) * 0.10 ), 0.0, "", GLOBAL_VARTYPE_INT );
+
+				// format string
+				if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, number_format( player_tax ) );
+				else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) );
+		    }
 		}
 		ShowPlayerHelpDialog( playerid, 5000, szTaxable );
 	}
@@ -8661,7 +8599,7 @@ stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( arr
 public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 {
 	if ( !success ) {
-		if ( GetPlayerScore( playerid ) < 1000 ) AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s\r\n", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) );
+		// if ( GetPlayerScore( playerid ) < 1000 ) AddFileLogLine( "invalid_commands.txt", sprintf( "%s (score %d) : %s\r\n", ReturnPlayerName( playerid ), GetPlayerScore( playerid ), cmdtext ) ); // crashes svr
 		return SendError( playerid, "You have entered an invalid command. To display the command list type /commands or /cmds." );
 	}
 	return 1;
@@ -8683,6 +8621,13 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	}
 
 	if ( g_CommandLogging ) printf( "[COMMAND_LOG] %s(%d) - %s", ReturnPlayerName( playerid ), playerid, cmdtext );
+	return 1;
+}
+
+
+CMD:changename( playerid, params[ ] ) {
+	SendServerMessage( playerid, "You can change your name using "COL_GREY"/ic market"COL_WHITE" for 50 IC." );
+	// cmd_ic( playerid, "market" );
 	return 1;
 }
 
@@ -10731,6 +10676,7 @@ CMD:admins( playerid, params[ ] )
 	return 1;
 }
 
+CMD:donate( playerid, params[ ] ) return cmd_vip( playerid, params );
 CMD:vip( playerid, params[ ] )
 {
 	szLargeString = "{FFFFFF}Help support our community by donating, in return you will receive Irresistible Coins!\n\n";
@@ -12012,12 +11958,14 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
 			ShowPlayerIrresistibleRank( playerid );
+			TextDrawShowForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
 		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
 		}
 		case false:
 		{
+			TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
 			HidePlayerTogglableTextdraws( playerid );
 			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 			TextDrawHideForPlayer( playerid, g_currentXPTD );
@@ -13219,7 +13167,7 @@ CMD:sendmoney( playerid, params[ ] )
 
 		if ( amount > 90000000 ) {
 	   		printf("ISP banned %s for making a 75M transaction", ReturnPlayerName( playerid ));
-	   		BanEx( playerid, "75M Transaction" );
+			AdvancedBan( playerid, "Server", "Suspicious Transaction", ReturnPlayerIP( playerid ) );
 	   		return 1;
         }
 
@@ -14468,33 +14416,39 @@ CMD:takeover( playerid, params[ ] )
 	{
 	    if ( IsPlayerInArea( playerid, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MAX_X ], g_gangzoneData[ z ] [ E_MIN_Y ], g_gangzoneData[ z ] [ E_MAX_Y ] ) )
      	{
+	    	new gangid = p_GangID[ playerid ];
+
 	        count = 1;
-	        if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] == p_GangID[ playerid ] ) return SendError( playerid, "This turf is already captured by your gang." );
+	        if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid ) return SendError( playerid, "This turf is already captured by your gang." );
 			if ( g_gangzoneAttacker[ z ] != INVALID_GANG_ID ) return SendError( playerid, "This turf is currently being attacked." );
 
-			if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] != INVALID_GANG_ID ) {
-				oCount = GetPlayersInGangZone( z, g_gangzoneData[ z ] [ E_GANG_OWNER ] ); // Opposing check
+			if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) {
+				oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] ); // Opposing check
 	        }
 
-	        new dCount = GetPlayersInGangZone( z, p_GangID[ playerid ], g_isAFK, g_inAir );
+	        new dCount = GetPlayersInGangZone( z, gangid, g_isAFK, g_inAir );
+
 	        if ( dCount < TAKEOVER_NEEDED_PEOPLE && ( dCount + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE )
-		   		return SendError( playerid, "You cannot start a turf war if gangmembers are AFK or extremely high above ground." );
+		   		return SendError( playerid, "You cannot start a turf war if gang members are AFK or extremely high above ground." );
+
+	        //if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && dCount < TAKEOVER_NEEDED_PEOPLE + 1 && ( dCount + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE + 1 )
+		   	//	return SendError( playerid, "You need at least %d gang members to start a gang war with another gang.", TAKEOVER_NEEDED_PEOPLE + 1 );
 
 			if ( dCount >= TAKEOVER_NEEDED_PEOPLE && !oCount )
 	        {
 	            gmCount = 1;
-				g_gangzoneAttacker[ z ] = p_GangID[ playerid ];
+				g_gangzoneAttacker[ z ] = gangid;
 	            g_gangzoneAttackCount[ z ] = 0;
-              	GangZoneFlashForAll( g_gangzoneID[ z ], 0xFF000080 );
-              	SendClientMessage( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your crew for 60 seconds. Don't die." );
-	            if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] != INVALID_GANG_ID ) SendClientMessageToGang( g_gangzoneData[ z ] [ E_GANG_OWNER ], g_gangData[ g_gangzoneData[ z ] [ E_GANG_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
+              	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
+              	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
+	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
               	break;
 	        }
 	    }
 	}
 	if ( oCount != 0 ) return SendError( playerid, "There are gang members within this turf, kill them!" );
 	if ( count == 0 ) return SendError( playerid, "You are not in any gangzone." );
-	if ( gmCount == 0 ) return SendError( playerid, "You need at least 3 people to take over this turf." );
+	if ( gmCount == 0 ) return SendError( playerid, "You need at least %d member(s) to take over this turf.", TAKEOVER_NEEDED_PEOPLE );
 	return 1;
 }
 
@@ -14842,7 +14796,7 @@ CMD:acmds( playerid, params[ ] )
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 3: /venter, /geolocate" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 4: /circleall, /giveweaponall, /resetwepall, /motd, /uncopban, /unarmyban, /setworld, /destroyallav, /gotopos" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 4: /addnote, /removenote" );
-    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /createhouse, /destroyhouse, /respawnallv, /changename, /toggleviewpm, /unban(ip)" );
+    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /createhouse, /destroyhouse, /respawnallv, /achangename, /toggleviewpm, /unban(ip)" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /createcar, /destroycar, /stripcarmods, /createbribe, /destroybribe, /doublexp, /(h/v)adminsell" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /autovehrespawn, /megaban, /acunban, /creategate, /editgate, /connectsong" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /creategarage, /destroygarage, /check" );
@@ -16968,7 +16922,7 @@ function autoVehicleSpawn( )
 	return 1;
 }*/
 
-CMD:changename( playerid, params[ ] )
+CMD:achangename( playerid, params[ ] )
 {
 	new
 	    pID,
@@ -16976,7 +16930,7 @@ CMD:changename( playerid, params[ ] )
 	    szQuery[ 100 ]
 	;
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"s[24]", pID, nName ) ) return SendUsage( playerid, "/changename [PLAYER_ID] [NEW_NAME]" );
+	else if ( sscanf( params, ""#sscanf_u"s[24]", pID, nName ) ) return SendUsage( playerid, "/achangename [PLAYER_ID] [NEW_NAME]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( !isValidPlayerName( nName ) ) return SendError( playerid, "Invalid Name Character." );
 	else if ( p_OwnedHouses[ pID ] > 0 || GetPlayerOwnedApartments( pID ) > 0 ) return SendError( playerid, "This player has a house and/or apartment." ), SendError( pID, ""COL_ORANGE"In order to change your name, you must sell your houses and/or apartment.");
@@ -19907,26 +19861,19 @@ stock approveClassSpawned( playerid ) {
 	if ( IsPlayerMedic( playerid ) && p_XP[ playerid ] < 2000 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 XP to use this class." ), 0;
 
-	/* if ( IsPlayerMayor( playerid ) && p_XP[ playerid ] < 5000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 5,000 XP to use this class." ), 0;
-
-	// restrict to one mayor
-	new
-		mayorAccountId = GetGVarInt( "mayor" );
-
-	if( mayorAccountId != 0 && mayorAccountId != p_AccountID[ playerid ] ) {
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" The mayor class is currently full." ), 0;
-	} else {
-		UpdateServerVariable( "mayor_timeout", 0, 0.0, "", GLOBAL_VARTYPE_INT );
-		UpdateServerVariable( "mayor_timestamp", g_iTime, 0.0, "", GLOBAL_VARTYPE_INT );
-		UpdateServerVariable( "mayor", p_AccountID[ playerid ], 0.0, "", GLOBAL_VARTYPE_INT );
-	}*/
-
 	// job not set
 	if ( !p_JobSet{ playerid } || !p_CitySet{ playerid } )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must ensure your job and city have been properly set." ), 0;
 
-	return 1; // pass it
+	// hide textdraws
+	for ( new i = 0; i < sizeof( CLASS_COLORS ); i ++ ) {
+		TextDrawHideForPlayer( playerid, g_classTextdrawBox[ i ] );
+		TextDrawHideForPlayer( playerid, g_classTextdrawDescription[ i ] );
+		TextDrawHideForPlayer( playerid, g_classTextdrawName[ i ] );
+	}
+	TextDrawHideForPlayer( playerid, g_ClassBoxTD );
+	RemovePlayerAttachedObject( playerid, 1 );
+	return 1;
 }
 
 public OnObjectMoved(objectid)
@@ -22635,12 +22582,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( !strlen( inputtext ) || !isHex( inputtext ) )
 		    return ShowPlayerDialog( playerid, DIALOG_GANG_COLOR_INPUT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Colors", "{FFFFFF}Write a hexidecimal color within the textbox\n\n{ff0000}Invalid HEX color.", "Submit", "Cancel" );
 
-		new
-			iHex = HexToInt( inputtext );
+		new gangid = p_GangID[ playerid ];
+		new hex_to_int = HexToInt( inputtext );
 
-		g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ] = setAlpha( iHex, 0xFF );
-		SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has changed the gang color to HEX(%d)", ReturnPlayerName( playerid ), playerid, iHex );
-	 	SetGangColorsToGang( p_GangID[ playerid ] );
+		g_gangData[ gangid ] [ E_COLOR ] = setAlpha( hex_to_int, 0xFF );
+
+		SendClientMessageToGang( gangid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has changed the gang color to %06x", ReturnPlayerName( playerid ), playerid, hex_to_int >>> 8 );
+	 	SetGangColorsToGang( gangid );
 	}
 	if ( ( dialogid == DIALOG_GANG_LIST ) && response )
 	{
@@ -27071,6 +27019,106 @@ stock SavePlayerData( playerid, bool: logout = false )
 
 forward InitializeTextDraws( ); public InitializeTextDraws( )
 {
+	g_ClassBoxTD = TextDrawCreate(40.000000, 170.000000, "_");
+	TextDrawBackgroundColor(g_ClassBoxTD, 255);
+	TextDrawFont(g_ClassBoxTD, 1);
+	TextDrawLetterSize(g_ClassBoxTD, 0.500000, 16.000000);
+	TextDrawColor(g_ClassBoxTD, -1);
+	TextDrawSetOutline(g_ClassBoxTD, 0);
+	TextDrawSetProportional(g_ClassBoxTD, 1);
+	TextDrawSetShadow(g_ClassBoxTD, 1);
+	TextDrawUseBox(g_ClassBoxTD, 1);
+	TextDrawBoxColor(g_ClassBoxTD, 144);
+	TextDrawTextSize(g_ClassBoxTD, 170.000000, 10.000000);
+
+	for ( new i = 0; i < sizeof( g_classTextdrawBox ); i ++ )
+	{
+		g_classTextdrawBox[ i ] = TextDrawCreate(40.000000, 138.000000, "_");
+		TextDrawBackgroundColor(g_classTextdrawBox[ i ], 255);
+		TextDrawFont(g_classTextdrawBox[ i ], 1);
+		TextDrawLetterSize(g_classTextdrawBox[ i ], 0.500000, 3.000000);
+		TextDrawColor(g_classTextdrawBox[ i ], -1);
+		TextDrawSetOutline(g_classTextdrawBox[ i ], 0);
+		TextDrawSetProportional(g_classTextdrawBox[ i ], 1);
+		TextDrawSetShadow(g_classTextdrawBox[ i ], 1);
+		TextDrawUseBox(g_classTextdrawBox[ i ], 1);
+		TextDrawBoxColor(g_classTextdrawBox[ i ], CLASS_COLORS[ i ]);
+		TextDrawTextSize(g_classTextdrawBox[ i ], 170.000000, 10.000000);
+
+		szLargeString[ 0 ] = '\0';
+
+		switch ( i )
+		{
+			case 0: {
+				strcat( szLargeString,	"- Select different types of jobs~n~" \
+										"- Able to rob stores and players~n~" \
+										"- Can gang up with players~n~" \
+										"~g~~h~- Accessible to everybody" );
+			}
+			case 1:	{
+				strcat( szLargeString,	"- Protect the city from criminals~n~" \
+										"- Access to police gun lockers~n~" \
+										"- Can arrest/jail people~n~" \
+										"~g~~h~- Accessible to everybody" );
+			}
+			case 2:	{
+				strcat( szLargeString,	"- Protect the city from criminals~n~" \
+										"- Access to police gun lockers~n~" \
+										"- Can arrest/jail people~n~" \
+										"- Can set roadblocks on roads~n~" \
+										"- Can set spike traps on roads~n~" \
+										"~r~~h~- Requires 10,000 XP or more" );
+			}
+			case 3: {
+				strcat( szLargeString,	"- Protect the city from criminals~n~" \
+										"- Access to police gun lockers~n~" \
+										"- Can arrest/jail people~n~" \
+										"- Can set roadblocks on roads~n~" \
+										"- Can set spike traps on roads~n~" \
+										"- Can use combat vehicles~n~" \
+										"~r~~h~- Requires 20,000 XP or more" );
+			}
+			case 4: {
+				strcat( szLargeString,	"- Protect the city from criminals~n~" \
+										"- Access to police gun lockers~n~" \
+										"- Can arrest/jail people~n~" \
+										"- Can set roadblocks on roads~n~" \
+										"- Can set spike traps on roads~n~" \
+										"- Hidden from radar~n~" \
+										"~r~~h~- Requires 15,000 XP or more" );
+			}
+			case 5: {
+				strcat( szLargeString,	"- Can heal and cure players~n~" \
+										"- Ambulance passengers pay you~n~"\
+										"- Able to rob stores and players~n~" \
+										"~r~~h~- Requires 1,000 XP or more" );
+			}
+			case 6: {
+				strcat( szLargeString,	"- Protect the city from fires~n~" \
+										"- Firetrucks able to extinguish fires~n~"\
+										"- Able to rob stores and players~n~" \
+										"~r~~h~- Requires 1,000 XP or more" );
+			}
+		}
+
+		g_classTextdrawDescription[ i ] = TextDrawCreate(43.000000, 171.000000, szLargeString);
+		TextDrawBackgroundColor(g_classTextdrawDescription[ i ], 0);
+		TextDrawFont(g_classTextdrawDescription[ i ], 1);
+		TextDrawLetterSize(g_classTextdrawDescription[ i ], 0.190000, 1.100000);
+		TextDrawColor(g_classTextdrawDescription[ i ], -1);
+		TextDrawSetOutline(g_classTextdrawDescription[ i ], 1);
+		TextDrawSetProportional(g_classTextdrawDescription[ i ], 1);
+
+		g_classTextdrawName[ i ] = TextDrawCreate(46.000000, 141.000000, CLASS_NAMES[ i ] );
+		TextDrawBackgroundColor(g_classTextdrawName[ i ], 0);
+		TextDrawFont(g_classTextdrawName[ i ], 3);
+		TextDrawLetterSize(g_classTextdrawName[ i ], 0.550000, 2.099999);
+		TextDrawColor(g_classTextdrawName[ i ], i == 0 ? 0x000000FF : 0xFFFFFFFF );
+		TextDrawSetOutline(g_classTextdrawName[ i ], 1);
+		TextDrawSetProportional(g_classTextdrawName[ i ], 1);
+		TextDrawSetSelectable(g_classTextdrawName[ i ], 0);
+	}
+
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
@@ -27252,30 +27300,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 	TextDrawSetOutline(g_MotdTD, 1);
 	TextDrawSetProportional(g_MotdTD, 1);
 
-	g_ClassBoxTD = TextDrawCreate(28.000000, 159.000000, "_");
-	TextDrawBackgroundColor(g_ClassBoxTD, 255);
-	TextDrawFont(g_ClassBoxTD, 1);
-	TextDrawLetterSize(g_ClassBoxTD, 0.500000, 18.000000);
-	TextDrawColor(g_ClassBoxTD, -1);
-	TextDrawSetOutline(g_ClassBoxTD, 0);
-	TextDrawSetProportional(g_ClassBoxTD, 1);
-	TextDrawSetShadow(g_ClassBoxTD, 1);
-	TextDrawUseBox(g_ClassBoxTD, 1);
-	TextDrawBoxColor(g_ClassBoxTD, 149);
-	TextDrawTextSize(g_ClassBoxTD, 190.000000, 0.000000);
-
-	g_ClassBoxTD1 = TextDrawCreate(22.000000, 151.000000, "_");
-	TextDrawBackgroundColor(g_ClassBoxTD1, 255);
-	TextDrawFont(g_ClassBoxTD1, 1);
-	TextDrawLetterSize(g_ClassBoxTD1, 0.500000, 19.900003);
-	TextDrawColor(g_ClassBoxTD1, -1);
-	TextDrawSetOutline(g_ClassBoxTD1, 0);
-	TextDrawSetProportional(g_ClassBoxTD1, 1);
-	TextDrawSetShadow(g_ClassBoxTD1, 1);
-	TextDrawUseBox(g_ClassBoxTD1, 1);
-	TextDrawBoxColor(g_ClassBoxTD1, 149);
-	TextDrawTextSize(g_ClassBoxTD1, 197.000000, 0.000000);
-
 	g_ObjectLoadTD = TextDrawCreate(320.000000, 148.000000, "Loading Objects...~n~Please Wait...");
 	TextDrawAlignment(g_ObjectLoadTD, 2);
 	TextDrawBackgroundColor(g_ObjectLoadTD, 80);
@@ -27364,20 +27388,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 	TextDrawSetOutline(g_AdminOnDutyTD, 1);
 	TextDrawSetProportional(g_AdminOnDutyTD, 1);
 
-	/* ** Gangzone Allocation ** */
-	for( new i; i < sizeof( g_gangzoneData ); i++ )
-	{
-	    g_gangzoneID[ i ] = GangZoneCreate( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ] );
-
-	  	g_ZoneOwnerTD[ i ] = TextDrawCreate( 86.000000, 296.000000, "Loading!" );
-		TextDrawAlignment			( g_ZoneOwnerTD[ i ], 2 );
-		TextDrawBackgroundColor		( g_ZoneOwnerTD[ i ], 255 );
-		TextDrawFont				( g_ZoneOwnerTD[ i ], 1 );
-		TextDrawLetterSize			( g_ZoneOwnerTD[ i ], 0.250000, 1.200000 );
-		TextDrawColor				( g_ZoneOwnerTD[ i ], -1 );
-		TextDrawSetOutline			( g_ZoneOwnerTD[ i ], 1 );
-	}
-
 	/* ** Player TextDraws ** */
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
 	{
@@ -27427,6 +27437,14 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 			TextDrawBoxColor(g_SlotMachineThreeTD[ playerid ], 255);
 			TextDrawTextSize(g_SlotMachineThreeTD[ playerid ], 66.000000, 77.000000);
 		}
+
+	  	g_ZoneOwnerTD[ playerid ] = TextDrawCreate( 86.000000, 296.000000, "_" );
+		TextDrawAlignment( g_ZoneOwnerTD[ playerid ], 2 );
+		TextDrawBackgroundColor( g_ZoneOwnerTD[ playerid ], 255 );
+		TextDrawFont( g_ZoneOwnerTD[ playerid ], 1 );
+		TextDrawLetterSize( g_ZoneOwnerTD[ playerid ], 0.250000, 1.200000 );
+		TextDrawColor( g_ZoneOwnerTD[ playerid ], -1 );
+		TextDrawSetOutline( g_ZoneOwnerTD[ playerid ], 1 );
 
 		p_ProgressBoxOutsideTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
 		TextDrawBackgroundColor(p_ProgressBoxOutsideTD[ playerid ], 255);
@@ -27503,24 +27521,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 		TextDrawSetOutline(p_TruckingTD[ playerid ], 1);
 		TextDrawSetProportional(p_TruckingTD[ playerid ], 1);
 		TextDrawSetSelectable(p_TruckingTD[ playerid ], 0);
-
-		p_ClassInfoTD[ playerid ] = TextDrawCreate(33.000000, 184.000000, "~g~~h~CLASS INFORMATION:");
-		TextDrawBackgroundColor(p_ClassInfoTD[ playerid ], 255);
-		TextDrawFont(p_ClassInfoTD[ playerid ], 2);
-		TextDrawLetterSize(p_ClassInfoTD[ playerid ], 0.200000, 1.100000);
-		TextDrawColor(p_ClassInfoTD[ playerid ], -1);
-		TextDrawSetOutline(p_ClassInfoTD[ playerid ], 0);
-		TextDrawSetProportional(p_ClassInfoTD[ playerid ], 1);
-		TextDrawSetShadow(p_ClassInfoTD[ playerid ], 1);
-
-		p_ClassTitleTD[ playerid ] = TextDrawCreate(33.000000, 163.000000, "~g~~h~CLASS NAME:");
-		TextDrawBackgroundColor(p_ClassTitleTD[ playerid ], 255);
-		TextDrawFont(p_ClassTitleTD[ playerid ], 2);
-		TextDrawLetterSize(p_ClassTitleTD[ playerid ], 0.200000, 1.100000);
-		TextDrawColor(p_ClassTitleTD[ playerid ], -1);
-		TextDrawSetOutline(p_ClassTitleTD[ playerid ], 0);
-		TextDrawSetProportional(p_ClassTitleTD[ playerid ], 1);
-		TextDrawSetShadow(p_ClassTitleTD[ playerid ], 1);
 
 		p_JailTimeTD[ playerid ] = TextDrawCreate(328.000000, 24.000000, "Time Remaining:~n~250 seconds");
 		TextDrawAlignment(p_JailTimeTD[ playerid ], 2);
@@ -27752,9 +27752,6 @@ function SetPlayerRandomSpawn( playerid )
 
 	if ( p_Class[ playerid ] == CLASS_MEDIC )
 		return SetPlayerPos( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_X ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
-
-	// if ( p_inMayor{ playerid } == true )
-	//	return SetPlayerPos( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_X ], g_MayorSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MayorSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_MayorSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
 	if ( p_inArmy{ playerid } == true )
 		return SetPlayerPos( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Y ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
@@ -28529,7 +28526,6 @@ stock SetPlayerColorToTeam( playerid )
 			if ( p_inFBI{ playerid } ) SetPlayerColor( playerid, COLOR_FBI );
 			if ( p_inCIA{ playerid } ) SetPlayerColor( playerid, COLOR_CIA );
 			if ( p_inArmy{ playerid } ) SetPlayerColor( playerid, COLOR_ARMY );
-			// if ( p_inMayor{ playerid } ) SetPlayerColor( playerid, COLOR_MAYOR );
 	    }
 	    case CLASS_FIREMAN: SetPlayerColor( playerid, COLOR_FIREMAN );
 	    case CLASS_MEDIC: 	SetPlayerColor( playerid, COLOR_MEDIC );
@@ -28583,22 +28579,6 @@ stock IsPlayerFBI( playerid )
 	}
 	return false;
 }
-
-/*stock IsPlayerMayor( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-	    case 187, 148: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-	}
-	return false;
-}*/
 
 stock IsPlayerCIA( playerid )
 {
@@ -30025,7 +30005,7 @@ stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
 
 	foreach(new i : Player)
 	{
-		if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInArea( i, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MAX_X ], g_gangzoneData[ z ] [ E_MIN_Y ], g_gangzoneData[ z ] [ E_MAX_Y ] ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
+		if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
 		{
             if ( IsPlayerAFK( i ) )
             {
@@ -30214,13 +30194,13 @@ stock DestroyGang( gangid )
  	Iter_Remove( gangs, gangid );
 
  	// Empty out the turfs
- 	for( new z; z < sizeof( g_gangzoneData ); z++ )
+ 	for( new z = 0; z < MAX_TURFS; z++ )
  	{
- 		if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] == gangid )
+ 		if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid )
  		{
- 			g_gangzoneData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
- 			g_gangzoneData[ z ] [ E_GANG_OWNER ] = INVALID_GANG_ID;
-			GangZoneShowForAll( g_gangzoneID[ z ], COLOR_GANGZONE );
+ 			g_gangTurfData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
+ 			g_gangTurfData[ z ] [ E_OWNER ] = INVALID_GANG_ID;
+			GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], COLOR_GANGZONE );
  		}
  	}
 }
@@ -30278,13 +30258,13 @@ stock DisconnectFromGang( playerid )
 	 	Iter_Remove( gangs, gangid );
 
 	 	// Empty out the turfs
-	 	for( new z; z < sizeof( g_gangzoneData ); z++ )
+	 	for( new z = 0; z < MAX_TURFS; z++ )
 	 	{
-	 		if ( g_gangzoneData[ z ] [ E_GANG_OWNER ] == gangid )
+	 		if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid )
 	 		{
-	 			g_gangzoneData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
-	 			g_gangzoneData[ z ] [ E_GANG_OWNER ] = INVALID_GANG_ID;
-				GangZoneShowForAll( g_gangzoneID[ z ], COLOR_GANGZONE );
+	 			g_gangTurfData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
+	 			g_gangTurfData[ z ] [ E_OWNER ] = INVALID_GANG_ID;
+				GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], COLOR_GANGZONE );
 	 		}
 	 	}
 	}
@@ -30436,10 +30416,13 @@ stock SetGangColorsToGang( gangid )
 {
 	foreach(new i : Player)
 	{
-	    for( new x; x < sizeof( g_gangzoneData ); x++ )
+	    for( new x = 0; x < MAX_TURFS; x++ )
 	    {
-	        GangZoneHideForPlayer( i, g_gangzoneID[ x ] );
-	        GangZoneShowForPlayer( i, g_gangzoneID[ x ], g_gangzoneData[ x ] [ E_COLOR ] );
+	    	// reset color
+	    	if ( g_gangTurfData[ x ] [ E_OWNER ] == gangid ) g_gangTurfData[ x ] [ E_COLOR ] = setAlpha( g_gangData[ g_gangzoneAttacker[ x ] ] [ E_COLOR ], 0x80 );
+
+	        GangZoneHideForPlayer( i, g_gangTurfData[ x ] [ E_ID ] );
+	        GangZoneShowForPlayer( i, g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
 	    }
 
 	    if ( p_GangID[ i ] == gangid && p_WantedLevel[ i ] <= 0 && p_Class[ i ] == CLASS_CIVILIAN )
@@ -34138,9 +34121,11 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 }
 
 stock IsPlayerInCasino( playerid ) {
+	new world = GetPlayerVirtualWorld( playerid );
 	if ( GetPlayerState( playerid ) != PLAYER_STATE_ONFOOT ) return 0;
-	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && GetPlayerVirtualWorld( playerid ) == VISAGE_WORLD ) return 1; // visage itself
-	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && GetPlayerVirtualWorld( playerid ) != 0 ) return 1; // visage apartments
+	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && world == VISAGE_WORLD ) return 1; // visage itself
+	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && world != 0 ) return 1; // visage apartments
+	if ( IsPlayerInRangeOfPoint( playerid, 10.0, -792.8680, 661.2518, 19.3380 ) && world == 0 ) return 1; // roycegate mansion
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
 }
 
@@ -34214,14 +34199,17 @@ stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0,
 	return SetPlayerPos( playerid, x, y, z );
 }
 
-stock GetOnlineGangMembers( gangid, exceptid = INVALID_PLAYER_ID )
+stock GetOnlineGangMembers( gangid, exceptid = INVALID_PLAYER_ID, &afk_members = 0 )
 {
 	new
 		iPlayers = 0;
 
-	foreach (new playerid : Player)
-		if ( playerid != exceptid && p_GangID[ playerid ] != INVALID_GANG_ID && p_GangID[ playerid ] == gangid )
+	foreach (new playerid : Player) {
+		if ( playerid != exceptid && p_GangID[ playerid ] != INVALID_GANG_ID && p_GangID[ playerid ] == gangid ) {
+			if ( IsPlayerAFK( playerid ) ) afk_members ++;
 			iPlayers ++;
+		}
+	}
 
 	return iPlayers;
 }

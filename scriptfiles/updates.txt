@@ -1,9 +1,4 @@
-(+) Each business security level extends burglar crackpw cooldown. Low, 4h. Medium, 8h. High, 12h. None is 5 minutes default.
-(+) Business safes will always pay out an amount to the player, regardless if there is no money in a safe.
-(+) Houses will have some furniture when purchased to give opportunity to burglars.
-(/) When you sell a house to somebody, the furniture will be transferred to the user.
-(/) You need over $100K to be taxed. The more money you have, the more variable your tax will get (beta).
-(/) Gang deposits removed. Gang withdrawal tax reduced from 10 percent to 2.5 percent.
-(/) Slot machine wins will only be displayed if the individual makes a profit.
-(*) Furniture system rebuilt and should no longer have issues when selecting furniture.
-(-) You can no longer add furniture to your apartment.
+(+) There are now more than 300 gang zones in the whole of San Andreas! Each turf pays variable amounts per 24 min.
+(+) You need only one member to control a turf. The more members you have, the faster it takes.
+(+) Blackjack player and dealer labels added. Each show the player's score.
+(*) Blackjack aces now count properly like real blackjack. No bugs with ace.

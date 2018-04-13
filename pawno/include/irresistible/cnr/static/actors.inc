@@ -15,6 +15,9 @@ enum E_ACTOR_DATA
 new
 	g_actorData[ ] [ E_ACTOR_DATA ] =
 	{
+		// Class selection
+		{ 201, 236.283996, 86.777999, 1005.039978, 90.000000, "camera", "picstnd_take", 0 },
+
 	// SF Bank
 		// Guards
 		{ 71, -1440.9655, 835.5352, 984.7126, 269.2035, "COP_AMBIENT", "Coplook_loop", 23 },

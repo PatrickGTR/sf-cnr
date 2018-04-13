@@ -4,3 +4,14 @@
  * Module:
  * Purpose:
  */
+
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
+/* ** Definitions ** */
+
+/* ** Variables ** */
+
+/* ** Hooks ** */
+
+/* ** Functions ** */

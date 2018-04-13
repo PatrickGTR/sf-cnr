@@ -18,7 +18,7 @@
 #endif*/
 
 /* ** Definitions ** */
-#define MAX_BLACKJACK_TABLES 		( 33 )
+#define MAX_BLACKJACK_TABLES 		( 50 ) // 33
 #define MAX_BLACKJACK_CARDS 		( 5 )
 #define MAX_BLACKJACK_PLAYERS 		( 3 )
 #define BLACKJACK_DEALER_WAIT 		( 500 )
@@ -90,12 +90,14 @@ stock const g_cardTextdrawData[ 52 ] [ ] = {
 enum E_BLACKJACK_DATA
 {
     bool: E_GAME_STARTED,   E_CARDS_DRAWN,          E_GAME_TIMER,
+    E_PAYOUT,               E_WORLD,
 
-    E_PAYOUT,
+    E_OBJECT,               E_ACTOR,
 
-    E_OBJECT,               E_ACTOR,                E_WORLD,
     Float: E_X,             Float: E_Y,             Float: E_Z,
-    Float: E_ROTATION
+    Float: E_ROTATION,
+
+    Text3D: E_DEALER_LABEL, Text3D: E_PLAYER_LABEL[ MAX_BLACKJACK_PLAYERS ]
 };
 
 new
@@ -255,6 +257,9 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	                for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
 	                    g_blackjackPlayerCardIndex[ id ] [ c ] [ player_index ] = -1;
 
+                    // set player card values
+                    SetBlackjackPlayerLabelValue( id, player_index, 0 );
+
 	                // show cards to players
 	                for ( new player = 0; player < MAX_BLACKJACK_PLAYERS; player ++ )
 	                {
@@ -314,7 +319,11 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
         g_blackjackData[ id ] [ E_PAYOUT ] = payout;
         g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle, .worldid = world, .priority = 9999 );
         g_blackjackData[ id ] [ E_ACTOR ] = CreateDynamicActor( 171, X - 0.4 * floatcos( Angle - 90.0, degrees ), Y - 0.4 * floatsin( Angle - 90.0, degrees ), Z, Angle + 180.0, .worldid = world );
-        CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Blackjack\n"COL_WHITE"%s Minimum", number_format( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, .testlos = 0, .worldid = world );
+        g_blackjackData[ id ] [ E_DEALER_LABEL ] = CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play Blackjack\n"COL_WHITE"%s Minimum", number_format( payout ) ), COLOR_GREY, X, Y, Z + 0.25, 15.0, .testlos = 0, .worldid = world );
+
+        g_blackjackData[ id ] [ E_PLAYER_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( "Player 0", 0, X + 0.7 * floatcos( Angle - 90.0, degrees ), Y + 0.7 * floatsin( Angle - 90.0, degrees ), Z + 0.05, 15.0, .testlos = 0, .worldid = world );
+        g_blackjackData[ id ] [ E_PLAYER_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "Player 1", 0, X + 0.7 * floatcos( Angle - 90.0 - 22.5, degrees ), Y + 0.7 * floatsin( Angle - 90.0 - 22.5, degrees ), Z + 0.05, 15.0, .testlos = 0, .worldid = world );
+        g_blackjackData[ id ] [ E_PLAYER_LABEL ] [ 2 ] = CreateDynamic3DTextLabel( "Player 2", 0, X + 0.7 * floatcos( Angle - 90.0 + 22.5, degrees ), Y + 0.7 * floatsin( Angle - 90.0 + 22.5, degrees ), Z + 0.05, 15.0, .testlos = 0, .worldid = world );
 
 		SetDynamicActorInvulnerable( g_blackjackData[ id ] [ E_ACTOR ], true );
 		SetDynamicActorVirtualWorld( g_blackjackData[ id ] [ E_ACTOR ], world );
@@ -342,6 +351,7 @@ function DrawPlayerBlackjackCard( tableid, player_index )
     		PlayerPlaySound( gamerid, 1145, 0.0, 0.0, 0.0 );
         }
         g_blackjackPlayerCardIndex[ tableid ] [ cardid ] [ player_index ] = randomCard;
+        SetBlackjackPlayerLabelValue( tableid, player_index, CalculatePlayerHand( tableid, player_index ) );
         break;
     }
     return randomCard;
@@ -365,6 +375,7 @@ function BeginBlackJackTurn( tableid )
     ApplyDynamicActorAnimation( g_blackjackData[ tableid ] [ E_ACTOR ], "CASINO", "dealone", 4.1, 0, 0, 0, 0, 0 );
     TextDrawSetString( g_blackjackDealerCards[ tableid ] [ cardid ], g_cardTextdrawData[ randomCard ] );
     g_blackjackDealerCardIndex[ tableid ] [ cardid ] = randomCard;
+    SetBlackjackDealerLabelValue( tableid, CalculateDealerHand( tableid ) );
 
     // noise
     foreach (new gamerid : Player) if ( p_blackjackTable[ gamerid ] != -1 ) {
@@ -374,8 +385,8 @@ function BeginBlackJackTurn( tableid )
     // deal player first card
     if ( cardid == 0 )
     {
-    	new
-    		bet_amount = 0;
+        new blackjack_players = GetBlackjackPlayers( tableid );
+    	new bet_amount = 0;
 
         for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 )
         {
@@ -385,6 +396,7 @@ function BeginBlackJackTurn( tableid )
             if ( GetPlayerCash( gamerid ) < g_blackjackData[ tableid ] [ E_PAYOUT ] ) {
                 SendError( gamerid, "You don't have any money to wager." );
                 RemovePlayerFromBlackjack( gamerid, .reset_cam = 1 );
+                if ( blackjack_players - 1 <= 0 ) return; // no point having an empty table
                 continue;
             }
 
@@ -392,7 +404,7 @@ function BeginBlackJackTurn( tableid )
             GivePlayerCash( gamerid, -g_blackjackData[ tableid ] [ E_PAYOUT ] );
             DrawPlayerBlackjackCard( tableid, player_index );
             if ( cardid < 1 ) { // distribute first two cards to players
-               SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
+                SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
             }
         }
 
@@ -480,6 +492,7 @@ function ResetBlackjackTable( tableid )
 		return;
 
     // variables
+    SetBlackjackDealerLabelValue( tableid, -1 );
     KillTimer( g_blackjackData[ tableid ] [ E_GAME_TIMER ] ), g_blackjackData[ tableid ] [ E_GAME_TIMER ] = -1;
     g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] = 0;
 
@@ -497,68 +510,52 @@ function ResetBlackjackTable( tableid )
     }
 
     // reshow textdraws to players
-    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 )
+    for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ )
     {
-        new
-            gamerid = g_blackjackSlotData[ tableid ] [ player_index ];
-
-        // deal only first two cards
-        for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
+        if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 )
         {
-            TextDrawShowForPlayer( gamerid, g_blackjackDealerCards[ tableid ] [ c ] );
+            new
+                gamerid = g_blackjackSlotData[ tableid ] [ player_index ];
 
-            // show two player cards only
-            if ( c >= 2 )
-                continue;
+            // reset label
+            SetBlackjackPlayerLabelValue( tableid, player_index, 0 );
 
-            for ( new p = 0; p < GetBlackjackPlayers( tableid ); p ++ ) {
-                TextDrawShowForPlayer( gamerid, g_blackjackPlayerCards[ tableid ] [ c ] [ p ] );
+            // deal only first two cards
+            for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ )
+            {
+                TextDrawShowForPlayer( gamerid, g_blackjackDealerCards[ tableid ] [ c ] );
+
+                // show two player cards only
+                if ( c >= 2 )
+                    continue;
+
+                for ( new p = 0; p < GetBlackjackPlayers( tableid ); p ++ ) {
+                    TextDrawShowForPlayer( gamerid, g_blackjackPlayerCards[ tableid ] [ c ] [ p ] );
+                }
             }
         }
+        else SetBlackjackPlayerLabelValue( tableid, player_index, -1 );
     }
 }
 
 stock CheckForBlackjack( tableid )
 {
     new
-        dealer_score = 0;
+        dealer_score = CalculateDealerHand( tableid );
 
     //if ( g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] <= 1 )
     //    return dealer_score;
 
-    // calculate dealer score
-    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackDealerCardIndex[ tableid ] [ c ] != -1 )
-    {
-        new
-            card_value = GetBlackjackCardValue( g_blackjackDealerCardIndex[ tableid ] [ c ] );
-
-        // printf("%d Card = %d", c, card_value);
-
-        if ( card_value == 1 ) {
-            if ( dealer_score >= 11 ) dealer_score += 1;
-            else dealer_score += 11;
-        }
-        else dealer_score += card_value;
-    }
     //printf("The Dealer score is %d", dealer_score );
+    SetBlackjackDealerLabelValue( tableid, dealer_score );
 
     // calculate player score
     for ( new player_index = 0; player_index < MAX_BLACKJACK_PLAYERS; player_index ++ ) if ( g_blackjackSlotData[ tableid ] [ player_index ] != -1 && g_blackjackPlayerCardIndex[ tableid ] [ 0 ] [ player_index ] != -1 )
     {
-        new
-            playerid = g_blackjackSlotData[ tableid ] [ player_index ], player_score = 0;
+        new playerid = g_blackjackSlotData[ tableid ] [ player_index ];
+        new player_score = CalculatePlayerHand( tableid, player_index );
 
-		for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] != -1 )
-	    {
-	        new
-	            card_value = GetBlackjackCardValue( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] );
-
-	        if ( card_value == 1 ) {
-	            if ( player_score >= 11 ) player_score += 1;
-	            else player_score += 11;
-	        }
-	        else player_score += card_value;
-	    }
+        SetBlackjackPlayerLabelValue( tableid, player_index, player_score );
 
         if ( g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_BUST && g_blackjackPlayerState[ tableid ] [ player_index ] != BLACKJACK_STATE_WIN  )
         {
@@ -665,6 +662,7 @@ stock RemovePlayerFromBlackjack( playerid, reset_cam = 0 )
             }
         }
         g_blackjackSlotData[ blackjack_table ] [ player_index ] = -1;
+        SetBlackjackPlayerLabelValue( blackjack_table, player_index, -1 );
     }
 
     // reset camera?
@@ -797,4 +795,58 @@ stock GetBlackjackPlayers( tableid ) {
         count ++;
 
     return count;
+}
+
+stock SetBlackjackPlayerLabelValue( tableid, player_index, score ) {
+    if ( score != -1 ) {
+        new playerid = g_blackjackSlotData[ tableid ] [ player_index ];
+        UpdateDynamic3DTextLabelText( g_blackjackData[ tableid ] [ E_PLAYER_LABEL ] [ player_index ], COLOR_GOLD, sprintf( "%s\n"COL_GREY"Score:"COL_WHITE" %d", ReturnPlayerName( playerid ), score ) );
+    } else {
+        UpdateDynamic3DTextLabelText( g_blackjackData[ tableid ] [ E_PLAYER_LABEL ] [ player_index ], 0, sprintf( "Player %d", player_index ) );
+    }
+}
+
+stock SetBlackjackDealerLabelValue( tableid, score ) {
+    if ( score != -1 ) {
+        UpdateDynamic3DTextLabelText( g_blackjackData[ tableid ] [ E_DEALER_LABEL ], COLOR_GREY, sprintf( "Dealer\nScore:"COL_WHITE" %d", score ) );
+    } else {
+        UpdateDynamic3DTextLabelText( g_blackjackData[ tableid ] [ E_DEALER_LABEL ], COLOR_WHITE, sprintf( "Press ENTER To Play Blackjack\n"COL_WHITE"%s Minimum", number_format( g_blackjackData[ tableid ] [ E_PAYOUT ] ) ) );
+    }
+}
+
+stock CalculatePlayerHand( tableid, player_index )
+{
+    new
+        player_score = 0;
+
+    // add player cards
+    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] != -1 ) {
+        player_score += GetBlackjackCardValue( g_blackjackPlayerCardIndex[ tableid ] [ c ] [ player_index ] ); // aces will add as 1 anyway
+    }
+
+    // double check aces
+    for ( new a = 0; a < MAX_BLACKJACK_CARDS; a ++ ) if ( GetBlackjackCardValue( g_blackjackPlayerCardIndex[ tableid ] [ a ] [ player_index ] ) == 1 ) {
+        if ( player_score + 10 <= 21 ) player_score += 10; // if there's aces, just use one as an 11. if count stays under 21 of course
+        break;
+    }
+    return player_score;
+}
+
+stock CalculateDealerHand( tableid )
+{
+    new
+        dealer_score = 0;
+
+    // add dealer score
+    for ( new c = 0; c < MAX_BLACKJACK_CARDS; c ++ ) if ( g_blackjackDealerCardIndex[ tableid ] [ c ] != -1 ) {
+        dealer_score += GetBlackjackCardValue( g_blackjackDealerCardIndex[ tableid ] [ c ] ); // aces will add as 1 anyway
+    }
+
+    // double check aces
+    for ( new a = 0; a < MAX_BLACKJACK_CARDS; a ++ ) if ( GetBlackjackCardValue( g_blackjackDealerCardIndex[ tableid ] [ a ] ) == 1 ) {
+        // if there's aces, just use one as an 11. if count stays under 21 of course
+        if ( dealer_score + 10 <= 21 ) dealer_score += 10;
+        break;
+    }
+    return dealer_score;
 }

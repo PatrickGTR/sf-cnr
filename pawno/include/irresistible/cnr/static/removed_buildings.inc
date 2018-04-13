@@ -400,4 +400,8 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 5269, 2146.3750, -2248.7969, 14.6172, 0.25);
 	RemoveBuildingForPlayer(playerid, 5132, 2163.2891, -2251.6094, 14.1406, 0.25);
 	RemoveBuildingForPlayer(playerid, 5259, 2168.8438, -2246.7813, 13.9375, 0.25);
+
+	// Hydrogen City Hall Map
+	RemoveBuildingForPlayer(playerid, 10522, -2637.4141, 376.0391, 15.8984, 0.25);
+	RemoveBuildingForPlayer(playerid, 10381, -2637.4141, 376.0391, 15.8984, 0.25);
 }

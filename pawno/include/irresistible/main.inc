@@ -23,6 +23,7 @@
 #include < irresistible\gta\weapon_data >
 
 // cnr configuration
+#include < irresistible\cnr\cities >
 #include < irresistible\cnr\dialog_ids >
 #include < irresistible\cnr\vip >
 
@@ -32,6 +33,10 @@
 #include < irresistible\features\cash_cards >
 #include < irresistible\features\furniture >
 // #include < irresistible\features\vote >
+
+// gangs and facilities
+#include < irresistible\features\gangs\gangs >
+#include < irresistible\features\gangs\turfs >
 
 // visage casino
 #include < irresistible\features\visage\roulette >

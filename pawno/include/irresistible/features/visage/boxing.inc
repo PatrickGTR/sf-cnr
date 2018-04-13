@@ -83,7 +83,10 @@ CMD:boxing( playerid, params[ ] ) {
 		return SendError( playerid, "You must be within 25 meters of the arena to use this command." );
 
 	if ( g_boxingArenaData[ E_OCCUPIED ] == true )
-			return SendError( playerid, "The arena is currently occupied. Please wait for the arena to clear." );
+		return SendError( playerid, "The arena is currently occupied. Please wait for the arena to clear." );
+
+	if ( GetPlayerWantedLevel( playerid ) )
+		return SendError( playerid, "You cannot box while you are currently wanted." );
 
 	if ( !strcmp( params, "fight", true, 5 ) ) {
 
@@ -118,6 +121,9 @@ CMD:boxing( playerid, params[ ] ) {
 
 		if ( g_boxingPlayerData[ targetID ] [ E_FIGHTING ] == true )
 			return SendError( playerid, "That player is currently fighting another opponent. Please wait until after their match to reinvite them." );
+
+		if ( GetPlayerWantedLevel( targetID ) )
+			return SendError( playerid, "You cannot box a wanted player." );
 
 		if ( g_boxingPlayerData[ playerid ] [ E_INVITED ] == true ) {
 			SendBoxing( playerid, "You have cancelled your invite to %s.", ReturnPlayerName( g_boxingPlayerData[ playerid ] [ E_OPPONENT ] ) );

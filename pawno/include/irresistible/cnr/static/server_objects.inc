@@ -8,6 +8,47 @@
 /* ** Functions ** */
 stock initializeServerObjects( )
 {
+	// Classes
+	CreateDynamicObject( 14846, 242.121002, 77.313003, 1005.078002, 0.000000, 0.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 2605, 237.936004, 85.197998, 1004.431030, 0.000000, 0.000000, 80.000000, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 2356, 238.682006, 84.823997, 1004.057983, 0.000000, 0.000000, 61.299999, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 19623, 236.035995, 86.892997, 1005.669982, 0.000000, 0.000000, -90.000000, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 19611, 236.072998, 86.892997, 1004.038024, 0.000000, 0.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2960, 229.427993, 85.385002, 1006.333984, 0.000000, 90.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 ), 0, 18217, "mtbfencecs_t", "Metal1_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19328, 229.037002, 87.126998, 1005.215026, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, 8395, "pyramid", "white", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19328, 229.035003, 87.125000, 1005.713012, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, 8395, "pyramid", "white", -16 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1006.453979, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, ". _________ .", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1006.104003, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, ". _________ .", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.754028, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, ". _________ .", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.403991, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, ". _________ .", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.054016, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, ". _________ .", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1006.223999, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1006.333984, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.883972, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.994018, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.523986, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.633972, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2960, 229.427993, 88.864997, 1006.333984, 0.000000, 90.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 ), 0, 18217, "mtbfencecs_t", "Metal1_128", -16 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 2834, 230.143997, 86.521003, 1004.057983, 0.000000, 0.000000, 8.199999, .priority = 9999, .streamdistance = -1.0 ), 0, 6287, "pierc_law2", "bluemetal", -16 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.283996, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.065002, 87.444999, 1005.164001, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "_____", 140, "aRIAL", 30, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, 228.938995, 87.805999, 1005.039001, 0.000000, 0.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 ), 0, 19377, "none", "none", 1 );
+	CreateDynamicObject( 927, 229.072006, 89.900001, 1005.299011, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 927, 229.072006, 84.360000, 1005.698974, 0.000000, 180.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 );
+	CreateDynamicObject( 927, 229.072006, 82.709999, 1006.700012, 0.000000, -90.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1006.414001, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "7'", 140, "arial", 40, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1006.064025, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "6'", 140, "arial", 40, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1005.713989, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "5'", 140, "arial", 40, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1005.364013, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "4'", 140, "arial", 40, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1005.013977, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "3'", 140, "arial", 40, 1, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, 235.143997, 86.369003, 1008.018981, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "Irresistible Gaming", 130, "IMPACT", 40, 1, -1, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, 235.143997, 88.598999, 1008.018981, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "Presents", 130, "IMPACT", 40, 1, -15019521, 0, 1 );
+	tmpVariable = CreateDynamicObject( 18066, 229.000000, 86.862998, 1006.598999, -8.199995, 0.000000, -90.000000, .priority = 9999, .streamdistance = -1.0 );
+	SetDynamicObjectMaterialText( tmpVariable, 0, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( tmpVariable, 1, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( tmpVariable, 2, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
+	SetDynamicObjectMaterialText( tmpVariable, 3, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
+
 	// V.I.P Lounge
 	CreateDynamicObject( 18981, -1936.689331, 860.416503, 1207.932006, 0.000000, 90.000000, 0.000000 );
 	CreateDynamicObject( 18981, -1936.689331, 835.437072, 1207.932006, 0.000000, 90.000000, 0.000000 );

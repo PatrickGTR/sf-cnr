@@ -51,15 +51,12 @@ stock AC_GivePlayerWeapon( playerid, weaponid, ammo )
 
 stock AC_ResetPlayerWeapons( playerid )
 {
-	new
-		bReset = ResetPlayerWeapons( playerid );
-
 	//p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
 
 	for ( new i = 0; i < AC_MAX_WEAPONS; i++ )
 		p_PlayerHasWeapon[ playerid ] { i } = false;
 
-    return bReset;
+    return ResetPlayerWeapons( playerid );
 }
 
 #if defined _ALS_ResetPlayerWeapons

@@ -29,7 +29,6 @@
 #define COLOR_YELLOW            	0xFFFF00FF
 #define COLOR_ORANGE            	0xEE9911FF
 #define COLOR_POLICE              	0x3E7EFF70
-#define COLOR_MAYOR              	0x99000070
 #define COLOR_GREY                  0xC0C0C0FF
 #define COLOR_WHITE                 0xFFFFFFFF
 #define COLOR_PINK                  0xFF0770FF
@@ -42,7 +41,7 @@
 #define COLOR_ARMY                  0x954BFF70
 #define COLOR_CIA                   0x19197000
 #define COLOR_FIREMAN               0xA8343470
-#define COLOR_MEDIC                 0x00CC0070
+#define COLOR_MEDIC                 0x00FF8070
 #define COLOR_CONNECT				0x22BB22AA
 #define COLOR_DISCONNECT			0xC0C0C0AA
 #define COLOR_TIMEOUT				0x990099AA
