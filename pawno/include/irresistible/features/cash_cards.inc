@@ -14,6 +14,7 @@
 CMD:redeemcashcard( playerid, params[ ] ) return cmd_cashcard( playerid, params );
 CMD:cashcard( playerid, params[ ] )
 {
+	if ( ! IsPlayerEmailVerified( playerid ) ) return SendError( playerid, "This feature is accessible only to players that have an "COL_GREY"/email"COL_WHITE" on their account." );
 	ShowPlayerDialog( playerid, DIALOG_CASH_CARD, DIALOG_STYLE_INPUT, ""COL_GREEN"Redeem Cash Card", ""COL_WHITE"Redeem your cash card by entering the code down below:", "Redeem", "Cancel" );
 	return 1;
 }
