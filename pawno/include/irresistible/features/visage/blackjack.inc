@@ -90,7 +90,8 @@ stock const g_cardTextdrawData[ 52 ] [ ] = {
 enum E_BLACKJACK_DATA
 {
     bool: E_GAME_STARTED,   E_CARDS_DRAWN,          E_GAME_TIMER,
-    E_PAYOUT,               E_WORLD,
+    E_PAYOUT,               E_WORLD,                E_RESET_TIMER,
+    E_DRAW_CARD_TIMER,
 
     E_OBJECT,               E_ACTOR,
 
@@ -315,6 +316,8 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
         g_blackjackData[ id ] [ E_ROTATION ] = Angle;
         g_blackjackData[ id ] [ E_WORLD ] = world;
 
+        g_blackjackData[ id ] [ E_DRAW_CARD_TIMER ] = -1;
+        g_blackjackData[ id ] [ E_RESET_TIMER ] = -1;
         g_blackjackData[ id ] [ E_GAME_TIMER ] = -1;
         g_blackjackData[ id ] [ E_PAYOUT ] = payout;
         g_blackjackData[ id ] [ E_OBJECT ] = CreateDynamicObject( 2188, X, Y, Z, 0.00000, 0.00000, Angle, .worldid = world, .priority = 9999 );
@@ -404,7 +407,7 @@ function BeginBlackJackTurn( tableid )
             GivePlayerCash( gamerid, -g_blackjackData[ tableid ] [ E_PAYOUT ] );
             DrawPlayerBlackjackCard( tableid, player_index );
             if ( cardid < 1 ) { // distribute first two cards to players
-                SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
+                g_blackjackData[ tableid ] [ E_DRAW_CARD_TIMER ] = SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
             }
         }
 
@@ -432,7 +435,7 @@ function BeginBlackJackTurn( tableid )
 
     if ( dealer_score >= 17 ) {
         SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" Table will reset in 5 seconds as all hands have been dealt." );
-        SetTimerEx( "ResetBlackjackTable", 5000, false, "d", tableid );
+        g_blackjackData[ tableid ] [ E_RESET_TIMER ] =  SetTimerEx( "ResetBlackjackTable", 5000, false, "d", tableid );
     }
 }
 
@@ -493,7 +496,9 @@ function ResetBlackjackTable( tableid )
 
     // variables
     SetBlackjackDealerLabelValue( tableid, -1 );
+    KillTimer( g_blackjackData[ tableid ] [ E_RESET_TIMER ] ), g_blackjackData[ tableid ] [ E_RESET_TIMER ] = -1;
     KillTimer( g_blackjackData[ tableid ] [ E_GAME_TIMER ] ), g_blackjackData[ tableid ] [ E_GAME_TIMER ] = -1;
+    KillTimer( g_blackjackData[ tableid ] [ E_DRAW_CARD_TIMER ] ), g_blackjackData[ tableid ] [ E_DRAW_CARD_TIMER ] = -1;
     g_blackjackData[ tableid ] [ E_CARDS_DRAWN ] = 0;
 
     // card data
@@ -567,7 +572,7 @@ stock CheckForBlackjack( tableid )
        			payout = g_blackjackData[ tableid ] [ E_PAYOUT ];
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
                 SendClientMessageToBlackjack( tableid, COLOR_GREY, "[BLACKJACK]"COL_WHITE" %s(%d) has been returned %s due to a push.", ReturnPlayerName( playerid ), playerid, number_format( payout ) );
-		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", number_format( payout ) ), 4000, 3 );
+		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~y~%s returned!", number_format( payout ) ), 4000, 3 );
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
             }
