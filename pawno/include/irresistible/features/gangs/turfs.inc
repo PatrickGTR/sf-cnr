@@ -9,7 +9,11 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_TURFS 					( sizeof( g_gangzoneData ) )
+#if defined MAX_FACILITIES
+	#define MAX_TURFS 				( sizeof( g_gangzoneData ) + MAX_FACILITIES )
+#else
+	#define MAX_TURFS 				( sizeof( g_gangzoneData ) )
+#endif
 
 #define TURF_TAKEOVER_TIME          ( 65 ) 	// time = -5 * members + 70 <- [y-intercept]
 #define TURF_TAKEOVER_TIME_MIN 		( 20 ) 	// minimum of 20 seconds
@@ -376,6 +380,8 @@ enum E_TURF_ZONE_DATA {
 
 new
 	g_gangTurfData					[ MAX_TURFS ] [ E_TURF_ZONE_DATA ],
+	Iterator: turfs 				< MAX_TURFS >,
+
 	g_gangzoneAttacker				[ MAX_TURFS ] = { INVALID_GANG_ID, ... },
 	g_gangzoneAttackCount           [ MAX_TURFS ],
 	g_gangzoneAttackTimeout			[ MAX_TURFS ]
@@ -389,13 +395,8 @@ forward OnPlayerExitGangZone( playerid, zoneid );
 hook OnGameModeInit( )
 {
 	/* ** Gangzone Allocation ** */
-	for ( new i = 0; i < MAX_TURFS; i++ )
-	{
-		g_gangTurfData[ i ] [ E_OWNER ] = INVALID_GANG_ID;
-		g_gangTurfData[ i ] [ E_COLOR ] = COLOR_GANGZONE;
-
-		g_gangTurfData[ i ] [ E_ID ] = GangZoneCreate( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ] );
-		g_gangTurfData[ i ] [ E_AREA ] = CreateDynamicRectangle( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], 0, 0 );
+	for ( new i = 0; i < sizeof( g_gangzoneData ); i++ ) {
+		Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE );
 	}
 	return 1;
 }
@@ -403,7 +404,7 @@ hook OnGameModeInit( )
 hook OnPlayerEnterDynArea( playerid, areaid )
 {
 	if ( ! IsPlayerNPC( playerid ) ) {
-		for ( new i = 0; i < MAX_TURFS; i++ ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
+		foreach( new i : turfs ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
 			CallLocalFunction( "OnPlayerEnterGangZone", "dd", playerid, i );
 			break;
 		}
@@ -413,7 +414,7 @@ hook OnPlayerEnterDynArea( playerid, areaid )
 
 hook OnPlayerLeaveDynArea( playerid, areaid ) {
 	if ( ! IsPlayerNPC( playerid ) ) {
-		for ( new i = 0; i < MAX_TURFS; i++ ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
+		foreach( new i : turfs ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
 			CallLocalFunction( "OnPlayerExitGangZone", "dd", playerid, i );
 			break;
 		}
@@ -422,6 +423,27 @@ hook OnPlayerLeaveDynArea( playerid, areaid ) {
 }
 
 /* ** Functions ** */
+stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner_id = INVALID_GANG_ID, color = COLOR_GANGZONE )
+{
+	new
+		id = Iter_Free( turfs );
+
+	if ( id != ITER_NONE )
+	{
+		// set turf owners
+		g_gangTurfData[ id ] [ E_OWNER ] = owner_id;
+		g_gangTurfData[ id ] [ E_COLOR ] = color;
+
+		// create area
+		g_gangTurfData[ id ] [ E_ID ] = GangZoneCreate( min_x, min_y, max_x, max_y );
+		g_gangTurfData[ id ] [ E_AREA ] = CreateDynamicRectangle( min_x, min_y, max_x, max_y, 0, 0 );
+
+		// add to iterator
+		Iter_Add( turfs, id );
+	}
+	return id;
+}
+
 stock Zone_GetProfitability( zoneid, gang_members, Float: default_pay = 750.0 )
 {
 	// size adjustments

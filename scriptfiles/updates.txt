@@ -1,4 +1,4 @@
-(+) There are now more than 300 gang zones in the whole of San Andreas! Each turf pays variable amounts per 24 min.
-(+) You need only one member to control a turf. The more members you have, the faster it takes.
-(+) Blackjack player and dealer labels added. Each show the player's score.
-(*) Blackjack aces now count properly like real blackjack. No bugs with ace.
+(+) Explosive bullets now available at the casino. Press Y to activate.
+(+) You will be now told when gang members enter the turf you are attacking.
+(/) You will have 60 seconds to rejoin the server before you lose your turfs.
+(/) ChuffSec now pays more handsomely.
