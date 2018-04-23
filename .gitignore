@@ -13,6 +13,9 @@ pawno/pawn.ico
 pawno/new.pwn
 pawno/settings.ini
 pawno/.pwn
+pawno/pawndisasm.pdb
+pawno/pawncc.pdb
+pawno/pawnc.pdb
 pawno/include/**/*
 !pawno/pawn.cfg
 !pawno/include/a_ig.inc
