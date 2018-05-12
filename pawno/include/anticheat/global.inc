@@ -239,7 +239,6 @@ stock
 // Forwards (Global)
 
 public OnPlayerCheatDetected( playerid, detection );
-public OnPlayerDamagePlayer( playerid, damagedid, Float: amount, weaponid, bodypart );
 
 // Functions (Global)
 

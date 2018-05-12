@@ -48,14 +48,6 @@ new
     bool: p_acSpawned  				[ MAX_PLAYERS char ],
     p_acUpdateTime 					[ MAX_PLAYERS ],
 
-	// Health/Armour
-	Float: p_PlayerHealth 			[ MAX_PLAYERS ] [ E_PLAYER_HITPOINTS ],
-	Float: p_PlayerArmour 			[ MAX_PLAYERS ] [ E_PLAYER_HITPOINTS ],
-	Float: p_LastDamageIssued		[ MAX_PLAYERS ],
-	p_LastTookDamage 				[ MAX_PLAYERS ],
-	p_LastDamageIssuer 				[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_LastWeaponIssuer 				[ MAX_PLAYERS ],
-
 	// Weapon Hacks
 	bool: p_PlayerHasWeapon 		[ MAX_PLAYERS ] [ AC_MAX_WEAPONS char ],
 	//p_PlayerWeaponUpdateTime 		[ MAX_PLAYERS ],
