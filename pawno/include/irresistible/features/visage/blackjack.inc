@@ -133,20 +133,20 @@ hook OnGameModeInit( )
    	}
 
 	// Create blackjack tables
-	CreateBlackjackTable( 25000, 2230.37500, 1602.75000, 1006.15631, 0.00000, 82 );
-	CreateBlackjackTable( 25000, 2232.18750, 1604.43750, 1006.15631, 90.0000, 82 );
-	CreateBlackjackTable( 25000, 2228.49219, 1604.45313, 1006.15631, -90.000, 82 );
+	CreateBlackjackTable( 2500, 2230.37500, 1602.75000, 1006.15631, 0.00000, 82 );
+	CreateBlackjackTable( 5000, 2232.18750, 1604.43750, 1006.15631, 90.0000, 82 );
+	CreateBlackjackTable( 10000, 2228.49219, 1604.45313, 1006.15631, -90.000, 82 );
 	CreateBlackjackTable( 25000, 2230.37500, 1606.27344, 1006.15631, 180.000, 82 );
-	CreateBlackjackTable( 100000, 2241.31250, 1602.75000, 1006.15631, 0.00000, 82 );
-	CreateBlackjackTable( 100000, 2243.12500, 1604.43750, 1006.15631, 90.0000, 82 );
+	CreateBlackjackTable( 50000, 2241.31250, 1602.75000, 1006.15631, 0.00000, 82 );
+	CreateBlackjackTable( 75000, 2243.12500, 1604.43750, 1006.15631, 90.0000, 82 );
 	CreateBlackjackTable( 100000, 2239.42969, 1604.45313, 1006.15631, -90.000, 82 );
-	CreateBlackjackTable( 100000, 2241.31250, 1606.27344, 1006.15631, 180.000, 82 );
+	CreateBlackjackTable( 125000, 2241.31250, 1606.27344, 1006.15631, 180.000, 82 );
 
     // 4 dragons
-    CreateBlackjackTable( 250000, 1960.36719, 1015.66412, 992.46881, -90.0000, 23 );
-    CreateBlackjackTable( 500000, 1962.34375, 1015.66412, 992.46881, 90.00000, 23 );
-    CreateBlackjackTable( 1000000, 1962.34375, 1020.17969, 992.46881, 90.00000, 23 );
-    CreateBlackjackTable( 2500000, 1960.36719, 1020.17188, 992.46881, -90.00000, 23 );
+    CreateBlackjackTable( 25000, 1960.36719, 1015.66412, 992.46881, -90.0000, 23 );
+    CreateBlackjackTable( 50000, 1962.34375, 1015.66412, 992.46881, 90.00000, 23 );
+    CreateBlackjackTable( 100000, 1962.34375, 1020.17969, 992.46881, 90.00000, 23 );
+    CreateBlackjackTable( 250000, 1960.36719, 1020.17188, 992.46881, -90.00000, 23 );
 	return 1;
 }
 
@@ -211,8 +211,10 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 		if ( PRESSED( KEY_SECONDARY_ATTACK ) )
 		{
-			if ( p_blackjackTable[ playerid ] != -1 )
+			if ( p_blackjackTable[ playerid ] != -1 ) {
+                if ( g_blackjackData[ blackjack_table ] [ E_CARDS_DRAWN ] ) return SendError( playerid, "You cannot exit while you are playing your blackjack hand." );
 				return RemovePlayerFromBlackjack( playerid, .reset_cam = 1 );
+            }
 
 			foreach(new id : blackjacktables) if ( GetPlayerVirtualWorld( playerid ) == g_blackjackData[ id ] [ E_WORLD ] )
 	        {

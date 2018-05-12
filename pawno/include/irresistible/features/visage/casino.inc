@@ -58,14 +58,16 @@ hook OnGameModeInit( )
 	CreateRouletteTable( 2579.751953, 1615.537963, 1506.203002, -90.000000, VISAGE_WORLD, .maxbet = 1000000 ); // high roller
 
 	// Create Blackjack Tables
-	CreateBlackjackTable( 1250000, 2632.187988, 1604.437988, 1506.156005, 90.0000, VISAGE_WORLD );
-	CreateBlackjackTable( 1000000, 2628.491943, 1604.453002, 1506.156005, -90.000, VISAGE_WORLD );
-	CreateBlackjackTable( 750000, 2630.375000, 1602.750000, 1506.156005, 0.000000, VISAGE_WORLD );
-	CreateBlackjackTable( 500000, 2630.375000, 1606.272949, 1506.156005, 180.0000, VISAGE_WORLD );
-	CreateBlackjackTable( 250000, 2607.080078, 1604.453002, 1506.156005, -90.0000, VISAGE_WORLD );
-	CreateBlackjackTable( 100000, 2608.962890, 1602.750000, 1506.156005, 0.000000, VISAGE_WORLD );
-	CreateBlackjackTable( 50000, 2610.774902, 1604.437988, 1506.156005, 90.000000, VISAGE_WORLD );
-	CreateBlackjackTable( 25000, 2608.962890, 1606.272949, 1506.156005, 180.00000, VISAGE_WORLD );
+	CreateBlackjackTable( 2500000, 2607.080078, 1604.453002, 1506.156005, -90.0000, VISAGE_WORLD );
+	CreateBlackjackTable( 1000000, 2608.962890, 1602.750000, 1506.156005, 0.000000, VISAGE_WORLD );
+	CreateBlackjackTable( 750000,  2610.774902, 1604.437988, 1506.156005, 90.00000, VISAGE_WORLD );
+	CreateBlackjackTable( 500000,  2608.962890, 1606.272949, 1506.156005, 180.0000, VISAGE_WORLD );
+
+	CreateBlackjackTable( 250000, 2632.187988, 1604.437988, 1506.156005, 90.0000, VISAGE_WORLD );
+	CreateBlackjackTable( 100000, 2628.491943, 1604.453002, 1506.156005, -90.000, VISAGE_WORLD );
+	CreateBlackjackTable( 50000,  2630.375000, 1602.750000, 1506.156005, 0.00000, VISAGE_WORLD );
+	CreateBlackjackTable( 25000,  2630.375000, 1606.272949, 1506.156005, 180.000, VISAGE_WORLD );
+
 	CreateBlackjackTable( 25000000, 2569.475097, 1600.437988, 1506.15600, 90.0000, VISAGE_WORLD ); // high roller
 	CreateBlackjackTable( 15000000, 2567.663085, 1602.272949, 1506.15600, 180.000, VISAGE_WORLD ); // high roller
 	CreateBlackjackTable( 10000000, 2565.780029, 1600.453002, 1506.15600, -90.000, VISAGE_WORLD ); // high roller
@@ -325,6 +327,31 @@ static stock InitializeCasinoInterior( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 19940, 2609.529052, 1566.202026, 1508.271972, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 8396, "sphinx01", "luxorwall02_128", -16 );
 	CreateDynamicObject( 19324, 2630.107177, 1649.759155, 1507.968750, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	CreateDynamicObject( 19324, 2641.666992, 1647.757324, 1507.968750, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+
+	// Actors
+	ApplyDynamicActorAnimation( CreateDynamicActor( 120, 2642.641357, 1635.053955, 1508.359985, -135.600051, .worldid =  VISAGE_WORLD ), "GANGS", "prtial_gngtlkA", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 185, 2610.070068, 1618.020019, 1506.199951, 0.000000, .worldid =  VISAGE_WORLD ), "CASINO", "slot_wait", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 222, 2607.510009, 1602.569946, 1506.130004, -105.300003, .worldid =  VISAGE_WORLD ), "CASINO", "cards_loop", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 235, 2629.224609, 1607.058349, 1506.229980, -122.199913, .worldid =  VISAGE_WORLD ), "CASINO", "cards_loop", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 234, 2640.699951, 1618.369995, 1506.089965, -36.900001, .worldid =  VISAGE_WORLD ), "CASINO", "roulette_lose", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 249, 2643.155517, 1634.143554, 1508.359985, -52.700000, .worldid =  VISAGE_WORLD ), "GANGS", "prtial_gngtlkE", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 126, 2596.780029, 1611.949951, 1506.199951, 0.000000, .worldid =  VISAGE_WORLD ), "CASINO", "slot_wait", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 43, 2599.030029, 1613.660034, 1506.180053, 180.000000, .worldid =  VISAGE_WORLD ), "CASINO", "slot_win_out", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 187, 2610.090087, 1593.510253, 1506.170043, 0.000000, .worldid =  VISAGE_WORLD ), "CASINO", "slot_wait", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 164, 2583.010009, 1599.790039, 1506.170043, 10.500000, .worldid =  VISAGE_WORLD ), "COP_AMBIENT", "Coplook_nod", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 163, 2585.560058, 1599.719970, 1506.170043, -23.799999, .worldid =  VISAGE_WORLD ), "COP_AMBIENT", "Coplook_nod", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 81, 2660.712158, 1617.158691, 1506.260131, 13.600008, .worldid =  VISAGE_WORLD ), "CRACK", "crckidle4", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 70, 2660.679931, 1617.500000, 1506.180053, -143.699996, .worldid =  VISAGE_WORLD ), "MEDIC", "CPR", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 172, 2654.689941, 1589.520019, 1506.180053, 0.000000, .worldid =  VISAGE_WORLD ), "bar", "Barserve_bottle", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 20, 2659.939941, 1590.989990, 1506.180053, 61.599998, .worldid =  VISAGE_WORLD ), "GANGS", "leanIDLE", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 295, 2580.530029, 1611.699951, 1506.170043, 180.000000, .worldid =  VISAGE_WORLD ), "GRAVEYARD", "mrnF_Loop", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 296, 2579.639892, 1616.989990, 1506.170043, 180.000000, .worldid =  VISAGE_WORLD ), "KISSING", "GF_StreetArgue_02", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 152, 2579.070068, 1616.910034, 1506.170043, -119.599998, .worldid =  VISAGE_WORLD ), "KISSING", "gift_get", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 237, 2580.229980, 1617.060058, 1506.170043, 114.000114, .worldid =  VISAGE_WORLD ), "KISSING", "gfwave2", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 164, 2593.780029, 1597.280029, 1506.170043, -53.099998, .worldid =  VISAGE_WORLD ), "COP_AMBIENT", "Coplook_nod", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 163, 2593.699951, 1609.119995, 1506.170043, -130.600006, .worldid =  VISAGE_WORLD ), "COP_AMBIENT", "Coplook_nod", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 147, 2607.714111, 1569.374145, 1508.349975, 167.800003, .worldid = VISAGE_WORLD ), "CASINO", "manwind", 4.1, 1, 1, 1, 1, 0 );
+	ApplyDynamicActorAnimation( CreateDynamicActor( 40, 2659.269775, 1591.528442, 1506.180053, -122.499618, .worldid =  VISAGE_WORLD ), "GANGS", "invite_NO", 4.1, 1, 1, 1, 1, 0 );
 }
 
 stock IsPlayerInHighRoller( playerid )
