@@ -294,36 +294,23 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 		}
 	}
-	else if ( dialogid == DIALOG_VISAGE_SPAWN && response )
+	else if ( dialogid == DIALOG_VISAGE_SPAWN )
 	{
-		if ( listitem == 0 ) {
-			DeletePVar( playerid, "visage_spawn" );
-	        SendServerMessage( playerid, "You have canceled your apartment spawning." );
-		} else {
-			new
-				x = 1;
+		if ( ! response )
+			return ShowPlayerSpawnMenu( playerid );
 
-			foreach ( new handle : visageapartments ) if ( g_VisageApartmentData[ handle ] [ E_OWNER_ID ] == GetPlayerAccountID( playerid ) ) {
-				if ( x == listitem ) {
-					SetPVarInt( playerid, "visage_spawn", handle );
-					SendServerMessage( playerid, "Apartment spawning has been set at "COL_GREY"%s"COL_WHITE".", g_VisageApartmentData[ handle ] [ E_TITLE ] );
-					break;
-				}
-				x ++;
+		new
+			x = 0;
+
+		foreach ( new handle : visageapartments ) if ( g_VisageApartmentData[ handle ] [ E_OWNER_ID ] == GetPlayerAccountID( playerid ) ) {
+			if ( x == listitem ) {
+				SetPlayerSpawnLocation( playerid, "VIZ", handle );
+				SendServerMessage( playerid, "Visage apartment spawning has been set at "COL_GREY"%s"COL_WHITE".", g_VisageApartmentData[ handle ] [ E_TITLE ] );
+				break;
 			}
-			return 1;
+			x ++;
 		}
-	}
-	return 1;
-}
-
-hook SetPlayerRandomSpawn( playerid )
-{
-	if ( GetPVarType( playerid, "visage_spawn" ) != PLAYER_VARTYPE_NONE )
-	{
-		new handle = GetPVarInt( playerid, "visage_spawn" );
-		SetPlayerToVisageApartment( playerid, handle );
-		return Y_HOOKS_BREAK_RETURN_1;
+		return 1;
 	}
 	return 1;
 }
@@ -345,16 +332,8 @@ CMD:visage( playerid, params[ ] )
 	}
 	else if ( strmatch( params, "spawn" ) )
 	{
-		new
-			apartments = 0;
-
-	    szBigString = ""COL_GREY"Set Back To Normal\n";
-		foreach ( new handle : visageapartments ) if ( g_VisageApartmentData[ handle ] [ E_OWNER_ID ] == GetPlayerAccountID( playerid ) ) {
-			format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, g_VisageApartmentData[ handle ] [ E_TITLE ] );
-			apartments ++;
-		}
-		if ( ! apartments ) return SendError( playerid, "You do not own a Visage apartment." );
-		return ShowPlayerDialog( playerid, DIALOG_VISAGE_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Set Spawn Location", szBigString, "Select", "Cancel" );
+		SendServerMessage( playerid, "We have changed the command to simply "COL_GREY"/spawn"COL_WHITE"." );
+		return ShowPlayerSpawnMenu( playerid );
 	}
 	return SendUsage( playerid, "/visage [CONFIG/SPAWN]" );
 }

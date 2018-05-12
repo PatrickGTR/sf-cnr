@@ -36,9 +36,7 @@
 
 // gangs and facilities
 #include < irresistible\features\gangs\gangs >
-#if defined DEBUG_MODE
-	#include < irresistible\features\gangs\facilities >
-#endif
+#include < irresistible\features\gangs\facilities >
 #include < irresistible\features\gangs\turfs >
 
 // visage casino

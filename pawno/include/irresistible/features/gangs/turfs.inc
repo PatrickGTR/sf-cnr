@@ -15,8 +15,7 @@
 	#define MAX_TURFS 				( sizeof( g_gangzoneData ) )
 #endif
 
-#define TURF_TAKEOVER_TIME          ( 65 ) 	// time = -5 * members + 70 <- [y-intercept]
-#define TURF_TAKEOVER_TIME_MIN 		( 20 ) 	// minimum of 20 seconds
+#define INVALID_GANG_TURF 			( -1 )
 
 #define TAKEOVER_NEEDED_PEOPLE		( 1 )
 
@@ -54,7 +53,23 @@ enum e_GANG_ZONE_DATA
 new const
 	g_gangzoneData[ ] [ e_GANG_ZONE_DATA ] =
 	{
-		{ "ELS3c",	2381.677,	-1494.030,	2421.030,	-1454.348,	1561.60,	CITY_LS },
+		{ "SF-CITY", -2076.0, 1036.5, -1873.0, 1088.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -2014.0, 937.5, -1873.0, 1036.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -2014.0, 829.5, -1886.0, 937.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1873.0, 937.5, -1787.0, 1112.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -2014.0, 719.5, -1886.0, 829.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1886.0, 829.5, -1788.0, 937.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1886.0, 719.5, -1788.0, 829.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1788.0, 829.5, -1723.0, 937.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1723.0, 829.5, -1642.0, 937.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1642.0, 829.5, -1564.0, 937.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1564.0, 828.5, -1421.0, 1015.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1667.0, 720.5, -1563.0, 829.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1788.0, 719.5, -1667.0, 829.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1787.0, 935.5, -1704.0, 1037.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -1787.0, 1037.5, -1704.0, 1112.5, TURF_SIZE_LARGE, CITY_SF },
+		{ "SF-CITY", -2130.0, 816.5, -2014.0, 1036.5, TURF_SIZE_LARGE, CITY_SF }
+		/*{ "ELS3c",	2381.677,	-1494.030,	2421.030,	-1454.348,	1561.60,	CITY_LS },
 		{ "LVA5",	1236.630,	1163.410,	1277.050,	1203.280,	1611.54,	CITY_LV },
 		{ "BINT3",	1277.050,	1044.687,	1315.348,	1087.630,	1644.62,	CITY_LV },
 		{ "SUN3c",	1252.328,	-926.999,	1357.000,	-910.169,	1761.63,	CITY_LS },
@@ -364,7 +379,7 @@ new const
 		{ "SFAIR1",	-1794.920,	-730.117,	-1213.910,	-50.096,	395099.00,	CITY_SF },
 		{ "PANOP",	-947.979,	-304.320,	-319.674,	327.071,	396706.12,	CITY_COUNTRY },
 		{ "CREEK",	-1820.640,	-2643.677,	-1226.780,	-1771.660,	517855.96,	CITY_COUNTRY },
-		{ "BACKO",	-1166.968,	-2641.187,	-321.743,	-1856.030,	663634.31,	CITY_COUNTRY }
+		{ "BACKO",	-1166.968,	-2641.187,	-321.743,	-1856.030,	663634.31,	CITY_COUNTRY }*/
 	}
 ;
 
@@ -375,7 +390,8 @@ enum E_TURF_ZONE_DATA {
 	E_OWNER,
 	E_COLOR,
 
-	E_AREA
+	E_AREA,
+	E_FACILITY_GANG
 };
 
 new
@@ -388,8 +404,7 @@ new
 ;
 
 /* ** Forwards ** */
-forward OnPlayerEnterGangZone( playerid, zoneid );
-forward OnPlayerExitGangZone( playerid, zoneid );
+forward OnPlayerUpdateGangZone( playerid, zoneid );
 
 /* ** Hooks ** */
 hook OnGameModeInit( )
@@ -403,27 +418,40 @@ hook OnGameModeInit( )
 
 hook OnPlayerEnterDynArea( playerid, areaid )
 {
-	if ( ! IsPlayerNPC( playerid ) ) {
-		foreach( new i : turfs ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
-			CallLocalFunction( "OnPlayerEnterGangZone", "dd", playerid, i );
-			break;
-		}
+	if ( ! IsPlayerNPC( playerid ) )
+	{
+		new
+			first_turf = Turf_GetFirstTurf( playerid );
+
+		CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, first_turf );
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
-hook OnPlayerLeaveDynArea( playerid, areaid ) {
-	if ( ! IsPlayerNPC( playerid ) ) {
-		foreach( new i : turfs ) if ( areaid == g_gangTurfData[ i ] [ E_AREA ] ) {
-			CallLocalFunction( "OnPlayerExitGangZone", "dd", playerid, i );
-			break;
+hook OnPlayerLeaveDynArea( playerid, areaid )
+{
+	if ( ! IsPlayerNPC( playerid ) )
+	{
+		new
+			total_areas = GetPlayerNumberDynamicAreas( playerid );
+
+		// reduced to another area
+		if ( total_areas )
+		{
+			new
+				first_turf = Turf_GetFirstTurf( playerid );
+
+			CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, first_turf );
 		}
+
+		// if the player is in no areas, then they left
+		else CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, INVALID_GANG_TURF );
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
 /* ** Functions ** */
-stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner_id = INVALID_GANG_ID, color = COLOR_GANGZONE )
+stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner_id = INVALID_GANG_ID, color = COLOR_GANGZONE, facility_gang_id = INVALID_GANG_ID )
 {
 	new
 		id = Iter_Free( turfs );
@@ -433,6 +461,7 @@ stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner
 		// set turf owners
 		g_gangTurfData[ id ] [ E_OWNER ] = owner_id;
 		g_gangTurfData[ id ] [ E_COLOR ] = color;
+		g_gangTurfData[ id ] [ E_FACILITY_GANG ] = facility_gang_id;
 
 		// create area
 		g_gangTurfData[ id ] [ E_ID ] = GangZoneCreate( min_x, min_y, max_x, max_y );
@@ -444,25 +473,55 @@ stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner
 	return id;
 }
 
-stock Zone_GetProfitability( zoneid, gang_members, Float: default_pay = 750.0 )
+stock Turf_GetFirstTurf( playerid )
+{
+	new
+		current_areas[ 4 ];
+
+	GetPlayerDynamicAreas( playerid, current_areas );
+
+	foreach( new i : Reverse(turfs) )
+	{
+		if ( current_areas[ 0 ] == g_gangTurfData[ i ] [ E_AREA ] || current_areas[ 1 ] == g_gangTurfData[ i ] [ E_AREA ] || current_areas[ 2 ] == g_gangTurfData[ i ] [ E_AREA ] || current_areas[ 3 ] == g_gangTurfData[ i ] [ E_AREA ] )
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+stock Turf_GetProfitability( zoneid, gang_members, Float: default_pay = 5000.0 )
 {
 	// size adjustments
-	if ( g_gangzoneData[ zoneid ] [ E_SIZE ] < TURF_SIZE_SMALL ) // lower than 1st quartile, decrease pay
-		default_pay *= 0.75;
+	//if ( g_gangzoneData[ zoneid ] [ E_SIZE ] < TURF_SIZE_SMALL ) // lower than 1st quartile, decrease pay
+	//	default_pay *= 0.75;
 
-	if ( g_gangzoneData[ zoneid ] [ E_SIZE ] > TURF_SIZE_LARGE ) // higher than 1st quartile, increase pay
-		default_pay *= 1.25;
+	// Normal Gang Zones
+	if ( zoneid < sizeof( g_gangzoneData ) )
+	{
+		if ( g_gangzoneData[ zoneid ] [ E_SIZE ] > TURF_SIZE_LARGE ) // higher than 1st quartile, increase pay
+			default_pay *= 1.25;
 
-	// city adjustments
-	if ( g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_SF )
-		default_pay *= 1.25;
+		// city adjustments
+		if ( g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_SF )
+			default_pay *= 1.25;
 
-	if ( g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_COUNTRY || g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_DESERTS )
-		default_pay *= 1.1;
+		if ( g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_COUNTRY || g_gangzoneData[ zoneid ] [ E_CITY ] == CITY_DESERTS )
+			default_pay *= 1.1;
+	}
+
+	// facility 2x
+	if ( g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] != INVALID_GANG_ID )
+		default_pay *= 2;
 
 	// get online players
-	new Float: player_boost = 0.06 * float( gang_members ) + 0.75;
-	default_pay *= player_boost > 1.35 ? 1.35 : player_boost;
+	new Float: player_boost = 0.0;
+
+	if ( gang_members >= 10 ) player_boost = 1.5;
+	else if ( gang_members > 1 ) player_boost = 1.0 + float( gang_members - 1 ) * 0.05;
+
+	// max boost
+	default_pay *= player_boost > 1.5 ? 1.5 : player_boost;
 
 	// return rounded number
 	return floatround( default_pay );

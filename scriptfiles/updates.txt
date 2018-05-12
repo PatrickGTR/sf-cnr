@@ -1,4 +1,9 @@
-(+) Explosive bullets now available at the casino. Press Y to activate.
-(+) You will be now told when gang members enter the turf you are attacking.
+(+) You can now rob the Militia at the large ship near Jizzy's.
+(+) Hitman now take 25% of whatever the player loses in potential tax. Richer the player, the more you make!
+(+) If the territory gang owner has more than 250K in their gang bank, capturing their turf will instantly pay you.
+(/) Players no longer need to press ENTER to access a house/business. Just walk in.
 (/) You will have 60 seconds to rejoin the server before you lose your turfs.
-(/) ChuffSec now pays more handsomely.
+(/) Default take over time is now 60 seconds. -10 seconds for every gang member in your gang.
+(/) Business security is now cheaper and based off the type of business.
+(*) Fixes a death bug issue after being killed by an explosive.
+(*) Damaging a drug house bot will trigger them to all shoot.

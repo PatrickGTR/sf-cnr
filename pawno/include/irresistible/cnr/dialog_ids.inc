@@ -83,7 +83,7 @@
 #define DIALOG_ONLINE_JOB           		1071
 #define DIALOG_ONLINE_JOB_R         		1072
 #define DIALOG_FURNITURE_CATEGORY   		1073
-// #define DIALOG_FLAT_FURNITURE 				1074
+#define DIALOG_SPAWN 						1074
 #define DIALOG_TRUNCATE_FURNITURE			1075
 #define DIALOG_VEHDEALER_BUY				1076
 #define DIALOG_VEHDEALER_OPTIONS			1077
@@ -165,6 +165,7 @@
 #define DIALOG_CASINO_BAR 					1154
 #define DIALOG_ACC_EMAIL 					1155
 #define DIALOG_BUSINESS_SECURITY 			1156
+#define DIALOG_FACILITY_SPAWN				1157
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

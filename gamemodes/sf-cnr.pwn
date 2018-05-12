@@ -13,9 +13,9 @@
 */
 
 #pragma compat 1
-// #pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -110,6 +110,7 @@ native gpci 						( playerid, serial[ ], len );
 #define INVALID_TIMER_ID			(-1)
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define GetBusinessSecurity(%0) 	(g_businessSecurityData[%0][E_LEVEL])
+#define ResetSpawnLocation(%0)		SetPlayerSpawnLocation(%0, "")
 
 // #define ITER_NONE 					-1
 
@@ -145,7 +146,7 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.12.50"
+#define FILE_BUILD                	"v11.15.60"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -387,30 +388,19 @@ new Text: g_classTextdrawName[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DR
 new
 	Text:  g_ClassBoxTD        		= Text: INVALID_TEXT_DRAW,
 	Text:  g_ObjectLoadTD         	= Text: INVALID_TEXT_DRAW,
-	Text:  p_JailTimeTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_TrackPlayerTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_WebsiteTD        		= Text: INVALID_TEXT_DRAW,
 	Text:  g_MotdTD               	= Text: INVALID_TEXT_DRAW,
 	Text:  g_MovieModeTD            [ 6 ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_GPSInformation        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_WorldDayTD       		= Text: INVALID_TEXT_DRAW,
-	Text:  p_FireDistance1        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_FireDistance2         	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_AchievementTD          [ 4 ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_AchievementTD          [ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_AnimationTD            = Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_ProgressBoxTD        	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
-	Text:  p_ProgressBoxOutsideTD	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_ProgressBoxTD        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_ProgressTitleTD      	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_VehiclePreviewBoxTD 	= Text: INVALID_TEXT_DRAW,
 	Text:  g_VehiclePreviewTxtTD	= Text: INVALID_TEXT_DRAW,
 	Text:  p_VehiclePreviewCloseTD	= Text: INVALID_TEXT_DRAW,
 	Text:  g_DoubleXPTD				= Text: INVALID_TEXT_DRAW,
-	Text:  p_HelpBoxTD 				[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_TruckingTD 			[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentCoinsTD 		= Text: INVALID_TEXT_DRAW,
@@ -421,7 +411,18 @@ new
 	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
-	Text:  g_ZoneOwnerTD         	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+
+	// Server Player Textdraws (Needs Converting)
+	Text:  p_TrackPlayerTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_FireDistance1        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_FireDistance2         	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_AchievementTD          [ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_GPSInformation        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_ProgressBoxOutsideTD	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_ProgressBoxTD        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_ProgressTitleTD      	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_HelpBoxTD 				[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
+	Text:  p_TruckingTD 			[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -434,6 +435,8 @@ new
 	PlayerText: p_RobberyAmountTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_RobberyRiskTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_JailTimeTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: g_ZoneOwnerTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
 	PlayerText: p_VehiclePreviewTD 	[ 7 ] = { PlayerText: INVALID_TEXT_DRAW, ... }
 ;
@@ -552,11 +555,14 @@ stock const
 
 enum E_HOUSE_DATA
 {
-	E_OWNER[ 24 ],    	E_HOUSE_NAME[ 30 ],  	bool: E_CREATED,
+	E_OWNER[ 24 ],    	E_HOUSE_NAME[ 30 ],
+
 	Float: E_EX,      	Float: E_EY,           	Float: E_EZ,
 	Float: E_TX,     	Float: E_TY,          	Float: E_TZ,
+
 	E_COST,        		E_INTERIOR_ID,          E_CHECKPOINT[ 2 ],
 	E_WORLD, 			Text3D: E_LABEL [ 2 ], 	E_PASSWORD[ 5 ],
+
 	bool: E_CRACKED, 	bool: E_BEING_CRACKED,  E_CRACKED_TS,
 	E_CRACKED_WAIT,		E_MAP_ICON
 };
@@ -785,6 +791,8 @@ new
 		{ FC_FOODRINK, 		"Premium Wine", 		19822, 220 }
 	},
 	g_houseData                     [ MAX_HOUSES ] [ E_HOUSE_DATA ],
+	Iterator: houses 				< MAX_HOUSES >,
+
 	szg_houseInteriors				[ 24 * sizeof( g_houseInteriors ) ],
 	g_HouseWeapons					[ MAX_HOUSES ] [ MAX_HOUSE_WEAPONS ],
 	g_HouseWeaponAmmo				[ MAX_HOUSES ] [ MAX_HOUSE_WEAPONS ],
@@ -1161,44 +1169,6 @@ new
 	Iterator: spikestrips 			< MAX_SPIKESTRIPS >
 ;
 
-/* ** Gang System ** */
-enum e_gang_data
-{
-	E_SQL_ID, 						E_NAME[ 30 ], 					E_LEADER,
-	E_COLOR,						E_SOFT_DELETE_TS,
-
-	E_BANK, 						E_KILLS, 						E_DEATHS,
-	E_SCORE, 						E_RESPECT,
-
-	E_COLEADER[ MAX_COLEADERS ], 	bool: E_INVITE_ONLY, 			E_JOIN_MSG[ 96 ]
-};
-
-enum E_GANG_LEAVE_REASON
-{
-	GANG_LEAVE_QUIT,
-	GANG_LEAVE_KICK,
-	GANG_LEAVE_UNKNOWN
-};
-
-new
-	g_gangColors[ ] = {
-		0x99FF00FF, 0x00CC00FF, 0x009999FF, 0x0033CCFF, 0x330099FF, 0x660099FF, 0xCC0099FF
-	},
-
-
-	g_gangData						[ MAX_GANGS ] [ e_gang_data ],
-	g_sortedGangData 				[ MAX_GANGS ] [ e_gang_data ], // used for sorting only
-	p_GangID                        [ MAX_PLAYERS ],
-
-	bool: p_gangInvited           	[ MAX_PLAYERS ] [ MAX_GANGS ],
-	p_gangInviteTick                [ MAX_PLAYERS ],
-
-	Iterator:gangs<MAX_GANGS>
-;
-
-public OnPlayerLeaveGang( playerid, gangid, reason );
-public ZoneTimer( );
-
 /* ** GPS System ** */
 enum E_GPS_DATA
 {
@@ -1508,36 +1478,35 @@ new
 		{ CATEGORY_WATCHES, 7, 	"G-Shock Orange Camo", 		19051, 17500,	5 },
 		{ CATEGORY_WATCHES, 8, 	"G-Shock Purple", 	 		19047, 10000,	5 },
 		{ CATEGORY_WATCHES, 9, 	"G-Shock Pink", 	 		19045, 10000,	5 },
-		{ CATEGORY_WATCHES, 10, "Martino Watch", 			19046, 5000,	5 },
+		{ CATEGORY_WATCHES, 10, "G-Shock Green", 			19046, 5000,	5 },
 
 		// BERET
-		{ CATEGORY_BERETS, 11, 	"Louis Camo", 				18924, 750,		2 },
-		{ CATEGORY_BERETS, 12,	"Gucci Black", 				18921, 340,		2 },
-		{ CATEGORY_BERETS, 13,	"Gucci Red", 				18922, 340,		2 },
-		{ CATEGORY_BERETS, 14,	"Gucci Blue", 				18923, 340,		2 },
+		{ CATEGORY_BERETS, 11, 	"Camo Beret", 				18924, 750,		2 },
+		// { CATEGORY_BERETS, 12,	"Gucci Black", 				18921, 340,		2 },
+		// { CATEGORY_BERETS, 13,	"Gucci Red", 				18922, 340,		2 },
+		// { CATEGORY_BERETS, 14,	"Gucci Blue", 				18923, 340,		2 },
 
 		// HATS
-		{ CATEGORY_HATS, 126,	"Witch Hat",				19528, 6666,	2 },
-		{ CATEGORY_HATS, 93,	"Santa Hat",				19064, 5000,	2 },
-		{ CATEGORY_HATS, 93,	"Santa Hat",				19064, 5000,	2 },
-		{ CATEGORY_HATS, 15,	"Chicago Hoodie", 			19067, 1300, 	2 },
+		{ CATEGORY_HATS, 126,	"Witch Hat",				19528, 6666,	2 }, // special
+		{ CATEGORY_HATS, 93,	"Santa Hat",				19064, 5000,	2 }, // special
+		{ CATEGORY_HATS, 15,	"Gangsta Beanie", 			19067, 1300, 	2 },
 		{ CATEGORY_HATS, 16,	"Snake Skin Hat", 			18973, 1000, 	2 },
 		{ CATEGORY_HATS, 17,	"Tiger Print Hat", 			18970, 1000, 	2 },
-		{ CATEGORY_HATS, 18,	"Skulled Hoodie", 			19069, 1000, 	2 },
+		{ CATEGORY_HATS, 18,	"Skull Beanie", 			19069, 1000, 	2 },
 		{ CATEGORY_HATS, 19,	"Boxing Helmet", 			18952, 900, 	2 },
-		{ CATEGORY_HATS, 20,	"Knit Cap Grey", 			18954, 800, 	2 },
-		{ CATEGORY_HATS, 21,	"Knit Cap Black", 			18953, 800, 	2 },
+		// { CATEGORY_HATS, 20,	"Knit Cap Grey", 			18954, 800, 	2 },
+		// { CATEGORY_HATS, 21,	"Knit Cap Black", 			18953, 800, 	2 },
 		{ CATEGORY_HATS, 22,	"Dukes Hat", 				18972, 800, 	2 },
 		{ CATEGORY_HATS, 23,	"Cowboy Hat", 				18962, 800, 	2 },
 		{ CATEGORY_HATS, 24,	"Trucker Cap", 				18961, 700, 	2 },
-		{ CATEGORY_HATS, 25,	"Black Bowler", 			18944, 500, 	2 },
-		{ CATEGORY_HATS, 26,	"White Bowler", 			19488, 500, 	2 },
-		{ CATEGORY_HATS, 27,	"Blue Bowler", 				18945, 500, 	2 },
-		{ CATEGORY_HATS, 28,	"Green Bowler", 			18946, 500, 	2 },
-		{ CATEGORY_HATS, 29,	"Red Bowler", 				18950, 500, 	2 },
-		{ CATEGORY_HATS, 30,	"Yellow Bowler", 			18951, 500, 	2 },
-		{ CATEGORY_HATS, 31,	"Skater Cap", 				18968, 500, 	2 },
-		{ CATEGORY_HATS, 32,	"Fishing Cap", 				18969, 500, 	2 },
+		//{ CATEGORY_HATS, 25,	"Black Bowler", 			18944, 500, 	2 },
+		{ CATEGORY_HATS, 26,	"White Fedora", 			19488, 500, 	2 },
+		//{ CATEGORY_HATS, 27,	"Blue Bowler", 				18945, 500, 	2 },
+		{ CATEGORY_HATS, 28,	"Island Fedora", 				18946, 500, 	2 },
+		{ CATEGORY_HATS, 29,	"Bloody Fedora", 				18950, 500, 	2 },
+		// { CATEGORY_HATS, 30,	"Yellow Bowler", 			18951, 500, 	2 },
+		{ CATEGORY_HATS, 31,	"Skater Bucket Hat", 		18968, 500, 	2 },
+		//{ CATEGORY_HATS, 32,	"Fishing Cap", 				18969, 500, 	2 },
 		{ CATEGORY_HATS, 33,	"Black Top Hat", 			19352, 500, 	2 },
 		{ CATEGORY_HATS, 34,	"White Top Hat", 			19487, 500, 	2 },
 		{ CATEGORY_HATS, 35,	"Fireman Helmet", 			19330, 400, 	2 },
@@ -1556,14 +1525,14 @@ new
 
 		// MASKS
 		{ CATEGORY_MASKS, 96, 	"Gucci Balaclava",			19801, 	10000,	2 },
-		{ CATEGORY_MASKS, 45,	"Louis Mask Bright",		18916, 	6000,	2 },
-		{ CATEGORY_MASKS, 46,	"Louis Mask Dark ", 		18920, 	5200,	2 },
-		{ CATEGORY_MASKS, 47,	"Versace Mask",				18915, 	4500,	2 },
+		// { CATEGORY_MASKS, 45,	"Louis Mask Bright",		18916, 	6000,	2 },
+		// { CATEGORY_MASKS, 46,	"Louis Mask Dark ", 		18920, 	5200,	2 },
+		// { CATEGORY_MASKS, 47,	"Versace Mask",				18915, 	4500,	2 },
 		{ CATEGORY_MASKS, 48,	"Gimp Mask",				19163, 	300,	2 },
 		{ CATEGORY_MASKS, 49,	"Hockey Mask White",		19036, 	250,	2 },
 		{ CATEGORY_MASKS, 50,	"Hockey Mask Red",			19037, 	250,	2 },
-		{ CATEGORY_MASKS, 51,	"Hockey Mask Green",		19038, 	250,	2 },
-		{ CATEGORY_MASKS, 52,	"Camo Mask",				18914, 	220,	2 },
+		// { CATEGORY_MASKS, 51,	"Hockey Mask Green",		19038, 	250,	2 },
+		// { CATEGORY_MASKS, 52,	"Camo Mask",				18914, 	220,	2 },
 		{ CATEGORY_MASKS, 53,	"Grove Mask",				18913, 	200,	2 },
 		{ CATEGORY_MASKS, 54,	"Zorro Mask",				18974, 	100,	2 },
 
@@ -1582,12 +1551,12 @@ new
 		// GLASSES
 		{ CATEGORY_GLASSES, 58,	"Oakley Ferrari", 			19006, 900, 	2 },
 		{ CATEGORY_GLASSES, 59,	"Armani Aviator Classic", 	19022, 840, 	2 },
-		{ CATEGORY_GLASSES, 61,	"Armani Aviator Blue" , 	19023, 840, 	2 },
-		{ CATEGORY_GLASSES, 62,	"Armani Aviator Purple", 	19024, 840, 	2 },
+		// { CATEGORY_GLASSES, 61,	"Armani Aviator Blue" , 	19023, 840, 	2 },
+		// { CATEGORY_GLASSES, 62,	"Armani Aviator Purple", 	19024, 840, 	2 },
 		{ CATEGORY_GLASSES, 63,	"Armani Aviator Pink", 		19025, 840, 	2 },
-		{ CATEGORY_GLASSES, 64,	"Armani Aviator Orange", 	19027, 840, 	2 },
-		{ CATEGORY_GLASSES, 65,	"Armani Aviator Yellow", 	19028, 840, 	2 },
-		{ CATEGORY_GLASSES, 65,	"Armani Aviator Green", 	19029, 840, 	2 },
+		// { CATEGORY_GLASSES, 64,	"Armani Aviator Orange", 	19027, 840, 	2 },
+		// { CATEGORY_GLASSES, 65,	"Armani Aviator Yellow", 	19028, 840, 	2 },
+		// { CATEGORY_GLASSES, 65,	"Armani Aviator Green", 	19029, 840, 	2 },
 		{ CATEGORY_GLASSES, 66,	"Gucci Techno Yellow" , 	19017, 650, 	2 },
 		{ CATEGORY_GLASSES, 67,	"Gucci Techno Salmon" , 	19018, 650, 	2 },
 		{ CATEGORY_GLASSES, 68,	"Gucci Techno Red" , 		19019, 650, 	2 },
@@ -2133,7 +2102,7 @@ new
 	g_casinoRewardsItems[ ] [ E_REWARDS_DATA ] = {
 		{ "Fireworks", 2500.0 },
 		{ "10 Explosive Bullets", 5000.0 },
-		{ "No Tax For 1 Hour", 10000.0 },
+		{ "No Tax For 1 Hour", 25000.0 },
 		{ "Highroller Access", 200000.0 }
 	},
 	g_casinoRewardsShopItems[ ] = {
@@ -2274,19 +2243,23 @@ new
 ;
 
 /* ** Bank Vault ** */
+#define VAULT_BOAT 					( 3 )
+
 enum E_BANKDOOR_DATA
 {
-	E_CITY,						E_OBJECT,					bool: E_DISABLED,
+	E_NAME[ 18 ],
+	E_OBJECT,					bool: E_DISABLED,
 	E_TIMESTAMP,				E_TIMESTAMP_CLOSE,			E_WORLD,
 	Float: E_EXPLODE_POS[ 3 ],	Float: E_OPEN_POS[ 3 ],		Float: E_OPEN_ROT[ 3 ]
 }
 
 new
-	g_bankvaultData					[ MAX_CITIES ] [ E_BANKDOOR_DATA ] =
+	g_bankvaultData					[ ] [ E_BANKDOOR_DATA ] =
 	{
-		{ CITY_SF, INVALID_OBJECT_ID, false, 0, 0, 23, { -1413.956, 859.16560, 984.71260 }, { -1412.56506, 859.2745360, 978.6328730 }, { -1000.000, -1000.00, -1000.0000 } },
-		{ CITY_LV, INVALID_OBJECT_ID, false, 0, 0, 52, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
-		{ CITY_LS, INVALID_OBJECT_ID, false, 0, 0, 56, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } }
+		{ "San Fierro Bank", 	INVALID_OBJECT_ID, false, 0, 0, 23, { -1413.956, 859.16560, 984.71260 }, { -1412.56506, 859.2745360, 978.6328730 }, { -1000.000, -1000.00, -1000.0000 } },
+		{ "Las Venturas Bank", 	INVALID_OBJECT_ID, false, 0, 0, 52, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
+		{ "Los Santos Bank", 	INVALID_OBJECT_ID, false, 0, 0, 56, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
+		{ "Militia Ship", 		INVALID_OBJECT_ID, false, 0, 0, 0, { -2372.6223, 1551.3984, 2.1172000 }, { -2371.41699, 1552.027709, -0.75281000 }, { 0.0000000, 0.000000, 28.0000000 } }
 	}
 ;
 
@@ -2695,7 +2668,7 @@ new
 /* ** Robbery NPCs ** */
 #define ENABLED_NPC_ROBBERIES		( true )
 #define MAX_ROBBERY_NPCS 			( MAX_ROBBERIES )
-#define MAX_CIVILIANS				( 200 )
+#define MAX_CIVILIANS				( 100 )
 
 #if ENABLED_NPC_ROBBERIES == true
 #include <FCNPC>
@@ -2875,7 +2848,7 @@ enum E_BUSINESS_VEHICLE_DATA
 
 enum E_SECURITY_LEVEL_DATA
 {
-	E_LEVEL[ 17 ],				E_COST,						E_BREAKIN_COOLDOWN
+	E_LEVEL[ 17 ],				Float: E_COST_MULTIPLIER,	E_BREAKIN_COOLDOWN
 };
 
 new
@@ -2914,10 +2887,10 @@ new
 	},
 	g_businessSecurityData[ 4 ] [ E_SECURITY_LEVEL_DATA ] =
 	{
-		{ ""COL_RED"NONE", 		0,			300 },
-		{ ""COL_ORANGE"LOW", 	5000000,	14400 },
-		{ ""COL_YELLOW"Medium", 15000000, 	28800 },
-		{ ""COL_GREEN"High", 	35000000,	43200 }
+		{ ""COL_RED"NONE", 		0.0, 300 },
+		{ ""COL_ORANGE"LOW", 	0.3, 14400 },
+		{ ""COL_YELLOW"Medium", 0.9, 28800 },
+		{ ""COL_GREEN"High", 	2.0, 43200 }
 	},
 	Float: g_roadBusinessExportData[ 3 ] [ 20 ] [ 3 ] =
 	{
@@ -3027,7 +3000,6 @@ new
 	p_TrackingTimer             	[ MAX_PLAYERS ] = { INVALID_TIMER_ID, ... },
 	p_ContractedAmount          	[ MAX_PLAYERS ],
 	p_MetalMelter                   [ MAX_PLAYERS ],
-	p_HouseSpawnLocation            [ MAX_PLAYERS ] = { -1, ... },
 	p_Kills                         [ MAX_PLAYERS ],
 	p_Deaths                        [ MAX_PLAYERS ],
 	p_VIPLevel                     	[ MAX_PLAYERS ],
@@ -3121,7 +3093,6 @@ new
 	p_PingImmunity                  [ MAX_PLAYERS char ],
 	p_Fires                         [ MAX_PLAYERS ],
 	p_ApartmentEnter                [ MAX_PLAYERS char ],
-	p_ApartmentSpawnLocation        [ MAX_PLAYERS ] = { -1, ... },
 	p_AntiTieSpam                   [ MAX_PLAYERS ],
 	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_RansomAmount                  [ MAX_PLAYERS ],
@@ -3226,10 +3197,11 @@ new
 	bool: p_AutoSpin				[ MAX_PLAYERS char ],
 	p_InBusiness 					[ MAX_PLAYERS ] = { -1, ... },
 	p_VehicleBringCooldown 			[ MAX_PLAYERS ],
-	p_BusinessSpawnLocation 		[ MAX_PLAYERS ] = { -1, ... },
 	p_Fireworks 					[ MAX_PLAYERS ],
 	p_ExplosiveBullets 				[ MAX_PLAYERS ],
-	bool: p_AddedEmail 				[ MAX_PLAYERS char ]
+	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
+	p_SpawningKey 					[ MAX_PLAYERS ] [ 4 ],
+	p_SpawningIndex 				[ MAX_PLAYERS ]
 ;
 
 /* ** Server Data ** */
@@ -3473,8 +3445,8 @@ public OnGameModeInit()
 	#endif
 
 	/* ** Robbery Points ** */
-	static const ROBBERY_BOT_PAY = 2400; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 4800; // max pay from robbing safes
+	static const ROBBERY_BOT_PAY = 2100; // max pay from robbing bots
+	static const ROBBERY_SAFE_PAY = 4500; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -3593,9 +3565,13 @@ public OnGameModeInit()
 	CreateMultipleRobberies( "Gas Station",      	ROBBERY_SAFE_PAY, -20.583150, -58.166736, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 	CreateRobberyNPC( "Gas Cashier",				ROBBERY_BOT_PAY, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 
-	CreateMultipleRobberies( "Drug House", 			ROBBERY_SAFE_PAY * 2, 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
-	CreateRobberyNPC( "Triad Boss",					ROBBERY_BOT_PAY * 2, 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
-	CreateRobberyNPC( "Mafia Boss",					ROBBERY_BOT_PAY * 2, 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
+	CreateMultipleRobberies( "Drug House", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.5 ), 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
+	CreateRobberyNPC( "Triad Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
+	CreateRobberyNPC( "Mafia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
+
+	CreateRobberyNPC( "Militia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.5 ), -2376.437011, 1554.111572, 2.117187, 180.000000, 127, -1 ); // Mafia
+	CreateMultipleRobberies( "Militia Ship - Safe 1", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.723388, 1554.588500, 1.567188, -60.8000000, -1 );
+	CreateMultipleRobberies( "Militia Ship - Safe 2", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.303466, 1553.833862, 2.517187, -60.8000000, -1 );
 
 	CreateMultipleRobberies( "Film Studio", 		ROBBERY_SAFE_PAY, 2327.151123, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
 	CreateMultipleRobberies( "Grotti Cars", 		ROBBERY_SAFE_PAY, 542.361816, -1303.610351, 16.725925, 180.00000, -1 );
@@ -3916,6 +3892,7 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( -1935.8773, 243.1236, 36.2211, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( -2720.6104, 217.7127, 4.31920, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( -2426.3296, 1021.7617, 50.8859, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray
+	CreateDynamicMapIcon( -1903.7902, 283.97430, 41.7187, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray
 	CreateDynamicMapIcon( -1903.7902, 283.97430, 41.7187, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray
 
 	// Las Venturas
@@ -4325,6 +4302,10 @@ public OnGameModeInit()
 	g_bankvaultData[ CITY_LS ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
 	SetDynamicObjectMaterial( g_bankvaultData[ CITY_SF ] [ E_OBJECT ], 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
 
+	// Boat Hiest
+	g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ] = CreateDynamicObject( 19435, -2371.416992, 1552.027709, 1.907187, 0.000000, 0.000000, 28.0000, g_bankvaultData[ VAULT_BOAT ] [ E_WORLD ] );
+	SetDynamicObjectMaterial( g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ], 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
+
 	// Wall of Donors
 	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1574.3559, 885.1296, 28.4690, 0.0000, 0.0000, -0.0156 ), 0, "Thx Monthly Donors", 130, "Times New Roman", 64, 1, -65536, 0, 1 );
 
@@ -4450,9 +4431,6 @@ public OnGameModeInit()
 
 	// Remove 25% of wealth off 2 weeks inactive players.
 	mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 7 );
-
-	// Remove inactive gang members
-	mysql_single_query( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE UNIX_TIMESTAMP()-`USERS`.`LASTLOGGED` > 1209600" );
 #endif
 
 	/* ** Houses/Bribes/ETC **/
@@ -5503,7 +5481,7 @@ public OnServerUpdate( )
  		}
 
     	// Replenish Vaults
-		for( new i = 0; i < MAX_CITIES; i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
+		for( new i = 0; i < sizeof( g_bankvaultData ); i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
 		{
 			StopDynamicObject	( g_bankvaultData[ i ] [ E_OBJECT ] );
 			DestroyDynamicObject( g_bankvaultData[ i ] [ E_OBJECT ] );
@@ -5511,11 +5489,12 @@ public OnServerUpdate( )
 			g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] = 0;
 			g_bankvaultData[ i ] [ E_DISABLED ] = false;
 
-			switch( g_bankvaultData[ i ] [ E_CITY ] )
+			switch( i )
 			{
 				case CITY_SF: SetDynamicObjectMaterial( ( g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 18766, -1412.565063, 859.274536, 983.132873, 0.000000, 90.000000, 90.000000 ) ), 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
 				case CITY_LV: g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ i ] [ E_WORLD ] );
 				case CITY_LS: g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ i ] [ E_WORLD ] );
+				case VAULT_BOAT: SetDynamicObjectMaterial( ( g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ] = CreateDynamicObject( 19435, -2371.416992, 1552.027709, 1.907187, 0.000000, 0.000000, 28.0000, g_bankvaultData[ VAULT_BOAT ] [ E_WORLD ] ) ), 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
 			}
 		}
 
@@ -5577,7 +5556,7 @@ public ZoneTimer( )
 					profit = 0;
 
 				foreach( new zoneid : turfs ) if ( g_gangTurfData[ zoneid ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == g ) {
-					profit += Zone_GetProfitability( zoneid, online_members - afk_members );
+					profit += Turf_GetProfitability( zoneid, online_members - afk_members );
 					g_gangData[ g ] [ E_RESPECT ] ++; // pay the gang respect each 24 hours
 				}
 
@@ -5625,10 +5604,11 @@ public ZoneTimer( )
 			      	oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] );
 
 				new
-					attacker_time_required = -5 * attacker_member_count + TURF_TAKEOVER_TIME;
+					attacker_time_required = -10 * ( attacker_member_count - TAKEOVER_NEEDED_PEOPLE ) + 60;
 
-				if ( attacker_time_required < TURF_TAKEOVER_TIME_MIN )
-					attacker_time_required = TURF_TAKEOVER_TIME_MIN;
+			   	// minimum of 20 seconds
+				if ( attacker_time_required < 20 )
+					attacker_time_required = 20;
 
 	            if ( g_gangzoneAttackCount[ z ] < attacker_time_required && oCount == 0 )
 	            {
@@ -5641,16 +5621,21 @@ public ZoneTimer( )
 				}
 	            else if ( g_gangzoneAttackCount[ z ] >= attacker_time_required )
 	            {
-	            	static
-	            		szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+	            	static szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
 
-				    Get2DCity 				( szCity, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MIN_Y ] );
-				    GetZoneFromCoordinates 	( szLocation, g_gangzoneData[ z ] [ E_MIN_X ], g_gangzoneData[ z ] [ E_MIN_Y ] );
+                 	new earned_money = 0;
+                 	new owner_gang = g_gangTurfData[ z ] [ E_OWNER ];
+                 	new attacker_gang = g_gangzoneAttacker[ z ];
+
+					new Float: min_x, Float: min_y;
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+				    Get2DCity 				( szCity, min_x, min_y );
+				    GetZoneFromCoordinates 	( szLocation, min_x, min_y );
 
 	                GangZoneStopFlashForAll	( g_gangTurfData[ z ] [ E_ID ] );
 					GangZoneShowForAll 		( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 ) );
-
-                    SendClientMessageToGang	( g_gangzoneAttacker[ z ], g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s!", szLocation, szCity );
 
 					g_gangTurfData[ z ] [ E_COLOR ] = setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 );
 	                g_gangTurfData[ z ] [ E_OWNER ] = g_gangzoneAttacker[ z ];
@@ -5659,19 +5644,48 @@ public ZoneTimer( )
 	                g_gangzoneAttackCount	[ z ] = 0;
                  	g_gangzoneAttackTimeout	[ z ] = 0;
 
+                 	// Money Grub
+                 	if ( Iter_Contains( gangs, owner_gang ) )
+					{
+						if ( g_gangData[ owner_gang ] [ E_BANK ] > 250000 )
+						{
+							new afk_opmembers, online_opmembers = GetOnlineGangMembers( owner_gang, .afk_members = afk_opmembers );
+							new zone_money = Turf_GetProfitability( z, online_opmembers - afk_opmembers );
+
+							// deduct from gang bank and give to op, take 10% as fee
+				            g_gangData[ owner_gang ] [ E_BANK ] -= zone_money;
+				            SaveGangData( owner_gang );
+
+				           	earned_money = floatround( float( zone_money ) * 0.9 );
+				            g_gangData[ attacker_gang ] [ E_BANK ] += earned_money;
+				       	}
+
+				      	// credit respect
+						g_gangData[ attacker_gang ] [ E_RESPECT ] ++;
+						SaveGangData( attacker_gang );
+					}
+
+					// Alert gang
+					if ( earned_money ) {
+						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s and earned "COL_GOLD"%s"COL_WHITE"!", szLocation, szCity, number_format( earned_money ) );
+					} else {
+						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s!", szLocation, szCity );
+					}
+
                  	// Give Gangmembers XP & Wanted
 					foreach(new d : Player)
 					{
 						new in_area = IsPlayerInDynamicArea( d, g_gangTurfData[ z ] [ E_AREA ] );
 
 						if ( in_area )
-							TextDrawSetString( g_ZoneOwnerTD[ d ], sprintf( "~r~~h~(TERRITORY)~n~~w~~h~%s", ReturnGangName( g_gangTurfData[ z ] [ E_OWNER ] ) ) );
+							PlayerTextDrawSetString( d, g_ZoneOwnerTD[ d ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( attacker_gang ) ) );
 
-						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == g_gangTurfData[ z ] [ E_OWNER ] && ! p_inPaintBall{ d } )
-						{
+						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! p_inPaintBall{ d } ) {
+							if ( in_area ) {
+								GivePlayerScore( d, 2, .multiplier = 0.5 );
+								GivePlayerWantedLevel( d, 6 );
+							}
 							PlayerPlaySound( d, 36205, 0.0, 0.0, 0.0 );
-							GivePlayerScore( d, in_area ? 2 : 1, .multiplier = 0.5 );
-							GivePlayerWantedLevel( d, 6 );
 						}
 					}
 				}
@@ -5771,19 +5785,16 @@ public ZoneTimer( )
 	return 1;
 }
 
-public OnPlayerEnterGangZone( playerid, zoneid )
+public OnPlayerUpdateGangZone( playerid, zoneid )
 {
 	if ( ! p_inMovieMode{ playerid } )
 	{
-		// if ( p_GangID[ playerid ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == INVALID_GANG_ID ) ShowPlayerHelpDialog( playerid, 2000, "You can take over this turf by typing ~g~/takeover" );
-		TextDrawSetString( g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(TERRITORY)~n~~w~~h~%s", ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
-	}
-	return 1;
-}
+		if ( zoneid == INVALID_GANG_TURF )
+			return PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "_" );
 
-public OnPlayerExitGangZone( playerid, zoneid )
-{
-	TextDrawSetString( g_ZoneOwnerTD[ playerid ], "_" );
+		// if ( p_GangID[ playerid ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == INVALID_GANG_ID ) ShowPlayerHelpDialog( playerid, 2000, "You can take over this turf by typing ~g~/takeover" );
+		PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
+	}
 	return 1;
 }
 
@@ -5822,7 +5833,7 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
+	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -6428,12 +6439,12 @@ public OnPlayerDisconnect( playerid, reason )
 	p_forcedAnticheat[ playerid ] = 0;
 	p_StartedLumberjack{ playerid } = false;
 	p_RconLoginFails{ playerid } = 0;
-	p_BusinessSpawnLocation[ playerid ] = -1;
+	p_SpawningKey[ playerid ] [ 0 ] = '\0';
+	p_SpawningIndex[ playerid ] = 0;
 	p_IncorrectLogins{ playerid } = 0;
 	p_VehicleBringCooldown[ playerid ] = 0;
 	p_DamageSpamCount{ playerid } = 0;
 	p_AntiTextSpamCount{ playerid } = 0;
-	p_ApartmentSpawnLocation[ playerid ] = -1;
 	p_treeExportLocation[ playerid ] = 0xFF;
 	ResetPlayerVendingMachineData( playerid );
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
@@ -6463,7 +6474,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_GPSTimer[ playerid ] = 0xFF;
   	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
 	p_ContractedAmount[ playerid ] = 0;
-	p_HouseSpawnLocation[ playerid ] = -1;
 	ClearPlayerWantedLevel( playerid );
 	Delete3DTextLabel( p_InfoLabel[ playerid ] );
 	p_InfoLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
@@ -6545,7 +6555,7 @@ public OnPlayerSpawn( playerid )
 		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
-		TextDrawShowForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
+		PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
 		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
@@ -6577,8 +6587,14 @@ public OnPlayerSpawn( playerid )
 		RemovePlayerAttachedObject( playerid, 1 ), SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 
 	// Gang Zones
-	foreach( new zoneid : turfs ) {
-		GangZoneShowForPlayer( playerid, g_gangTurfData[ zoneid ] [ E_ID ], g_gangTurfData[ zoneid ] [ E_COLOR ] );
+	foreach( new zoneid : turfs )
+	{
+    	// resume flashing if gang war
+    	if ( g_gangzoneAttacker[ zoneid ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangzoneAttacker[ zoneid ] ) ) {
+    		GangZoneFlashForPlayer( playerid, g_gangTurfData[ zoneid ] [ E_ID ], setAlpha( g_gangData[ g_gangzoneAttacker[ zoneid ] ] [ E_COLOR ], 0x80 ) );
+    	} else {
+	        GangZoneShowForPlayer( playerid, g_gangTurfData[ zoneid ] [ E_ID ], g_gangTurfData[ zoneid ] [ E_COLOR ] );
+    	}
 	}
 
 	// VIP Skin
@@ -6615,18 +6631,6 @@ public OnPlayerSpawn( playerid )
 	    PreloadAnimationLibrary( playerid, "CASINO" );
 	    PreloadAnimationLibrary( playerid, "GANGS" );
 	    PreloadAnimationLibrary( playerid, "INT_HOUSE" );
-
-	    // Show RDM Zones
-		/*if ( !p_PlayerSettings[ playerid ] { SETTING_NORDM_ZONES } )
-		{
-		 	foreach(new r : rdmzone)
-		 	{
-				for( new i = 0; i < MAX_RDM_GANGZONES; i++ )
-				{
-			   		GangZoneShowForPlayer( playerid, g_antiDeathmatchZoneData[ r ] [ E_GANGZONES ] [ i ], COLOR_RDMZONES );
-				}
-		    }
-		}*/
 
 		// Jail people that left jailed
 	    if ( p_JailTime[ playerid ] ) // We load this when the player logs in.
@@ -7008,11 +7012,16 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 	}
 
 	// Explosive Bullets
-	CreateExplosiveBullet( playerid );
+	if ( hittype != BULLET_HIT_TYPE_OBJECT ) {
+		CreateExplosiveBullet( playerid );
+	}
     return 1;
 }
 
 stock CreateExplosiveBullet( playerid ) {
+
+	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) )
+		return;
 
 	if ( GetPVarInt( playerid, "explosive_rounds" ) == 1 && p_ExplosiveBullets[ playerid ] > 0 )
 	{
@@ -7283,8 +7292,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 function hidedamagetd_Timer( playerid )
 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
-stock getPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
+stock GetPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
 {
+	if ( ! GetPlayerTotalCash( playerid ) ) return 0;
+
 	// http://www.analyzemath.com/parabola/three_points_para_calc.html
 	// (0.1, 0), (10, 3), (50, 6) where x = money/1M, y = percentage
 	new Float: player_money = float( p_Cash[ playerid ] ) + ( float( p_BankMoney[ playerid ] ) * 0.6 );
@@ -7386,7 +7397,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
+	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
@@ -7406,7 +7417,11 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
 	/* ** Tax And Medical Fees ** */
-	if ( GetPlayerTotalCash( playerid ) > 0 ) // Player has been online for at least 2 minutes.
+    new player_tax = GetPlayerTax( playerid );
+    new player_tax_due = p_Uptime[ playerid ] > p_TaxTime[ playerid ] && p_inPaintBall{ playerid } != true;
+
+    // check if player has any money
+	if ( GetPlayerTotalCash( playerid ) > 0 )
 	{
 		new
 			szTaxable[ 128 ], iMoney = p_inPaintBall{ playerid } == true ? 0 : ( GetPlayerTotalCash( playerid ) > 200000 ? 1500 : 100 );
@@ -7414,27 +7429,21 @@ public OnPlayerDeath( playerid, killerid, reason )
 		format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in medical fees", number_format( iMoney ) );
 		GivePlayerCash( playerid, -( iMoney ) );
 
-		if ( p_Uptime[ playerid ] > p_TaxTime[ playerid ] && p_inPaintBall{ playerid } != true )
-		{
-		    new
-		    	player_tax = getPlayerTax( playerid );
+		if ( player_tax_due && player_tax > 0 )
+	    {
+			GivePlayerCash( playerid, -player_tax );
 
-		    if ( player_tax > 0 )
-		    {
-				GivePlayerCash( playerid, -player_tax );
+			// save to database
+			p_TaxTime[ playerid ] = ( p_TaxTime[ playerid ] > p_Uptime[ playerid ] ? p_TaxTime[ playerid ] : p_Uptime[ playerid ] ) + 1800;
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `TAX_TIME`=%d WHERE `ID`=%d", p_TaxTime[ playerid ], p_AccountID[ playerid ] ) );
 
-				// save to database
-				p_TaxTime[ playerid ] = ( p_TaxTime[ playerid ] > p_Uptime[ playerid ] ? p_TaxTime[ playerid ] : p_Uptime[ playerid ] ) + 1800;
-				mysql_single_query( sprintf( "UPDATE `USERS` SET `TAX_TIME`=%d WHERE `ID`=%d", p_TaxTime[ playerid ], p_AccountID[ playerid ] ) );
+			// event bank
+			if ( player_tax > 10000 ) UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + floatround( float( player_tax ) * 0.10 ), 0.0, "", GLOBAL_VARTYPE_INT );
 
-				// only add >10K to event bank, lessen queries
-				if ( player_tax > 10000 ) UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + floatround( float( player_tax ) * 0.10 ), 0.0, "", GLOBAL_VARTYPE_INT );
-
-				// format string
-				if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, number_format( player_tax ) );
-				else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) );
-		    }
-		}
+			// format string
+			if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, number_format( player_tax ) );
+			else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) );
+	    }
 		ShowPlayerHelpDialog( playerid, 5000, szTaxable );
 	}
 	/* ** End Of Tax And Medical Fees ** */
@@ -7585,17 +7594,20 @@ public OnPlayerDeath( playerid, killerid, reason )
 		}
 
 
-        if ( p_Class[ killerid ] == CLASS_CIVILIAN && JobEquals( killerid, JOB_HITMAN ) && p_ContractedAmount[ playerid ] > 0 )
+        if ( p_Class[ killerid ] == CLASS_CIVILIAN && JobEquals( killerid, JOB_HITMAN ) )
 		{
 			new
 				iContractAmount = p_ContractedAmount[ playerid ];
+
+			// if player had tax, give him 10 percent of their tax too
+			if ( player_tax_due ) iContractAmount += floatround( float( player_tax ) * 0.25 );
 
 			if ( iContractAmount >= 50000 && GetPlayerScore( killerid ) < 50 )
 			{
 				SendServerMessage( playerid, "Your contract is incomplete as you have been killed by a player with lower than 50 score." );
 				SendError( killerid, "You need at least 50 score to complete contracts above $50,000." );
 			}
-			else
+			else if ( iContractAmount >= 1000 )
 			{
 			    SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has completed the contract on %s(%d), he has earned "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( killerid ), killerid, ReturnPlayerName( playerid ), playerid, number_format( iContractAmount ) );
 				GivePlayerCash( killerid, iContractAmount );
@@ -8682,6 +8694,10 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
+CMD:spawn( playerid, params[ ] ) {
+	return ShowPlayerSpawnMenu( playerid );
+}
+
 CMD:changename( playerid, params[ ] ) {
 	SendServerMessage( playerid, "You can change your name using "COL_GREY"/ic market"COL_WHITE" for 50 IC." );
 	// cmd_ic( playerid, "market" );
@@ -8710,15 +8726,8 @@ CMD:business( playerid, params[ ] )
 
 	if ( strmatch( params, "spawn" ))
 	{
-	  	if ( p_OwnedBusinesses[ playerid ] < 1 )
-	    	return SendError( playerid, "You need to be associated with a business in-order to use this." );
-
-	    format( szLargeString, sizeof( szLargeString ), ""COL_GREY"Set Back To Normal\n" );
-
-		foreach (new b : business) if ( IsBusinessAssociate( playerid, b ) ) {
-			format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_businessData[ b ] [ E_NAME ] );
-		}
-		return ShowPlayerDialog( playerid, DIALOG_BUSINESSES, DIALOG_STYLE_LIST, "{FFFFFF}Business Spawn Location", szLargeString, "Select", "Cancel" );
+		SendServerMessage( playerid, "We have changed the command to simply "COL_GREY"/spawn"COL_WHITE"." );
+		return ShowPlayerSpawnMenu( playerid );
 	}
 	if ( strmatch( params, "buy" ) )
 	{
@@ -8793,7 +8802,7 @@ CMD:business( playerid, params[ ] )
 		}
 		return 1;
 	}
-	return SendUsage( playerid, "/(b)usiness [BUY/SELL]" );
+	return SendUsage( playerid, "/(b)usiness [BUY/SELL/LEAVE]" );
 }
 
 CMD:race( playerid, params[ ] )
@@ -10207,32 +10216,29 @@ CMD:bruteforce( playerid, params[ ] )
 	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This command is restricted for F.B.I agents." );
 	if ( !( p_inFBI{ playerid } == true && p_inArmy{ playerid } == false && p_inCIA{ playerid } == false ) ) return SendError( playerid, "This command is restricted for F.B.I agents." );
 
-	for( new i; i < MAX_HOUSES; i++ )
+	foreach ( new i : houses )
 	{
-		if ( g_houseData[ i ] [ E_CREATED ] )
+		if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 		{
-			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-				if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+			if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
-				if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
-				    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
+			if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
+			    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
 
-				if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
-				    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
+			if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
+			    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
 
-				if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
-				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
+			if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
+			    return SendError( playerid, "This house is currently being cracked or is already cracked." );
 
-		        if ( IsHouseOnFire( i ) )
-			       	return SendError( playerid, "This house is on fire, you cannot bruteforce it!" ), 1;
+	        if ( IsHouseOnFire( i ) )
+		       	return SendError( playerid, "This house is on fire, you cannot bruteforce it!" ), 1;
 
-                g_houseData[ i ] [ E_BEING_CRACKED ] = true;
-                p_HouseCrackingPW[ playerid ] = i;
-                SetPVarInt( playerid, "last_bruteforce", g_iTime + 30 );
-				ShowProgressBar( playerid, "Brute Forcing Password", PROGRESS_BRUTEFORCE, 500, COLOR_BLUE );
-	            return 1;
-			}
+            g_houseData[ i ] [ E_BEING_CRACKED ] = true;
+            p_HouseCrackingPW[ playerid ] = i;
+            SetPVarInt( playerid, "last_bruteforce", g_iTime + 30 );
+			ShowProgressBar( playerid, "Brute Forcing Password", PROGRESS_BRUTEFORCE, 500, COLOR_BLUE );
+            return 1;
 		}
 	}
 	SendError( playerid, "You are not standing in any house checkpoint." );
@@ -10268,11 +10274,11 @@ CMD:banks( playerid, params[ ] )
 
 	for( new i = 0, time = g_iTime; i < sizeof( g_bankvaultData ); i++ ) {
 		if ( g_bankvaultData[ i ] [ E_TIMESTAMP ] < time )
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t"COL_GREEN"Available To Rob!\n", szBigString, returnCityName( g_bankvaultData[ i ] [ E_CITY ] ) );
+			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t"COL_GREEN"Available To Rob!\n", szBigString, g_bankvaultData[ i ] [ E_NAME ] );
 		else
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t%s\n", szBigString, returnCityName( g_bankvaultData[ i ] [ E_CITY ] ), secondstotime( g_bankvaultData[ i ] [ E_TIMESTAMP ] - time ) );
+			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t%s\n", szBigString, g_bankvaultData[ i ] [ E_NAME ], secondstotime( g_bankvaultData[ i ] [ E_TIMESTAMP ] - time ) );
 	}
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Banks", szBigString, "Okay", "" );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}Banks", szBigString, "Okay", "" );
 	return 1;
 }
 
@@ -10317,32 +10323,29 @@ CMD:burglar( playerid, params[ ] )
 		}
 
 		// houses
-		for( new i; i < MAX_HOUSES; i++ )
+		foreach ( new i : houses )
 		{
-			if ( g_houseData[ i ] [ E_CREATED ] )
+			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 			{
-				if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-				{
-					if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+				if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
-					if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
-					    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
+				if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
+				    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
 
-					if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
-					    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
+				if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
+				    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
 
-					if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
-					    return SendError( playerid, "This house is currently being cracked or is already cracked." );
+				if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
+				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
 
-			        if ( IsHouseOnFire( i ) )
-				       	return SendError( playerid, "This house is on fire, you cannot crack it!" ), 1;
+		        if ( IsHouseOnFire( i ) )
+			       	return SendError( playerid, "This house is on fire, you cannot crack it!" ), 1;
 
-	                g_houseData[ i ] [ E_BEING_CRACKED ] = true;
-	                p_HouseCrackingPW[ playerid ] = i;
-	                SetPVarInt( playerid, "crackpw_cool", g_iTime + 40 );
-					ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING, 750, COLOR_WHITE );
-		            return 1;
-				}
+                g_houseData[ i ] [ E_BEING_CRACKED ] = true;
+                p_HouseCrackingPW[ playerid ] = i;
+                SetPVarInt( playerid, "crackpw_cool", g_iTime + 40 );
+				ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING, 750, COLOR_WHITE );
+	            return 1;
 			}
 		}
 
@@ -10434,7 +10437,7 @@ CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:tax( playerid, params[ ] )
 {
 	new Float: tax_rate = 0.0;
-	new tax_amount = getPlayerTax( playerid, tax_rate );
+	new tax_amount = GetPlayerTax( playerid, tax_rate );
 
 	if ( p_Uptime[ playerid ] > p_TaxTime[ playerid ] ) {
 		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s when you die.", number_format( tax_amount ), tax_rate, "%%" );
@@ -10545,29 +10548,19 @@ CMD:ransom( playerid, params[ ] )
 
 CMD:flat( playerid, params[ ] )
 {
-	if ( isnull( params ) ) return SendUsage( playerid, "/flat [CONFIG/STOPSPAWN]" );
-	else if ( strmatch( params, "config" ) )
+	new count = 0;
+	szBigString[ 0 ] = '\0';
+	for( new i; i < sizeof( g_apartmentData ); i++ ) if ( g_apartmentData[ i ] [ E_CREATED ] )
 	{
-		new count = 0;
-		szBigString[ 0 ] = '\0';
-		for( new i; i < sizeof( g_apartmentData ); i++ ) if ( g_apartmentData[ i ] [ E_CREATED ] )
+		if ( strmatch( g_apartmentData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
 		{
-			if ( strmatch( g_apartmentData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-			    count++;
-			    format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, g_apartmentData[ i ] [ E_NAME ] );
-			}
+		    count++;
+		    format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, g_apartmentData[ i ] [ E_NAME ] );
 		}
-		if ( count == 0 ) return SendError( playerid, "You don't own any apartments." );
+	}
+	if ( count == 0 ) return SendError( playerid, "You don't own any apartments." );
 
-		ShowPlayerDialog( playerid, DIALOG_FLAT_CONFIG, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", szBigString, "Select", "Cancel" );
-	}
-	else if ( strmatch( params, "stopspawn" ) )
-	{
-		p_ApartmentSpawnLocation[ playerid ] = -1;
-		SendServerMessage( playerid, "Your spawning location has been set to the default positions." );
-	}
-	else SendUsage( playerid, "/flat [CONFIG/STOPSPAWN]" );
+	ShowPlayerDialog( playerid, DIALOG_FLAT_CONFIG, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", szBigString, "Select", "Cancel" );
 	return 1;
 }
 
@@ -12043,14 +12036,14 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
 			ShowPlayerIrresistibleRank( playerid );
-			TextDrawShowForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
+			PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
 		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
 		}
 		case false:
 		{
-			TextDrawHideForPlayer( playerid, g_ZoneOwnerTD[ playerid ] );
+			PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 			HidePlayerTogglableTextdraws( playerid );
 			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 			TextDrawHideForPlayer( playerid, g_currentXPTD );
@@ -12230,9 +12223,16 @@ CMD:hitlist( playerid, params[ ] )
 	new g_contractList[ MAX_PLAYERS ] [ 2 ], bool: is_empty = true;
 
 	// store cash and playerid
-	foreach ( new player : Player ) {
+	foreach ( new player : Player )
+	{
 		g_contractList[ player ] [ 0 ] = player;
 		g_contractList[ player ] [ 1 ] = p_ContractedAmount[ player ];
+
+		// add hit amount if applicable
+		if ( p_Uptime[ player ] > p_TaxTime[ player ] && p_inPaintBall{ player } != true ) {
+	    	new player_tax = GetPlayerTax( player );
+	    	g_contractList[ player ] [ 1 ] += floatround( float( player_tax ) * 0.25 );
+		}
 	}
 
 	// sort
@@ -12240,7 +12240,7 @@ CMD:hitlist( playerid, params[ ] )
 
 	// message
 	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Total Contract\n";
-	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_contractList[ i ] [ 0 ] ) && g_contractList[ i ] [ 1 ] > 0 ) {
+	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_contractList[ i ] [ 0 ] ) && g_contractList[ i ] [ 1 ] >= 1000 ) {
  		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_contractList[ i ] [ 0 ] ), g_contractList[ i ] [ 0 ], number_format( g_contractList[ i ] [ 1 ] ) );
 		is_empty = false;
 	}
@@ -12634,18 +12634,8 @@ CMD:h( playerid, params[ ] )
 	;
 	if ( strmatch( params, "spawn" ) )
 	{
-	  	if ( p_OwnedHouses[ playerid ] < 1 )
-	    	return SendError( playerid, "You need to own a house in-order to use this." );
-
-	    format( szLargeString, sizeof( szLargeString ), ""COL_GREY"Set Back To Normal\n" );
-		for( new i = 0; i < MAX_HOUSES; i++ )
-		{
-		    if ( g_houseData[ i ] [ E_CREATED ] == true && strmatch( g_houseData[ i ][ E_OWNER ], ReturnPlayerName( playerid ) ) )
-		    {
-		    	format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseData[ i ] [ E_HOUSE_NAME ] );
-			}
-		}
-		return ShowPlayerDialog( playerid, DIALOG_HOUSES, DIALOG_STYLE_LIST, "{FFFFFF}Set Spawn Location", szLargeString, "Select", "Cancel" );
+		SendServerMessage( playerid, "We have changed the command to simply "COL_GREY"/spawn"COL_WHITE"." );
+		return ShowPlayerSpawnMenu( playerid );
 	}
 	else if ( strmatch( params, "config" ) )
 	{
@@ -12662,7 +12652,7 @@ CMD:h( playerid, params[ ] )
 		if ( hasTooManyHouses( playerid ) ) return SendError( playerid, "You cannot purchase any more houses, you've reached the limit." );
 		if ( GetPlayerScore( playerid ) < 200 ) return SendError( playerid, "You need at least 200 score to buy a house." );
 
-		for( new i = 0; i < MAX_HOUSES; i++ ) if ( g_houseData[ i ] [ E_CREATED ] )
+		foreach ( new i : houses )
 		{
 			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) )
 			{
@@ -12695,7 +12685,6 @@ CMD:h( playerid, params[ ] )
 			format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ ID ][ E_OWNER ], ID );
 		    AddFileLogLine( "log_houses.txt", szBigString );
 			p_OwnedHouses[ playerid ] --;
-			if ( p_HouseSpawnLocation[ playerid ] == ID ) p_HouseSpawnLocation[ playerid ] = -1;
 			format( g_houseData[ ID ] [ E_PASSWORD ], 4, "N/A" );
 			format( g_houseData[ ID ] [ E_OWNER ], 7, "No-one" );
 			format( g_houseData[ ID ] [ E_HOUSE_NAME ], 5, "Home" );
@@ -12774,7 +12763,6 @@ CMD:h( playerid, params[ ] )
 			GivePlayerCash( playerid, -sellingprice );
 			GivePlayerCash( sellerid, sellingprice );
 
-			if ( p_HouseSpawnLocation[ sellerid ] == houseid ) p_HouseSpawnLocation[ sellerid ] = -1;
 			SendServerMessage( sellerid, "You have successfully sold your house for "COL_GOLD"%s"COL_WHITE" to %s(%d)!", number_format( p_HouseSellingPrice[ playerid ] ), ReturnPlayerName( playerid ), playerid );
 			SendServerMessage( playerid, "You have successfully bought %s(%d)'s home for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( sellerid ), sellerid, number_format( p_HouseSellingPrice[ playerid ] ) );
 		}
@@ -12807,19 +12795,14 @@ CMD:h( playerid, params[ ] )
 	    }
 	    return 1;
 	}
-	return SendUsage( playerid, "/h [CONFIG/SPAWN/BUY/SELL/OFFER/OFFER TAKE/OFFER CANCEL]" );
+	return SendUsage( playerid, "/h [CONFIG/BUY/SELL/OFFER/OFFER TAKE/OFFER CANCEL]" );
 }
-
 
 stock SwitchHouseOwners( ID, playerid, buyerid )
 {
 	if ( IsPlayerConnected( playerid ) )
 	{
 		p_OwnedHouses[ playerid ] --;
-
-		if ( p_HouseSpawnLocation[ playerid ] == ID )
-			p_HouseSpawnLocation[ playerid ] = -1;
-
 		SetPlayerInterior( playerid, 0 );
 		SetPlayerVirtualWorld( playerid, 0 );
 		SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", number_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
@@ -13522,8 +13505,17 @@ CMD:placehit( playerid, params[ ] )
 		p_ContractedAmount[ pID ] += cash;
 		GivePlayerCash( playerid, -cash );
 		p_AntiSpammyTS[ playerid  ] = g_iTime + 10;
+
+		// bounty
+		new bounty = p_ContractedAmount[ pID ];
+		if ( p_Uptime[ pID ] > p_TaxTime[ pID ] && p_inPaintBall{ pID } != true ) {
+	    	new player_tax = GetPlayerTax( pID );
+	    	bounty += floatround( float( player_tax ) * 0.25 );
+		}
+
+		// message
 		printf("[placehit] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), number_format( cash ) ); // 8hska7082bmahu
-		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), his bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, number_format( p_ContractedAmount[ pID ] ) );
+		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), their bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, number_format( bounty ) );
 	}
 	return 1;
 }
@@ -13804,6 +13796,7 @@ CMD:tie( playerid, params[ ] )
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "You cannot use this command on spawn protected players." );
+		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
 
 		if ( random( 101 ) < 90 )
 		{
@@ -14489,53 +14482,72 @@ CMD:takeover( playerid, params[ ] )
 	if ( GetPlayerInterior( playerid ) != 0 && GetPlayerVirtualWorld( playerid ) != 0 )
 	    return SendError( playerid, "You cannot do this inside interiors." );
 
-	new
-		count = 0,
-		oCount = 0,
-		gmCount = 0,
+	if ( IsPlayerJailed( playerid ) )
+		return SendError( playerid, "You cannot use this while you are in jail." );
 
+	new
 		g_isAFK = 0,
 		g_inAir = 0
 	;
 
-    foreach ( new z : turfs )
+    foreach ( new z : Reverse(turfs) )
 	{
 		if ( IsPlayerInDynamicArea( playerid, g_gangTurfData[ z ] [ E_AREA ] ) )
      	{
 	    	new gangid = p_GangID[ playerid ];
 
-	        count = 1;
 	        if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid ) return SendError( playerid, "This turf is already captured by your gang." );
 			if ( g_gangzoneAttacker[ z ] != INVALID_GANG_ID ) return SendError( playerid, "This turf is currently being attacked." );
 
-			if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) {
-				oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] ); // Opposing check
+			new opposing_count = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] ); // Opposing check
+			// existing gang members
+			if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && opposing_count ) {
+				return SendError( playerid, "There are gang members within this turf, kill them!" );
 	        }
 
-	        new dCount = GetPlayersInGangZone( z, gangid, g_isAFK, g_inAir );
+	        new attacking_count = GetPlayersInGangZone( z, gangid, g_isAFK, g_inAir );
 
-	        if ( dCount < TAKEOVER_NEEDED_PEOPLE && ( dCount + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE )
+	        if ( attacking_count < TAKEOVER_NEEDED_PEOPLE && ( attacking_count + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE )
 		   		return SendError( playerid, "You cannot start a turf war if gang members are AFK or extremely high above ground." );
 
 	        //if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && dCount < TAKEOVER_NEEDED_PEOPLE + 1 && ( dCount + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE + 1 )
 		   	//	return SendError( playerid, "You need at least %d gang members to start a gang war with another gang.", TAKEOVER_NEEDED_PEOPLE + 1 );
 
-			if ( dCount >= TAKEOVER_NEEDED_PEOPLE && !oCount )
+		   	// Facility check
+		   	if ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangTurfData[ z ] [ E_FACILITY_GANG ] ) )
+		   	{
+		   		new facility_gang = g_gangTurfData[ z ] [ E_FACILITY_GANG ];
+		   		new facility_members = GetOnlineGangMembers( facility_gang );
+
+		   		if ( g_gangTurfData[ z ] [ E_OWNER ] == facility_gang ) {
+			   		if ( facility_members < 3 ) {
+			   			return SendError( playerid, "This facility requires at least %d of its gang members online for a takeover.", 3 - facility_members );
+			   		}
+			   		else if ( attacking_count < 3 ) {
+		   				return SendError( playerid, "You need at least %d gang members to take over this facility.", 3 - attacking_count );
+			   		}
+		   		}
+		   	}
+
+		   	// Begin takeover
+			if ( attacking_count >= TAKEOVER_NEEDED_PEOPLE && ! opposing_count )
 	        {
-	            gmCount = 1;
 				g_gangzoneAttacker[ z ] = gangid;
 	            g_gangzoneAttackCount[ z ] = 0;
               	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
               	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
-	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
-              	break;
+	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) {
+	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
+	            }
 	        }
+	        else
+	        {
+	        	SendError( playerid, "You need at least %d member(s) to take over this turf.", TAKEOVER_NEEDED_PEOPLE );
+	        }
+	        return 1;
 	    }
 	}
-	if ( oCount != 0 ) return SendError( playerid, "There are gang members within this turf, kill them!" );
-	if ( count == 0 ) return SendError( playerid, "You are not in any gangzone." );
-	if ( gmCount == 0 ) return SendError( playerid, "You need at least %d member(s) to take over this turf.", TAKEOVER_NEEDED_PEOPLE );
-	return 1;
+	return SendError( playerid, "You are not in any gangzone." );
 }
 
 CMD:clans( playerid, params[ ] )
@@ -14714,8 +14726,20 @@ CMD:gang( playerid, params[ ] )
 		else if ( gangNameExists( szName ) ) return SendError( playerid, "This gang already exists, try another name." );
 		else
 		{
-			if ( CreateGang( szName, playerid ) == INVALID_GANG_ID )
-				return SendError( playerid, "There are no available slots to create a gang." );
+			new
+				handle = CreateGang( .gang_name = szName, .leader = p_AccountID[ playerid ], .gang_color = g_gangColors[ random( sizeof( g_gangColors ) ) ] );
+
+			if ( handle != INVALID_GANG_ID )
+			{
+			    p_GangID[ playerid ] = handle; // set it anyway here just incase of cache taking a bit
+
+			    if ( p_WantedLevel[ playerid ] == 0 && p_AdminOnDuty{ playerid } == false )
+			    	SetPlayerColor( playerid, g_gangData[ handle ] [ E_COLOR ] );
+
+				mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ handle ] [ E_SQL_ID ], p_AccountID[ playerid ] ) );
+			    SendClientMessageToGang( handle, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have created the gang: %s (%d)", szName, g_gangData[ handle ] [ E_SQL_ID ] );
+			}
+			else SendError( playerid, "There are no available slots to create a gang." );
 		}
 		return 1;
 	}
@@ -14879,7 +14903,7 @@ CMD:acmds( playerid, params[ ] )
     SendClientMessage( playerid, COLOR_GREY, "|______________________________________| Admin Commands |_____________________________________|" );
     SendClientMessage( playerid, COLOR_WHITE, " " );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /goto, /spec(off), /(un)jail, /asay, /slap, /a, /getstats, /stpfr, /setskin, /frules, /fpc, /ticketlog" );
-    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /pinfo, /warn, /spawn, /ans, /stpfa, /alog, /(un)freeze, /aod, /respawnalluv, /reports, /questions" );
+    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /pinfo, /warn, /aspawn, /ans, /stpfa, /alog, /(un)freeze, /aod, /respawnalluv, /reports, /questions" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /respond, /mutelist, /aka, /arepair" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 2: /kick, /vdestroy, /(un)mute, /explode, /vrespawn, /arenas, /suspend, /viewnotes, /slay" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 3: /ban, /bring, /clearchat, /(ann)ounce, /giveweapon, /vadminpark, /vcreate, /healall, /getip, /smlog, /iclog" );
@@ -15234,13 +15258,13 @@ CMD:respond( playerid, params[ ] )
 	return 1;
 }
 
-CMD:spawn( playerid, params[ ] )
+CMD:aspawn( playerid, params[ ] )
 {
 	new
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/spawn [PLAYER_ID]" );
+	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/aspawn [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
 	else
@@ -16245,7 +16269,7 @@ CMD:hgoto( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, "d", hID ) ) return SendUsage( playerid, "/hgoto [HOUSE_ID]" );
 	else if ( hID < 0 || hID >= MAX_HOUSES ) return SendError( playerid, "Invalid House ID." );
-	else if ( !g_houseData[ hID ] [ E_CREATED ] ) return SendError( playerid, "Invalid House ID." );
+	else if ( ! Iter_Contains( houses, hID ) ) return SendError( playerid, "Invalid House ID." );
 	else
 	{
 	    SetPlayerPos( playerid, g_houseData[ hID ] [ E_EX ], g_houseData[ hID ] [ E_EY ], g_houseData[ hID ] [ E_EZ ] );
@@ -17340,13 +17364,14 @@ CMD:createhouse( playerid, params[ ] )
 	else
 	{
 		AddAdminLogLineFormatted( "%s(%d) has created a house", ReturnPlayerName( playerid ), playerid );
-		if ( GetPlayerPos( playerid, X, Y, Z ) ) {
-		    if ( ( iTmp = CreateHouse( cost, X, Y, Z ) ) != -1 ) {
+		if ( GetPlayerPos( playerid, X, Y, Z ) )
+		{
+		    if ( ( iTmp = CreateHouse( "Home", cost, X, Y, Z ) ) != -1 )
+		    {
 				SaveToAdminLogFormatted( playerid, iTmp, "created house for %s", number_format( cost ) );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You have created a %s house taking up house id %d.", number_format( cost ), iTmp );
 		    }
-			else
-				SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" Unable to create a house due to a unexpected error." );
+			else SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" Unable to create a house due to a unexpected error." );
 		}
 	}
 	return 1;
@@ -17361,7 +17386,7 @@ CMD:destroyhouse( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, "d", hID ) ) return SendUsage( playerid, "/destroyhouse [HOUSE_ID]" );
 	else if ( hID < 0 || hID > MAX_HOUSES ) return SendError( playerid, "Invalid house ID." );
-	else if ( g_houseData[ hID ] [ E_CREATED ] == false ) return SendError( playerid, "Invalid house ID." );
+	else if ( ! Iter_Contains( houses, hID ) ) return SendError( playerid, "Invalid house ID." );
 	else
 	{
 		SaveToAdminLog( playerid, hID, "destroy house" );
@@ -17383,7 +17408,7 @@ CMD:hadminsell( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, "d", hID ) ) return SendUsage( playerid, "/hadminsell [HOUSE_ID]" );
 	else if ( hID < 0 || hID > MAX_HOUSES ) return SendError( playerid, "Invalid house ID." );
-	else if ( g_houseData[ hID ] [ E_CREATED ] == false ) return SendError( playerid, "Invalid house ID." );
+	else if ( ! Iter_Contains( houses, hID ) ) return SendError( playerid, "Invalid house ID." );
 	else if ( strmatch( g_houseData[ hID ] [ E_OWNER ], "No-one" ) ) return SendError( playerid, "This house is not owned by anyone." );
 	else
 	{
@@ -19501,8 +19526,98 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( CanPlayerExitEntrance( playerid ) )
 	{
-		if ( !IsPlayerInAnyVehicle( playerid ) )
+		if ( ! IsPlayerInAnyVehicle( playerid ) )
 		{
+			// Enter Business
+			foreach (new b : business)
+			{
+				if ( checkpointid == g_businessData[ b ] [ E_ENTER_CP ] )
+				{
+					if ( p_Class[ playerid ] != CLASS_CIVILIAN )
+						return SendError( playerid, "You must be a civilian to access this business." );
+
+					if ( g_iTime > g_businessData[ b ] [ E_CRACKED_TS ] && g_businessData[ b ] [ E_CRACKED ] )
+						g_businessData[ b ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+
+					if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) )
+						return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+
+					new
+						bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
+
+		        	pauseToLoad( playerid );
+					p_InBusiness[ playerid ] = b;
+				    UpdatePlayerEntranceExitTick( playerid );
+					SetPlayerPos( playerid, g_businessInteriorData[ bType ] [ E_X ], g_businessInteriorData[ bType ] [ E_Y ], g_businessInteriorData[ bType ] [ E_Z ] );
+				  	SetPlayerVirtualWorld( playerid, g_businessData[ b ] [ E_WORLD ] );
+					SetPlayerInterior( playerid, g_businessData[ b ] [ E_INTERIOR_TYPE ] + 20 );
+					return 1;
+				}
+				else if ( checkpointid == g_businessData[ b ] [ E_EXIT_CP ] )
+				{
+					p_InBusiness[ playerid ] = -1;
+					TogglePlayerControllable( playerid, 0 );
+				    UpdatePlayerEntranceExitTick( playerid );
+					SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+					SetPlayerPosEx( playerid, g_businessData[ b ] [ E_X ], g_businessData[ b ] [ E_Y ], g_businessData[ b ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+				}
+			}
+
+			// Enter Houses
+			foreach ( new i : houses )
+			{
+			    if ( checkpointid == g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] )
+			    {
+					ClearAnimations( playerid ); // clear-fix
+
+			        if ( IsHouseOnFire( i ) ) {
+			            return SendError( playerid, "This house is on fire, you cannot enter it!" ), 1;
+			        }
+
+					if ( GetPlayerSpecialAction( playerid ) == SPECIAL_ACTION_CUFFED ) {
+						return SendError( playerid, "You can't do anything as you are cuffed." ), 1;
+					}
+
+					if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] )
+						g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+
+					new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
+
+			        if ( !g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
+					{
+					    p_PasswordedHouse[ playerid ] = i;
+					    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
+						return 1;
+					}
+
+					// alert burglar of any furniture
+					if ( ! is_owner && p_Job[ playerid ] == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
+						if ( Iter_Count( housefurniture[ i ] ) ) {
+							ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
+						} else {
+							ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
+						}
+					}
+
+					p_InHouse[ playerid ] = i;
+				    UpdatePlayerEntranceExitTick( playerid );
+				  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
+					SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
+					SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
+					return 1;
+				}
+				else if ( checkpointid == g_houseData[ i ] [ E_CHECKPOINT ] [ 1 ] )
+				{
+					p_InHouse[ playerid ] = -1;
+					CancelEdit( playerid );
+					TogglePlayerControllable( playerid, 0 );
+				    UpdatePlayerEntranceExitTick( playerid );
+					SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+					SetPlayerPosEx( playerid, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+					return 1;
+				}
+			}
+
 			foreach(new i : entrances)
 			{
 		        if ( checkpointid == g_entranceData[ i ] [ E_ENTER ] )
@@ -19525,9 +19640,9 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 				 		p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
 					}
 					SyncSpectation( playerid );
-				    break;
+				   	return 1;
 				}
-				if ( checkpointid == g_entranceData[ i ] [ E_EXIT ] )
+				else if ( checkpointid == g_entranceData[ i ] [ E_EXIT ] )
 				{
 					p_BulletInvulnerbility[ playerid ] = 0;
 					p_LastEnteredEntrance[ playerid ] = -1;
@@ -19538,7 +19653,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 				    SetPlayerVirtualWorld( playerid, 0 );
 				    UpdatePlayerEntranceExitTick( playerid );
 					SyncSpectation( playerid );
-				    break;
+				   	return 1;
 				}
 		    }
 		}
@@ -19918,6 +20033,25 @@ public OnPlayerRequestSpawn( playerid )
 	if ( IsPlayerSecurityDriver( playerid ) )
 		return SetPlayerSkin( playerid, 71 );
 
+	// army limit
+	/*if ( IsPlayerArmy( playerid ) )
+	{
+		static const ARMY_LIMIT = 15;
+
+		new players = Iter_Count( Player );
+		new army_limit = floatround( float( players ) / ARMY_LIMIT );
+		new army_players = 0;
+
+		// count army players
+		foreach ( new armyid : Player ) if ( p_inArmy{ armyid } && armyid != playerid )
+			army_players ++;
+
+		if ( army_players >= army_limit ) {
+			SendError( playerid, "Army is currently restricted to %d personnel. Need %d more players online for an additional slot.", army_limit, ( ( army_limit + 1 ) * ARMY_LIMIT ) - players );
+			return 0;
+		}
+	}*/
+
 	return approveClassSpawned( playerid );
 }
 
@@ -19935,7 +20069,7 @@ stock approveClassSpawned( playerid ) {
 	if ( p_CopBanned{ playerid } == MAX_CLASS_BAN_WARNS && ( IsPlayerPolice( playerid ) || IsPlayerFBI( playerid ) || IsPlayerCIA( playerid ) ) )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You are banned from using the police class(es). Use "COL_GREY"/unbanme"COL_WHITE" to pay for an unban." ), 0;
 
-	if ( p_ArmyBanned{ playerid } == MAX_CLASS_BAN_WARNS && GetPlayerSkin( playerid ) == 287 )
+	if ( p_ArmyBanned{ playerid } == MAX_CLASS_BAN_WARNS && IsPlayerArmy( playerid ) )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You are banned from using the army class. Use "COL_GREY"/unbanme"COL_WHITE" to pay for an unban." ), 0;
 
 	// wanted level an issue?
@@ -19946,7 +20080,7 @@ stock approveClassSpawned( playerid ) {
 	if ( IsPlayerFBI( playerid ) && p_XP[ playerid ] < 10000 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 10,000 XP to use this class." ), 0;
 
-	if ( GetPlayerSkin( playerid ) == 287 && p_XP[ playerid ] < 20000 )
+	if ( IsPlayerArmy( playerid ) && p_XP[ playerid ] < 20000 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 20,000 XP to use this class." ), 0;
 
 	if ( IsPlayerCIA( playerid ) && p_XP[ playerid ] < 15000 )
@@ -20473,7 +20607,7 @@ public OnPlayerInteriorChange( playerid, newinteriorid, oldinteriorid )
 			;
 
 			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity++ )
-				if ( iWorld == g_bankvaultData[ iCity ] [ E_WORLD ] )
+				if ( iWorld != 0 && iWorld == g_bankvaultData[ iCity ] [ E_WORLD ] )
 					break;
 
 			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] )
@@ -21035,7 +21169,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	    	}
 
 	    	// Call Elevator Down
-		    if ( !iVehicle )
+		    if ( ! iVehicle )
 		    {
 				if ( IsPlayerInArea( playerid, -2005.859375, -1917.968750, 1339.843750, 1396.484375 ) && GetPlayerInterior( playerid ) == 0 )
 				{
@@ -21080,102 +21214,13 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					return 1;
 				}
 
-				// Enter Business
-				foreach (new b : business)
-				{
-					if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_ENTER_CP ] ) )
-					{
-						if ( p_Class[ playerid ] != CLASS_CIVILIAN )
-							return SendError( playerid, "You must be a civilian to access this facility." );
-
-						if ( g_iTime > g_businessData[ b ] [ E_CRACKED_TS ] && g_businessData[ b ] [ E_CRACKED ] )
-							g_businessData[ b ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-						if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) )
-							return SendError( playerid, "You cannot access this business as you are not an associate of it." );
-
-						new
-							bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
-
-			        	pauseToLoad( playerid );
-						p_InBusiness[ playerid ] = b;
-						SetPlayerPos( playerid, g_businessInteriorData[ bType ] [ E_X ], g_businessInteriorData[ bType ] [ E_Y ], g_businessInteriorData[ bType ] [ E_Z ] );
-					  	SetPlayerVirtualWorld( playerid, g_businessData[ b ] [ E_WORLD ] );
-						SetPlayerInterior( playerid, g_businessData[ b ] [ E_INTERIOR_TYPE ] + 20 );
-						return 1;
-					}
-					else if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_EXIT_CP ] ) )
-					{
-						p_InBusiness[ playerid ] = -1;
-						TogglePlayerControllable( playerid, 0 );
-						SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
-						SetPlayerPosEx( playerid, g_businessData[ b ] [ E_X ], g_businessData[ b ] [ E_Y ], g_businessData[ b ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
-					}
-				}
-
-				// Enter Houses
-				for( new i = 0; i < MAX_HOUSES; i++ )
-				{
-				    if ( g_houseData[ i ] [ E_CREATED ] )
-					{
-					    if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) )
-					    {
-							ClearAnimations( playerid ); // clear-fix
-
-					        if ( IsHouseOnFire( i ) )
-					        {
-					            SendError( playerid, "This house is on fire, you cannot enter it!" );
-					            return 1;
-					        }
-							if ( GetPlayerSpecialAction( playerid ) == SPECIAL_ACTION_CUFFED )
-							{
-								SendError( playerid, "You can't do anything as you are cuffed." );
-								return 1;
-							}
-
-							if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] )
-								g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-							new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
-
-					        if ( !g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
-							{
-							    p_PasswordedHouse[ playerid ] = i;
-							    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
-								return 1;
-							}
-
-							if ( ! is_owner && p_Job[ playerid ] == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
-								new has_objects = Iter_Count( housefurniture[ i ] );
-								if ( has_objects ) ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
-								else ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
-							}
-
-							p_InHouse[ playerid ] = i;
-							SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
-						  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
-							SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
-							return 1;
-						}
-						else if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 1 ] ) )
-						{
-							p_InHouse[ playerid ] = -1;
-							CancelEdit( playerid );
-							TogglePlayerControllable( playerid, 0 );
-							SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
-							SetPlayerPosEx( playerid, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
-							return 1;
-						}
-					}
-				}
 			}
-
 		}
 	}
 
 	else if ( PRESSED( KEY_WALK ) )
 	{
-		if ( !iVehicle && g_iTime > p_CheckpointEnterTick[ playerid ] && !p_pausedToLoad{ playerid } )
+		if ( ! iVehicle && g_iTime > p_CheckpointEnterTick[ playerid ] && !p_pausedToLoad{ playerid } )
 	    {
 	        p_CheckpointEnterTick[ playerid ] = g_iTime + 2;
 
@@ -21520,7 +21565,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			isSalted = true;
 		}
 
-		if ( !strcmp( szHashed, szPassword, false ) )
+		if ( ! strcmp( szHashed, szPassword, false ) )
     	{
     		if ( !isSalted ) // Converting from insecure to secure
     		{
@@ -21590,11 +21635,10 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
 			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
 			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_HouseSpawnLocation[ playerid ]= cache_get_field_content_int( 0, "HOUSE_ID", dbHandle );
 			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
-			p_BusinessSpawnLocation[ playerid ] = cache_get_field_content_int( 0, "BUSINESS_ID", dbHandle );
+
 			p_CasinoRewardsPoints[ playerid ] = cache_get_field_content_float( 0, "CASINO_REWARDS", dbHandle );
 			p_IsCasinoHighRoller{ playerid } = !!cache_get_field_content_int( 0, "VISAGE_HIGHROLLER", dbHandle );
 			p_Fireworks[ playerid ] = cache_get_field_content_int( 0, "FIREWORKS", dbHandle );
@@ -21602,6 +21646,17 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
 			p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
 
+			// spawn location
+			new
+				spawn_location[ 10 ];
+
+			cache_get_field_content( 0, "SPAWN", spawn_location, dbHandle, sizeof( spawn_location ) );
+
+			if ( ismysqlnull( spawn_location ) || sscanf( spawn_location, "s[4]d", p_SpawningKey[ playerid ], p_SpawningIndex[ playerid ] ) ) {
+				p_SpawningKey[ playerid ] [ 0 ] = '\0', p_SpawningIndex[ playerid ] = 0;
+			}
+
+			// anti-cheat
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
 				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
 				KickPlayerTimed( playerid );
@@ -21614,12 +21669,6 @@ thread OnPlayerLogin( playerid, password[ ] )
 				DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
 			}
 
-			// house & biz validation
-			if ( p_HouseSpawnLocation[ playerid ] != -1 && !strmatch( g_houseData[ p_HouseSpawnLocation[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-				p_HouseSpawnLocation[ playerid ] = -1;
-
-			if ( p_BusinessSpawnLocation[ playerid ] != -1 && ! IsBusinessAssociate( playerid, p_BusinessSpawnLocation[ playerid ] ) )
-				p_BusinessSpawnLocation[ playerid ] = -1;
 
 			// Load some other variables too
 		   	p_OwnedHouses 		[ playerid ] = GetPlayerOwnedHouses( playerid );
@@ -21692,7 +21741,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 
 			if ( ! foundGang ) {
 				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `ID`=%d LIMIT 0,1", gang_sql );
-				mysql_function_query( dbHandle, szNormalString, true, "OnGangLoad", "d", playerid );
+				mysql_function_query( dbHandle, szNormalString, true, "OnPlayerGangLoaded", "d", playerid );
 			}
 
 		  	// Send gang join message
@@ -22184,64 +22233,55 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         return 1;
     }*/
-	if ( ( dialogid == DIALOG_HOUSES ) && response )
+	if ( dialogid == DIALOG_HOUSES )
 	{
-	    if ( listitem == 0 )
-	    {
-	        p_HouseSpawnLocation[ playerid ] = -1;
-	        SendServerMessage( playerid, "You have canceled your house spawning." );
-	        return 1;
-	    }
-	    else
-	    {
-		    for( new i, x = 1; i < MAX_HOUSES; i ++ )
-			{
-				if ( g_houseData[ i ] [ E_CREATED ] == true && strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			 	{
-			       	if ( x == listitem )
-			      	{
-		        		if ( IsHouseOnFire( i ) )
-		        		{
-		        			SendError( playerid, "This house is on fire. You cannot spawn there at the moment." );
-		        			cmd_h( playerid, "spawn" );
-		        			break;
-		        		}
-			      		p_BusinessSpawnLocation[ playerid ] = -1, p_ApartmentSpawnLocation[ playerid ] = -1, p_HouseSpawnLocation[ playerid ] = i;
-					 	SendServerMessage( playerid, "House spawning has been set at "COL_GREY"%s"COL_WHITE".", g_houseData[ i ] [ E_HOUSE_NAME ] );
-					 	break;
-		      		}
-			      	x ++;
-				}
-			}
-		}
-	}
-	if ( ( dialogid == DIALOG_BUSINESSES ) && response )
-	{
-	    if ( listitem == 0 )
-	    {
-	        p_BusinessSpawnLocation[ playerid ] = -1;
-	        SendServerMessage( playerid, "You have canceled your business spawning." );
-	        return 1;
-	    }
-	    else
-	    {
-	    	new
-	    		x = 1;
+		if ( ! response )
+			return ShowPlayerSpawnMenu( playerid );
 
-		    foreach (new b : business)
+    	new x = 0;
+
+	    foreach ( new i : houses ) if ( strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+		{
+	       	if ( x == listitem )
+	      	{
+        		if ( IsHouseOnFire( i ) )
+        		{
+        			ShowPlayerSpawnMenu( playerid );
+        			SendError( playerid, "This house is on fire. You cannot spawn there at the moment." );
+        		}
+        		else
+        		{
+	        		SetPlayerSpawnLocation( playerid, "HSE", i );
+				 	SendServerMessage( playerid, "House spawning has been set at "COL_GREY"%s"COL_WHITE".", g_houseData[ i ] [ E_HOUSE_NAME ] );
+        		}
+			 	return 1;
+      		}
+	      	x ++;
+		}
+		return 1;
+	}
+	if ( dialogid == DIALOG_BUSINESSES )
+	{
+		if ( ! response )
+			return ShowPlayerSpawnMenu( playerid );
+
+    	new
+    		x = 0;
+
+	    foreach ( new b : business )
+		{
+			if ( IsBusinessAssociate( playerid, b ) )
 			{
-				if ( IsBusinessAssociate( playerid, b ) )
-				{
-			       	if ( x == listitem )
-			      	{
-			      		p_HouseSpawnLocation[ playerid ] = -1, p_ApartmentSpawnLocation[ playerid ] = -1, p_BusinessSpawnLocation[ playerid ] = b;
-					 	SendServerMessage( playerid, "Business spawning has been set at "COL_GREY"%s"COL_WHITE".", g_businessData[ b ] [ E_NAME ] );
-					 	break;
-		      		}
-			      	x ++;
-				}
+		       	if ( x == listitem )
+		      	{
+	        		SetPlayerSpawnLocation( playerid, "BIZ", b );
+				 	SendServerMessage( playerid, "Business spawning has been set at "COL_GREY"%s"COL_WHITE".", g_businessData[ b ] [ E_NAME ] );
+				 	break;
+	      		}
+		      	x ++;
 			}
 		}
+		return 1;
 	}
 	if ( ( dialogid == DIALOG_CITY_HALL ) && response )
 	{
@@ -23509,7 +23549,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return SendError( playerid, "You cannot afford this toy." );
 		      		}
 
-				    unlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
+				    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
 				    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
 					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
 		      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], number_format( g_ToyData[ id ] [ E_PRICE ] ) );
@@ -23941,7 +23981,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 											szLargeString, p_AntiEMP[ pID ], p_SecureWallet{ pID } == true ? ( "Yes" ) : ( "No" ), p_BobbyPins[ pID ], p_C4Amount[ pID ], p_AidsVaccine{ pID } == true ? ("Yes") : ("No"),
 											p_CausticSoda{ pID }, p_MuriaticAcid{ pID }, p_HydrogenChloride{ pID } );
 
-				format( szLargeString, 700, "%s"COL_GREY"Fireworks:{FFFFFF} %d\n"COL_GREY"Explosive Bullets:{FFFFFF} %d\n", szLargeString, p_Fireworks[ playerid ], p_ExplosiveBullets[ playerid ] );
+				format( szLargeString, 700, "%s"COL_GREY"Fireworks:{FFFFFF} %d\n"COL_GREY"Explosive Bullets:{FFFFFF} %d\n", szLargeString, p_Fireworks[ pID ], p_ExplosiveBullets[ pID ] );
 				ShowPlayerDialog( playerid, DIALOG_STATS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Item Statistics", szLargeString, "Okay", "Back" );
 			}
 			case 3: displayStreaks( pID, DIALOG_STATS_REDIRECT, "Back", playerid );
@@ -24589,7 +24629,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 		    case 0:
 		    {
-		       	p_ApartmentSpawnLocation[ playerid ] = GetPVarInt( playerid, "flat_editing" );
+		    	SetPlayerSpawnLocation( playerid, "APT", GetPVarInt( playerid, "flat_editing" ) );
 				SendServerMessage( playerid, "You have set your spawning location to the specified apartment. To stop this you can use \"/flat stopspawn\"." );
 				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 			}
@@ -24615,7 +24655,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
    			return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
 
 		new id = GetPVarInt( playerid, "flat_editing" );
-        p_ApartmentSpawnLocation[ playerid ] = -1;
 
 		g_apartmentData[ id ] [ E_CREATED ] = false;
 		strcpy( g_apartmentData[ id ] [ E_OWNER ], "No-one" );
@@ -24911,8 +24950,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( ( dialogid == DIALOG_HELP ) && response )
 	{
 		SetPVarInt( playerid, "help_category", listitem );
-	    format( szNormalString, sizeof( szNormalString ), "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", GetPVarInt( playerid, "help_category" ) );
-	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, GetPVarInt( playerid, "help_category" ) );
+	    format( szNormalString, sizeof( szNormalString ), "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", listitem );
+	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, listitem );
 	}
 	if ( dialogid == DIALOG_HELP_CATEGORY )
 	{
@@ -26171,18 +26210,21 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( ! response )
 			return ShowBusinessTerminal( playerid );
 
-		if ( GetPlayerCash( playerid ) < g_businessSecurityData[ listitem ] [ E_COST ] ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", number_format( g_businessSecurityData[ listitem ] [ E_COST ] ) );
+		new business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
+		new security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ listitem ] [ E_COST_MULTIPLIER ] );
+
+		if ( GetPlayerCash( playerid ) < security_cost ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", number_format( security_cost ) );
 		else if ( listitem < g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You cannot downgrade your security level." );
 		else if ( listitem == g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You have already upgraded your business to this security level." );
 		else
 		{
 			g_businessData[ businessid ] [ E_SECURITY_LEVEL ] = listitem;
 			UpdateBusinessData( businessid );
-			GivePlayerCash( playerid, -g_businessSecurityData[ listitem ] [ E_COST ] );
-			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurity( listitem ), number_format( g_businessSecurityData[ listitem ] [ E_COST ] ) );
+			GivePlayerCash( playerid, -security_cost );
+			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurity( listitem ), number_format( security_cost ) );
 			return 1;
 		}
-		return ShowBusinessSecurityUpgrades( playerid );
+		return ShowBusinessSecurityUpgrades( playerid, businessid );
 	}
 	if ( dialogid == DIALOG_BUSINESS_UPGRADES )
 	{
@@ -26201,7 +26243,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		switch ( listitem )
 		{
 			// upgrade security
-			case 0: return ShowBusinessSecurityUpgrades( playerid );
+			case 0: return ShowBusinessSecurityUpgrades( playerid, businessid );
 
 			// upgrade car
 			case 1:
@@ -26647,6 +26689,132 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 		}
 	}
+	if ( dialogid == DIALOG_SPAWN && response )
+	{
+		new bool: has = false;
+
+		// erase large string for ease
+		erase( szLargeString );
+
+		// show items
+		switch ( listitem )
+		{
+			// reset spawn
+			case 0:
+			{
+				ResetSpawnLocation( playerid );
+				return SendServerMessage( playerid, "You have reset your spawning location to default." );
+			}
+
+			// houses
+			case 1:
+			{
+				foreach ( new i : houses ) if ( strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) {
+					format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseData[ i ] [ E_HOUSE_NAME ] ), has = true;
+				}
+
+				if ( ! has )
+					return SendError( playerid, "You do not own any home." ), ShowPlayerSpawnMenu( playerid );
+
+				return ShowPlayerDialog( playerid, DIALOG_HOUSES, DIALOG_STYLE_LIST, "{FFFFFF}Set Spawn Location", szLargeString, "Select", "Back" );
+			}
+
+			// businesses
+			case 2:
+			{
+				foreach ( new b : business ) if ( IsBusinessAssociate( playerid, b ) ) {
+					format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_businessData[ b ] [ E_NAME ] ), has = true;
+				}
+
+				if ( ! has )
+					return SendError( playerid, "You do not own any business." ), ShowPlayerSpawnMenu( playerid );
+
+				return ShowPlayerDialog( playerid, DIALOG_BUSINESSES, DIALOG_STYLE_LIST, "{FFFFFF}Business Spawn Location", szLargeString, "Select", "Back" );
+			}
+
+			// gang facility
+			case 3:
+			{
+				new gangid = p_GangID[ playerid ];
+
+				if ( gangid == INVALID_GANG_ID )
+					return SendError( playerid, "You are not in any gang." ), ShowPlayerSpawnMenu( playerid );
+
+				static city[ MAX_ZONE_NAME ], location[ MAX_ZONE_NAME ];
+
+				szLargeString = ""COL_WHITE"City\t"COL_WHITE"Zone\n";
+
+				foreach ( new handle : gangfacilities ) if ( g_gangData[ gangid ] [ E_SQL_ID ] == g_gangFacilities[ handle ] [ E_GANG_SQL_ID ] )
+				{
+					new Float: min_x, Float: min_y;
+					new zoneid = g_gangFacilities[ handle ] [ E_TURF_ID ];
+
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+				    Get2DCity( city, min_x, min_y );
+				    GetZoneFromCoordinates( location, min_x, min_y );
+
+					format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\n", szLargeString, city, location ), has = true;
+				}
+
+				if ( ! has )
+					return SendError( playerid, "Your gang does not own a gang facility." ), ShowPlayerSpawnMenu( playerid );
+
+				return ShowPlayerDialog( playerid, DIALOG_FACILITY_SPAWN, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Gang Facility Spawn Location", szLargeString, "Select", "Back" );
+			}
+
+			// visage apartment
+			case 4:
+			{
+				foreach ( new handle : visageapartments ) if ( g_VisageApartmentData[ handle ] [ E_OWNER_ID ] == p_AccountID[ playerid ] ) {
+					format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_VisageApartmentData[ handle ] [ E_TITLE ] ), has = true;
+				}
+
+				if ( ! has )
+					return SendError( playerid, "You do not own any visage apartment." ), ShowPlayerSpawnMenu( playerid );
+
+				return ShowPlayerDialog( playerid, DIALOG_VISAGE_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Visage Spawn Location", szLargeString, "Select", "Back" );
+			}
+		}
+	}
+	if ( dialogid == DIALOG_FACILITY_SPAWN )
+	{
+		if ( ! response )
+			return ShowPlayerSpawnMenu( playerid );
+
+		new gangid = p_GangID[ playerid ];
+
+		if ( gangid == INVALID_GANG_ID )
+			return SendError( playerid, "You are not in any gang." ), ShowPlayerSpawnMenu( playerid );
+
+		static city[ MAX_ZONE_NAME ], location[ MAX_ZONE_NAME ];
+
+		szLargeString = ""COL_WHITE"City\t"COL_WHITE"Location\n";
+
+		new x = 0;
+
+		foreach ( new handle : gangfacilities ) if ( g_gangData[ gangid ] [ E_SQL_ID ] == g_gangFacilities[ handle ] [ E_GANG_SQL_ID ] )
+		{
+			if ( x == listitem )
+			{
+				new Float: min_x, Float: min_y;
+				new zoneid = g_gangFacilities[ handle ] [ E_TURF_ID ];
+
+				Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+				Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+			    Get2DCity( city, min_x, min_y );
+			    GetZoneFromCoordinates( location, min_x, min_y );
+
+        		SetPlayerSpawnLocation( playerid, "GNG", handle );
+			 	SendServerMessage( playerid, "Spawning has been set the gang facility located in "COL_GREY"%s, %s"COL_WHITE".", location, city );
+			 	break;
+			}
+			x ++;
+		}
+		return 1;
+	}
 	return 1;
 }
 
@@ -26700,6 +26868,11 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 			ShowRaceConfiguration( playerid, raceid );
 			SendServerMessage( playerid, "You have selected the final destination for the race, use "COL_GREY"/race start"COL_WHITE" to begin." );
 		}
+	}
+	else if ( IsPlayerAdminOnDuty( playerid ) )
+	{
+    	SetPlayerPosFindZ( playerid, fX, fY, fZ );
+		printf( "Admin %s Teleported To %f, %f, %f", ReturnPlayerName( playerid ), fX, fY, fZ );
 	}
 	return 1;
 }
@@ -27010,8 +27183,8 @@ stock JailPlayer( playerid, seconds, admin = 0 )
 	// Neccessary Functions
 	KillTimer 				( p_JailTimer[ playerid ] );
 	KillTimer 				( p_CuffAbuseTimer[ playerid ] );
-    TextDrawSetString		( p_JailTimeTD[ playerid ], "_" );
-	TextDrawShowForPlayer	( playerid, p_JailTimeTD[ playerid ] );
+   	PlayerTextDrawSetString	( playerid, p_JailTimeTD[ playerid ], "_" );
+	PlayerTextDrawShow		( playerid, p_JailTimeTD[ playerid ] );
 
 	// External Variables to Jail (resetting)
 	p_TicketIssuer		[ playerid ] = INVALID_PLAYER_ID; // Reset Tickets
@@ -27072,7 +27245,7 @@ function Unjail( playerid )
     p_JailTime[ playerid ] --;
 
     format( Query, sizeof( Query ), "Time Remaining:~n~%d seconds", p_JailTime[ playerid ] );
-	TextDrawSetString( p_JailTimeTD[ playerid ], Query );
+	PlayerTextDrawSetString( playerid, p_JailTimeTD[ playerid ], Query );
 
     if ( p_JailTime[ playerid ] < 1 )
 	   	CallLocalFunction( "OnPlayerUnjailed", "dd", playerid, 0 );
@@ -27115,14 +27288,14 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
 										p_drillStrength[ playerid ] );
 
-		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`HOUSE_ID`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`BUSINESS_ID`=%d WHERE `ID`=%d",
+		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d WHERE `ID`=%d",
 										Query,
 										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										p_ExplosiveBullets[ playerid ],	p_HouseSpawnLocation[ playerid ], 	p_IrresistiblePoints[ playerid ],
+										p_ExplosiveBullets[ playerid ], p_IrresistiblePoints[ playerid ],
 										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
-										p_BusinessSpawnLocation[ playerid ], p_AccountID[ playerid ] );
+										p_AccountID[ playerid ] );
 
 		mysql_single_query( Query );
 
@@ -27553,14 +27726,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 			TextDrawTextSize(g_SlotMachineThreeTD[ playerid ], 66.000000, 77.000000);
 		}
 
-	  	g_ZoneOwnerTD[ playerid ] = TextDrawCreate( 86.000000, 296.000000, "_" );
-		TextDrawAlignment( g_ZoneOwnerTD[ playerid ], 2 );
-		TextDrawBackgroundColor( g_ZoneOwnerTD[ playerid ], 255 );
-		TextDrawFont( g_ZoneOwnerTD[ playerid ], 1 );
-		TextDrawLetterSize( g_ZoneOwnerTD[ playerid ], 0.250000, 1.200000 );
-		TextDrawColor( g_ZoneOwnerTD[ playerid ], -1 );
-		TextDrawSetOutline( g_ZoneOwnerTD[ playerid ], 1 );
-
 		p_ProgressBoxOutsideTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
 		TextDrawBackgroundColor(p_ProgressBoxOutsideTD[ playerid ], 255);
 		TextDrawFont(p_ProgressBoxOutsideTD[ playerid ], 1);
@@ -27637,15 +27802,6 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 		TextDrawSetProportional(p_TruckingTD[ playerid ], 1);
 		TextDrawSetSelectable(p_TruckingTD[ playerid ], 0);
 
-		p_JailTimeTD[ playerid ] = TextDrawCreate(328.000000, 24.000000, "Time Remaining:~n~250 seconds");
-		TextDrawAlignment(p_JailTimeTD[ playerid ], 2);
-		TextDrawBackgroundColor(p_JailTimeTD[ playerid ], 85);
-		TextDrawFont(p_JailTimeTD[ playerid ], 1);
-		TextDrawLetterSize(p_JailTimeTD[ playerid ], 0.329999, 1.500000);
-		TextDrawColor(p_JailTimeTD[ playerid ], -1);
-		TextDrawSetOutline(p_JailTimeTD[ playerid ], 1);
-		TextDrawSetProportional(p_JailTimeTD[ playerid ], 1);
-
 		p_TrackPlayerTD[ playerid ] = TextDrawCreate(571.000000, 258.000000, "Loading~n~~w~NaN.0m");
 		TextDrawAlignment(p_TrackPlayerTD[ playerid ], 2);
 		TextDrawBackgroundColor(p_TrackPlayerTD[ playerid ], 80);
@@ -27674,6 +27830,23 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 
 stock initializePlayerTextDraws( playerid )
 {
+  	g_ZoneOwnerTD[ playerid ] = CreatePlayerTextDraw( playerid, 86.000000, 296.000000, "_" );
+	PlayerTextDrawAlignment( playerid, g_ZoneOwnerTD[ playerid ], 2 );
+	PlayerTextDrawBackgroundColor( playerid, g_ZoneOwnerTD[ playerid ], 255 );
+	PlayerTextDrawFont( playerid, g_ZoneOwnerTD[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, g_ZoneOwnerTD[ playerid ], 0.250000, 1.200000 );
+	PlayerTextDrawColor( playerid, g_ZoneOwnerTD[ playerid ], -1 );
+	PlayerTextDrawSetOutline( playerid, g_ZoneOwnerTD[ playerid ], 1 );
+
+	p_JailTimeTD[ playerid ] = CreatePlayerTextDraw(playerid, 328.000000, 24.000000, "Time Remaining:~n~250 seconds");
+	PlayerTextDrawAlignment(playerid, p_JailTimeTD[ playerid ], 2);
+	PlayerTextDrawBackgroundColor(playerid, p_JailTimeTD[ playerid ], 85);
+	PlayerTextDrawFont(playerid, p_JailTimeTD[ playerid ], 1);
+	PlayerTextDrawLetterSize(playerid, p_JailTimeTD[ playerid ], 0.329999, 1.500000);
+	PlayerTextDrawColor(playerid, p_JailTimeTD[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_JailTimeTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_JailTimeTD[ playerid ], 1);
+
     p_DamageTD[ playerid ] = CreatePlayerTextDraw(playerid, 357.000000, 208.000000, "~r~~h~300.24 DAMAGE");
 	PlayerTextDrawBackgroundColor(playerid, p_DamageTD[ playerid ], 255);
 	PlayerTextDrawFont(playerid, p_DamageTD[ playerid ], 3);
@@ -27816,48 +27989,89 @@ function SetPlayerRandomSpawn( playerid )
 	    return 1;
 	}
 
-	if ( p_ApartmentSpawnLocation[ playerid ] != -1 )
+	if ( p_SpawningKey[ playerid ] [ 0 ] != '\0' )
 	{
-	    new Float: Z = 17.03 + ( p_ApartmentSpawnLocation[ playerid ] * 5.447 );
-		pauseToLoad( playerid );
-	    SetPlayerPos( playerid, -1955.0114, 1360.8344, Z );
-	    SetPlayerInterior( playerid, 0 );
-	    SetPlayerFacingAngle( playerid, 180.0 );
-		return 1;
-	}
+		new index = p_SpawningIndex[ playerid ];
+		new gangid = p_GangID[ playerid ];
 
-	if ( p_BusinessSpawnLocation[ playerid ] != -1 )
-	{
-		new
-			businessid = p_BusinessSpawnLocation[ playerid ], type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
+		// house spawning
+		if ( strmatch( p_SpawningKey[ playerid ], "HSE" ) )
+		{
+			if ( Iter_Contains( houses, index ) &&strmatch( g_houseData[ index ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+			{
+			    if ( ! IsHouseOnFire( index ) )
+			    {
+					pauseToLoad( playerid );
+					UpdatePlayerEntranceExitTick( playerid );
+					p_InHouse[ playerid ] = -1, p_InBusiness[ playerid ] = -1;
+				    SetPlayerInterior( playerid, 0 );
+				    SetPlayerPos( playerid, g_houseData[ index ] [ E_EX ], g_houseData[ index ] [ E_EY ], g_houseData[ index ] [ E_EZ ] );
+					/*p_InHouse[ playerid ] = index, p_InBusiness[ playerid ] = -1;
+				    SetPlayerPos( playerid, g_houseData[ index ] [ E_TX ], g_houseData[ index ] [ E_TY ], g_houseData[ index ] [ E_TZ ] + 1 );
+					SetPlayerVirtualWorld( playerid, g_houseData[ index ] [ E_WORLD ] );
+					SetPlayerInterior( playerid, g_houseData[ index ] [ E_INTERIOR_ID ] );*/
+					return 1;
+				}
+				else SendServerMessage( playerid, "The house you were to be spawned at is on fire therefore normal spawning has been applied." );
+			}
+			else ResetSpawnLocation( playerid );
+		}
 
-		p_InHouse[ playerid ] = -1;
-		p_InBusiness[ playerid ] = businessid;
+		// business spawning
+		else if ( strmatch( p_SpawningKey[ playerid ], "BIZ" ) )
+		{
+			if ( Iter_Contains( business, index ) && IsBusinessAssociate( playerid, index ) )
+			{
+				//new type = g_businessData[ index ] [ E_INTERIOR_TYPE ];
+				pauseToLoad( playerid );
+				UpdatePlayerEntranceExitTick( playerid );
+				p_InHouse[ playerid ] = -1, p_InBusiness[ playerid ] = -1;
+			    SetPlayerInterior( playerid, 0 );
+			    SetPlayerPos( playerid, g_businessData[ index ] [ E_X ], g_businessData[ index ] [ E_Y ], g_businessData[ index ] [ E_Z ] );
+				/*p_InHouse[ playerid ] = -1, p_InBusiness[ playerid ] = index;
+			  	SetPlayerVirtualWorld( playerid, g_businessData[ index ] [ E_WORLD ] );
+				SetPlayerInterior( playerid, g_businessData[ index ] [ E_INTERIOR_TYPE ] + 20 );
+				SetPlayerPos( playerid, g_businessInteriorData[ type ] [ E_X ], g_businessInteriorData[ type ] [ E_Y ], g_businessInteriorData[ type ] [ E_Z ] );*/
+				return 1;
+			}
+			else ResetSpawnLocation( playerid );
+		}
 
-		pauseToLoad( playerid );
-		SetPlayerPos( playerid, g_businessInteriorData[ type ] [ E_X ], g_businessInteriorData[ type ] [ E_Y ], g_businessInteriorData[ type ] [ E_Z ] );
-		SetPlayerInterior( playerid, g_businessData[ businessid ] [ E_INTERIOR_TYPE ] + 20 );
-	  	SetPlayerVirtualWorld( playerid, g_businessData[ businessid ] [ E_WORLD ] );
-		return 1;
-	}
+		// gang facilities
+		else if ( strmatch( p_SpawningKey[ playerid ], "GNG" ) )
+		{
+			if ( Iter_Contains( gangs, gangid ) && Iter_Contains( gangfacilities, index ) && g_gangData[ gangid ] [ E_SQL_ID ] == g_gangFacilities[ index ] [ E_GANG_SQL_ID ] ) {
+				SetPlayerToGangFacility( playerid, index );
+				return 1;
+			}
+			else ResetSpawnLocation( playerid );
+		}
 
- 	if ( p_HouseSpawnLocation[ playerid ] != -1 )
-	{
-	    new
-	    	ID = p_HouseSpawnLocation[ playerid ];
+		// visage apartment
+		else if ( strmatch( p_SpawningKey[ playerid ], "VIZ" ) )
+		{
+			if ( Iter_Contains( visageapartments, index ) && g_VisageApartmentData[ index ] [ E_OWNER_ID ] == p_AccountID[ playerid ] ) {
+				SetPlayerToVisageApartment( playerid, index );
+				return 1;
+			}
+			else ResetSpawnLocation( playerid );
+		}
 
-	    if ( IsHouseOnFire( ID ) ) SendServerMessage( playerid, "The house you were to be spawned at is on fire therefore normal spawning has been applied." );
-	    else
-	    {
-			p_InHouse[ playerid ] = ID;
-			p_InBusiness[ playerid ] = -1;
-			//pauseToLoad( playerid );
-		    SetPlayerPos( playerid, g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ] + 1 );
-			SetPlayerVirtualWorld( playerid, g_houseData[ ID ] [ E_WORLD ] );
-			SetPlayerInterior( playerid, g_houseData[ ID ] [ E_INTERIOR_ID ] );
-			return 1;
+		// standard apartment
+		else if ( strmatch( p_SpawningKey[ playerid ], "APT" ) )
+		{
+			if ( g_apartmentData[ index ] [ E_CREATED ] && strmatch( g_apartmentData[ index ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+			{
+				pauseToLoad( playerid );
+			    SetPlayerInterior( playerid, 0 );
+			    SetPlayerFacingAngle( playerid, 180.0 );
+			    SetPlayerPos( playerid, -1955.0114, 1360.8344, 17.03 + ( index * 5.447 ) );
+			    return 1;
+			}
+			else ResetSpawnLocation( playerid );
 		}
 	}
+
 
 	new
 		city = p_SpawningCity{ playerid } >= MAX_CITIES ? random( MAX_CITIES ) : p_SpawningCity{ playerid };
@@ -28085,7 +28299,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 			}
 		}
 
-		for( new j = 0; j < MAX_CITIES; j++ )
+		for( new j = 0; j < sizeof( g_bankvaultData ); j++ )
 		{
 			// Blow Bank Vault
 			if ( IsPointToPoint( 5.0, X, Y, Z, g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 0 ], g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 1 ], g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 2 ] ) && !g_bankvaultData[ j ] [ E_DISABLED ] && g_C4Data[ playerid ] [ i ] [ E_WORLD ] == g_bankvaultData[ j ] [ E_WORLD ] )
@@ -28102,26 +28316,33 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 					GivePlayerWantedLevel( playerid, 24 );
 					Achievement::HandleBankBlown( playerid );
 
-					SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"%s Bank Vault{FFFFFF}!", ReturnPlayerName( playerid ), playerid, returnCityName( g_bankvaultData[ j ] [ E_CITY ] ) );
+					if ( j == VAULT_BOAT ) {
+						TriggerClosestCivilians( playerid, GetClosestRobberyNPC( getClosestRobberySafe( playerid ) ) );
+					}
+
+					SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"%s Vault{FFFFFF}!", ReturnPlayerName( playerid ), playerid, g_bankvaultData[ j ] [ E_NAME ] );
 					break;
 				}
 			}
 
 			// Blow Jails
-			if ( IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE1_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 2 ] ) || IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE2_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 2 ] ) && !g_jailData[ j ] [ E_BOMBED ] )
+			if ( j < sizeof( g_jailData ) )
 			{
-				if ( g_iTime > g_jailData[ j ] [ E_TIMESTAMP ] )
+				if ( IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE1_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 2 ] ) || IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE2_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 2 ] ) && !g_jailData[ j ] [ E_BOMBED ] )
 				{
-			    	g_jailData[ j ] [ E_BOMBED ] = true;
-			    	g_jailData[ j ] [ E_TIMESTAMP ] = g_iTime + 300;
+					if ( g_iTime > g_jailData[ j ] [ E_TIMESTAMP ] )
+					{
+				    	g_jailData[ j ] [ E_BOMBED ] = true;
+				    	g_jailData[ j ] [ E_TIMESTAMP ] = g_iTime + 300;
 
-					GivePlayerScore( playerid, 3 );
-				    GivePlayerWantedLevel( playerid, 24 );
-				    Achievement::HandleJailBlown( playerid );
+						GivePlayerScore( playerid, 3 );
+					    GivePlayerWantedLevel( playerid, 24 );
+					    Achievement::HandleJailBlown( playerid );
 
-					SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has exploded the "COL_GREY"%s Jail{FFFFFF} and has freed its prisoners.", ReturnPlayerName( playerid ), playerid, returnCityName( g_jailData[ j ] [ E_CITY ] ) );
-				    massUnjailPlayers( g_jailData[ j ] [ E_CITY ] );
-				    break;
+						SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has exploded the "COL_GREY"%s Jail{FFFFFF} and has freed its prisoners.", ReturnPlayerName( playerid ), playerid, returnCityName( g_jailData[ j ] [ E_CITY ] ) );
+					    massUnjailPlayers( g_jailData[ j ] [ E_CITY ] );
+					    break;
+					}
 				}
 			}
 		}
@@ -28383,48 +28604,50 @@ thread OnApartmentLoad( )
 thread OnHouseLoad( )
 {
 	new
-		rows, fields, i = -1, hID,
-		Field[ 30 ],
-		szString[ 40 ],
+		rows, fields, i = -1,
 	    loadingTick = GetTickCount( )
 	;
 
 	cache_get_data( rows, fields );
 	if ( rows )
 	{
-		while( ++i < rows )
-		{
-			cache_get_field_content( i, "ID", Field ),			hID = strval( Field );
-			cache_get_field_content( i, "PASSWORD", g_houseData[ hID ] [ E_PASSWORD ], dbHandle, 5 );
-			cache_get_field_content( i, "NAME", g_houseData[ hID ] [ E_HOUSE_NAME ], dbHandle, 30 );
-			cache_get_field_content( i, "OWNER", g_houseData[ hID ] [ E_OWNER ], dbHandle, 24 );
-			cache_get_field_content( i, "COST", Field ),      	g_houseData[ hID ] [ E_COST ] = strval( Field );
-			cache_get_field_content( i, "EX", Field ),         	g_houseData[ hID ] [ E_EX ] = floatstr( Field );
-			cache_get_field_content( i, "EY", Field ),         	g_houseData[ hID ] [ E_EY ] = floatstr( Field );
-			cache_get_field_content( i, "EZ", Field ),         	g_houseData[ hID ] [ E_EZ ] = floatstr( Field );
-			cache_get_field_content( i, "TX", Field ),         	g_houseData[ hID ] [ E_TX ] = floatstr( Field );
-			cache_get_field_content( i, "TY", Field ),         	g_houseData[ hID ] [ E_TY ] = floatstr( Field );
-			cache_get_field_content( i, "TZ", Field ),         	g_houseData[ hID ] [ E_TZ ] = floatstr( Field );
-			cache_get_field_content( i, "INTERIOR", Field ),	g_houseData[ hID ] [ E_INTERIOR_ID ] = strval( Field );
-			cache_get_field_content( i, "WEAPONS", szString ), 	sscanf( szString, "p<.>e<ddddddd>", g_HouseWeapons[ hID ] );
-			cache_get_field_content( i, "AMMO", szString ),   	sscanf( szString, "p<.>e<ddddddd>", g_HouseWeaponAmmo[ hID ] );
+		static weapon_info[ 40 ], house_name[ 30 ], password[ 5 ], owner[ 24 ];
 
-			g_houseData[ hID ] [ E_WORLD ] = ( hID + MAX_HOUSES );
-			g_houseData[ hID ] [ E_MAP_ICON ] = strmatch( g_houseData[ hID ] [ E_OWNER ], "No-one" ) ? CreateDynamicMapIcon( g_houseData[ hID ] [ E_EX ], g_houseData[ hID ] [ E_EY ], g_houseData[ hID ] [ E_EZ ], 31, 0, -1, -1, -1, HOUSE_MAPICON_RADIUS ) : INVALID_OBJECT_ID;
-			g_houseData[ hID ] [ E_CHECKPOINT ] [ 0 ] = CreateDynamicCP( g_houseData[ hID ] [ E_EX ], g_houseData[ hID ] [ E_EY ], g_houseData[ hID ] [ E_EZ ], 1.0, -1, 0, -1, 100.0 );
-			g_houseData[ hID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( g_houseData[ hID ] [ E_TX ], g_houseData[ hID ] [ E_TY ], g_houseData[ hID ] [ E_TZ ], 1.0, g_houseData[ hID ] [ E_WORLD ], g_houseData[ hID ] [ E_INTERIOR_ID ], -1, 100.0 );
-	        format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ hID ] [ E_HOUSE_NAME ], hID, g_houseData[ hID ] [ E_OWNER ], number_format( g_houseData[ hID ] [ E_COST ] ) );
-	        g_houseData[ hID ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( szBigString, COLOR_WHITE, g_houseData[ hID ] [ E_EX ], g_houseData[ hID ] [ E_EY ], g_houseData[ hID ] [ E_EZ ], 20.0 );
-			g_houseData[ hID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_houseData[ hID ] [ E_TX ], g_houseData[ hID ] [ E_TY ], g_houseData[ hID ] [ E_TZ ], 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ hID ] [ E_WORLD ] );
-			g_houseData[ hID ] [ E_CREATED ] = true;
+		while( ++ i < rows )
+		{
+			// set name., owner, password again (less memory)
+			cache_get_field_content( i, "NAME", house_name, dbHandle, 30 );
+			cache_get_field_content( i, "PASSWORD", password, dbHandle, 5 );
+			cache_get_field_content( i, "OWNER", owner, dbHandle, 24 );
+
+			// create home handle
+			new house_sql_id = cache_get_field_content_int( i, "ID", dbHandle );
+			new handle = CreateHouse( house_name,
+				cache_get_field_content_int( i, "COST", dbHandle ),
+				cache_get_field_content_float( i, "EX", dbHandle ),
+				cache_get_field_content_float( i, "EY", dbHandle ),
+				cache_get_field_content_float( i, "EZ", dbHandle ),
+				cache_get_field_content_float( i, "TX", dbHandle ),
+				cache_get_field_content_float( i, "TY", dbHandle ),
+				cache_get_field_content_float( i, "TZ", dbHandle ),
+				cache_get_field_content_int( i, "INTERIOR", dbHandle ),
+				password, owner, house_sql_id
+			);
+
+			if ( handle != ITER_NONE ) {
+				// store weapon information
+				cache_get_field_content( i, "WEAPONS", weapon_info ), sscanf( weapon_info, "p<.>e<ddddddd>", g_HouseWeapons[ handle ] );
+				cache_get_field_content( i, "AMMO", weapon_info ), sscanf( weapon_info, "p<.>e<ddddddd>", g_HouseWeaponAmmo[ handle ] );
+			}
 		}
 	}
 	printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 
 	// Make Lorenc the owner of unowned VIP houses
-	for( new houseid = 0; houseid < MAX_HOUSES; houseid ++ ) if ( g_houseData[ houseid ] [ E_CREATED ] ) {
-		if ( strmatch( g_houseData[ houseid ] [ E_OWNER ], "No-one" ) && g_houseData[ houseid ] [ E_COST ] < 10000 )
+	foreach ( new houseid : houses ) if ( g_houseData[ houseid ] [ E_COST ] < 10000 ) {
+		if ( strmatch( g_houseData[ houseid ] [ E_OWNER ], "No-one" ) ) {
 			SetHouseOwner( houseid, "Lorenc" );
+		}
 	}
 
 	// The server crashes when the fires aren't correctly loaded.
@@ -28432,60 +28655,65 @@ thread OnHouseLoad( )
 	return 1;
 }
 
-stock CreateHouse( cost, Float: eX, Float: eY, Float: eZ, Float: tX = H_DEFAULT_X, Float: tY = H_DEFAULT_Y, Float: tZ = H_DEFAULT_Z, interior = 2 )
+stock CreateHouse( house_name[ 30 ], cost, Float: eX, Float: eY, Float: eZ, Float: tX = H_DEFAULT_X, Float: tY = H_DEFAULT_Y, Float: tZ = H_DEFAULT_Z, interior = 2, password[ 5 ] = "N/A", owner[ 24 ] = "No-one", sql_id = ITER_NONE )
 {
 	new
-	    hID
-	;
+		hID = ( 0 <= sql_id < MAX_HOUSES ) ? sql_id : Iter_Free( houses );
 
-	for( hID = 0; hID < MAX_HOUSES; hID++ )
-	    if ( !g_houseData[ hID ] [ E_CREATED ] ) break;
+	if ( Iter_Contains( houses, sql_id ) )
+		hID = ITER_NONE;
 
-	if ( hID >= MAX_HOUSES )
-	    return -1;
+	if ( hID != ITER_NONE )
+	{
+		Iter_Add( houses, hID );
 
-	if ( g_houseData[ hID ] [ E_CREATED ] )
-	    return -1;
+		// set house name, password, owner
+		format( g_houseData[ hID ] [ E_HOUSE_NAME ], 30, "%s", house_name );
+		format( g_houseData[ hID ] [ E_PASSWORD ], 5, "%s", password );
+		format( g_houseData[ hID ] [ E_OWNER ], 24, "%s", owner );
 
-	g_houseData[ hID ] [ E_COST ] = cost;
-	g_houseData[ hID ] [ E_EX ] = eX;
-	g_houseData[ hID ] [ E_EY ] = eY;
-	g_houseData[ hID ] [ E_EZ ] = eZ;
-	g_houseData[ hID ] [ E_TX ] = tX;
-	g_houseData[ hID ] [ E_TY ] = tY;
-	g_houseData[ hID ] [ E_TZ ] = tZ;
-	g_houseData[ hID ] [ E_INTERIOR_ID ] = interior;
-	g_houseData[ hID ] [ E_WORLD ] = ( hID + MAX_HOUSES );
-	g_houseData[ hID ] [ E_MAP_ICON ] = CreateDynamicMapIcon( eX, eY, eZ, 31, 0, -1, -1, -1, HOUSE_MAPICON_RADIUS );
-	g_houseData[ hID ] [ E_CHECKPOINT ] [ 0 ] = CreateDynamicCP( eX, eY, eZ, 1.0, -1, 0, -1, 100.0 );
-	g_houseData[ hID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( tX, tY, tZ, 1.0, g_houseData[ hID ] [ E_WORLD ], g_houseData[ hID ] [ E_INTERIOR_ID ], -1, 100.0 );
-	format( g_houseData[ hID ] [ E_HOUSE_NAME ], 5, "Home" );
-	format( g_houseData[ hID ] [ E_PASSWORD ], 4, "N/A" );
-	format( g_houseData[ hID ] [ E_OWNER ], 7, "No-one" );
-	FillHomeWithFurniture( hID, 0 );
+		// set home variables
+		g_houseData[ hID ] [ E_COST ] = cost;
+		g_houseData[ hID ] [ E_EX ] = eX;
+		g_houseData[ hID ] [ E_EY ] = eY;
+		g_houseData[ hID ] [ E_EZ ] = eZ;
+		g_houseData[ hID ] [ E_TX ] = tX;
+		g_houseData[ hID ] [ E_TY ] = tY;
+		g_houseData[ hID ] [ E_TZ ] = tZ;
+		g_houseData[ hID ] [ E_INTERIOR_ID ] = interior;
+		g_houseData[ hID ] [ E_WORLD ] = ( hID + MAX_HOUSES );
 
-	for( new i; i < MAX_HOUSE_WEAPONS; i++ )
-	    g_HouseWeapons[ hID ] [ i ] = 0, g_HouseWeaponAmmo[ hID ] [ i ] = -1;
+		// reset weapons (in case)
+		for( new i; i < MAX_HOUSE_WEAPONS; i++ ) {
+		    g_HouseWeapons[ hID ] [ i ] = 0, g_HouseWeaponAmmo[ hID ] [ i ] = -1;
+		}
 
-	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ hID ] [ E_HOUSE_NAME ], hID, g_houseData[ hID ] [ E_OWNER ], number_format( cost ) );
-    g_houseData[ hID ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( szBigString, COLOR_WHITE, eX, eY, eZ, 20.0 );
-	g_houseData[ hID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, tX, tY, tZ, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ hID ] [ E_WORLD ] );
+		// prefurnish home
+		if ( sql_id == ITER_NONE ) FillHomeWithFurniture( hID, 0 );
 
-	g_houseData[ hID ] [ E_CREATED ] = true;
-	format( szBigString, sizeof( szBigString ), "INSERT INTO `HOUSES` VALUES (%d,'Home','No-one',%d,%f,%f,%f,%f,%f,%f,%d,'N/A','0.0.0.0.0.0.0.','-1.-1.-1.-1.-1.-1.-1.')", hID, cost, eX, eY, eZ, tX, tY, tZ, interior );
-	mysql_single_query( szBigString );
+		// set global
+		g_houseData[ hID ] [ E_MAP_ICON ] = strmatch( owner, "No-one" ) ? CreateDynamicMapIcon( eX, eY, eZ, 31, 0, -1, -1, -1, HOUSE_MAPICON_RADIUS ) : -1;
 
-	print( "- Created another house." );
+		g_houseData[ hID ] [ E_CHECKPOINT ] [ 0 ] = CreateDynamicCP( eX, eY, eZ, 1.0, -1, 0, -1, 100.0 );
+		g_houseData[ hID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( tX, tY, tZ, 1.0, g_houseData[ hID ] [ E_WORLD ], g_houseData[ hID ] [ E_INTERIOR_ID ], -1, 100.0 );
 
-	return ( hID );
+		format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ hID ] [ E_HOUSE_NAME ], hID, g_houseData[ hID ] [ E_OWNER ], number_format( cost ) );
+
+	    g_houseData[ hID ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( szBigString, COLOR_WHITE, eX, eY, eZ, 20.0 );
+		g_houseData[ hID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, tX, tY, tZ, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ hID ] [ E_WORLD ] );
+
+		// insert if non existant prior
+		if ( sql_id == ITER_NONE ) {
+			format( szBigString, sizeof( szBigString ), "INSERT INTO `HOUSES` VALUES (%d,'Home','No-one',%d,%f,%f,%f,%f,%f,%f,%d,'N/A','0.0.0.0.0.0.0.','-1.-1.-1.-1.-1.-1.-1.')", hID, cost, eX, eY, eZ, tX, tY, tZ, interior );
+			mysql_single_query( szBigString );
+		}
+	}
+	return hID;
 }
-
 
 stock DestroyHouse( houseid )
 {
-	if ( houseid == -1 )
-		return 0;
-	if ( g_houseData[ houseid ] [ E_CREATED ] == false )
+	if ( ! Iter_Contains( houses, houseid ) )
 	    return 0;
 
 	new
@@ -28497,8 +28725,8 @@ stock DestroyHouse( houseid )
 	{
 	    SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" One of your houses has been destroyed.");
 		p_OwnedHouses[ playerid ] --;
-		if ( p_HouseSpawnLocation[ playerid ] == houseid ) p_HouseSpawnLocation[ playerid ] = -1;
 	}
+
 	format( query, sizeof( query ), "DELETE FROM HOUSES WHERE ID=%d", houseid );
 	mysql_single_query( query );
     destroyAllFurniture( houseid );
@@ -28509,7 +28737,7 @@ stock DestroyHouse( houseid )
 	DestroyDynamicCP( g_houseData[ houseid ] [ E_CHECKPOINT ] [ 1 ] );
 	DestroyDynamic3DTextLabel( g_houseData[ houseid ] [ E_LABEL ] [ 0 ] );
 	DestroyDynamic3DTextLabel( g_houseData[ houseid ] [ E_LABEL ] [ 1 ] );
-	g_houseData[ houseid ] [ E_CREATED ] = false;
+	Iter_Remove( houses, houseid );
 	return 1;
 }
 
@@ -28518,7 +28746,7 @@ stock SetHouseForAuction( ID )
 	if ( ID == -1 )
 		return 0;
 
-	if ( g_houseData[ ID ] [ E_CREATED ] == false )
+	if ( ! Iter_Contains( houses, ID ) )
 	    return 0;
 
 	new
@@ -28530,7 +28758,6 @@ stock SetHouseForAuction( ID )
 	{
 	    SendClientMessage( player, -1, ""COL_PINK"[HOUSE]"COL_WHITE" One of your houses has been taken for auction.");
 		p_OwnedHouses[ player ] --;
-		if ( p_HouseSpawnLocation[ player ] == ID ) p_HouseSpawnLocation[ player ] = -1;
 	}
 	for( new i; i < MAX_HOUSE_WEAPONS; i++ ) { g_HouseWeapons[ ID ] [ i ] = 0, g_HouseWeaponAmmo[ ID ] [ i ] = -1; }
 	format( g_houseData[ ID ] [ E_PASSWORD ], 4, "N/A" );
@@ -28557,7 +28784,7 @@ stock SetHouseForAuction( ID )
 
 stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ] )
 {
-	if ( houseid == -1 || g_houseData[ houseid ] [ E_CREATED ] == false || isnull( szOwner ) )
+	if ( ! Iter_Contains( houses, houseid ) || isnull( szOwner ) )
 		return 0;
 
 	new
@@ -28587,9 +28814,9 @@ stock GetPlayerOwnedApartments( playerid )
 stock GetPlayerOwnedHouses( playerid )
 {
 	new count = 0;
-	for( new i; i < MAX_HOUSES; i++ )
+	foreach ( new i : houses )
 	{
-		if ( g_houseData[ i ] [ E_CREATED ] == true && strmatch( g_houseData[ i ][ E_OWNER ], ReturnPlayerName( playerid ) ) )
+		if ( strmatch( g_houseData[ i ][ E_OWNER ], ReturnPlayerName( playerid ) ) )
 		{
 		    count ++;
 		}
@@ -28709,6 +28936,10 @@ stock IsPlayerCIA( playerid )
 	    }
 	}
 	return false;
+}
+
+stock IsPlayerArmy( playerid ) {
+	return GetPlayerSkin( playerid ) == 287;
 }
 
 stock IsPlayerPolice( playerid )
@@ -29066,7 +29297,7 @@ stock getClosestRobberySafe( playerid, &Float: dis = 99999.99 )
 	;
 	foreach(new i : RobberyCount)
 	{
-		if ( g_robberyData[ i ] [ E_WORLD ] != -1 && g_robberyData[ i ] [ E_WORLD ] != world ) continue;
+		if ( world != 0 && g_robberyData[ i ] [ E_WORLD ] != world ) continue;
 		GetDynamicObjectPos( g_robberyData[ i ] [ E_SAFE ], X, Y, Z );
     	dis2 = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
     	if ( dis2 < dis && dis2 != -1.00 ) {
@@ -29127,7 +29358,7 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 		}
 	}
 
-	printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
+	// printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
 	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 100.0 : random_chance ) > 5.0 )
 	{
 		new Float: iRobAmount = float( g_robberyData[ robberyid ] [ E_ROB_VALUE ] );
@@ -29901,10 +30132,10 @@ stock getRandomCreatedHouse( )
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
 	// first find homes to ignore
-	for ( new i = 0; i < MAX_HOUSES; i ++ )
+	foreach ( new i : houses )
 	{
 		// Avoid Hills / Avoid V.I.P or Clan Homes
-		if ( g_houseData[ i ] [ E_CREATED ] != true || g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
+		if ( g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
 			ignoredHomes[ i ] = i;
 			continue;
 		}
@@ -30113,13 +30344,15 @@ stock IsPointInArea( Float: X, Float: Y, Float: Z, Float: minx, Float: maxx, Flo
 
 stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
 {
-	new
-	    count = 0, Float: Z
-	;
+	if ( g == INVALID_GANG_ID )
+		return 0;
+
+	new count = 0;
+	new Float: Z;
 
 	foreach(new i : Player)
 	{
-		if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
+		if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! p_AntiSpawnKillEnabled{ i } )
 		{
             if ( IsPlayerAFK( i ) )
             {
@@ -30137,123 +30370,59 @@ stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
 	return count;
 }
 
-stock CreateGang( szName[ ], playerid )
+thread OnGangAdded( gangid )
 {
-	if ( !IsPlayerConnected( playerid ) )
-		return -1;
-
-	new
-	    ID = Iter_Free(gangs)
-	;
-
-	if ( ID != ITER_NONE )
-	{
-		new
-			color = g_gangColors[ random( sizeof( g_gangColors ) ) ];
-
-		format( g_gangData[ ID ] [ E_NAME ], 30, "%s", szName );
-
-	    g_gangData[ ID ] [ E_LEADER ] 			= p_AccountID[ playerid ];
-	    g_gangData[ ID ] [ E_KILLS ] 			= 1;
-	    g_gangData[ ID ] [ E_DEATHS ] 			= 1;
-	    g_gangData[ ID ] [ E_SCORE ] 			= 0;
-	    g_gangData[ ID ] [ E_BANK ] 			= 0;
-	    g_gangData[ ID ] [ E_COLOR ]        	= color;
-		g_gangData[ ID ] [ E_INVITE_ONLY ] 		= false;
-		g_gangData[ ID ] [ E_JOIN_MSG ] [ 0 ] 	= '\0';
-
-		for ( new i = 0; i < MAX_COLEADERS; i ++ )
-			g_gangData[ ID ] [ E_COLEADER ] [ i ] = 0;
-
-	    p_GangID[ playerid ] = ID; // set it anyway here just incase of cache taking a bit
-
-	    if ( p_WantedLevel[ playerid ] == 0 && p_AdminOnDuty{ playerid } == false )
-	    	SetPlayerColor( playerid, g_gangData[ ID ] [ E_COLOR ] );
-
-	    SendClientMessageToGang( ID, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have created the gang: %s(%d)", szName, ID );
-
-		// Insert gang to db
-		mysql_function_query( dbHandle, sprintf( "INSERT INTO `GANGS`(`NAME`,`LEADER`,`COLOR`) VALUES ('%s', %d, %d)", g_gangData[ ID ] [ E_NAME ], p_AccountID[ playerid ], color ), true, "OnGangAdded", "dd", playerid, ID );
-
-		// Insert into iterator
-	    Iter_Add(gangs, ID);
-	}
-	return ID;
-}
-
-thread OnGangAdded( leaderid, gangid )
-{
-	// set cache incrementing id
 	g_gangData[ gangid ] [ E_SQL_ID ] = cache_insert_id( );
-
-	// ensure leader is connected
-	if ( IsPlayerConnected( leaderid ) ) {
-		p_GangID[ leaderid ] = gangid;
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ], p_AccountID[ leaderid ] ) );
-	} else {
-		printf("[GANG ERROR] Gang SQL %d missing leader id (slot %d)", g_gangData[ gangid ] [ E_SQL_ID ], gangid );
-	}
 	return 1;
 }
 
-thread OnGangLoad( playerid )
+thread OnPlayerGangLoaded( playerid )
 {
-	new
-		rows, fields, i;
+	new rows, fields;
 
 	cache_get_data( rows, fields );
 
 	if ( rows )
 	{
-		new
-			gang_sql_id = cache_get_field_content_int( 0, "ID" ),
-			id = Iter_Free(gangs)
-		;
+		new gang_name[ 30 ], join_msg[ 96 ];
+		new gang_sql_id = cache_get_field_content_int( 0, "ID" );
 
 		// Check again if the gang exists
 		foreach (new g : gangs) if ( gang_sql_id == g_gangData[ g ] [ E_SQL_ID ] ) {
 			p_GangID[ playerid ] = g;
 			printf( "[gang debug] found duplicate gang for gang id %d (User : %s)", g, ReturnPlayerName( playerid ) );
-			return InformGangConnectMessage( playerid, g ), 1;
+			return 1;
 		}
 
-		if ( id != -1 )
+		// reset name and join message appropriately
+		cache_get_field_content( 0, "NAME", gang_name, dbHandle, sizeof( gang_name ) );
+		cache_get_field_content( 0, "JOIN_MSG", join_msg, dbHandle, sizeof( join_msg ) );
+
+		// create gang
+		new handle = CreateGang( gang_name,
+			cache_get_field_content_int( 0, "LEADER", dbHandle ),
+			cache_get_field_content_int( 0, "COLOR", dbHandle ),
+			cache_get_field_content_int( 0, "KILLS", dbHandle ),
+			cache_get_field_content_int( 0, "DEATHS", dbHandle ),
+			cache_get_field_content_int( 0, "BANK", dbHandle ),
+			cache_get_field_content_int( 0, "SCORE", dbHandle ),
+			cache_get_field_content_int( 0, "RESPECT", dbHandle ),
+			!! cache_get_field_content_int( 0, "INVITE_ONLY", dbHandle ),
+			join_msg, false, gang_sql_id
+		);
+
+		// message player
+		if ( handle != ITER_NONE )
 		{
-			// Declare saved gang
-			Iter_Add( gangs, id );
-
-			// Load data into variables
-			cache_get_field_content( 0, "NAME", g_gangData[ id ] [ E_NAME ], dbHandle, 30 );
-			cache_get_field_content( 0, "JOIN_MSG", g_gangData[ id ] [ E_JOIN_MSG ], dbHandle, 96 );
-			g_gangData[ id ] [ E_SQL_ID ] = gang_sql_id;
-			g_gangData[ id ] [ E_LEADER ] = cache_get_field_content_int( 0, "LEADER", dbHandle );
-			g_gangData[ id ] [ E_COLOR ] = cache_get_field_content_int( 0, "COLOR", dbHandle );
-			g_gangData[ id ] [ E_KILLS ] = cache_get_field_content_int( 0, "KILLS", dbHandle );
-			g_gangData[ id ] [ E_BANK ] = cache_get_field_content_int( 0, "BANK", dbHandle );
-			g_gangData[ id ] [ E_DEATHS ] = cache_get_field_content_int( 0, "DEATHS", dbHandle );
-			g_gangData[ id ] [ E_SCORE ] = cache_get_field_content_int( 0, "SCORE", dbHandle );
-			g_gangData[ id ] [ E_RESPECT ] = cache_get_field_content_int( 0, "RESPECT", dbHandle );
-			g_gangData[ id ] [ E_INVITE_ONLY ] = !!cache_get_field_content_int( 0, "INVITE_ONLY", dbHandle );
-
-			// Set to '\0' instead of null
-			if ( ismysqlnull( g_gangData[ id ] [ E_JOIN_MSG ] ) ) {
-				g_gangData[ id ] [ E_JOIN_MSG ] [ 0 ] = '\0';
-			}
-
-			// Throw the user in
-			p_GangID[ playerid ] = id;
-
-			// Load coleaders
-			format( szNormalString, sizeof( szNormalString ), "SELECT `USER_ID` FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d LIMIT 0,%d", g_gangData[ id ] [ E_SQL_ID ], MAX_COLEADERS );
-			mysql_function_query( dbHandle, szNormalString, true, "OnGangColeaderLoad", "d", id );
-
-			// Message player
-			InformGangConnectMessage( playerid, id );
-			printf("[%s] Added gangid %d as gang slot %d", ReturnPlayerName( playerid ), gang_sql_id, id );
+			p_GangID[ playerid ] = handle;
+			InformGangConnectMessage( playerid, handle );
+			printf("[%s] Added gangid %d as gang slot %d", ReturnPlayerName( playerid ), gang_sql_id, handle );
 		}
-		else {
+		else
+		{
+			p_GangID[ playerid ] = -1;
 			SendServerMessage( playerid, "Had an issue loading your gang. Contact Lorenc (0x92F)." );
-			printf("[EXCEPTION] Had an issue loading a gang row id %d", i );
+			printf("[GANG] [ERROR] Had an issue loading a gang row id %d", gang_sql_id );
 		}
 	}
 	else
@@ -30261,6 +30430,58 @@ thread OnGangLoad( playerid )
 		p_GangID[ playerid ] = -1;
 	}
 	return 1;
+}
+
+stock CreateGang( const gang_name[ 30 ], leader, gang_color, kills = 1, deaths = 1, bank = 0, score = 0, respect = 0, bool: invite_only = false, const join_message[ 96 ] = "NULL", bool: has_facility = false, sql_id = 0 )
+{
+	new handle = Iter_Free( gangs );
+
+	if ( handle != ITER_NONE )
+	{
+		// Insert into iterator
+	    Iter_Add( gangs, handle );
+
+		// insert gang into database, if no sql found
+		if ( ! sql_id )
+		{
+			// insert gang and fetch sql id
+			mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO `GANGS`(`NAME`,`LEADER`,`COLOR`) VALUES ('%e', %d, %d)", gang_name, leader, gang_color );
+			mysql_function_query( dbHandle, szBigString, true, "OnGangAdded", "d", handle );
+
+			// reset coleaders in this case
+			for ( new i = 0; i < MAX_COLEADERS; i ++ ) {
+				g_gangData[ handle ] [ E_COLEADER ] [ i ] = 0;
+			}
+		}
+		else
+		{
+			// set gang sql id
+			g_gangData[ handle ] [ E_SQL_ID ] = sql_id;
+
+			// load coleaders
+			format( szNormalString, sizeof( szNormalString ), "SELECT `USER_ID` FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d LIMIT 0,%d", g_gangData[ handle ] [ E_SQL_ID ], MAX_COLEADERS );
+			mysql_function_query( dbHandle, szNormalString, true, "OnGangColeaderLoad", "d", handle );
+		}
+
+		// Check for null join message
+		if ( ismysqlnull( join_message ) ) g_gangData[ handle ] [ E_JOIN_MSG ] [ 0 ] = '\0';
+		else format( g_gangData[ handle ] [ E_JOIN_MSG ], 96, "%s", join_message );
+
+		// format name
+		format( g_gangData[ handle ] [ E_NAME ], 30, "%s", gang_name );
+
+		// default variables
+	    g_gangData[ handle ] [ E_LEADER ] 			= leader;
+	    g_gangData[ handle ] [ E_KILLS ] 			= kills;
+	    g_gangData[ handle ] [ E_DEATHS ] 			= deaths;
+	    g_gangData[ handle ] [ E_SCORE ] 			= score;
+	    g_gangData[ handle ] [ E_BANK ] 			= bank;
+	    g_gangData[ handle ] [ E_COLOR ]        	= gang_color;
+	    g_gangData[ handle ] [ E_RESPECT ] 			= respect;
+		g_gangData[ handle ] [ E_INVITE_ONLY ] 		= invite_only;
+		g_gangData[ handle ] [ E_HAS_FACILITY ] 	= has_facility;
+	}
+	return handle;
 }
 
 thread OnGangColeaderLoad( gangid ) {
@@ -30271,7 +30492,8 @@ thread OnGangColeaderLoad( gangid ) {
 	cache_get_data( rows, fields );
 
 	if ( rows ) {
-		for( new i = 0; i < rows; i ++ ) if ( i < MAX_COLEADERS ) {
+		for( new i = 0; i < rows; i ++ ) {
+			if ( i >= MAX_COLEADERS ) break;
 			g_gangData[ gangid ] [ E_COLEADER ] [ i ] = cache_get_field_content_int( i, "USER_ID", dbHandle );
 		}
 	}
@@ -30296,7 +30518,7 @@ stock DestroyGang( gangid, bool: soft_delete = false, bool: iter_remove = true )
 	{
 	 	// Do SQL operations
 	 	mysql_single_query( sprintf( "DELETE FROM `GANGS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
-	 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
+	 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	}
 
@@ -30330,9 +30552,21 @@ stock DestroyGang( gangid, bool: soft_delete = false, bool: iter_remove = true )
  	{
  		if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid )
  		{
- 			g_gangTurfData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
- 			g_gangTurfData[ z ] [ E_OWNER ] = INVALID_GANG_ID;
-			GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], COLOR_GANGZONE );
+			new
+				facility_gang = g_gangTurfData[ z ] [ E_FACILITY_GANG ];
+
+		   	if ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangTurfData[ z ] [ E_FACILITY_GANG ] ) )
+		   	{
+	    		g_gangTurfData[ z ] [ E_COLOR ] = setAlpha( g_gangData[ facility_gang ] [ E_COLOR ], 0x80 );
+	 			g_gangTurfData[ z ] [ E_OWNER ] = facility_gang;
+				GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], g_gangTurfData[ z ] [ E_COLOR ] );
+		   	}
+		   	else
+		   	{
+	 			g_gangTurfData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
+	 			g_gangTurfData[ z ] [ E_OWNER ] = INVALID_GANG_ID;
+				GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], COLOR_GANGZONE );
+		   	}
  		}
  	}
 }
@@ -30375,6 +30609,9 @@ stock DisconnectFromGang( playerid )
 
 	if ( ! Iter_Contains( gangs, gangid ) )
 		return 0;
+
+	if ( g_gangData[ gangid ] [ E_HAS_FACILITY ] ) // we will not soft delete gangs with facilities
+		return 1;
 
 	new
 		members = GetOnlineGangMembers( gangid );
@@ -30533,15 +30770,22 @@ stock SetGangColorsToGang( gangid )
 	{
 	    foreach ( new x : turfs )
 	    {
-	    	// reset color
-	    	if ( g_gangTurfData[ x ] [ E_OWNER ] == gangid ) g_gangTurfData[ x ] [ E_COLOR ] = setAlpha( g_gangData[ g_gangzoneAttacker[ x ] ] [ E_COLOR ], 0x80 );
+	    	// set the new color to the turfs
+	    	if ( g_gangTurfData[ x ] [ E_OWNER ] == gangid ) {
+	    		g_gangTurfData[ x ] [ E_COLOR ] = setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 );
+	    	}
 
-	        GangZoneHideForPlayer( i, g_gangTurfData[ x ] [ E_ID ] );
-	        GangZoneShowForPlayer( i, g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
+	    	// resume flashing if gang war
+	    	if ( g_gangzoneAttacker[ x ] == gangid ) {
+	    		GangZoneStopFlashForPlayer( i, g_gangTurfData[ x ] [ E_ID ] );
+	    		GangZoneFlashForPlayer( i, g_gangTurfData[ x ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
+	    	} else {
+		        GangZoneHideForPlayer( i, g_gangTurfData[ x ] [ E_ID ] );
+		        GangZoneShowForPlayer( i, g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
+	    	}
 	    }
 
-	    if ( p_GangID[ i ] == gangid && p_WantedLevel[ i ] <= 0 && p_Class[ i ] == CLASS_CIVILIAN )
-	    {
+	    if ( p_GangID[ i ] == gangid && p_WantedLevel[ i ] <= 0 && p_Class[ i ] == CLASS_CIVILIAN ) {
 	        SetPlayerColor( i, g_gangData[ gangid ] [ E_COLOR ] );
 	    }
 	}
@@ -30878,7 +31122,7 @@ stock IsHouseOnFire( houseid )
 	if ( houseid < 0 || houseid > MAX_HOUSES )
 	    return 0;
 
-	if ( g_houseData[ houseid ] [ E_CREATED ] == false )
+	if ( ! Iter_Contains( houses, houseid ) )
 	    return 0;
 
 	for( new i, Float: X, Float: Y, Float: Z; i < sizeof( g_fireData ); i++ )
@@ -31455,10 +31699,7 @@ stock isFurnitureObject( modelid )
 
 stock destroyAllFurniture( houseid )
 {
-	if ( houseid == -1 )
-		return 0;
-
-	if ( g_houseData[ houseid ] [ E_CREATED ] == false )
+	if ( ! Iter_Contains( houses, houseid ) )
 	    return 0;
 
 	foreach ( new fhandle : housefurniture[ houseid ] ) {
@@ -33561,8 +33802,8 @@ stock PlainUnjailPlayer( playerid )
 	format( szNormalString, sizeof( szNormalString ), "UPDATE USERS SET JAIL_TIME=0,JAIL_ADMIN=0 WHERE ID=%d", p_AccountID[ playerid ] );
 	mysql_single_query( szNormalString );
 
-    KillTimer				( p_JailTimer[ playerid ] );
-	TextDrawHideForPlayer	( playerid, p_JailTimeTD[ playerid ] );
+    KillTimer( p_JailTimer[ playerid ] );
+	PlayerTextDrawHide( playerid, p_JailTimeTD[ playerid ] );
 }
 
 stock JobEquals( playerid, jobid )
@@ -33651,7 +33892,7 @@ stock showToyCategoryItems( playerid, category, bool: pawnshop = false )
 	}
 }
 
-stock unlockPlayerToy( playerid, toy_id )
+stock UnlockPlayerToy( playerid, toy_id )
 {
 	if ( toy_id > MAX_TOYS )
 		return;
@@ -35045,7 +35286,7 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
     	// Update houses (furniture also?)
 	 	mysql_single_query( sprintf( "UPDATE `HOUSES` SET `OWNER` = '%s' WHERE `OWNER` = '%s'", mysql_escape( newName ), mysql_escape( ReturnPlayerName( playerid ) ) ) );
 
-    	for( new i = 0; i < MAX_HOUSES; i++ ) {
+    	foreach ( new i : houses ) {
     		if ( strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) {
 				format( g_houseData[ i ] [ E_OWNER ], 24, "%s", newName );
     			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ i ] [ E_HOUSE_NAME ], i, g_houseData[ i ] [ E_OWNER ], number_format( g_houseData[ i ] [ E_COST ] ) );
@@ -35670,20 +35911,20 @@ stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
     {
 		foreach(new clerkid : RobberyNpc)
 		{
-	        if ( g_robberyNpcData[ clerkid ] [ E_WORLD ] == g_robberyData[ robberyid ] [ E_WORLD ] )
-	        {
-	            if ( 0.0 < ( fTmp = GetPlayerDistanceFromPoint( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ] ) ) < distance )
-	            {
-	                distance = fTmp;
-	                iCurrent = clerkid;
-	            }
-			}
+	        if ( g_robberyData[ robberyid ] [ E_WORLD ] && g_robberyNpcData[ clerkid ] [ E_WORLD ] && g_robberyNpcData[ clerkid ] [ E_WORLD ] != g_robberyData[ robberyid ] [ E_WORLD ] )
+	        	continue;
+
+            if ( 0.0 < ( fTmp = GetPlayerDistanceFromPoint( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ] ) ) < distance )
+            {
+                distance = fTmp;
+                iCurrent = clerkid;
+            }
 	    }
     }
     return iCurrent;
 }
 
-stock TriggerRobberyForClerks( playerid, robberyid )
+/*stock TriggerRobberyForClerks( playerid, robberyid )
 {
 	new
 		clerkid = GetClosestRobberyNPC( robberyid );
@@ -35703,7 +35944,7 @@ stock TriggerRobberyForClerks( playerid, robberyid )
 		TriggerClosestCivilians( playerid, clerkid );
 		SendServerMessage( playerid, "You have committed a robbery while the clerk is concious! "COL_ORANGE"The police have been informed." );
 	}
-}
+}*/
 
 stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: rZ, skinid, ... )
 {
@@ -35779,19 +36020,29 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 			// Create Civilians
 			if ( strmatch( name, "Triad Boss" ) )
 			{
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
 			}
 			else if ( strmatch( name, "Mafia Boss" ) )
 			{
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
+			}
+			else if ( strmatch( name, "Militia Boss" ) )
+			{
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2379.767333, 1554.927001, 2.117187, -150.0000 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_think", Float: { -2422.314697, 1549.529541, 2.117187, 120.00000 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_watch", Float: { -2417.101562, 1546.823608, 2.117187, 79.399986 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_think", Float: { -2402.885986, 1550.987548, 2.117187, 99.200134 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2389.123535, 1552.664794, 2.117187, 132.69992 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_watch", Float: { -2400.807861, 1544.349975, 2.117187, -75.30000 }, 0, 0 );
+				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2394.430664, 1536.986572, 2.117187, 96.699829 }, 0, 0 );
 			}
 		}
 	}
@@ -35977,7 +36228,7 @@ stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
 	return 1;
 }
 
-stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25, clerkid = -1 )
+stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25, clerkid = -1, bool: weapon_accurate = false )
 {
 	// Auto aim on crouch for store clerks
 	if ( clerkid != -1 )
@@ -35986,19 +36237,11 @@ stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25, clerkid = -1 )
 		KillTimer( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] );
 		g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid );
 	}
-	else
+	else if ( ! weapon_accurate ) // Civilians should have inaccuracy
 	{
-		// Civilians should have inaccuracy
 		FCNPC_SetWeaponAccuracy( npcid, weaponid, 0.5 );
+		FCNPC_SetWeaponSkillLevel( npcid, WEAPONSKILL_AK47, 8 );
 	}
-
-	// Adjust weapon accuracy
-	if ( weaponid == 25 )
-	{
-		FCNPC_SetWeaponReloadTime( npcid, 25, 1800 );
-		FCNPC_SetWeaponShootTime( npcid, 25, 1800 );
-	}
-
 	FCNPC_ResetAnimation( npcid );
 	FCNPC_ClearAnimations( npcid );
 	FCNPC_SetWeapon( npcid, weaponid );
@@ -36091,18 +36334,24 @@ public FCNPC_OnSpawn( npcid )
 	return 1;
 }
 
-public FCNPC_OnTakeDamage(npcid, damagerid, weaponid, bodypart, Float:health_loss)
+public FCNPC_OnTakeDamage( npcid, damagerid, weaponid, bodypart, Float: health_loss )
 {
-	new
-		clerkid = GetRobberyNpcFromPlayer( npcid );
+	new civilianid = GetCivilianNpcFromPlayer( npcid );
+	new clerkid = GetRobberyNpcFromPlayer( npcid );
 
+	// trigger npcs
+	if ( civilianid != -1 ) {
+		TriggerClosestCivilians( damagerid, GetClosestRobberyNPC( getClosestRobberySafe( damagerid ) ) );
+	}
+
+	// no damage for bots
 	if ( 0 <= clerkid < MAX_ROBBERY_NPCS && 0 <= damagerid < MAX_PLAYERS && p_Class[ damagerid ] == CLASS_POLICE ) {
-		return 0; // Cant damage bots.
+		return 0;
 	}
 	return 1;
 }
 
-stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 16 ], const Float: position[ ] [ 4 ], worldid, interior, bool: hostile = true, numSkins = sizeof( skinId ), numPositions = sizeof( position ) )
+stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 16 ], const Float: position[ 4 ], worldid, interior, bool: hostile = true, numSkins = sizeof( skinId ) )
 {
 	new
 		szBotName[ MAX_PLAYER_NAME ];
@@ -36117,21 +36366,21 @@ stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 1
 	if ( civilianid != ITER_NONE )
 	{
 		new
-			randomSkin = random( numSkins ), randomSpawn = random( numPositions );
+			randomSkin = random( numSkins );
 
 		Iter_Add(CivilianNpc, civilianid);
 
 		format( g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], 16, "%s", animlib );
 		format( g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ], 16, "%s", animname );
 		format( g_civilianNpcData[ civilianid ] [ E_NPC_NAME ], MAX_PLAYER_NAME, "%s", name );
-		CreateDynamic3DTextLabel( sprintf( "%s", name ), 0xFFFFFF25, position[ randomSpawn ] [ 0 ], position[ randomSpawn ] [ 1 ], position[ randomSpawn ] [ 2 ], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0, .worldid = worldid );
+		CreateDynamic3DTextLabel( sprintf( "%s", name ), 0xFFFFFF25, position[ 0 ], position[ 1 ], position[ 2 ], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0, .worldid = worldid );
 		g_civilianNpcData[ civilianid ] [ E_NPC_ID ] = FCNPC_Create( worldid != -1 ? sprintf( "[BOT]%s%d", szBotName, civilianid ) : sprintf( "[BOT]%s", szBotName ) );
 		g_civilianNpcData[ civilianid ] [ E_WORLD ] = worldid == -1 ? 0 : worldid;
 		g_civilianNpcData[ civilianid ] [ E_INTERIOR ] = interior == -1 ? 0 : interior;
 		g_civilianNpcData[ civilianid ] [ E_CLERK_ID ] = clerkId;
 		g_civilianNpcData[ civilianid ] [ E_HOSTILE ] = hostile;
-		FCNPC_Spawn( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], skinId[ randomSkin ], position[ randomSpawn ] [ 0 ], position[ randomSpawn ] [ 1 ], position[ randomSpawn ] [ 2 ] );
-		FCNPC_SetAngle( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], ( g_civilianNpcData[ civilianid ] [ E_RZ ] = position[ randomSpawn ] [ 3 ] ) );
+		FCNPC_Spawn( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], skinId[ randomSkin ], position[ 0 ], position[ 1 ], position[ 2 ] );
+		FCNPC_SetAngle( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], ( g_civilianNpcData[ civilianid ] [ E_RZ ] = position[ 3 ] ) );
 	}
 }
 
@@ -36144,7 +36393,7 @@ stock GetCivilianNpcFromPlayer( playerid )
 	return -1;
 }
 
-stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 25.0, &Float: distance = FLOAT_INFINITY )
+stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 50.0, &Float: distance = FLOAT_INFINITY )
 {
     if ( ! IsPlayerConnected( playerid ) )
     	return;
@@ -36156,9 +36405,9 @@ stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 25.0, &Fl
 
     GetPlayerPos( playerid, X, Y, Z );
 
-	foreach(new civilianid : CivilianNpc) if ( ! g_civilianNpcData[ civilianid ] [ E_PROVOKED ] && g_civilianNpcData[ civilianid ] [ E_WORLD ] == worldid )
+	foreach (new civilianid : CivilianNpc) if ( ! g_civilianNpcData[ civilianid ] [ E_PROVOKED ] && g_civilianNpcData[ civilianid ] [ E_WORLD ] == worldid )
 	{
-		if ( GetPlayerDistanceFromPoint( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], X, Y, Z ) < radius )
+		if ( ( clerkid != -1 && g_civilianNpcData[ civilianid ] [ E_CLERK_ID ] == clerkid ) || GetPlayerDistanceFromPoint( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], X, Y, Z ) < radius )
 		{
 			if ( g_civilianNpcData[ civilianid ] [ E_HOSTILE ] )
 			{
@@ -36166,16 +36415,16 @@ stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 25.0, &Fl
 					closestid = GetClosestPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ] );
 
 				g_civilianNpcData[ civilianid ] [ E_PROVOKED ] = true;
-				FCNPC_ShootAtPlayer( closestid, g_civilianNpcData[ civilianid ] [ E_NPC_ID ], randarg( 28, 30, 25 ) );
+				FCNPC_ShootAtPlayer( closestid, g_civilianNpcData[ civilianid ] [ E_NPC_ID ], 30, .weapon_accurate = strmatch( g_civilianNpcData[ civilianid ] [ E_NPC_NAME ], "Militia" ) );
 			}
 		}
     }
 
     // Trigger the robbery NPC TOO!
-	if ( clerkid != -1 && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_iTime > g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] )
+	if ( clerkid != -1 && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_iTime > g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] && ! g_robberyNpcData[ clerkid ] [ E_PROVOKED ] )
 	{
 		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-		FCNPC_ShootAtPlayer( playerid, g_robberyNpcData[ clerkid ] [ E_NPC_ID ], randarg( 28, 30, 25 ), clerkid );
+		FCNPC_ShootAtPlayer( playerid, g_robberyNpcData[ clerkid ] [ E_NPC_ID ], 24, clerkid );
 		StopPlayerNpcRobbery( playerid );
 	}
 }
@@ -37240,7 +37489,7 @@ stock ResetBusiness( iBusiness )
 
     // queries
 	mysql_single_query( sprintf( "DELETE FROM `BUSINESS_VEHICLES` WHERE `BUSINESS_ID`=%d", iBusiness ) );
-	mysql_single_query( sprintf( "UPDATE `USERS` SET `BUSINESS_ID`=-1 WHERE `BUSINESS_ID`=%d", iBusiness ) );
+	mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `BUSINESS_ID`='BIZ %d'", iBusiness ) );
 }
 
 stock GetBusinessAssociates( businessid ) {
@@ -37852,17 +38101,21 @@ stock GivePlayerFireworks( playerid, fireworks ) {
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `FIREWORKS`=%d WHERE `ID`=%d", p_Fireworks[ playerid ], p_AccountID[ playerid ] ) );
 }
 
-stock ShowBusinessSecurityUpgrades( playerid )
+stock ShowBusinessSecurityUpgrades( playerid, businessid )
 {
-	static security[ 400 ];
-	if ( security[ 0 ] == '\0' )
-	{
-		security = ""COL_WHITE"Security Level\t"COL_WHITE"Protection\t"COL_WHITE"Price\n";
-		format( security, sizeof( security ), "%s"COL_RED"NONE\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"$0\n", security, "%", "%" );
-		format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 1 ] [ E_COST ] ) );
-		format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t60%s Safe Security + 12.5%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 2 ] [ E_COST ] ) );
-		format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t90%s Safe Security + 6.25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( g_businessSecurityData[ 3 ] [ E_COST ] ) );
-	}
+	new business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ], security_cost;
+	new security[ 400 ] = ""COL_WHITE"Security Level\t"COL_WHITE"Protection\t"COL_WHITE"Price\n";
+
+	format( security, sizeof( security ), "%s"COL_RED"NONE\t0%s Safe Security + 100%s chance of breaking in\t"COL_GOLD"$0\n", security, "%", "%" );
+
+	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 1 ] [ E_COST_MULTIPLIER ] );
+	format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t30%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
+
+	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 2 ] [ E_COST_MULTIPLIER ] );
+	format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t60%s Safe Security + 12.5%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
+
+	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 3 ] [ E_COST_MULTIPLIER ] );
+	format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t90%s Safe Security + 6.25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }
 
@@ -37990,6 +38243,24 @@ stock IsPlayerUnderCover( playerid ) {
 	return 0;
 }
 
+stock ShowPlayerSpawnMenu( playerid ) {
+	return ShowPlayerDialog( playerid, DIALOG_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Location", ""COL_GREY"Reset Back To Default\nHouse\nBusiness\nGang Facility\nVisage Casino", "Select", "Cancel" );
+}
+
+stock SetPlayerSpawnLocation( playerid, spawn_key[ 4 ], spawn_index = 0 )
+{
+	// set sql, null if key is null
+	if ( spawn_key[ 0 ] == '\0' ) {
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `ID`=%d", spawn_key, spawn_index, p_AccountID[ playerid ] ) );
+	} else {
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`='%s %d' WHERE `ID`=%d", spawn_key, spawn_index, p_AccountID[ playerid ] ) );
+	}
+
+	// variable update
+	strcpy( p_SpawningKey[ playerid ], spawn_key );
+	p_SpawningIndex[ playerid ] = spawn_index;
+	return 1;
+}
 
 
 
@@ -38006,7 +38277,7 @@ stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 
 stock IsPlayerEmailVerified( playerid ) return p_accountSecurityData[ playerid ] [ E_ID ];
 
-stock UpdatePlayerEntranceExitTick( playerid, ms = 2500 ) {
+stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
 }
 
