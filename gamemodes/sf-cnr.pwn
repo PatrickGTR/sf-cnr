@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+// #pragma option -d3
 #pragma dynamic 7200000
 // #define DEBUG_MODE
 
@@ -115,7 +115,6 @@ native gpci 						( playerid, serial[ ], len );
 // #define ITER_NONE 					-1
 
 /* Dynamic Macros */
-//#define GetTaxRate()				(GetGVarFloat("taxrate"))
 #define IsDoubleXP()				(GetGVarInt("doublexp")!=0)
 #define IsProxiesBanned()			(GetGVarInt("proxyban")!=0)
 
@@ -2102,7 +2101,7 @@ new
 	g_casinoRewardsItems[ ] [ E_REWARDS_DATA ] = {
 		{ "Fireworks", 2500.0 },
 		{ "10 Explosive Bullets", 5000.0 },
-		{ "No Tax For 1 Hour", 25000.0 },
+		// { "No Tax For 1 Hour", 25000.0 },
 		{ "Highroller Access", 200000.0 }
 	},
 	g_casinoRewardsShopItems[ ] = {
@@ -3031,7 +3030,7 @@ new
 	p_AntiEmpSpam                   [ MAX_PLAYERS ],
 	bool: p_inPaintBall           	[ MAX_PLAYERS char ],
 	p_Scissors                      [ MAX_PLAYERS ],
-	p_TaxTime              			[ MAX_PLAYERS ],
+	// p_TaxTime              			[ MAX_PLAYERS ],
 	bool: p_GPSToggled            	[ MAX_PLAYERS char ],
 	p_GPSTimer                      [ MAX_PLAYERS ] = { 0xFF, ... },
 	p_GPSLocation               	[ MAX_PLAYERS ],
@@ -3270,7 +3269,7 @@ stock Float: distanceFromSafe( iPlayer, iRobbery, &Float: fDistance = Float: 0x7
     static
     	Float: fX, Float: fY, Float: fZ;
 
-    if ( iRobbery == -1 )
+    if ( ! Iter_Contains( RobberyCount, iRobbery ) )
     	return fDistance;
 
 	if ( g_robberyData[ iRobbery ] [ E_WORLD ] != -1 && g_robberyData[ iRobbery ] [ E_WORLD ] != GetPlayerVirtualWorld( iPlayer ) )
@@ -3334,7 +3333,10 @@ public OnGameModeInit()
 	}
 
 	/* ** Server Variables ** */
-	AddServerVariable( "taxrate", "5.0", GLOBAL_VARTYPE_FLOAT );
+	AddServerVariable( "taxtime", "0", GLOBAL_VARTYPE_INT );
+	AddServerVariable( "taxrate", "1.0", GLOBAL_VARTYPE_FLOAT );
+	AddServerVariable( "taxprofit", "0.0", GLOBAL_VARTYPE_FLOAT );
+	AddServerVariable( "taxprofit_prev", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "doublexp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventbank", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventhost", "0", GLOBAL_VARTYPE_INT );
@@ -4283,8 +4285,24 @@ public OnGameModeInit()
 		g_apartmentElevatorDoor2[ level ] = CreateDynamicObject( 18757, -1955.05, 1361.64, Z, 0.00, 0.00, -90.00 );
 	}
 
-	// Houses
-	SetDynamicObjectMaterialText( CreateDynamicObject( 10447, -2550.1719, 54.5625, 14.3906, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 100 ), 40, "The Lost", 7, "Times New Roman", 24, 1, -1, -16777216, 1 ); // The Lost
+	// The Lost And Damned
+	tmpVariable = CreateDynamicObject( 10447, -2550.173339, 54.568466, 14.390675, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 8, 10969, "scum_sfse", "ws_apartmentbrown1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 14, 10969, "scum_sfse", "ws_apartmentbrown2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 8399, "vgs_shops", "vegasclubmural_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 8399, "vgs_shops", "vegasclubmural_128", 0 );
+	SetDynamicObjectMaterialText( tmpVariable, 7, "The Lost", 120, "Arial", 80, 1, -1, -11980516, 1 );
+	CreateDynamicObject( 1536, -2587.711425, 58.402435, 3.336049, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	CreateDynamicObject( 1536, -2587.741455, 61.402610, 3.336049, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	tmpVariable = CreateDynamicObject( 3525, -2588.295654, 58.166000, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
+	tmpVariable = CreateDynamicObject( 3525, -2588.345703, 61.656021, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	tmpVariable = CreateDynamicObject( 3524, -2587.017578, 59.971229, 4.842026, 35.399997, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterialText( tmpVariable, 1, "a", 0, "arial", 0, 0, 0, 0, 0 );
 
 	// Lumberjack
 	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.1, -94.00, 34.28, 0.0, 0.0, 270.0, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
@@ -4430,7 +4448,7 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "DELETE g FROM `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 1209600;", true, "onRemoveInactiveRows", "d", 6 );
 
 	// Remove 25% of wealth off 2 weeks inactive players.
-	mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 7 );
+	// mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 7 );
 #endif
 
 	/* ** Houses/Bribes/ETC **/
@@ -4874,6 +4892,12 @@ public OnServerUpdate( )
 
 		// throttle
 		g_randomMessageTick = g_iTime + 30;
+	}
+
+	// Time For Tax?
+	if ( g_iTime >= GetGVarInt( "taxtime" ) ) {
+		UpdateServerVariable( "taxtime", g_iTime + 86400, 0.0, "", GLOBAL_VARTYPE_INT );
+		BeginEconomyTax( );
 	}
 
  	// Happy Hour
@@ -5436,6 +5460,11 @@ public OnServerUpdate( )
 	// Restore and Replenish Stuff
     if ( g_iTime > g_RestoreRobberiesBribes )
     {
+    #if defined WEAPON_DROP_ENABLED
+    	// Replenish Weapon Drops
+    	ClearInactiveWeaponDrops( g_iTime );
+    #endif
+
     	// Replenish Bribes
 		foreach(new bribeid : BribeCount) if ( ( GetTickCount( ) - g_bribeData[ bribeid ] [ E_TIMESTAMP ] ) > MAX_BRIBE_WAIT && g_bribeData[ bribeid ] [ E_DISABLED ] == true )
 			UpdateDynamic3DTextLabelText( g_bribeData[ bribeid ] [ E_LABEL ], COLOR_GOLD, sprintf( "Bribe(%d)", bribeid ) ), g_bribeData[ bribeid ] [ E_DISABLED ] = false;
@@ -5455,7 +5484,6 @@ public OnServerUpdate( )
 			g_atmData[ i ] [ E_LOOT ] = 0, g_atmData[ i ] [ E_DISABLED ] = false, g_atmData[ i ] [ E_HEALTH ] = 100.0;
 			ReplaceObjectModel( g_atmData[ i ] [ E_OBJECT ], 19324 );
  		}
-
 
  		// Replenish product
  		foreach (new businessid : business)
@@ -5647,11 +5675,11 @@ public ZoneTimer( )
                  	// Money Grub
                  	if ( Iter_Contains( gangs, owner_gang ) )
 					{
-						if ( g_gangData[ owner_gang ] [ E_BANK ] > 250000 )
-						{
-							new afk_opmembers, online_opmembers = GetOnlineGangMembers( owner_gang, .afk_members = afk_opmembers );
-							new zone_money = Turf_GetProfitability( z, online_opmembers - afk_opmembers );
+						new afk_opmembers, online_opmembers = GetOnlineGangMembers( owner_gang, .afk_members = afk_opmembers );
+						new zone_money = Turf_GetProfitability( z, online_opmembers - afk_opmembers );
 
+						if ( g_gangData[ owner_gang ] [ E_BANK ] > zone_money )
+						{
 							// deduct from gang bank and give to op, take 10% as fee
 				            g_gangData[ owner_gang ] [ E_BANK ] -= zone_money;
 				            SaveGangData( owner_gang );
@@ -7292,7 +7320,72 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 function hidedamagetd_Timer( playerid )
 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
-stock GetPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
+stock BeginEconomyTax( starting = 1 ) {
+	mysql_function_query( dbHandle, "SELECT USER_CASH, BIZ_CASH, GANG_CASH FROM (SELECT (SUM(BANKMONEY)+SUM(CASH)) USER_CASH FROM USERS) A CROSS JOIN (SELECT SUM(BANK) BIZ_CASH FROM BUSINESSES) B CROSS JOIN (SELECT SUM(BANK) GANG_CASH FROM GANGS) C", true, "OnTaxEconomy", "i", starting );
+}
+
+thread OnTaxEconomy( starting )
+{
+	new rows;
+    cache_get_data( rows, tmpVariable );
+    if ( ! rows ) return 1;
+
+	new user_cash = cache_get_field_content_int( 0, "USER_CASH", dbHandle );
+	new biz_cash = cache_get_field_content_int( 0, "BIZ_CASH", dbHandle );
+	new gang_cash = cache_get_field_content_int( 0, "GANG_CASH", dbHandle );
+
+	// total_thousands
+	new Float: total_thousands = float( user_cash + biz_cash + gang_cash ) / 1000000.0;
+
+	// step
+	if ( starting == 1 )
+	{
+		new Float: tax_rate = GetGVarFloat( "taxrate" ) / 100.0; // 1%
+
+		// players
+		foreach ( new playerid : Player ) {
+			new
+				player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * tax_rate );
+
+			if ( player_tax > 0 ) {
+				ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) ) );
+				GivePlayerCash( playerid, -player_tax );
+			}
+		}
+
+		// businesses
+		foreach ( new businessid : business ) {
+			new business_tax = floatround( float( g_businessData[ businessid ] [ E_BANK ] ) * tax_rate );
+			if ( business_tax > 0 ) g_businessData[ businessid ] [ E_BANK ] -= business_tax;
+		}
+
+		// gangs
+		foreach ( new gangid : gangs ) {
+			new gang_tax = floatround( float( g_gangData[ gangid ] [ E_BANK ] ) * tax_rate );
+			if ( gang_tax > 0 ) g_gangData[ gangid ] [ E_BANK ] -= gang_tax;
+		}
+
+		// queries
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH`=`CASH`*%f,`BANKMONEY`=`BANKMONEY`*%f WHERE `ONLINE`=0 AND (`BANKMONEY`+`CASH`)>0", 1.0 - tax_rate, 1.0 - tax_rate ) );
+		mysql_single_query( sprintf( "UPDATE `BUSINESSES` SET `BANK`=`BANK`*%f WHERE `BANK`>0", 1.0 - tax_rate ) );
+		mysql_single_query( sprintf( "UPDATE `GANGS` SET `BANK`=`BANK`*%f WHERE `BANK`>0", 1.0 - tax_rate ) );
+
+		// set current economy money
+		SetGVarFloat( "before_tax", total_thousands );
+		printf("[SERVER ECONOMY TAX] $%0.3fM before tax.", total_thousands );
+		BeginEconomyTax( .starting = 0 );
+	}
+	else
+	{
+		new Float: profit = GetGVarFloat( "before_tax" ) - total_thousands;
+		UpdateServerVariable( "taxprofit_prev", 0, GetGVarFloat( "taxprofit" ), "", GLOBAL_VARTYPE_FLOAT );
+		UpdateServerVariable( "taxprofit", 0, GetGVarFloat( "taxprofit" ) + profit, "", GLOBAL_VARTYPE_FLOAT );
+		printf( "[SERVER ECONOMY TAX] The server economy has been successfully taxed for a profit of $%0.3fM.", profit );
+	}
+	return 1;
+}
+
+/*stock GetPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
 {
 	if ( ! GetPlayerTotalCash( playerid ) ) return 0;
 
@@ -7314,7 +7407,7 @@ stock GetPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
 	// return final tax
 	new final_tax = floatround( ( tax_percentage_formula / 100.0 ) * player_money );
 	return final_tax > 0 ? final_tax : 0;
-}
+}*/
 
 #if defined AC_INCLUDED
 public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
@@ -7417,19 +7510,18 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
 	/* ** Tax And Medical Fees ** */
-    new player_tax = GetPlayerTax( playerid );
-    new player_tax_due = p_Uptime[ playerid ] > p_TaxTime[ playerid ] && p_inPaintBall{ playerid } != true;
 
     // check if player has any money
 	if ( GetPlayerTotalCash( playerid ) > 0 )
 	{
-		new
-			szTaxable[ 128 ], iMoney = p_inPaintBall{ playerid } == true ? 0 : ( GetPlayerTotalCash( playerid ) > 200000 ? 1500 : 100 );
+		new medical_fees = p_inPaintBall{ playerid } ? 0 : 100;
 
-		format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in medical fees", number_format( iMoney ) );
-		GivePlayerCash( playerid, -( iMoney ) );
+		if ( medical_fees )  {
+			ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~%s~w~ in medical fees", number_format( medical_fees ) ) );
+			GivePlayerCash( playerid, -medical_fees );
+		}
 
-		if ( player_tax_due && player_tax > 0 )
+		/*if ( ( p_Uptime[ playerid ] > p_TaxTime[ playerid ] && p_inPaintBall{ playerid } != true ) && player_tax > 0 )
 	    {
 			GivePlayerCash( playerid, -player_tax );
 
@@ -7443,8 +7535,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			// format string
 			if ( strlen( szTaxable ) ) format( szTaxable, sizeof( szTaxable ), "%s and ~r~%s~w~ in tax", szTaxable, number_format( player_tax ) );
 			else format( szTaxable, sizeof( szTaxable ), "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) );
-	    }
-		ShowPlayerHelpDialog( playerid, 5000, szTaxable );
+	    }*/
 	}
 	/* ** End Of Tax And Medical Fees ** */
 
@@ -7598,9 +7689,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 		{
 			new
 				iContractAmount = p_ContractedAmount[ playerid ];
-
-			// if player had tax, give him 10 percent of their tax too
-			if ( player_tax_due ) iContractAmount += floatround( float( player_tax ) * 0.25 );
 
 			if ( iContractAmount >= 50000 && GetPlayerScore( killerid ) < 50 )
 			{
@@ -10431,19 +10519,14 @@ CMD:playerjobs( playerid, params[ ] )
 	return 1;
 }
 
-
 CMD:gettaxrate( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:tax( playerid, params[ ] )
 {
-	new Float: tax_rate = 0.0;
-	new tax_amount = GetPlayerTax( playerid, tax_rate );
-
-	if ( p_Uptime[ playerid ] > p_TaxTime[ playerid ] ) {
-		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s when you die.", number_format( tax_amount ), tax_rate, "%%" );
-	} else {
-		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s.", number_format( tax_amount ), tax_rate, "%%", secondstotime( p_TaxTime[ playerid ] - p_Uptime[ playerid ] ) );
-	}
+	new Float: tax_rate = GetGVarFloat( "taxrate" );
+	new player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * ( tax_rate / 100.0 ) );
+	if ( player_tax < 0 ) player_tax = 0;
+	SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s.", number_format( player_tax ), tax_rate, "%%", secondstotime( GetGVarInt( "taxtime" ) - g_iTime ) );
 	return 1;
 }
 
@@ -10461,13 +10544,14 @@ thread gettotalcash( playerid )
     cache_get_data( rows, tmpVariable );
 	if ( rows )
 	{
+		new tax_profit = floatround( ( GetGVarFloat( "taxprofit" ) - GetGVarFloat( "taxprofit_prev" ) ) * 1000000.0 );
 		new user_cash = cache_get_field_content_int( 0, "USER_CASH", dbHandle );
 		new biz_cash = cache_get_field_content_int( 0, "BIZ_CASH", dbHandle );
 		new gang_cash = cache_get_field_content_int( 0, "GANG_CASH", dbHandle );
 		new total_cash = user_cash + biz_cash + gang_cash;
 
-		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s",
-				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ) );
+		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s\nTotal Tax Profit (Day)\t"COL_GOLD"%s",
+				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ), number_format( tax_profit ) );
 
 		// SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( total_cash ), number_format( tax_rate ) );
   		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}SF-CNR Economy", szLargeString, "Close", "" );
@@ -12227,12 +12311,6 @@ CMD:hitlist( playerid, params[ ] )
 	{
 		g_contractList[ player ] [ 0 ] = player;
 		g_contractList[ player ] [ 1 ] = p_ContractedAmount[ player ];
-
-		// add hit amount if applicable
-		if ( p_Uptime[ player ] > p_TaxTime[ player ] && p_inPaintBall{ player } != true ) {
-	    	new player_tax = GetPlayerTax( player );
-	    	g_contractList[ player ] [ 1 ] += floatround( float( player_tax ) * 0.25 );
-		}
 	}
 
 	// sort
@@ -13506,16 +13584,9 @@ CMD:placehit( playerid, params[ ] )
 		GivePlayerCash( playerid, -cash );
 		p_AntiSpammyTS[ playerid  ] = g_iTime + 10;
 
-		// bounty
-		new bounty = p_ContractedAmount[ pID ];
-		if ( p_Uptime[ pID ] > p_TaxTime[ pID ] && p_inPaintBall{ pID } != true ) {
-	    	new player_tax = GetPlayerTax( pID );
-	    	bounty += floatround( float( player_tax ) * 0.25 );
-		}
-
 		// message
 		printf("[placehit] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), number_format( cash ) ); // 8hska7082bmahu
-		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), their bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, number_format( bounty ) );
+		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), their bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, number_format( p_ContractedAmount[ pID ] ) );
 	}
 	return 1;
 }
@@ -17866,11 +17937,21 @@ CMD:weather( playerid, params[ ] )
 
 /* Level RCON */
 CMD:explosiverounds( playerid, params[ ] ) {
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
-	p_ExplosiveBullets[ playerid ] += 100;
-	ShowPlayerHelpDialog( playerid, 1500, "You have only %d explosive bullets remaining.", p_ExplosiveBullets[ playerid ] );
+	if ( ! IsPlayerAdmin( playerid ) )
+		return 0;
+
+	new
+		targetid, rounds;
+
+	if ( sscanf( params, "dd", targetid, rounds ) )
+		return SendUsage( playerid, "/explosiverounds [PLAYER_ID] [ROUNDS]" );
+
+	p_ExplosiveBullets[ targetid ] += rounds;
+	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) %d explosive rounds.", ReturnPlayerName( targetid ), targetid, rounds );
+	ShowPlayerHelpDialog( targetid, 1500, "You have %d explosive bullets remaining.", p_ExplosiveBullets[ targetid ] );
 	return 1;
 }
+
 /*CMD:furnishhomes( playerid, params[ ] ) {
 	if ( ! IsPlayerAdmin( playerid ) ) return 0;
 	for ( new i = 0; i < MAX_HOUSES; i ++ ) if ( g_houseData[ i ] [ E_CREATED ] ) {
@@ -18209,19 +18290,36 @@ CMD:logdialog( playerid, params[ ] )
 	return 1;
 }
 
-/*CMD:settaxrate( playerid, params[ ] )
+CMD:settaxrate( playerid, params[ ] )
 {
 	new Float: rate;
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
 	else if ( sscanf( params, "f", rate ) ) return SendUsage( playerid, "/settaxrate [PERCENTAGE]" );
-	else if ( rate < 0 || rate > 50.0 ) return SendError( playerid, "The rate must be over 0 and less than 50." );
+	else if ( rate < 0 || rate > 10.0 ) return SendError( playerid, "The rate must be over 0 and less than 10." );
 	else
 	{
-	    SendServerMessage( playerid, "You have changed the tax rate from "COL_GREY"%0.2f"COL_WHITE" to "COL_GREY"%0.2f"COL_WHITE".", GetTaxRate( ), rate );
+	    SendServerMessage( playerid, "You have changed the tax rate from "COL_GREY"%0.2f"COL_WHITE" to "COL_GREY"%0.2f"COL_WHITE".", GetGVarInt( "taxrate" ), rate );
 		UpdateServerVariable( "taxrate", 0, rate, "", GLOBAL_VARTYPE_FLOAT );
     }
 	return 1;
-}*/
+}
+
+CMD:settaxtime( playerid, params[ ] )
+{
+	new time;
+	if ( !IsPlayerAdmin( playerid ) ) return 0;
+	else if ( sscanf( params, "d", time ) ) return SendUsage( playerid, "/settaxrate [TIMESTAMP]" );
+	else
+	{
+		if ( time < g_iTime ) {
+	    	SendServerMessage( playerid, "Tax time updated. Players to be taxed A.S.A.P.", secondstotime( time - g_iTime ) );
+		} else {
+	    	SendServerMessage( playerid, "Tax time updated. %s until tax.", secondstotime( time - g_iTime ) );
+		}
+		UpdateServerVariable( "taxtime", time, 0.0, "", GLOBAL_VARTYPE_INT );
+    }
+	return 1;
+}
 
 CMD:givewanted( playerid, params[ ] )
 {
@@ -20210,11 +20308,6 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 	new
 		Float: X, Float: Y, Float: Z;
 
-#if defined AC_INCLUDED
-	if ( GetGVarType( "ac_WeaponPickup", pickupid ) != GLOBAL_VARTYPE_NONE )
-		p_PlayerHasWeapon[ playerid ] { GetGVarInt( "ac_WeaponPickup", pickupid ) } = true;
-#endif
-
 	if ( pickupid != PreviousPickupID[ playerid ] )
 	{
 		new
@@ -21644,7 +21737,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 			p_Fireworks[ playerid ] = cache_get_field_content_int( 0, "FIREWORKS", dbHandle );
 			p_ExplosiveBullets[ playerid ] = cache_get_field_content_int( 0, "EXPLOSIVE_BULLETS", dbHandle );
 			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
-			p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
+			// p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
 
 			// spawn location
 			new
@@ -22045,12 +22138,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
             }
-            /*case 4:
+           	case 4:
             {
                 format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
-            }*/
-            case 4:
+            }
+            case 5:
             {
                 format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back");
@@ -22182,7 +22275,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         return 1;
     }
-    /*if ( dialogid == DIALOG_GANG_BANK_DEPOSIT )
+	if ( dialogid == DIALOG_GANG_BANK_DEPOSIT )
 	{
 		if ( !response )
 			return ShowPlayerBankMenuDialog( playerid );
@@ -22232,7 +22325,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
         return 1;
-    }*/
+    }
 	if ( dialogid == DIALOG_HOUSES )
 	{
 		if ( ! response )
@@ -22910,12 +23003,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     				p_ExplosiveBullets[ playerid ] += 10;
     				ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_YES~~w~ to activate explosive bullets." );
     			}
-    			case 2: // taxes
+    			/*case 2: // taxes
     			{
 					p_TaxTime[ playerid ] = ( p_TaxTime[ playerid ] > p_Uptime[ playerid ] ? p_TaxTime[ playerid ] : p_Uptime[ playerid ] ) + 3600;
 					mysql_single_query( sprintf( "UPDATE `USERS` SET `TAX_TIME`=%d WHERE `ID`=%d", p_TaxTime[ playerid ], p_AccountID[ playerid ] ) );
-    			}
-    			case 3: // highroller
+    			}*/
+    			case 2: // highroller
     			{
     				if ( p_IsCasinoHighRoller{ playerid } ) return SendError( playerid, "You are already considered a casino highroller." );
 					mysql_single_query( sprintf( "UPDATE `USERS` SET `VISAGE_HIGHROLLER`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
@@ -31727,7 +31820,11 @@ stock ShowOwnedFurnitureList( playerid, houseid )
 		foreach ( new fhandle : housefurniture[ houseid ] ) {
 			new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, g_houseFurnitureData[ houseid ] [ fhandle ], E_STREAMER_MODEL_ID );
 			new furniture_item = getFurnitureID( modelid );
-			format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseFurniture[ furniture_item ] [ E_NAME ] );
+			if ( furniture_item != -1 ) {
+				format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseFurniture[ furniture_item ] [ E_NAME ] );
+			} else {
+				strcat( szLargeString, "Unknown\n" );
+			}
 		}
 		ShowPlayerDialog( playerid, DIALOG_FURNITURE_MAN_SEL, DIALOG_STYLE_TABLIST_HEADERS, "Furniture", szLargeString, "Select", "Back" );
 	}
@@ -34535,8 +34632,10 @@ stock ShowPlayerBankMenuDialog( playerid )
 	new
 		gangid = p_GangID[ playerid ];
 
-	if ( gangid != -1 && Iter_Contains( gangs, gangid ) )
-		return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information\n"COL_GREEN"Gang Bank Withdraw\n"COL_GREEN"Gang Bank Balance", "Select", "Cancel" );
+	if ( gangid != -1 && Iter_Contains( gangs, gangid ) ) {
+		format( szBigString, sizeof( szBigString ), "Withdraw\nDeposit\nAccount Information\n{%06x}Gang Bank Withdraw\n{%06x}Gang Bank Deposit\n{%06x}Gang Bank Balance", g_gangData[ gangid ] [ E_COLOR ] >>> 8, g_gangData[ gangid ] [ E_COLOR ] >>> 8, g_gangData[ gangid ] [ E_COLOR ] >>> 8 );
+		return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", szBigString, "Select", "Cancel" );
+	}
 
 	return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information", "Select", "Cancel" );
 }

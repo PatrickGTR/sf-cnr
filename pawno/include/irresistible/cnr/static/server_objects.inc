@@ -5195,4 +5195,10 @@ stock initializeServerObjects( )
 	CreateDynamicObject( 19619, -2367.710693, 1554.091674, 1.567188, 0.000000, 0.000000, -60.799999, -1, -1, -1 );
 	CreateDynamicObject( 2607, -2376.293945, 1553.312988, 1.487188, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 	CreateDynamicObject( 1514, -2375.768554, 1553.325317, 2.117187, 0.000000, 0.000000, 22.000122, -1, -1, -1 );
+
+	// SF Penis Tower
+	tmpVariable = CreateDynamicObject( 8131, -1980.097290, 884.313598, 54.389820, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 0, 8460, "vgseland03_lvs", "ceaserwall06_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 8839, "vgsecarshow", "lightred2_32", 0 );
+	CreateDynamicObject( 19124, -1980.134521, 884.300659, 63.985248, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 }

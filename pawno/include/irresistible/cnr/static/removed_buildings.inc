@@ -256,7 +256,10 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 2779, -21.8125, -57.7656, 1002.5859, 0.25); // gas station fix
 	RemoveBuildingForPlayer(playerid, 2872, -20.5234, -57.7734, 1002.5859, 0.25); // gas station fix
 	RemoveBuildingForPlayer( playerid, 792, -2035.648681, 473.131896, 35.172294, 25.000 ); // facility trees (dope casino)
-	RemoveBuildingForPlayer( playerid, 1227, -2751.422119, 94.378883, 7.031250, 10.000 ); // shini trash facility
+	// RemoveBuildingForPlayer( playerid, 1227, -2751.422119, 94.378883, 7.031250, 10.000 ); // shini trash facility
+	RemoveBuildingForPlayer(playerid, 9919, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility
+	RemoveBuildingForPlayer(playerid, 9937, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility LOD ^
+
 
 	// Wolfganja (Diamond Donor)
 	RemoveBuildingForPlayer(playerid, 1280, -2911.4219, 422.3516, 4.2891, 60.0);

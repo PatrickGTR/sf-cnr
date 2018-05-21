@@ -203,3 +203,12 @@ hook OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, 
 	vCheckForSilentAimbot( playerid, hittype, hitid );
 	return 1;
 }
+
+// Callback Hook (OnPlayerPickupDynamicPickup)
+
+hook OnPlayerPickUpDynPickup( playerid, pickupid )
+{
+	if ( GetGVarType( "ac_WeaponPickup", pickupid ) != GLOBAL_VARTYPE_NONE ) {
+		p_PlayerHasWeapon[ playerid ] { GetGVarInt( "ac_WeaponPickup", pickupid ) } = true;
+	}
+}
