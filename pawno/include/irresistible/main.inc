@@ -32,7 +32,7 @@
 #include < irresistible\features\radio >
 #include < irresistible\features\cash_cards >
 #include < irresistible\features\furniture >
-// #include < irresistible\features\weapon_drop >
+#include < irresistible\features\weapon_drop >
 // #include < irresistible\features\vote >
 
 // gangs and facilities

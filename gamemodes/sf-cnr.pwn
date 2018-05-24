@@ -75,7 +75,6 @@ native gpci 						( playerid, serial[ ], len );
 
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
-#define IsPlayerJailed(%1)          (p_Jailed{%1})
 #define IsPlayerTazed(%1)          	(p_Tazed{%1})
 #define IsPlayerDetained(%1)        (p_Detained{%1})
 #define IsPlayerCuffed(%1)          (p_Cuffed{%1})
@@ -84,7 +83,6 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerBlowingCock(%0)   	(p_GivingBlowjob{%0})
 #define IsPlayerGettingBlowed(%0) 	(p_GettingBlowjob{%0})
 #define IsPlayerAdminOnDuty(%0)     (p_AdminOnDuty{%0})
-#define IsPlayerInPaintBall(%0)		(p_inPaintBall{%0})
 #define IsPlayerMining(%0)			(p_isMining{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerOnSlotMachine(%0)	(p_usingSlotMachine[%0]!=-1)
@@ -105,7 +103,6 @@ native gpci 						( playerid, serial[ ], len );
 #define UpdateWoodStockObject()		(format(szNormalString,32,"%d Logs Ready",g_LogsInStock),SetDynamicObjectMaterialText(g_LogCountObject,0,szNormalString,130,"Arial",0,1,-1,0,1))
 #define replacePercentageSymbol(%0)	strreplacechar(szString,'%','#')
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
-#define IsPlayerInEvent(%0)			(GetPlayerVirtualWorld(playerid)==69)
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
 #define INVALID_TIMER_ID			(-1)
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
@@ -1887,6 +1884,7 @@ new
 #define MENU_RIFLES					( 4 )
 #define MENU_SHOTGUNS				( 5 )
 #define MENU_THROWN					( 6 )
+#define MENU_ARMOR 					( 7 )
 
 enum E_WEAPONS_DATA
 {
@@ -1898,7 +1896,7 @@ new
 	g_AmmunitionCategory[ ] [ ] =
 	{
 		{ "Assault" },  { "Melee" }, { "Submachine Guns" }, { "Pistols" },
-		{ "Rifles" }, { "Shotguns" }, { "Thrown" }
+		{ "Rifles" }, { "Shotguns" }, { "Thrown" }, { "Armor" }
 	},
 	g_AmmunationWeapons[ ][ E_WEAPONS_DATA ] =
 	{
@@ -1934,7 +1932,9 @@ new
 
 		{ MENU_THROWN, 		"Teargas",			17,		5,		500 },
 		{ MENU_THROWN, 		"Grenade",			16,		1,		1200 },
-		{ MENU_THROWN, 		"Molotov Cocktail",	18,		4,		1400 }
+		{ MENU_THROWN, 		"Molotov Cocktail",	18,		4,		1400 },
+
+		{ MENU_ARMOR, 		"Armor", 			101, 	100, 	12500 }
 	},
  	p_AmmunationMenu               [ MAX_PLAYERS char ]
 ;
@@ -3448,7 +3448,7 @@ public OnGameModeInit()
 
 	/* ** Robbery Points ** */
 	static const ROBBERY_BOT_PAY = 2100; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 4500; // max pay from robbing safes
+	static const ROBBERY_SAFE_PAY = 4300; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -8822,9 +8822,9 @@ CMD:business( playerid, params[ ] )
 		if ( p_OwnedBusinesses[ playerid ] >= getPlayerBusinessCapacity( playerid ) ) return SendError( playerid, "You cannot purchase any more businesses, you've reached the limit." );
 		if ( GetPlayerScore( playerid ) < 1000 ) return SendError( playerid, "You need at least 1,000 score to buy a business." );
 
-		foreach(new b : business)
+		foreach ( new b : business )
 		{
-			if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_ENTER_CP ] ) )
+			if ( IsPlayerInDynamicCP( playerid, g_businessData[ b ] [ E_ENTER_CP ] ) || ( iBusiness != -1 && iBusiness == b ) )
 			{
 			    if ( ! g_businessData[ b ] [ E_OWNER_ID ] )
 			    {
@@ -12732,7 +12732,7 @@ CMD:h( playerid, params[ ] )
 
 		foreach ( new i : houses )
 		{
-			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) )
+			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) || ( ID != -1 && ID == i ) )
 			{
 			    if ( strmatch( g_houseData[ i ] [ E_OWNER ], "No-one" ) )
 			    {
@@ -14772,6 +14772,7 @@ CMD:gang( playerid, params[ ] )
 		else if ( gangNameExists( szName ) ) return SendError( playerid, "This gang already exists, try another name." );
 		else
 		{
+			trimString( szName );
 			format( g_gangData[ p_GangID[ playerid ] ] [ E_NAME ], 30, "%s", szName );
 			SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has changed the gang's name to {%06x}%s"COL_WHITE".", ReturnPlayerName( playerid ), playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ] >>> 8, szName );
             SaveGangData( p_GangID[ playerid ] );
@@ -17943,7 +17944,7 @@ CMD:explosiverounds( playerid, params[ ] ) {
 	new
 		targetid, rounds;
 
-	if ( sscanf( params, "dd", targetid, rounds ) )
+	if ( sscanf( params, "ud", targetid, rounds ) )
 		return SendUsage( playerid, "/explosiverounds [PLAYER_ID] [ROUNDS]" );
 
 	p_ExplosiveBullets[ targetid ] += rounds;
@@ -22257,11 +22258,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         else
         {
-        	new
-        		iAfterTax = floatround( iWithdraw * 0.975 );
-
             g_gangData[ gangid ] [ E_BANK ] -= iWithdraw;
-            GivePlayerCash( playerid, iAfterTax );
+            GivePlayerCash( playerid, iWithdraw );
             SaveGangData( gangid );
 
 			// transaction
@@ -22269,7 +22267,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	     	mysql_single_query( szNormalString );
 
 	     	// withdraw
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s (inc. 2.5%s fee) from the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iAfterTax ), "%%" );
+            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s from the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iWithdraw ), "%%" );
             format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iWithdraw ), number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
@@ -24505,6 +24503,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		  	return 1;
 		}
 
+		if ( p_VIPLevel[ playerid ] < VIP_BRONZE && listitem == MENU_ARMOR ) {
+			SendError( playerid, "You are not Bronze V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+			return ShowAmmunationMenu( playerid, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL );
+		}
+
 	    p_WeaponDealMenu{ playerid } = listitem;
       	RedirectAmmunation( playerid, listitem, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
 	}
@@ -24539,8 +24542,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GivePlayerCash( weapondealerid, floatround( price * 0.75 ) );
 		                SendClientMessageFormatted( weapondealerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} %s(%d) has purchased a %s for "COL_GOLD"%s"COL_WHITE" (tax applied).", ReturnPlayerName( playerid ), playerid, g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
 						SetPVarInt( playerid, "purchased_weapon", GetPVarInt( playerid, "purchased_weapon" ) + 1 );
-						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased a %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
-						GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], 15000 ); // Infinite
+						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
+						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, 100.0 );
+						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], 15000 ); // Infinite
 						SetPlayerArmedWeapon( playerid, 0 );
 						GivePlayerCash( playerid, -( price ) );
 						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
@@ -24592,9 +24596,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								}
 
 								GivePlayerCash( playerid, -iCostPrice );
-								GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
+
+								if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
+								else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
+
 								RedirectAmmunation( playerid, p_WeaponLockerMenu{ playerid }, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
-								SendServerMessage( playerid, "You have purchased a %s(%d) for "COL_GOLD"%s"COL_WHITE"%s (inc. fees).", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ) );
+								SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s (inc. fees).", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ) );
 								break;
 				            }
 				            x ++;
@@ -24640,8 +24647,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GivePlayerCash( playerid, -iCostPrice );
 
 						RedirectAmmunation( playerid, p_AmmunationMenu{ playerid } );
-						GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
-						SendServerMessage( playerid, "You have purchased a %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ), bDealer ? ( " (inc. discount)" ) : ( "" ) );
+
+						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
+						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
+
+						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ), bDealer ? ( " (inc. discount)" ) : ( "" ) );
 		                break;
 		            }
 		            x ++;
@@ -29390,7 +29400,7 @@ stock getClosestRobberySafe( playerid, &Float: dis = 99999.99 )
 	;
 	foreach(new i : RobberyCount)
 	{
-		if ( world != 0 && g_robberyData[ i ] [ E_WORLD ] != world ) continue;
+		if ( world != 0 && g_robberyData[ i ] [ E_WORLD ] != -1 && g_robberyData[ i ] [ E_WORLD ] != world ) continue;
 		GetDynamicObjectPos( g_robberyData[ i ] [ E_SAFE ], X, Y, Z );
     	dis2 = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
     	if ( dis2 < dis && dis2 != -1.00 ) {
@@ -30562,6 +30572,7 @@ stock CreateGang( const gang_name[ 30 ], leader, gang_color, kills = 1, deaths =
 
 		// format name
 		format( g_gangData[ handle ] [ E_NAME ], 30, "%s", gang_name );
+		trimString( g_gangData[ handle ] [ E_NAME ] );
 
 		// default variables
 	    g_gangData[ handle ] [ E_LEADER ] 			= leader;
@@ -31552,11 +31563,13 @@ stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Na
 	new
 		szString[ 420 ];
 
-	szString = ! unlimited_ammo ? ( ""COL_WHITE"Weapon\t"COL_WHITE"Ammo\t"COL_WHITE"Price\n" ) : ( ""COL_WHITE"Weapon\t"COL_WHITE"Price\n" );
+	if ( listitem == MENU_ARMOR ) szString = ""COL_WHITE"Item\t"COL_WHITE"Price\n";
+	else if ( unlimited_ammo ) szString = ""COL_WHITE"Weapon\t"COL_WHITE"Price\n";
+	else szString = ""COL_WHITE"Weapon\t"COL_WHITE"Ammo\t"COL_WHITE"Price\n";
 
 	for( new i; i < sizeof( g_AmmunationWeapons ); i++ ) if ( g_AmmunationWeapons[ i ] [ E_MENU ] == listitem )
 	{
-	   	if ( ! unlimited_ammo ) // Other multipliers will not specify ammo
+	   	if ( ! unlimited_ammo && listitem != MENU_ARMOR ) // Other multipliers will not specify ammo
 	   		format( szString, sizeof( szString ), "%s%s\t%d\t"COL_GOLD"%s\n", szString, g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
 		else
 			format( szString, sizeof( szString ), "%s%s\t"COL_GOLD"%s\n", szString, g_AmmunationWeapons[ i ] [ E_NAME ], number_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
@@ -31568,13 +31581,12 @@ stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Na
 stock ShowAmmunationMenu( playerid, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU )
 {
 	static
-		szString[ 60 ];
+		szString[ 70 ];
 
 	if ( !szString[ 0 ] )
 	{
-	    for( new i; i < sizeof( g_AmmunitionCategory ); i++ )
-	    {
-	        format( szString, sizeof( szString ), "%s%s\n", szString, g_AmmunitionCategory[ i ] );
+	    for( new i = 0; i < sizeof( g_AmmunitionCategory ); i++ ) {
+	     	format( szString, sizeof( szString ), "%s%s\n", szString, g_AmmunitionCategory[ i ] );
 	    }
 	}
 	return ShowPlayerDialog( playerid, custom_dialogid, DIALOG_STYLE_LIST, custom_title, szString, "Select", "Cancel" );
@@ -38370,9 +38382,15 @@ stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
 
 stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
 
+stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
+
 stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 
 stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
+
+stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
+
+stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 
 stock IsPlayerEmailVerified( playerid ) return p_accountSecurityData[ playerid ] [ E_ID ];
 
@@ -38381,3 +38399,4 @@ stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 }
 
 stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ];
+

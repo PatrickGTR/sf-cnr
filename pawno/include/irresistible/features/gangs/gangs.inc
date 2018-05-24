@@ -6,7 +6,7 @@
  */
 
 /* ** Includes ** */
-// #include 							< YSI\y_hooks >
+#include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
 #define MAX_GANGS                   ( MAX_PLAYERS ) // safest is MAX_PLAYERS

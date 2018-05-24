@@ -18,6 +18,9 @@
 /* ** Definitions ** */
 #define MAX_WEAPON_DROPS 			( 50 )
 
+#define WEAPON_HEALTH 				( 100 )
+#define WEAPON_ARMOUR 				( 101 )
+
 /* ** Variables ** */
 enum E_WEAPONDROP_DATA {
 	E_WEAPON_ID,			E_AMMO,				E_PICKUP,
@@ -27,18 +30,37 @@ enum E_WEAPONDROP_DATA {
 static g_weaponDropData 		[ MAX_WEAPON_DROPS ] [ E_WEAPONDROP_DATA ];
 static Iterator: weapondrop 	< MAX_WEAPON_DROPS >;
 
+static const g_rankHealthPayout[ ] = { 100, 75, 50, 45, 40, 35, 30, 25, 20, 15, 10 };
+
+static g_HealthPickup;
+
 /* ** Hooks ** */
+hook OnGameModeInit( )
+{
+	g_HealthPickup = CreateDynamicPickup( 1240, 3, -1980.3679, 884.4898, 45.2031 );
+	return 1;
+}
+
 #if defined AC_INCLUDED
 hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	new
+	static
 		Float: X, Float: Y, Float: Z;
 
-	if ( GetPlayerPos( playerid, X, Y, Z ) )
+	GetPlayerPos( playerid, X, Y, Z );
+
+	if ( IsPlayerConnected( killerid ) )
 	{
+		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) )
+			return 1;
+
+		new
+			killer_rank = GetPlayerRank( killerid ),
+			expire_time = gettime( ) + 180;
+
 		for ( new slotid = 0; slotid < 13; slotid++ )
 		{
 		    new
@@ -47,10 +69,17 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 			GetPlayerWeaponData( playerid, slotid, weaponid, ammo );
 
+			// third of what player had
+			ammo /= 5;
+
+			// check valid parameters and shit
 			if ( weaponid != 0 && 1 < ammo < 5000 && ! IsWeaponBanned( weaponid ) ) {
-				CreateWeaponPickup( weaponid, ammo, slotid, X + fRandomEx( 0, 3 ), Y + fRandomEx( 0, 3 ), Z, gettime( ) + 180 );
+				CreateWeaponPickup( weaponid, ammo, slotid, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
 			}
 		}
+
+		// health drop
+		CreateWeaponPickup( WEAPON_HEALTH, g_rankHealthPayout[ killer_rank ], 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
 	}
 	return 1;
 }
@@ -61,25 +90,54 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 	new existing_weapon;
 	new existing_ammo;
 
+	// Health Pickups
+	if ( pickupid == g_HealthPickup ) {
+		SetPlayerHealth( playerid, 100.0 );
+		return 1;
+	}
+
+	// Player Drops
 	foreach ( new dropid : weapondrop )
 	{
 		if ( g_weaponDropData[ dropid ] [ E_PICKUP ] == pickupid )
 		{
-			GetPlayerKeys( playerid, keys, existing_weapon, existing_weapon );
-			GetPlayerWeaponData( playerid, g_weaponDropData[ dropid ] [ E_SLOT_ID ], existing_weapon, existing_ammo );
+			if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_HEALTH )
+			{
+				new
+					Float: health;
 
-			printf("Existing Weapon %d, Dropped Weapon %d, Slot id %d", existing_weapon, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_SLOT_ID ] );
-			if ( existing_weapon > g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo ) {
-				GameTextForPlayer( playerid, "~r~PRESS ~k~~PED_ANSWER_PHONE~ TO TAKE WEAPON", 4000, 3 );
-				return 1;
+				if ( GetPlayerHealth( playerid, health ) )
+				{
+					// no weed like effects
+					if ( ( health += float( g_weaponDropData[ dropid ] [ E_AMMO ] ) ) > 100.0 )
+						health = 100.0;
+
+					SetPlayerHealth( playerid, health );
+				}
+			}
+			else
+			{
+
+				GetPlayerKeys( playerid, keys, existing_weapon, existing_weapon );
+				GetPlayerWeaponData( playerid, g_weaponDropData[ dropid ] [ E_SLOT_ID ], existing_weapon, existing_ammo );
+
+				// printf("Existing Weapon %d, Dropped Weapon %d, Slot id %d", existing_weapon, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_SLOT_ID ] );
+				// if ( existing_weapon > g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
+				if ( ! ( keys & KEY_ACTION ) && existing_ammo )
+				{
+					ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
+					return 1;
+				}
+
+				#if defined AC_INCLUDED
+					p_PlayerHasWeapon[ playerid ] { g_weaponDropData[ dropid ] [ E_WEAPON_ID ] } = true;
+				#endif
+
+				GivePlayerWeapon( playerid, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_AMMO ] );
 			}
 
-		#if defined AC_INCLUDED
-			p_PlayerHasWeapon[ playerid ] { g_weaponDropData[ dropid ] [ E_WEAPON_ID ] } = true;
-		#endif
-
+			// destroy health pickup
 			PlayerPlaySound( playerid, 1150, 0.0, 0.0, 0.0 );
-			GivePlayerWeapon( playerid, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_AMMO ] );
 			DestroyWeaponPickup( dropid );
 			return 1;
 		}
@@ -94,12 +152,12 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 
 	if ( handle != ITER_NONE )
 	{
-		Iter_Add( weapondrop, handle );
-		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z );
+		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( weaponid == WEAPON_HEALTH ? 1240 : GetWeaponModel( weaponid ), 1, X, Y, Z );
 		g_weaponDropData[ handle ] [ E_EXPIRE_TIMESTAMP ] = expire_time;
 		g_weaponDropData[ handle ] [ E_WEAPON_ID ] = weaponid;
 		g_weaponDropData[ handle ] [ E_AMMO ] = ammo;
 		g_weaponDropData[ handle ] [ E_SLOT_ID ] = slotid;
+		Iter_Add( weapondrop, handle );
 	}
 	else
 	{

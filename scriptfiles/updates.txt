@@ -1,1 +1,4 @@
-(/) New tax system. 1% daily for all users, businesses and gangs.
+(+) You can now buy Armor at the ammunation for $12.5K. Must be Bronze VIP to get it from a weapon dealer.
+(+) Players now drop their weapons and health when they are killed. More health is dropped with a higher in-game rank.
+(*) Fixes bugs with certain shops not having their safes breakable.
+(-) No more 2.5% withdrawal fee for gangs.
