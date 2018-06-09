@@ -5,7 +5,8 @@
  * Purpose: defines general server settings
  */
 
-// mysqldump -u service -p82JA8LDL1JAG2GF69 sa-mp > ~/dump01.sql
+// DUMP: mysqldump -u service -p82JA8LDL1JAG2GF69 sa-mp > ~/dump01.sql
+// LOAD: zcat dump_2018-06-09.sql.gz | mysql -u service -p"{password}" sa-mp
 
 /* ** MySQL Settings ** */
 #if !defined DEBUG_MODE

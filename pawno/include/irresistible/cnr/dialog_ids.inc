@@ -166,6 +166,8 @@
 #define DIALOG_ACC_EMAIL 					1155
 #define DIALOG_BUSINESS_SECURITY 			1156
 #define DIALOG_FACILITY_SPAWN				1157
+#define DIALOG_IC_MARKET_3 					1158
+#define DIALOG_BUY_VIP 						1159
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

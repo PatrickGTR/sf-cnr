@@ -70,7 +70,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 			GetPlayerWeaponData( playerid, slotid, weaponid, ammo );
 
 			// third of what player had
-			ammo /= 5;
+			ammo /= 10;
 
 			// check valid parameters and shit
 			if ( weaponid != 0 && 1 < ammo < 5000 && ! IsWeaponBanned( weaponid ) ) {
@@ -109,8 +109,9 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 				if ( GetPlayerHealth( playerid, health ) )
 				{
 					// no weed like effects
-					if ( ( health += float( g_weaponDropData[ dropid ] [ E_AMMO ] ) ) > 100.0 )
+					if ( ( health += float( g_weaponDropData[ dropid ] [ E_AMMO ] ) ) > 100.0 ) {
 						health = 100.0;
+					}
 
 					SetPlayerHealth( playerid, health );
 				}
@@ -123,7 +124,7 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 
 				// printf("Existing Weapon %d, Dropped Weapon %d, Slot id %d", existing_weapon, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_SLOT_ID ] );
 				// if ( existing_weapon > g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
-				if ( ! ( keys & KEY_ACTION ) && existing_ammo )
+				if ( existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
 				{
 					ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
 					return 1;
