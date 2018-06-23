@@ -15,6 +15,7 @@
 #include < irresistible\attachments >
 #include < irresistible\lookup >
 #include < irresistible\servervars >
+#include < irresistible\sampac >
 // #include <irresistible\analytics >
 
 // gta related variables
@@ -33,6 +34,9 @@
 #include < irresistible\features\cash_cards >
 #include < irresistible\features\furniture >
 #include < irresistible\features\weapon_drop >
+#include < irresistible\features\ammunation >
+// #include < irresistible\features\pilot >
+// #include < irresistible\features\fishing >
 // #include < irresistible\features\vote >
 
 // gangs and facilities

@@ -43,7 +43,7 @@
 #include                            < gvar >
 #include 							< RouteConnector >
 #include 							< merrandom >
-#include 							< sampac >
+// #include 							< sampac >
 #include 							< MathParser >
 #include 							< md-sort >
 native WP_Hash						( buffer[ ], len, const str[ ] );
@@ -76,7 +76,7 @@ native gpci 						( playerid, serial[ ], len );
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
 #define IsPlayerTazed(%1)          	(p_Tazed{%1})
-#define IsPlayerDetained(%1)        (p_Detained{%1})
+//#define IsPlayerDetained(%1)        (p_Detained{%1})
 #define IsPlayerCuffed(%1)          (p_Cuffed{%1})
 #define IsPlayerTied(%1)          	(p_Tied{%1})
 #define IsPlayerKidnapped(%1)       (p_Kidnapped{%1})
@@ -225,7 +225,7 @@ static CLASS_ARMY_RANGE;
 #define CLASS_MEDIC              	( 3 )
 
 /* ** Checkpoints ** */
-#define ALL_CHECKPOINTS             ( 50 )
+#define ALL_CHECKPOINTS             ( 40 )
 
 #define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
@@ -255,7 +255,7 @@ static CLASS_ARMY_RANGE;
 #define CP_REFILL_AMMO				( 25 )
 #define CP_REFILL_AMMO_LS			( 26 )
 #define CP_REFILL_AMMO_LV			( 27 )
-#define CP_DROP_OFF_COP           	( 28 )
+/*#define CP_DROP_OFF_COP           	( 28 )
 #define CP_DROP_OFF_FC				( 29 )
 #define CP_DROP_OFF_DILLIMORE		( 30 )
 #define CP_DROP_OFF_DIABLO			( 31 )
@@ -265,18 +265,19 @@ static CLASS_ARMY_RANGE;
 #define CP_DROP_OFF_FBI_LV 			( 35 )
 #define CP_DROP_OFF_COP_LV 			( 36 )
 #define CP_DROP_OFF_FBI             ( 37 )
-#define CP_DROP_OFF_HELI         	( 38 )
-#define CP_BIZ_TERMINAL_COKE		( 39 )
-#define CP_BIZ_TERMINAL_METH 		( 40 )
-#define CP_BIZ_TERMINAL_WEED 		( 41 )
-#define CP_BIZ_TERMINAL_WEAP 		( 42 )
-#define CP_REWARDS_4DRAG 	 		( 43 )
-#define CP_REWARDS_CALIG 	 		( 44 )
-#define CP_REWARDS_VISAGE 			( 45 )
-#define CP_AIRPORT_SF 				( 46 )
-#define CP_AIRPORT_LS 				( 47 )
-#define CP_AIRPORT_LV 				( 48 )
-#define CP_CASINO_BAR 				( 49 )
+#define CP_DROP_OFF_HELI         	( 38 )*/
+#define CP_BIZ_TERMINAL_COKE		( 28 )
+#define CP_BIZ_TERMINAL_METH 		( 29 )
+#define CP_BIZ_TERMINAL_WEED 		( 30 )
+#define CP_BIZ_TERMINAL_WEAP 		( 31 )
+#define CP_REWARDS_4DRAG 	 		( 32 )
+#define CP_REWARDS_CALIG 	 		( 33 )
+#define CP_REWARDS_VISAGE 			( 34 )
+#define CP_AIRPORT_SF 				( 35 )
+#define CP_AIRPORT_LS 				( 36 )
+#define CP_AIRPORT_LV 				( 37 )
+#define CP_CASINO_BAR 				( 38 )
+#define CP_ALCATRAZ_EXPORT			( 39 )
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -1282,7 +1283,7 @@ new
 ;
 
 /* ** Mining ** */
-#define MAX_ROCKS 					( 61 )
+#define MAX_ROCKS 					( 72 )
 #define MAX_ORE_STORAGE				14
 
 #define ORE_BAUXITE					0
@@ -1440,7 +1441,7 @@ enum E_ATTACHED_DATA
 	Float: E_OX,		Float: E_OY, 	Float: E_OZ,
 	Float: E_RX, 		Float: E_RY, 	Float: E_RZ,
 	Float: E_SX, 		Float: E_SY, 	Float: E_SZ,
-	E_SQL_ID
+	E_COLOR, 			E_SQL_ID
 };
 
 enum E_TOY_DATA
@@ -1516,14 +1517,13 @@ new
 
 		// MASKS
 		{ CATEGORY_MASKS, 96, 	"Gucci Balaclava",			19801, 	10000,	2 },
-		// { CATEGORY_MASKS, 45,	"Louis Mask Bright",		18916, 	6000,	2 },
-		// { CATEGORY_MASKS, 46,	"Louis Mask Dark ", 		18920, 	5200,	2 },
+		{ CATEGORY_MASKS, 45,	"Black Mask",				18912, 	6000,	2 },
+		{ CATEGORY_MASKS, 46,	"Green Mask",				18913, 	5200,	2 },
 		// { CATEGORY_MASKS, 47,	"Versace Mask",				18915, 	4500,	2 },
 		{ CATEGORY_MASKS, 48,	"Gimp Mask",				19163, 	300,	2 },
 		{ CATEGORY_MASKS, 49,	"Hockey Mask White",		19036, 	250,	2 },
 		{ CATEGORY_MASKS, 50,	"Hockey Mask Red",			19037, 	250,	2 },
-		// { CATEGORY_MASKS, 51,	"Hockey Mask Green",		19038, 	250,	2 },
-		// { CATEGORY_MASKS, 52,	"Camo Mask",				18914, 	220,	2 },
+		{ CATEGORY_MASKS, 51,	"Blue Bandana",				18897, 	100,	2 },
 		{ CATEGORY_MASKS, 53,	"Grove Mask",				18913, 	200,	2 },
 		{ CATEGORY_MASKS, 54,	"Zorro Mask",				18974, 	100,	2 },
 
@@ -1618,13 +1618,14 @@ new
 		{ CATEGORY_VIP, -1,	"S.W.A.T Armour", 				19142, 	0,		1 },
 		{ CATEGORY_VIP, -1, "Construction Vest",			19904, 	0,		1 },
 		{ CATEGORY_VIP, -1, "Sledge Hammer", 				19631, 	0,		5 },
+		{ CATEGORY_VIP, -1, "Laser Sight", 					18643, 	0,		5 },
 		{ CATEGORY_VIP, -1,	"Better Santa Hat",     		19065,	0,		2 }
 	},
 	p_AttachedObjectsData     	[ MAX_PLAYERS ] [ 3 ] [ E_ATTACHED_DATA ],
 	p_ToySlotSelected			[ MAX_PLAYERS char ],
 	p_ToyCategorySelected 		[ MAX_PLAYERS char ],
 	p_ToyIDSelected 			[ MAX_PLAYERS char ],
-	bool: p_ToyUnlocked     	[ MAX_PLAYERS ] [ MAX_TOYS char ]
+	bool: p_ToyUnlocked     	[ MAX_PLAYERS ] [ 200 char ] // change back to MAX_TOYS
 ;
 
 /* ** C4 Data ** */
@@ -1871,69 +1872,6 @@ new
 	}
 ;
 
-/* ** Dynamic Ammunation ** */
-#define MENU_ASSAULT      			( 0 )
-#define MENU_MELEE					( 1 )
-#define MENU_SUB_SMGS				( 2 )
-#define MENU_PISTOLS				( 3 )
-#define MENU_RIFLES					( 4 )
-#define MENU_SHOTGUNS				( 5 )
-#define MENU_THROWN					( 6 )
-#define MENU_ARMOR 					( 7 )
-
-enum E_WEAPONS_DATA
-{
-	E_MENU, 				E_NAME[ 32 ],           E_WEPID,
-	E_AMMO,					E_PRICE
-};
-
-new
-	g_AmmunitionCategory[ ] [ ] =
-	{
-		{ "Assault" },  { "Melee" }, { "Submachine Guns" }, { "Pistols" },
-		{ "Rifles" }, { "Shotguns" }, { "Thrown" }, { "Armor" }
-	},
-	g_AmmunationWeapons[ ][ E_WEAPONS_DATA ] =
-	{
-		{ MENU_MELEE,		"Flowers", 			14,		1, 		75 },
-		{ MENU_MELEE,		"Shovel", 			6,		1, 		100 },
-		{ MENU_MELEE,		"Pool Cue", 		7,		1, 		125 },
-		{ MENU_MELEE,		"Golf Club", 		2,		1, 		125 },
-		{ MENU_MELEE,		"Baseball Bat", 	5,		1, 		180 },
-		{ MENU_MELEE, 		"Brass Knuckles", 	1,		1, 		200 },
-		{ MENU_MELEE,		"Parachute", 		46,		1, 		200 },
-		{ MENU_MELEE, 		"Camera",			43, 	1,		250 },
-		{ MENU_MELEE,		"Knife", 			4,		1, 		300 },
-		{ MENU_MELEE,		"Katana", 			8,		1, 		600 },
-		{ MENU_MELEE,		"Chainsaw", 		9,		1, 		750 },
-
-		{ MENU_PISTOLS,		"9mm Pistol", 		22,		180, 	200 },
-		{ MENU_PISTOLS,		"Silenced 9mm", 	23,		180, 	400 },
-		{ MENU_PISTOLS,		"Desert Eagle", 	24,		100, 	1250 },
-
-		{ MENU_SHOTGUNS,	"Shotgun", 			25,		75, 	600  },
-		{ MENU_SHOTGUNS,	"Sawn-off Shotgun",	26,		100,	1200 },
-		{ MENU_SHOTGUNS,	"Combat Shotgun", 	27,		100,	1800 },
-
-		{ MENU_SUB_SMGS,	"MP5", 				29,		100,	500  },
-		{ MENU_SUB_SMGS,	"Tec 9", 			32,		100,	600  },
-		{ MENU_SUB_SMGS,	"Mac 10", 			28,		100,	700 },
-
-		{ MENU_ASSAULT,		"AK47", 			30,		100,	800  },
-		{ MENU_ASSAULT,		"M4", 				31,		100,	1000 },
-
-		{ MENU_RIFLES,		"Rifle", 			33,		100, 	300  },
-		{ MENU_RIFLES,		"Sniper", 			34,		75, 	1000 },
-
-		{ MENU_THROWN, 		"Teargas",			17,		5,		500 },
-		{ MENU_THROWN, 		"Grenade",			16,		1,		1200 },
-		{ MENU_THROWN, 		"Molotov Cocktail",	18,		4,		1400 },
-
-		{ MENU_ARMOR, 		"Armor", 			101, 	100, 	10000 }
-	},
- 	p_AmmunationMenu               [ MAX_PLAYERS char ]
-;
-
 /* ** Apartment System ** */
 #define MAX_AFLOORS                 ( 20 )
 
@@ -2073,8 +2011,8 @@ new
  		{ false, "Chastity Belt", 		"Preventation of Aids", 	 	LIMIT_ONE,		500  }, // 3
  		{ false, "Secure Wallet", 		"Less Being Robbed Chance",  	LIMIT_ONE,		600  }, // 4
  		{ true , "Scissors", 			"/cuttie", 					 	LIMIT_SCISSORS,	750  }, // 5
- 		{ true , "Bobby Pin", 			"/breakcuff",				 	LIMIT_PINS,		1200 }, // 6 [1000] -makecopgreatagain
- 		{ false, "Money Case", 			"Increases Robbing Amount", 	 LIMIT_ONE,		1500 }, // 7 [1250]
+ 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		1200 }, // 6 [1000] -makecopgreatagain
+ 		{ false, "Money Case", 			"Increases Robbing Amount", 	LIMIT_ONE,		1500 }, // 7 [1250]
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	1750 }, // 8 [1500]
  		{ true , "Aluminium Foil", 		"Deflects EMP",				 	LIMIT_FOIL,		1750 }, // 9
  		{ true , "Thermal Drill", 		"Halves Safe Cracking Time",  	LIMIT_ONE,		5000 }, // 10
@@ -2212,6 +2150,8 @@ new
 
 /* ** Jail System ** */
 #define JAIL_SECONDS_MULTIPLIER		( 5 )
+#define ALCATRAZ_REQUIRED_TIME		( 300 )
+
 #define ALCATRAZ_TIME_PAUSE 		( 5 )
 #define ALCATRAZ_TIME_WANTED 		( 600 )
 
@@ -2771,7 +2711,7 @@ new
 ;
 
 /* ** VIP House Display ** */
-#define MAX_BUSINESSES				( 200 )
+#define MAX_BUSINESSES				( 250 )
 #define MAX_DROPS 					( 5 )
 #define MAX_BUSINESS_MEMBERS 		( 8 )
 #define MAX_BIZ_VEH_MODELS 			( 18 )
@@ -2838,7 +2778,6 @@ enum E_BUSINESS_VEHICLE_DATA
 
 	E_COST
 };
-
 
 enum E_SECURITY_LEVEL_DATA
 {
@@ -2959,7 +2898,6 @@ new
     bool: p_PlayerLogged    		[ MAX_PLAYERS char ],
     p_AccountID						[ MAX_PLAYERS ],
     p_AdminLevel       				[ MAX_PLAYERS ],
-    bool: p_Detained          		[ MAX_PLAYERS char ],
     p_Class 						[ MAX_PLAYERS ],
     p_Job               			[ MAX_PLAYERS char ],
     p_VIPJob               			[ MAX_PLAYERS char ],
@@ -3008,7 +2946,6 @@ new
 	p_InHouse                       [ MAX_PLAYERS ],
 	p_ExperienceHideTimer           [ MAX_PLAYERS ],
 	p_AntiTextSpam                  [ MAX_PLAYERS ],
-	p_DetainedBy                    [ MAX_PLAYERS ],
 	bool: p_BlockedPM            	[ MAX_PLAYERS ] [ MAX_PLAYERS ],
 	bool: p_inFBI                   [ MAX_PLAYERS char ],
 	bool: p_inArmy                  [ MAX_PLAYERS char ],
@@ -3091,7 +3028,6 @@ new
 	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_RansomAmount                  [ MAX_PLAYERS ],
 	p_LastDrovenPoliceVeh			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... },
-	p_AntiTazeSpam                  [ MAX_PLAYERS ],
 	Text3D: p_SpawnKillLabel		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
 	p_AntiSpawnKill                 [ MAX_PLAYERS ],
     bool: p_AntiSpawnKillEnabled	[ MAX_PLAYERS char ],
@@ -3124,7 +3060,9 @@ new
 	p_PawnStoreExport				[ MAX_PLAYERS ] = { 0xFFFF, ... },
 	p_Burglaries                    [ MAX_PLAYERS ],
     p_ArmyBanned                    [ MAX_PLAYERS char ],
-	Text3D: p_DetainedLabel       	[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
+	//Text3D: p_DetainedLabel       [ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
+    //bool: p_Detained          	[ MAX_PLAYERS char ],
+	//p_DetainedBy                  [ MAX_PLAYERS ],
 	p_BailTimestamp					[ MAX_PLAYERS ],
 	p_AFKTime						[ MAX_PLAYERS ],
 	bool: p_ClassSelection			[ MAX_PLAYERS char ],
@@ -3190,7 +3128,8 @@ new
 	p_ExplosiveBullets 				[ MAX_PLAYERS ],
 	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
 	p_SpawningKey 					[ MAX_PLAYERS ] [ 4 ],
-	p_SpawningIndex 				[ MAX_PLAYERS ]
+	p_SpawningIndex 				[ MAX_PLAYERS ],
+	p_TazingImmunity 				[ MAX_PLAYERS ]
 ;
 
 /* ** Server Data ** */
@@ -3230,7 +3169,8 @@ new
  	g_iTime 						= 0,
  	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
  	g_VehicleLastAttacked 			[ MAX_VEHICLES ],
-	g_TopDonorWall 					= INVALID_OBJECT_ID
+	g_TopDonorWall 					= INVALID_OBJECT_ID,
+	g_AlcatrazArea 					= -1
 ;
 
 /* ** Forwards ** */
@@ -3242,7 +3182,7 @@ public OnRevCTRLHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerChainsawTree( playerid, treeid );
-public OnPlayerArrest( playerid, victimid, totalarrests, totalpeople );
+public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 public OnPlayerProgressUpdate( playerid, progressid, params );
 public OnPlayerProgressComplete( playerid, progressid, params );
 public OnPlayerUnjailed( playerid, reasonid );
@@ -3438,8 +3378,8 @@ public OnGameModeInit()
 	#endif
 
 	/* ** Robbery Points ** */
-	static const ROBBERY_BOT_PAY = 2100; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 4300; // max pay from robbing safes
+	static const ROBBERY_BOT_PAY = 2000; // max pay from robbing bots
+	static const ROBBERY_SAFE_PAY = 6000; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -3448,7 +3388,7 @@ public OnGameModeInit()
 
 	CreateMultipleRobberies( "Desperado Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 2113.085693, -1784.66638, 12.95044, 180.00000, -1 );
 	CreateMultipleRobberies( "Ahmyy's Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 2540.658691, 2013.840209, 10.289649, 90.000000, -1 );
-	CreateMultipleRobberies( "FaZe's Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 1978.945312, 2066.297607, 10.285301, 90.000000, -1 );
+	CreateMultipleRobberies( "Nibble Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 1978.945312, 2066.297607, 10.285301, 90.000000, -1 );
 	CreateMultipleRobberies( "Le Flawless Cafe", 	floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), -1968.052612, 107.914459, 27.092870, 0.0000000, -1 );
 
 	CreateMultipleRobberies( "Hospital", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.25 ), -2638.146484, 662.669677, 969.852905, -90.0000, -1 );
@@ -4322,38 +4262,7 @@ public OnGameModeInit()
 	SetDynamicObjectMaterialText( g_TopDonorWall, 0, "Nobody donated :(", 130, "Arial", 48, 0, -65536, 0, 1 );
 
 	// Alcatraz
-	tmpVariable = CreateDynamicObject( 16109, -2080.595703, 1734.933837, -3.897439, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
-	SetDynamicObjectMaterial( tmpVariable, 0, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-
-	tmpVariable = CreateDynamicObject( 16149, -1912.565917, 1698.053833, -12.757503, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
-	SetDynamicObjectMaterial( tmpVariable, 0, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 5, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 6, 9957, "multistory_sfe", "grassgrn256", 0 );
-
-	tmpVariable = CreateDynamicObject( 16147, -1926.906250, 1901.545288, -11.262178, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
-	SetDynamicObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 1, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 4, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 5, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 6, 10452, "sfsroadshotel", "dirtgaz64b", 0 );
-
-	tmpVariable = CreateDynamicObject( 16148, -2088.817626, 1913.784423, -1.467424, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
-	SetDynamicObjectMaterial( tmpVariable, 0, 9957, "multistory_sfe", "grassgrn256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 1, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 3, 13673, "mullho03a_lahills", "sw_rockgrass1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 5, 5134, "wasteland_las2", "concretenewb256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 6, 5134, "wasteland_las2", "concretenewb256", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 8, 5134, "wasteland_las2", "concretenewb256", 0 );
+	g_AlcatrazArea = CreateDynamicRectangle( -1921.6816, 1661.7448, -2172.4653, 1876.0469 );
 
 	/* ** Dirty Mechanic ** */
 	// SF
@@ -4371,6 +4280,9 @@ public OnGameModeInit()
 	/* ** Pickups ** */
 	CreateDynamicPickup( 337, 2, -2744.6367, 1264.8502, 11.77030 ); // Spade @Mining
 	CreateDynamicPickup( 337, 2, 589.440800, 869.86900, -42.4973 ); // Spade @Mining
+	CreateDynamicPickup( 337, 2, -1998.7056, 1777.7448, 43.73860 ); // Spade @Alcatraz
+	// CreateDynamicPickup( 341, 2, -2069.1431, 1788.9657, 43.7386 ); // Chainsaw @Alcatraz
+
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
 
@@ -4961,8 +4873,8 @@ public OnServerUpdate( )
 				Player_CheckPokerGame( playerid, "Out Of Range" ); // KickPlayerFromTable( playerid );
 
 			// Not near detained player then uncuff
-			if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
-				Uncuff( playerid );
+			//if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
+			//	Uncuff( playerid );
 
 			// Trucking Trailers
 			if ( iState == PLAYER_STATE_DRIVER && iVehicle && p_hasTruckingJob{ playerid } && !IsTrailerAttachedToVehicle( iVehicle ) && p_TruckingCancelTimer[ playerid ] == 0xFFFF )
@@ -5051,7 +4963,7 @@ public OnServerUpdate( )
 			if ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 45000 )
 			{
 				// AFK Jail
-				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerDetained( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) ) {
+				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) ) { // && !IsPlayerDetained( playerid )
 			    	JailPlayer( playerid, 60, 1 );
 		        	SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
 				}
@@ -5105,8 +5017,15 @@ public OnServerUpdate( )
 			}*/
 
 			// Tied probably?
-			if ( IsPlayerTied( playerid ) && g_iTime - p_TimeTiedAt[ playerid ] > MAX_TIME_TIED ) {
-				ShowPlayerHelpDialog( playerid, 1200, "You have been tied for %s.~n~~n~Your tie is loose. Type ~y~~h~/cuttie", secondstotime( g_iTime - p_TimeTiedAt[ playerid ] ) );
+			if ( IsPlayerTied( playerid ) && g_iTime - p_TimeTiedAt[ playerid ] > MAX_TIME_TIED )
+			{
+				TogglePlayerControllable( playerid, 1 );
+				p_Tied{ playerid } = false;
+				Delete3DTextLabel( p_TiedLabel[ playerid ] );
+				p_TiedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+				p_TimeTiedAt[ playerid ] = 0;
+				p_Kidnapped{ playerid } = false;
+				ShowPlayerHelpDialog( playerid, 1200, "You have been tied for %s.~n~~n~Your tie is loose.", secondstotime( g_iTime - p_TimeTiedAt[ playerid ] ) );
 			}
 
 			// Alcatraz Escape Mechanism
@@ -5115,9 +5034,9 @@ public OnServerUpdate( )
 				if ( IsPlayerAFK( playerid ) )
 					p_AlcatrazEscapeTS[ playerid ] = g_iTime + ALCATRAZ_TIME_PAUSE; // Money farmers?
 
-				if ( IsPlayerInArea( playerid, -2204.4255, -1884.5057, 1605.3810, 2052.6060 ) )
+				if ( IsPlayerInDynamicArea( playerid, g_AlcatrazArea ) )
 				{
-					if ( !IsPlayerJailed( playerid ) && !IsPlayerDetained( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
+					if ( !IsPlayerJailed( playerid ) && p_Class[ playerid ] != CLASS_POLICE ) // && !IsPlayerDetained( playerid )
 					{
 						if ( GetPVarInt( playerid, "AlcatrazWantedCD" ) < g_iTime )
 						{
@@ -5380,7 +5299,7 @@ public OnServerUpdate( )
 
 			// samp ac force
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
-				SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for disabling SAMP-AC. "COL_YELLOW"(www.samp-ac.com)", ReturnPlayerName( playerid ), playerid );
+				SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for disabling SAMP-AC. "COL_YELLOW"("AC_WEBSITE")", ReturnPlayerName( playerid ), playerid );
 				KickPlayerTimed( playerid );
 			}
 		}
@@ -6341,7 +6260,7 @@ public OnPlayerDisconnect( playerid, reason )
 	StopPlayerTruckingCourier( playerid );
     RemovePlayerFromRace( playerid );
 	ClearPlayerRoadblocks( playerid, .distance_check = false );
-	p_Detained		{ playerid } = false;
+	//p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
 	p_Wood          [ playerid ] = 0;
@@ -6398,7 +6317,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_HealDealer    [ playerid ] = INVALID_PLAYER_ID;
 	p_Spectating    { playerid } = false;
 	p_TicketIssuer	[ playerid ] = INVALID_PLAYER_ID;
-	p_DetainedBy	[ playerid ] = INVALID_PLAYER_ID;
+	//p_DetainedBy	[ playerid ] = INVALID_PLAYER_ID;
     p_GangID		[ playerid ] = INVALID_GANG_ID;
 	p_InfectedHIV	{ playerid } = false;
 	p_OwnedHouses	[ playerid ] = 0;
@@ -6476,8 +6395,8 @@ public OnPlayerDisconnect( playerid, reason )
 	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
     Delete3DTextLabel( p_AdminLabel[ playerid ] );
     p_AdminLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-	p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	Delete3DTextLabel( p_TiedLabel[ playerid ] );
 	p_TiedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
@@ -6598,7 +6517,7 @@ public OnPlayerSpawn( playerid )
 	p_InGarage[ playerid ] = -1;
 	StopSound( playerid );
 	CancelEdit( playerid );
-	loadPlayerToys( playerid );
+	reloadPlayerToys( playerid );
 
 	// Approved spawn?
 	if ( !approveClassSpawned( playerid ) ) {
@@ -6911,7 +6830,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 		if ( IsPlayerAdminOnDuty( playerid ) )
 			return 0;
 
-		if ( IsPlayerConnected( hitid ) && ( IsPlayerTazed( hitid ) || IsPlayerCuffed( hitid ) || IsPlayerDetained( hitid ) || IsPlayerKidnapped( hitid ) || IsPlayerTied( hitid ) || IsPlayerLoadingObjects( hitid ) || IsPlayerAdminOnDuty( hitid ) || p_AntiSpawnKillEnabled{ hitid } ) )
+		if ( IsPlayerConnected( hitid ) && ( IsPlayerTazed( hitid ) || IsPlayerCuffed( hitid ) || IsPlayerKidnapped( hitid ) || IsPlayerTied( hitid ) || IsPlayerLoadingObjects( hitid ) || IsPlayerAdminOnDuty( hitid ) || p_AntiSpawnKillEnabled{ hitid } ) )
 			return 0;
 
 		if ( p_AntiSpawnKill[ playerid ] > g_iTime && p_AntiSpawnKillEnabled{ playerid } )
@@ -7199,10 +7118,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( p_BulletInvulnerbility[ issuerid ] > g_iTime )
 	 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage players as you're immune!" ), 0;
 
-	if ( IsPlayerOnSlotMachine( playerid ) && ! p_WantedLevel[ playerid ] )
+	if ( ( IsPlayerOnSlotMachine( playerid ) || IsPlayerMining( playerid ) ) && ! p_WantedLevel[ playerid ] )
 	 	return ShowPlayerHelpDialog( issuerid, 2000, "This player cannot be killed as they are doing something!" ), 0;
 
-	if ( IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerDetained( playerid ) || IsPlayerKidnapped( playerid ) || IsPlayerTied( playerid ) || IsPlayerLoadingObjects( playerid ) || IsPlayerAdminOnDuty( playerid ) || p_AntiSpawnKillEnabled{ playerid } )
+	if ( IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerKidnapped( playerid ) || IsPlayerTied( playerid ) || IsPlayerLoadingObjects( playerid ) || IsPlayerAdminOnDuty( playerid ) || p_AntiSpawnKillEnabled{ playerid } )
 		return 0;
 
 	// Rhino damage invulnerable
@@ -7451,10 +7370,10 @@ public OnPlayerDeath( playerid, killerid, reason )
 	p_WeaponDealing{ playerid } = false;
 	p_WeaponDealer[ playerid ] = INVALID_PLAYER_ID;
 	p_Cuffed{ playerid } = false;
-	p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
+	//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
 	p_LastVehicle[ playerid ] = INVALID_VEHICLE_ID;
-	Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-	p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	Delete3DTextLabel( p_TiedLabel[ playerid ] );
 	p_TiedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
@@ -7462,7 +7381,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	p_Tied{ playerid } = false;
 	p_TicketTimestamp[ playerid ] = 0;
 	p_Kidnapped{ playerid } = false;
-    p_Detained{ playerid } = false;
+    //p_Detained{ playerid } = false;
 	p_ClassSelection{ playerid } = false;
 	p_TicketIssuer[ playerid ] = INVALID_PLAYER_ID;
 	KillTimer( p_TrackingTimer[ playerid ] );
@@ -7868,7 +7787,7 @@ public OnPlayerUnjailed( playerid, reasonid )
    		SetPlayerHealth( playerid, 100.0 );
    		if ( p_inAlcatraz{ playerid } )
    		{
-   			SetPlayerPosEx( playerid, -2038.38, 1833.896, 21.934200, 0 );
+   			SetPlayerPosEx( playerid, -2052.0059, 1324.6919, 7.1615, 0 );
    			SetPVarInt( playerid, "AlcatrazWantedCD", g_iTime + ALCATRAZ_TIME_WANTED );
    			SetPlayerVirtualWorld( playerid, 0 );
    		}
@@ -8019,7 +7938,7 @@ public OnPlayerText( playerid, text[ ] )
 
 function Untaze( playerid )
 {
-	if ( !IsPlayerConnected( playerid ) || p_Detained{ playerid } == true || !p_Tazed{ playerid } )
+	if ( !IsPlayerConnected( playerid ) || !p_Tazed{ playerid } ) // || p_Detained{ playerid } == true
 	    return 0;
 
 	if ( !IsPlayerTied( playerid ) )
@@ -8043,10 +7962,10 @@ function Uncuff( playerid )
 		ClearAnimations( playerid );
 	}
 	p_Cuffed{ playerid } = false;
-	p_Detained{ playerid } = false;
-	Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-	p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
+	//p_Detained{ playerid } = false;
+	//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
 	p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
 
    	SendGlobalMessage( -1, ""COL_GREY"[SERVER]{FFFFFF} %s(%d) has been uncuffed and undetained by the anti-abuse system.", ReturnPlayerName( playerid ), playerid );
@@ -8308,7 +8227,12 @@ public OnPlayerProgressComplete( playerid, progressid, params )
 
 			format( szNormalString, 14, "%s\n%d/%d", getOreName( g_miningData[ m ] [ E_ORE ] ), g_miningData[ m ] [ E_ORES ], g_miningData[ m ] [ E_MAX_ORES ] );
 			UpdateDynamic3DTextLabelText( g_miningData[ m ] [ E_LABEL ], g_miningData[ m ] [ E_COLOR ], szNormalString );
-			SendServerMessage( playerid, "Great you've mined an ore, now store it in a "COL_GREY"Dune"COL_WHITE"." );
+
+			if ( IsPlayerJailed( playerid ) ) {
+				SendServerMessage( playerid, "Great you've mined an ore, now take it to the "COL_GREY"Rock Crusher"COL_WHITE"." );
+			} else {
+				SendServerMessage( playerid, "Great you've mined an ore, now store it in a "COL_GREY"Dune"COL_WHITE"." );
+			}
 
 			SetPVarInt( playerid, "carrying_ore", m );
 			SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
@@ -10170,7 +10094,7 @@ CMD:robitems( playerid, params[ ] )
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -10190,9 +10114,9 @@ CMD:robitems( playerid, params[ ] )
 			iRandomItem = -1
 		;
 
-		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < LIMIT_PINS ) 	available_items[ 0 ] = 0;
+		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < LIMIT_PINS ) available_items[ 0 ] = 0;
 		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < LIMIT_SCISSORS ) available_items[ 1 ] = 1;
-		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < LIMIT_ROPES ) 			available_items[ 2 ] = 2;
+		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < LIMIT_ROPES ) available_items[ 2 ] = 2;
 
 		if ( available_items[ 0 ] == -1 || available_items[ 1 ] == -1 || available_items[ 2 ] == -1 ) {
 			SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[ROB FAIL]{FFFFFF} %s(%d) has failed to rob items off you.", ReturnPlayerName( playerid ), playerid );
@@ -11853,90 +11777,6 @@ CMD:pleave( playerid, params[ ] )
 	return 1;
 }
 
-CMD:bc( playerid, params[ ] ) return cmd_breakcuff( playerid, params );
-CMD:breakcuff( playerid, params[ ] )
-{
-	if ( p_BobbyPins[ playerid ] < 1 )
-	    return SendError( playerid, "You don't have any bobby pins." );
-
-	if ( !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) ) return SendError( playerid, "You are not cuffed." );
-	else if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
-	else
-	{
-	    new iRandom = random( 101 );
-
-		if ( IsPlayerDetained( playerid ) ) // && iRandom < 66 )
-			return SendError( playerid, "You cannot break your cuffs if you're detained." );
-	    //	return SendError( playerid, "You snapped the bobby pin and failed to get break out of your cuffs." );
-
-		if ( p_BobbyPins[ playerid ]-- <= 3 )
-			ShowPlayerHelpDialog( playerid, 2500, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
-
-	    if ( iRandom < 50 )
-	    	return SendError( playerid, "You snapped the bobby pin and failed to get break out of your cuffs." );
-
-		TogglePlayerControllable( playerid, 1 );
-	 	RemovePlayerAttachedObject( playerid, 2 );
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
-		if ( !IsPlayerInAnyVehicle( playerid ) ) {
-			ClearAnimations( playerid );
-		}
-		p_Cuffed{ playerid } = false;
-		p_Tazed{ playerid } = false;
-		p_Detained{ playerid } = false;
-		Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-		p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-		p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
-		p_QuitToAvoidTimestamp[ playerid ] = g_iTime + 3;
-
-		SendServerMessage( playerid, "You have successfully broken your cuffs." );
-	    GivePlayerWantedLevel( playerid, 6 );
-	}
-	return 1;
-}
-
-
-CMD:cuttie( playerid, params[ ] )
-{
-	new
-		bTiedLong = g_iTime - p_TimeTiedAt[ playerid ] > MAX_TIME_TIED;
-
-	if ( p_Scissors[ playerid ] < 1 && !bTiedLong )
-	    return SendError( playerid, "You don't have any scissors" );
-
-	if ( !p_Tied{ playerid } ) return SendError( playerid, "You are not tied." );
-	else if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
-	else
-	{
-	    new iRandom = random( 101 );
-
-	    p_Scissors[ playerid ] --;
-
-	    if ( IsPlayerKidnapped( playerid ) )
-	    	iRandom -= 75;
-
-	    if ( bTiedLong )
-	    	iRandom = 100; // Tied for too long
-
-	    if ( iRandom > 10 )
-	    {
-        	TogglePlayerControllable( playerid, 1 );
-			p_Tied{ playerid } = false;
-		   	if ( IsPlayerKidnapped( playerid ) ) {
-		     	p_Kidnapped{ playerid } = false;
-		 	}
-			Delete3DTextLabel( p_TiedLabel[ playerid ] );
-			p_TiedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-			SendServerMessage( playerid, "You have cut the ties connected to your hands." );
-	    }
-	    else SendServerMessage( playerid, "You have failed to cut the tie connected to you." );
-
-		if ( 0 <= p_Scissors[ playerid ] <= 3 )
-			ShowPlayerHelpDialog( playerid, 2500, "You only have %d scissors left!", p_Scissors[ playerid ] );
-	}
-	return 1;
-}
-
 CMD:xpmarket( playerid, params[ ] )
 {
 	ShowPlayerDialog(playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", ""COL_WHITE"Welcome, enter inside the input box how much XP you're willing\nto trade in for.\n\nExchange Rate: "COL_GOLD"1 XP = $"#EXCHANGE_XPCASH"", "Select", "Cancel");
@@ -12207,7 +12047,7 @@ CMD:mostwanted( playerid, params[ ] )
 CMD:contracts( playerid, params[ ] ) return cmd_hitlist( playerid, params );
 CMD:hitlist( playerid, params[ ] )
 {
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
+	// if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 
 	new g_contractList[ MAX_PLAYERS ] [ 2 ], bool: is_empty = true;
 
@@ -12330,7 +12170,7 @@ CMD:eject( playerid, params[ ] )
 	else
 	{
 	    if ( p_Kidnapped{ pID } == true ) p_Kidnapped{ pID } = false;
-	    if ( p_Detained{ pID } == true ) p_Detained{ pID } = false;
+	    //if ( p_Detained{ pID } == true ) p_Detained{ pID } = false;
 	    RemovePlayerFromVehicle( pID );
 		SyncObject( pID, 0.0, 2.0, 2.0 );
     	GameTextForPlayer( pID, "~r~EJECTED~w~!", 3500, 3 );
@@ -12365,7 +12205,7 @@ CMD:ejectall( playerid, params[ ] )
 		if ( iTargetVehicle == iPlayerVehicle && iTargetSeat >= 1 && iTargetSeat <= 3 ) {
 			// change variables
 		    if ( p_Kidnapped{ i } == true ) p_Kidnapped{ i } = false;
-		    if ( p_Detained{ i } == true ) p_Detained{ i } = false;
+		    //if ( p_Detained{ i } == true ) p_Detained{ i } = false;
 
 		    // remove from vehicle
 			RemovePlayerFromVehicle( i );
@@ -12855,7 +12695,7 @@ CMD:drb( playerid, params[ ] )
 	else if ( g_roadblockData[ rbID ] [ E_CREATOR ] != playerid ) return SendError( playerid, "You have not created this spike strip." );
 	else
 	{
-	    destroyRoadBlockStrip( rbID );
+	    destroyRoadBlockStrip( rbID, .remove_iter = true );
 	    SendServerMessage( playerid, "You have succesfully destroyed a road block." );
 	}
 	return 1;
@@ -13450,7 +13290,7 @@ CMD:shop( playerid, params[ ] )
 {
     if ( ( !IsPlayerInEntrance( playerid, g_SupaSave ) && !IsPlayerInDynamicCP( playerid, g_Checkpoints[ CP_247_MENU ] ) ) || !GetPlayerInterior( playerid ) ) return SendError( playerid, "You must be within Supa Save or 24/7 to purchase items." );
 	if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this since you're tazed." );
-	if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this since you're detained." );
+	//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this since you're detained." );
 	if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this since you're cuffed." );
 	if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this since you're tied." );
 	if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this since you're kidnapped." );
@@ -13604,7 +13444,7 @@ CMD:kill( playerid, params[ ] )
 	if ( !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You cannot use this command since you're not spawned." );
 	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-	if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+	//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 	if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 	if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 	if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -13623,7 +13463,7 @@ CMD:changeclass( playerid, params[ ] )
 	if ( !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You cannot use this command since you're not spawned." );
 	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-	if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+	//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 	if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 	if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 	if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -13774,27 +13614,56 @@ CMD:tie( playerid, params[ ] )
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "You cannot use this command on spawn protected players." );
 		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
 
+		// remove rope after attempt
+		if ( p_Ropes[ playerid ] -- > 0 ) {
+			ShowPlayerHelpDialog( playerid, 4500, "You only have %d ropes left!", p_Ropes[ playerid ] );
+		} else {
+			ShowPlayerHelpDialog( playerid, 4500, "You can buy ropes at Supa Save or a 24/7 store." );
+		}
+
+		p_AntiTieSpam[ playerid ] = g_iTime + 30;
+		GivePlayerWantedLevel( playerid, 6 );
+
+		// check if tie is successful
 		if ( random( 101 ) < 90 )
 		{
-			SendClientMessageFormatted( victimid, -1, ""COL_RED"[TIED]{FFFFFF} You have been tied by %s(%d)!", ReturnPlayerName( playerid ), playerid );
-		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TIED]{FFFFFF} You have tied %s(%d)!", ReturnPlayerName( victimid ), victimid );
-			TogglePlayerControllable( victimid, 0 );
-			p_Tied{ victimid } = true;
-			p_Ropes[ playerid ] --;
-     		p_TimeTiedAt[ victimid ] = g_iTime;
-			GivePlayerWantedLevel( playerid, 6 );
-			p_AntiTieSpam[ playerid ] = g_iTime + 30;
-			p_TiedBy[ victimid ] = playerid;
-		    Delete3DTextLabel( p_TiedLabel[ victimid ] );
-		    format( szNormalString, 48, "Tied by %s!", ReturnPlayerName( playerid ) );
-		    p_TiedLabel[ victimid ] = Create3DTextLabel( szNormalString, 0xDAB583FF, 0.0, 0.0, 0.0, 15.0, 0 );
-		    Attach3DTextLabelToPlayer( p_TiedLabel[ victimid ], victimid, 0.0, 0.0, 0.6 );
-		    p_TiedAtTimestamp[ victimid ] = g_iTime;
+			new bool: scissor_success = false;
+			new attempts = 0;
 
-			if ( p_Ropes[ victimid ] )
-				ShowPlayerHelpDialog( victimid, 4000, "You can cut your ties with ~p~/cuttie." );
+			for ( attempts = 1; attempts < p_Scissors[ victimid ]; attempts ++ )
+			{
+				if ( random( 101 ) > 20 ) {
+					scissor_success = true;
+					break;
+				}
+			}
+
+			if ( ( p_Scissors[ victimid ] -= attempts ) > 0 ) {
+				ShowPlayerHelpDialog( victimid, 4500, "You only have %d scissors left!", p_Scissors[ victimid ] );
+			} else {
+				ShowPlayerHelpDialog( victimid, 4500, "You can buy sissors at Supa Save or a 24/7 store." );
+			}
+
+			if ( scissor_success )
+			{
+				SendClientMessageFormatted( playerid, -1, ""COL_RED"[TIE]{FFFFFF} %s(%d) has cut the tie you placed!", ReturnPlayerName( victimid ), victimid );
+			    SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[TIE]{FFFFFF} You have cut off %s(%d)'s tie after %d attempt(s)!", ReturnPlayerName( playerid ), playerid, attempts );
+			}
 			else
-				ShowPlayerHelpDialog( victimid, 4000, "You can buy sissors at Supa Save or a 24/7 store." );
+			{
+				SendClientMessageFormatted( victimid, -1, ""COL_RED"[TIED]{FFFFFF} You have been tied by %s(%d)!", ReturnPlayerName( playerid ), playerid );
+			    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TIED]{FFFFFF} You have tied %s(%d)!", ReturnPlayerName( victimid ), victimid );
+				TogglePlayerControllable( victimid, 0 );
+				p_Tied{ victimid } = true;
+	     		p_TimeTiedAt[ victimid ] = g_iTime;
+				p_TiedBy[ victimid ] = playerid;
+			    Delete3DTextLabel( p_TiedLabel[ victimid ] );
+			    format( szNormalString, 48, "Tied by %s!", ReturnPlayerName( playerid ) );
+			    p_TiedLabel[ victimid ] = Create3DTextLabel( szNormalString, 0xDAB583FF, 0.0, 0.0, 0.0, 15.0, 0 );
+			    Attach3DTextLabelToPlayer( p_TiedLabel[ victimid ], victimid, 0.0, 0.0, 0.6 );
+			    p_TiedAtTimestamp[ victimid ] = g_iTime;
+			}
+			return 1;
 		}
 		else
 		{
@@ -13802,9 +13671,9 @@ CMD:tie( playerid, params[ ] )
 			SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[FAIL TIE]{FFFFFF} %s(%d) has failed to tie you!", ReturnPlayerName( playerid ), playerid );
 		    SendClientMessageFormatted( playerid, -1, ""COL_RED"[FAIL TIE]{FFFFFF} You have failed to tie %s(%d)!", ReturnPlayerName( victimid ), victimid );
 		}
+		return 1;
 	}
 	else return SendError( playerid, "There are no players around to tie." );
-	return 1;
 }
 
 CMD:pu( playerid, params[ ] ) return cmd_pullover(playerid, params);
@@ -13911,7 +13780,7 @@ stock TicketPlayer( pID, playerid )
 	else if ( p_WantedLevel[ pID ] > 5 ) return SendError( playerid, "Wanted suspects cannot be issued a ticket." );
 	else if ( p_WantedLevel[ pID ] < 1 ) return SendError( playerid, "Innocent players cannot be issued a ticket." );
 	else if ( p_Jailed{ playerid } ) return SendError( playerid, "You cannot use this command in jail." );
-	else if ( IsPlayerDetained( pID ) ) return SendError( playerid, "You cannot use this command on a detained player." );
+	//else if ( IsPlayerDetained( pID ) ) return SendError( playerid, "You cannot use this command on a detained player." );
 	else if ( g_iTime < p_TicketTimestamp[ pID ] ) return SendError( playerid, "This player has been ticketed recently, he will be fined in %d seconds.", g_iTime - p_TicketTimestamp[ pID ] );
 	else
 	{
@@ -13929,6 +13798,14 @@ stock TicketPlayer( pID, playerid )
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TICKET]{FFFFFF} You issued a ticket of "COL_GOLD"$2,000{FFFFFF} to %s(%d)!", ReturnPlayerName( pID ), pID );
 	}
 	return 1;
+}
+
+CMD:taze( playerid, params[ ] )
+{
+   	new
+   		pID = GetClosestPlayer( playerid );
+
+ 	return TazePlayer( pID, playerid );
 }
 
 CMD:payticket( playerid, params[] )
@@ -13970,92 +13847,18 @@ CMD:payticket( playerid, params[] )
 CMD:ar( playerid, params[ ] ) return cmd_arrest(playerid, params);
 CMD:arrest( playerid, params[ ] )
 {
-   	new victimid; // = GetClosestPlayer( playerid );
-   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-	//else if ( GetPlayerScore( playerid ) > 200 ) return SendError( playerid, "This feature is no longer available to you. Please use /detain." );
-	else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/ar(rest) [PLAYER_ID]" );
-	else if ( victimid == playerid ) return SendError( playerid, "You cannot arrest yourself." );
-	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
-	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
- 	{
- 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
-		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
-		if ( !IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is not cuffed." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
-		if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is detained, you cannot arrest them." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot arrest this person inside a vehicle." );
-		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "You cannot arrest a person that is inside a vehicle." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
-		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
-		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
-		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
-		GivePlayerCash( playerid, totalCash );
-		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), number_format( totalCash ) ); // 8hska7082bmahu
-		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", number_format( totalCash ), ReturnPlayerName( victimid ), victimid );
-		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
-		CallLocalFunction( "OnPlayerArrest", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
-		Untaze( victimid );
-		GivePlayerIrresistiblePoints( victimid, -2 );
-		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
-		JailPlayer( victimid, totalSeconds );
- 	}
- 	else return SendError( playerid, "There are no players around to arrest." );
-	return 1;
+   	new
+   		victimid = GetClosestPlayer( playerid );
+
+	return ArrestPlayer( victimid, playerid );
 }
 
 CMD:cuff( playerid, params[ ] )
 {
-   	new victimid; // = GetClosestPlayer( playerid );
-   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-	else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/cuff [PLAYER_ID]" );
-	else if ( victimid == playerid ) return SendError( playerid, "You cannot cuff yourself." );
-	else if ( !IsPlayerConnected( victimid ) || IsPlayerNPC( victimid ) ) return SendError( playerid, "This player is not connected." );
-	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
- 	{
- 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
-		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
-		if ( p_WantedLevel[ victimid ] < 6 ) return SendError( playerid, "This person isn't worth cuffing, ticket them." );
-		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( !IsPlayerTazed( victimid ) ) return SendError( playerid, "You must taze this player before cuffing them." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
-		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
-		GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
-		GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
-		SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
-	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
-		KillTimer( p_CuffAbuseTimer[ victimid ] );
-   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
-		//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
-		//TogglePlayerControllable( victimid, 0 );
-		p_Cuffed{ victimid } = true;
-		SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
-      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
+	new
+		victimid = GetClosestPlayer( playerid );
 
-		if ( p_BobbyPins[ victimid ] )
-			ShowPlayerHelpDialog( victimid, 4000, "You can uncuff yourself with ~p~/breakcuff." );
-		else
-			ShowPlayerHelpDialog( victimid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
- 	}
- 	else return SendError( playerid, "There are no players around to cuff." );
-	return 1;
+	return CuffPlayer( victimid, playerid );
 }
 
 CMD:uncuff( playerid, params[ ] )
@@ -14074,16 +13877,16 @@ CMD:uncuff( playerid, params[ ] )
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 		SendClientMessageFormatted( victimid, -1, ""COL_RED"[UNCUFFED]{FFFFFF} You have been uncuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[UNCUFFED]{FFFFFF} You have uncuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
         ClearAnimations( victimid );
 		TogglePlayerControllable( victimid, 1 );
 		p_Cuffed{ victimid } = false;
-		p_Detained{ victimid } = false;
-		Delete3DTextLabel( p_DetainedLabel[ victimid ] );
-		p_DetainedLabel[ victimid ] = Text3D: INVALID_3DTEXT_ID;
-		p_DetainedBy[ victimid ] = INVALID_PLAYER_ID;
+		//p_Detained{ victimid } = false;
+		//Delete3DTextLabel( p_DetainedLabel[ victimid ] );
+		//p_DetainedLabel[ victimid ] = Text3D: INVALID_3DTEXT_ID;
+		//p_DetainedBy[ victimid ] = INVALID_PLAYER_ID;
 		KillTimer( p_CuffAbuseTimer[ victimid ] );
         SetPlayerSpecialAction( victimid, SPECIAL_ACTION_NONE );
         RemovePlayerAttachedObject( victimid, 2 );
@@ -14092,7 +13895,7 @@ CMD:uncuff( playerid, params[ ] )
 	return 1;
 }
 
-CMD:detain( playerid, params[ ] )
+/*CMD:detain( playerid, params[ ] )
 {
    	new victimid = GetClosestPlayer( playerid );
   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
@@ -14125,62 +13928,7 @@ CMD:detain( playerid, params[ ] )
  	}
  	else return SendError( playerid, "There are no players around to detain." );
 	return 1;
-}
-
-CMD:taze( playerid, params[ ] )
-{
-	/* ** ANTI TAZE SPAM ** */
-    if ( p_AntiTazeSpam[ playerid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before tazing someone again.", p_AntiTazeSpam[ playerid ] - g_iTime );
-    /* ** END OF ANTI SPAM ** */
-
-   	new victimid; // = GetClosestPlayer( playerid );
-   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
-	else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
-	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "There are no players around to taze." );
-	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 5.0 && IsPlayerConnected( victimid ) )
- 	{
- 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
-		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
-		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( IsPlayerTazed( victimid ) ) return SendError( playerid, "This player is already tazed." );
-		//if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
-		if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command while in jail." );
-		if ( IsPlayerTied( victimid ) ) return SendError( playerid, "Tazing a tied player is pretty useless, though you can use /untie for a harder job!" );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
-		if ( random( 101 ) < 90 )
-		{
-			GameTextForPlayer( victimid, "~n~~r~TAZED!", 2000, 4 );
-			GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/cuff %d", victimid ), 2000, 4 );
-			SendClientMessageFormatted( victimid, -1, ""COL_RED"[TAZED]{FFFFFF} You have been tazed by %s(%d) for 3 seconds!", ReturnPlayerName( playerid ), playerid );
-		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TAZED]{FFFFFF} You have tazed %s(%d) for 3 seconds!", ReturnPlayerName( victimid ), victimid );
-	        SetTimerEx( "Untaze", 3000, false, "d", victimid );
-			TogglePlayerControllable( victimid, 0 );
-			ApplyAnimation( victimid, "CRACK", "crckdeth2", 5.0, 1, 1, 1, 0, 0 );
-			p_Tazed{ victimid } = true;
-		}
-		else
-		{
-			SendClientMessageFormatted( playerid, -1, ""COL_RED"[TAZE FAIL]{FFFFFF} You have failed to taze %s(%d)!", ReturnPlayerName( victimid ), victimid );
-		  	SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[TAZE FAIL]{FFFFFF} %s(%d) has failed to taze you!", ReturnPlayerName( playerid ), playerid );
-		}
-		p_AntiTazeSpam[ playerid ] = g_iTime + 6;
- 	} else {
-		return SendError( playerid, "There are no players around to taze." );
-	}
- 	return 1;
-}
+}*/
 
 CMD:rob( playerid, params[ ] )
 {
@@ -14203,7 +13951,7 @@ CMD:rob( playerid, params[ ] )
 		if ( GetPlayerCash( victimid ) < 10 ) return SendError( playerid, "This player cannot be robbed since he has a low amount of money." );
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -14272,7 +14020,7 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -14344,7 +14092,7 @@ CMD:c4( playerid, params[ ] )
 		if ( !JobEquals( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
+		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -17427,7 +17175,7 @@ CMD:forceac( playerid, params[ ] )
 			p_forcedAnticheat[ pID ] = p_AccountID[ playerid ];
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=%d WHERE `ID`=%d", p_AccountID[ playerid ], p_AccountID[ pID ] ) );
 			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
-	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s is required to use an anticheat to play by %s. "COL_YELLOW"(www.samp-ac.com)", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s is required to use an anticheat to play by %s. "COL_YELLOW"("AC_WEBSITE")", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
 	        if ( ! IsPlayerUsingSampAC( pID ) ) KickPlayerTimed( pID );
 		}
 		else
@@ -19360,8 +19108,8 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 	if ( newstate == PLAYER_STATE_DRIVER )
 		CallLocalFunction( "OnPlayerDriveVehicle", "dd", playerid, vID );
 
-	if ( newstate == PLAYER_STATE_ONFOOT && p_Detained{ playerid } == true && IsPlayerConnected( p_DetainedBy[ playerid ] ) )
-	    return PutPlayerInEmptyVehicleSeat( p_LastVehicle[ p_DetainedBy[ playerid ] ], playerid );
+	//if ( newstate == PLAYER_STATE_ONFOOT && p_Detained{ playerid } == true && IsPlayerConnected( p_DetainedBy[ playerid ] ) )
+	//    return PutPlayerInEmptyVehicleSeat( p_LastVehicle[ p_DetainedBy[ playerid ] ], playerid );
 
 	if ( newstate == PLAYER_STATE_PASSENGER )
 	{
@@ -19393,15 +19141,34 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 	if ( IsPlayerTied( playerid ) )
 		return SendError( playerid, "You can't do anything as you are tied." );
 
-	/* ** Dropoff check ** */
+	/* ** Dropoff check **
 	new
 		bDropoff = false;
 
 	for ( new i = CP_DROP_OFF_COP; i <= CP_DROP_OFF_HELI; i ++ )
 		if ( checkpointid == g_Checkpoints[ i ] )
-			bDropoff = true;
+			bDropoff = true;*/
 
-	if ( IsPlayerJailed( playerid ) && !bDropoff )
+	/* ** Ore Mining At Alcatraz ** */
+	if ( checkpointid == g_Checkpoints[ CP_ALCATRAZ_EXPORT ] )
+	{
+		if ( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) )
+		{
+			new ore = GetPVarInt( playerid, "carrying_ore" );
+
+			if ( ! ( 0 <= ore < sizeof( g_miningData ) ) )
+				return SendError( playerid, "An error has occured, try again." ), RemoveEquippedOre( playerid );
+
+			new earned_money = floatround( float( g_orePrices[ g_miningData[ ore ] [ E_ORE ] ] ) * 0.5 );
+
+			GivePlayerCash( playerid, earned_money );
+			SendServerMessage( playerid, "You have crushed a "COL_GREY"%s"COL_WHITE" Ore and earned "COL_GOLD"%s"COL_WHITE".", getOreName( g_miningData[ ore ] [ E_ORE ] ), number_format( earned_money ) );
+			RemoveEquippedOre( playerid );
+		}
+		return 1;
+	}
+
+	if ( IsPlayerJailed( playerid ) ) // || && !bDropoff
 	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), 1;
 
 	/* ** Continue ** */
@@ -19479,7 +19246,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 	}
 
 	// Detain Mechanism
-	if ( bDropoff )
+	/*if ( bDropoff )
 	{
 	    if ( p_Class[ playerid ] != CLASS_POLICE )
 	    	return 1;
@@ -19526,13 +19293,13 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 				GivePlayerCash( playerid, iCashEarned );
 				GivePlayerScore( playerid, iDetained * 2 );
-				CallLocalFunction( "OnPlayerArrest", "dddd", playerid, INVALID_PLAYER_ID, p_Arrests[ playerid ], iDetained );
+				CallLocalFunction( "OnPlayerArrested", "dddd", playerid, INVALID_PLAYER_ID, p_Arrests[ playerid ], iDetained );
 	    		return SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} and %d score for dropping off %d criminal(s) to prison.", number_format( iCashEarned ), iDetained * 2, iDetained );
 	    	}
 	    	else return SendError( playerid, "There are no detained criminals in your vehicle that can be jailed." );
 	    }
 	    else return SendError( playerid, "You need a driver of a vehicle with detained criminals to use this." );
-	}
+	}*/
 
 	if ( checkpointid == g_Checkpoints[ CP_FIGHTSTYLE ] || checkpointid == g_Checkpoints[ CP_FIGHTSTYLE_LV ] || checkpointid == g_Checkpoints[ CP_FIGHTSTYLE_LS ] )
 	{
@@ -20332,7 +20099,7 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 		// Bribes
 		foreach(new bribeid : BribeCount) if ( g_bribeData[ bribeid ] [ E_PICKUP ] [ 0 ] == pickupid || g_bribeData[ bribeid ] [ E_PICKUP ] [ 1 ] == pickupid )
 		{
-		    if ( !( g_bribeData[ bribeid ] [ E_DISABLED ] == true || p_WantedLevel[ playerid ] <= 0 || IsPlayerDetained( playerid ) || IsPlayerCuffed( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_SPECTATING ) )
+		    if ( !( g_bribeData[ bribeid ] [ E_DISABLED ] == true || p_WantedLevel[ playerid ] <= 0 || IsPlayerCuffed( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_SPECTATING ) ) //  || IsPlayerDetained( playerid )
 		    {
 		    	new
 		    		iWanted = 2;
@@ -20719,7 +20486,7 @@ function OnSafeHelperUpdate( playerid, robberyid )
 	return ( p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, robberyid ) );
 }
 
-public OnPlayerArrest( playerid, victimid, totalarrests, totalpeople )
+public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )
 {
 	new
 		iBefore = p_Arrests[ playerid ],
@@ -20728,7 +20495,7 @@ public OnPlayerArrest( playerid, victimid, totalarrests, totalpeople )
 
 	incrementPlayerStreak( playerid, STREAK_ARREST );
 
-	if ( iBefore < 1000 && iAfter >= 1000 ) 	  ShowAchievement( playerid, "Arrested ~r~1000~w~~h~~h~ criminals!", 25 );
+	if ( iBefore < 1000 && iAfter >= 1000 )	   ShowAchievement( playerid, "Arrested ~r~1000~w~~h~~h~ criminals!", 25 );
 	else if ( iBefore < 500 && iAfter >= 500 ) ShowAchievement( playerid, "Arrested ~r~500~w~~h~~h~ criminals!", 18 );
 	else if ( iBefore < 200 && iAfter >= 200 ) ShowAchievement( playerid, "Arrested ~r~200~w~~h~~h~ criminals!", 15 );
 	else if ( iBefore < 100 && iAfter >= 100 ) ShowAchievement( playerid, "Arrested ~r~100~w~~h~~h~ criminals!", 12 );
@@ -21377,9 +21144,11 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				closestid = GetClosestPlayer( playerid );
 
 			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE && ! ( GetDistanceBetweenPlayers( playerid, closestid ) > 10.0 || !IsPlayerConnected( closestid ) ) ) {
-				if ( p_WantedLevel[ closestid ] > 5 )
-					GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/taze %d", closestid ), 2000, 4 ); // TazePlayer( playerid, closestid );
-				else {
+				if ( p_WantedLevel[ closestid ] > 5 ) {
+					if ( IsPlayerCuffed( closestid ) ) ArrestPlayer( closestid, playerid );
+					else if ( IsPlayerTazed( closestid ) ) CuffPlayer( closestid, playerid );
+					else TazePlayer( closestid, playerid );
+				} else {
 					TicketPlayer( closestid, playerid );
 				}
 			}
@@ -21555,16 +21324,18 @@ public OnPlayerUpdate( playerid )
 
 public OnPlayerEditAttachedObject( playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ )
 {
-	new
-		slot = p_ToySlotSelected{ playerid };
+	new slot = p_ToySlotSelected{ playerid };
+	new color = p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ];
 
 	if ( response )
 	{
 		new bool: modded;
+
 	    if ( fScaleX < 0.25 || fScaleX > 2.5 ) fScaleX = 1.0, modded = true;
 	    if ( fScaleY < 0.25 || fScaleY > 2.5 ) fScaleY = 1.0, modded = true;
 	    if ( fScaleZ < 0.25 || fScaleZ > 2.5 ) fScaleZ = 1.0, modded = true;
 	    if ( modded ) SendServerMessage( playerid, "Some scaling parts were either too small, or too big. They have been scaled to the default size." );
+
 	   	p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ] = boneid;
 		p_AttachedObjectsData[ playerid ] [ slot ] [ E_OX ] = fOffsetX;
 		p_AttachedObjectsData[ playerid ] [ slot ] [ E_OY ] = fOffsetY;
@@ -21576,8 +21347,9 @@ public OnPlayerEditAttachedObject( playerid, response, index, modelid, boneid, F
 		p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ] = fScaleY;
 		p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ] = fScaleZ;
 		p_AttachedObjectsData[ playerid ] [ slot ] [ E_MODELID ] = modelid;
+
 		RemovePlayerAttachedObject( playerid, index );
-		SetPlayerAttachedObject( playerid, index, modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ );
+		SetPlayerAttachedObject( playerid, index, modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, color, color );
 
 		format( szBigString, sizeof( szBigString ), "UPDATE `TOYS` SET `OX`=%f,`OY`=%f,`OZ`=%f,`RX`=%f,`RY`=%f,`RZ`=%f,`SX`=%f,`SY`=%f,`SZ`=%f WHERE `ID`=%d", fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] );
 		mysql_single_query( szBigString );
@@ -21591,7 +21363,8 @@ public OnPlayerEditAttachedObject( playerid, response, index, modelid, boneid, F
 		SetPlayerAttachedObject( playerid, index, p_AttachedObjectsData[ playerid ] [ slot ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ],
 			p_AttachedObjectsData[ playerid ] [ slot ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_OZ ],
 			p_AttachedObjectsData[ playerid ] [ slot ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ]
+			p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ],
+			color, color
 		);
 	}
 	showToyEditMenu( playerid, slot );
@@ -21608,13 +21381,7 @@ public OnPlayerStreamOut(playerid, forplayerid)
 	return 1;
 }
 
-public AC_OnFileExecuted( playerid, module[ ], md5[ ] ) {
-	/*format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) executed a file:"COL_GREY"%s", ReturnPlayerName( playerid ), playerid, module );
-	SendClientMessageToAdmins( COLOR_PINK, szNormalString );*/
-	return 1;
-}
-
-public AC_OnImgFileModifed( playerid, filename[ ], md5[ ] ) {
+/*public AC_OnImgFileModifed( playerid, filename[ ], md5[ ] ) {
 	format( szNormalString, sizeof( szNormalString ), "[ANTI-CHEAT]{FFFFFF} %s(%d) modified an img file: "COL_GREY"%s", ReturnPlayerName( playerid ), playerid, filename );
 	SendClientMessageToAdmins( COLOR_PINK, szNormalString );
 	return 1;
@@ -21627,7 +21394,7 @@ public AC_OnFileCalculated( playerid, filename[ ], md5[ ], bool: isCheat )
 		SendClientMessageToAdmins( COLOR_PINK, szNormalString );
 	}
 	return 1;
-}
+}*/
 
 thread OnPlayerLogin( playerid, password[ ] )
 {
@@ -21752,7 +21519,7 @@ thread OnPlayerLogin( playerid, password[ ] )
 
 			// anti-cheat
 			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
-				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY"www.samp-ac.com"COL_WHITE" to install the anticheat." );
+				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY""AC_WEBSITE""COL_WHITE" to install the anticheat." );
 				KickPlayerTimed( playerid );
 				return 1;
 			}
@@ -22872,13 +22639,44 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d", szLargeString, number_format( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ) );
 				ShowPlayerDialog( playerid, DIALOG_GANG_LIST_RESPONSE, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Statistics", szLargeString, "Close", "Back" );
 			}
-			case 1: mysql_function_query( dbHandle, sprintf( "SELECT `NAME`,`ONLINE` FROM `USERS` WHERE `GANG_ID`=%d ORDER BY `ONLINE` DESC", g_gangData[ g ] [ E_SQL_ID ] ), true, "OnListGangMembers", "dd", playerid, g ); // View gang members
+			case 1:
+			{
+				// View gang members
+				mysql_tquery( dbHandle,
+					sprintf( "SELECT `NAME`,`ONLINE` FROM `USERS` WHERE `GANG_ID`=%d ORDER BY `ONLINE` DESC LIMIT 20 OFFSET 0", g_gangData[ g ] [ E_SQL_ID ] ),
+					"OnListGangMembers", "ddd", playerid, g, 0
+				);
+			}
 		}
 		return 1;
 	}
-	if ( dialogid == DIALOG_GANG_LIST_RESPONSE || dialogid == DIALOG_GANG_LIST_MEMBERS )
+	if ( dialogid == DIALOG_GANG_LIST_RESPONSE ) {
+		return ShowPlayerDialog( playerid, DIALOG_GANG_LIST_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Gang Options", "View Statistics\nView Gang Members", "Select", "Back" );
+	}
+	if ( dialogid == DIALOG_GANG_LIST_MEMBERS )
 	{
-		ShowPlayerDialog( playerid, DIALOG_GANG_LIST_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Gang Options", "View Statistics\nView Gang Members", "Select", "Back" );
+		new g = GetPVarInt( playerid, "gang_members_id" );
+		new members_shown = GetPVarInt( playerid, "gang_members_results" );
+		new page = GetPVarInt( playerid, "gang_members_page" );
+
+		if ( ! Iter_Contains( gangs, g ) )
+			return SendError( playerid, "Could not find gang. Try again." );
+
+		if ( ! response && page == 0 )
+			return ShowPlayerDialog( playerid, DIALOG_GANG_LIST_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Gang Options", "View Statistics\nView Gang Members", "Select", "Back" );
+
+		if ( members_shown < 20 && response )
+			return 1;
+
+		// if response, add a page, otherwise previous
+		page += response ? 1 : -1;
+
+		// find page result
+		mysql_tquery( dbHandle,
+			sprintf( "SELECT `NAME`,`ONLINE` FROM `USERS` WHERE `GANG_ID`=%d ORDER BY `ONLINE` DESC LIMIT 20 OFFSET %d", g_gangData[ g ] [ E_SQL_ID ], page * 20 ),
+			"OnListGangMembers", "ddd", playerid, g, page
+		);
+		return 1;
 	}
 	if ( ( dialogid == DIALOG_PERKS ) && response )
 	{
@@ -23686,6 +23484,44 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 		showToyEditMenu( playerid, iSlot );
 	}
+	if ( dialogid == DIALOG_TOYS_COLOR )
+	{
+		new
+			slot = p_ToySlotSelected{ playerid };
+
+	    if ( !response )
+			return showToyEditMenu( playerid, slot );
+
+		new
+			hexcode[ 7 ];
+
+		if ( sscanf( inputtext, "S(000000)[7]", hexcode ) ) SendError( playerid, "Please ensure your hex is 6 characters at maximum (RRGGBB)." );
+		else if ( ! isHex( hexcode ) ) SendError( playerid, "This is not a valid hex code." );
+		else
+		{
+			if ( strmatch( hexcode, "000000" ) )
+			{
+		    	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = 0;
+		    	mysql_single_query( sprintf( "UPDATE `TOYS` SET `COLOR`=0 WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] ) );
+				SendServerMessage( playerid, "You have reset your toy's color." );
+			}
+			else
+			{
+				new
+					final_hex;
+
+				if ( ! sscanf( sprintf( "0xFF%s", hexcode ), "h", final_hex ) )
+				{
+			    	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = final_hex;
+			    	mysql_single_query( sprintf( "UPDATE `TOYS` SET `COLOR`=%d WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] ) );
+					SendServerMessage( playerid, "You have set your toy's color to {%s}%s"COL_WHITE".", hexcode, hexcode );
+				}
+				else SendError( playerid, "This is not a valid hex code." );
+			}
+			return reloadPlayerToys( playerid );
+		}
+		return showToyEditMenu( playerid, slot );
+	}
 	if ( ( dialogid == DIALOG_TOYS_EDIT ) )
 	{
 		if ( !response )
@@ -23715,6 +23551,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			case 2:
 			{
+				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] ) {
+					SendError( playerid, "You cannot set the color of a disabled toy." );
+					return showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
+				}
+
+				ShowPlayerDialog( playerid, DIALOG_TOYS_COLOR, DIALOG_STYLE_INPUT, "{FFFFFF}Toys - Color", ""COL_WHITE"Please specify the color (hex) code as "COL_RED"RR"COL_GREEN"GG"COL_BLUE"BB"COL_WHITE" below:", "Select", "Back" );
+			    SendServerMessage( playerid, "You are now editing your toy's color, enter nothing or 000000 to reset it." );
+			}
+			case 3:
+			{
 				p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] = !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ];
 
 				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] )
@@ -23728,7 +23574,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					SetPlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid }, p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_BONE ],
 						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OZ ],
 						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RZ ],
-						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SZ ]
+						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SZ ],
+						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_COLOR ]
 					);
 					SendServerMessage( playerid, "You have enabled this toy." );
 				}
@@ -23738,7 +23585,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
 			}
-			case 3:
+			case 4:
 			{
 				RemovePlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid } );
 			   	p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_BONE ] = 0;
@@ -23900,9 +23747,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	            strcat( szCMDS, ""COL_GREY"/shop{FFFFFF} - Displays the shop menu whilst in Supa Save.\n"\
 								""COL_GREY"/tie{FFFFFF} - Ties the closest player with your rope(s).\n"\
 								""COL_GREY"/untie{FFFFFF} - Unties the closest player.\n" );
-				strcat( szCMDS, ""COL_GREY"/cuttie{FFFFFF} - Cuts your tie currently on you.\n"\
-								""COL_GREY"/breakout{FFFFFF} - Breaks out the jail by melting the cell bars using a Metal Melter.\n"\
-								""COL_GREY"/breakcuff{FFFFFF} - Unlocks the handcuffs placed by a LEO using a bobby pin." );
+				strcat( szCMDS, ""COL_GREY"/breakout{FFFFFF} - Breaks out the jail by melting the cell bars using a Metal Melter." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Shop/Item Commands", szCMDS, "Okay", "Back" );
 	        }
 	        case 4:
@@ -24010,7 +23855,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 											""COL_GREY"Army Warns:{FFFFFF} %d/" #MAX_CLASS_BAN_WARNS "\n"\
 											""COL_GREY"V.I.P Job:{FFFFFF} %s\n"\
 											""COL_GREY"Current Job:{FFFFFF} %s",
-											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, p_ArmyBanned{ pID }, p_VIPLevel[ pID ] < 5 ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
+											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, p_ArmyBanned{ pID }, p_VIPLevel[ pID ] < VIP_GOLD ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
 
 				if ( gangid != -1 ) {
 					format( szLargeString, 750, "%s\n"COL_GREY"Gang:"COL_WHITE" %s(%d)", szLargeString, g_gangData[ gangid ] [ E_NAME ], gangid );
@@ -24325,6 +24170,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if ( p_AddedEmail{ playerid } )
 					return SendError( playerid, "You already added an email to your account before." );
 
+				if ( GetPlayerScore( playerid ) < 50 )
+					return SendServerMessage( playerid, "Get at least 50 score, then use this feature." );
+
 				Beep( playerid );
 				p_AddedEmail{ playerid } = true;
 				//p_IrresistibleCoins[ playerid ] += 5.0;
@@ -24357,7 +24205,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( strlen( szInput ) != 8 )
 			return SendError( playerid, "The verification code must be 8 characters." ), ShowPlayerAccountVerification( playerid );
 
-		format( szBigString, sizeof( szBigString ), "SELECT * FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%s' AND `TOKEN`='%s'", p_AccountID[ playerid ], mysql_escape( ReturnPlayerIP( playerid ) ), szInput );
+		mysql_format( dbHandle, szBigString, sizeof( szBigString ), "SELECT * FROM `USER_CONFIRMED_IPS` WHERE `USER_ID`=%d AND `IP`='%e' AND `TOKEN`='%e'", p_AccountID[ playerid ], ReturnPlayerIP( playerid ), szInput );
 		mysql_function_query( dbHandle, szBigString, true, "OnAccountGuardVerify", "d", playerid );
 		return 1;
 	}
@@ -25053,8 +24901,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	if ( ( dialogid == DIALOG_HELP ) && response )
 	{
 		SetPVarInt( playerid, "help_category", listitem );
-	    format( szNormalString, sizeof( szNormalString ), "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", listitem );
-	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, listitem );
+	    mysql_function_query( dbHandle, sprintf( "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", listitem ), true, "OnFetchCategoryResponse", "dd", playerid, listitem );
 	}
 	if ( dialogid == DIALOG_HELP_CATEGORY )
 	{
@@ -25075,10 +24922,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 		HTTP( playerid, HTTP_GET, sprintf( "sfcnr.com/api/player/help/%d", digits[ listitem ] ), "", "OnHelpHTTPResponse" );
 	}
-	if ( ( dialogid == DIALOG_HELP_THREAD ) && !response )
-	{
-	    format( szNormalString, 72, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", GetPVarInt( playerid, "help_category" ) );
-	    mysql_function_query( dbHandle, szNormalString, true, "OnFetchCategoryResponse", "dd", playerid, GetPVarInt( playerid, "help_category" ) );
+	if ( ( dialogid == DIALOG_HELP_THREAD ) && !response ) {
+	    mysql_function_query( dbHandle, sprintf( "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=%d ORDER BY `SUBJECT` ASC", GetPVarInt( playerid, "help_category" ) ), true, "OnFetchCategoryResponse", "dd", playerid, GetPVarInt( playerid, "help_category" ) );
 	}
 	if ( ( dialogid == DIALOG_HELP_BACK ) && !response ) return cmd_help( playerid, "" );
 	if ( ( dialogid == DIALOG_GATE ) && response )
@@ -26907,10 +26752,9 @@ stock SetPlayerPosToPrison( playerid )
 
 		Float: alctrazSpawnPoints[ ] [ 3 ] =
 		{
-			{ -2008.7112, 1876.0122, 21.7957 },
-			{ -2062.8308, 1878.9573, 21.7957 },
-			{ -2112.6472, 1907.8503, 21.7957 },
-			{ -2040.2295, 1918.9410, 21.7957 }
+			{ -2005.1923, 1748.1976, 43.7386 },
+			{ -2013.7557, 1783.2218, 43.7386 },
+			{ -2049.5774, 1734.1851, 43.7386 }
 		},
 
 		Float: loadingHeight = 0.50
@@ -26926,7 +26770,7 @@ stock SetPlayerPosToPrison( playerid )
 	SetTimerEx 				( "ope_Unfreeze", 5000, false, "d", playerid );
 	p_inAlcatraz 			{ playerid } = false;
 
-	if ( p_JailTime[ playerid ] > 600 )
+	if ( p_JailTime[ playerid ] > ALCATRAZ_REQUIRED_TIME )
 	{
 	    iRandom = random( sizeof( alctrazSpawnPoints ) );
 	    SetPlayerPos 			( playerid, alctrazSpawnPoints[ iRandom ][ 0 ], alctrazSpawnPoints[ iRandom ][ 1 ], alctrazSpawnPoints[ iRandom ][ 2 ] + loadingHeight );
@@ -26984,11 +26828,11 @@ stock JailPlayer( playerid, seconds, admin = 0 )
 	p_TicketIssuer		[ playerid ] = INVALID_PLAYER_ID; // Reset Tickets
 	p_TicketTimestamp	[ playerid ] = 0; // Reset Tickets
 	p_Cuffed			{ playerid } = false;
-	p_Detained 			{ playerid } = false;
+	//p_Detained 			{ playerid } = false;
 	p_InfectedHIV 		{ playerid } = false;
-	Delete3DTextLabel	( p_DetainedLabel[ playerid ] );
-	p_DetainedLabel		[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	p_DetainedBy		[ playerid ] = INVALID_PLAYER_ID;
+	//Delete3DTextLabel	( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel		[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//p_DetainedBy		[ playerid ] = INVALID_PLAYER_ID;
 
 	// Primary Jail Variables
 	p_Jailed			{ playerid } = true;
@@ -27921,13 +27765,13 @@ function SetPlayerRandomSpawn( playerid )
 stock initializeCheckpoints( )
 {
 	g_Checkpoints[ CP_BOMB_SHOP ] = CreateDynamicCP( -1923.7546, 303.3475, 41.0469, 2.0, 0, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_COP ] = CreateDynamicCP( -1577.0952, 683.9492, 7.2440, 3.0, 0, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_COP ] = CreateDynamicCP( -1577.0952, 683.9492, 7.2440, 3.0, 0, -1, -1, 100.0 );
 	g_Checkpoints[ CP_BANK_MENU ] = CreateDynamicCP( -1405.0657, 831.0966, 984.7126, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_COUNTRY_BANK_MENU ] = CreateDynamicCP( 2156.1299, 1640.2460, 1041.6124, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_CHANGE_JOB ] = CreateDynamicCP( 361.8525, 173.6031, 1008.3828, 1.0, -1, -1, -1, 50.0 );
 	g_Checkpoints[ CP_HOSPITAL ] = CreateDynamicCP( -2647.5007, 659.0084, 970.4332, 2.0, -1, -1, -1, 100.0 );
     g_Checkpoints[ CP_PAINTBALL ] = CreateDynamicCP( -2172.2017, 252.1113, 35.3388, 1.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_FBI ] = CreateDynamicCP( -2446.6785, 522.9684, 30.2548, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_FBI ] = CreateDynamicCP( -2446.6785, 522.9684, 30.2548, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_LUMBERJACK ] = CreateDynamicCP( -2323.5676, -97.2582, 35.3078, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_FIGHTSTYLE ] = CreateDynamicCP( 768.2576, -22.8351, 1000.5859, 2.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_VEHDEALER ] = CreateDynamicCP( -1867.9092, -646.3469, 1002.1284, 1.0, -1, -1, -1, 25.0 );
@@ -27935,14 +27779,14 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_AMMUNATION_0 ] = CreateDynamicCP( 296.3782, -38.4512, 1001.5156, 1.0, -1, -1, -1, 20.0 );
 	g_Checkpoints[ CP_AMMUNATION_1 ] = CreateDynamicCP( 295.4524, -80.7487, 1001.5156, 1.0, -1, -1, -1, 20.0 );
 	g_Checkpoints[ CP_AMMUNATION_2 ] = CreateDynamicCP( 312.8432, -166.1419, 999.6010, 1.0, -1, -1, -1, 20.0 );
-	g_Checkpoints[ CP_DROP_OFF_HELI ] = CreateDynamicCP( -1651.6956, 700.8394, 38.2422, 5.0, -1, -1, -1, 50.0 );
+	//g_Checkpoints[ CP_DROP_OFF_HELI ] = CreateDynamicCP( -1651.6956, 700.8394, 38.2422, 5.0, -1, -1, -1, 50.0 );
 	g_Checkpoints[ CP_PAWNSHOP ] = CreateDynamicCP( 1333.0847, -1080.0726, 968.0430, 1.0, -1, -1, -1, 20.0 );
 	g_Checkpoints[ CP_REFILL_AMMO ] = CreateDynamicCP( -1615.2600, 685.5120, 7.1875, 1.0, -1, -1, -1, 20.0 );
 	g_Checkpoints[ CP_REFILL_AMMO_LS ] = CreateDynamicCP( -1615.2600, 685.5120, 7.1875, 1.0, -1, -1, -1, 20.0 );
-	g_Checkpoints[ CP_DROP_OFF_FC ] = CreateDynamicCP( -211.6869, 979.3518, 19.3237, 3.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_DILLIMORE ] = CreateDynamicCP( 614.2876, -588.6716, 17.2330, 3.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_DIABLO ] = CreateDynamicCP( -433.3666, 2255.6064, 42.4297, 3.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_QUBRADOS ] = CreateDynamicCP( -1400.0497, 2647.2358, 55.6875, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_FC ] = CreateDynamicCP( -211.6869, 979.3518, 19.3237, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_DILLIMORE ] = CreateDynamicCP( 614.2876, -588.6716, 17.2330, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_DIABLO ] = CreateDynamicCP( -433.3666, 2255.6064, 42.4297, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_QUBRADOS ] = CreateDynamicCP( -1400.0497, 2647.2358, 55.6875, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_COKE ] = CreateDynamicCP( 2563.5728, -1310.5925, 1143.7242, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_METH ] = CreateDynamicCP( 2034.0669, 1001.6073, 1510.2416, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_BIZ_TERMINAL_WEED ] = CreateDynamicCP( -1742.9982, -1377.3049, 5874.1333, 1.0, -1, -1, -1, 30.0 );
@@ -27954,24 +27798,25 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_AIRPORT_LS ] = CreateDynamicCP( 1642.22740, -2335.4978, 13.5469, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_AIRPORT_SF ] = CreateDynamicCP( -1422.4063, -286.50810, 14.1484, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_CASINO_BAR ] = CreateDynamicCP( 2655.8694, 1591.1545, 1506.1793, 1.0, -1, -1, -1, 30.0 );
+	g_Checkpoints[ CP_ALCATRAZ_EXPORT ] = CreateDynamicCP( -1999.9487, 1781.2325, 43.7386, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  614.2876, -588.6716, 17.2330, 50.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -433.3666, 2255.6064, 42.4297, 50.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1400.0497, 2647.2358, 55.6875, 50.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  614.2876, -588.6716, 17.2330, 50.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -433.3666, 2255.6064, 42.4297, 50.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1400.0497, 2647.2358, 55.6875, 50.0);
 
 	#if ENABLE_CITY_LV == true
 	g_Checkpoints[ CP_BOMB_SHOP_LV ] = CreateDynamicCP( 1998.7263, 2298.5562, 10.8203, 2.0, 0, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_COP_LV ] = CreateDynamicCP( 2225.6753, 2457.2388, -7.4531, 3.0, 0, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_COP_LV ] = CreateDynamicCP( 2225.6753, 2457.2388, -7.4531, 3.0, 0, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL_LV ] = CreateDynamicCP( 1607.2659, 1815.2485, 10.8203, 2.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_FBI_LV ] = CreateDynamicCP( 948.6036, 1811.2720, 8.6484, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_FBI_LV ] = CreateDynamicCP( 948.6036, 1811.2720, 8.6484, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_FIGHTSTYLE_LV ] = CreateDynamicCP( 766.8416, -62.1872, 1000.6563, 2.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_VEHDEALER_2 ] = CreateDynamicCP( -126.2794, 117.3427, 1004.7233, 1.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_REFILL_AMMO_LV ] = CreateDynamicCP( 2251.9438, 2488.7981, 10.9908, 1.0, -1, -1, -1, 20.0 );
 	CreateDynamic3DTextLabel("[PURCHASE VEHICLE]", COLOR_GOLD, -126.2794, 117.3427, 1004.7233, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 2225.6753, 2457.2388, -7.4531, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 948.6036, 1811.2720, 8.6484, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 2225.6753, 2457.2388, -7.4531, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 948.6036, 1811.2720, 8.6484, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 766.8416, -62.1872, 1000.6563, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 9);
 	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, 1998.7263, 2298.5562, 10.8203, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD, 1607.2659, 1815.2485, 10.8203, 20.0);
@@ -27983,16 +27828,16 @@ stock initializeCheckpoints( )
 	g_Checkpoints[ CP_HOSPITAL1_LS ] = CreateDynamicCP( 1172.0767, -1323.3257, 15.4029, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL2_LS ] = CreateDynamicCP( 2034.0677, -1401.6699, 17.2938, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL_FC ] = CreateDynamicCP( -320.2127, 1048.2339, 20.3403, 1.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_COP_LS ] = CreateDynamicCP( 1569.0277, -1694.1566, 5.8906, 3.0, 0, -1, -1, 100.0 );
-	g_Checkpoints[ CP_DROP_OFF_FBI_LS ] = CreateDynamicCP( 1516.6716, -1458.9398, 9.5000, 3.0, -1, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_COP_LS ] = CreateDynamicCP( 1569.0277, -1694.1566, 5.8906, 3.0, 0, -1, -1, 100.0 );
+	//g_Checkpoints[ CP_DROP_OFF_FBI_LS ] = CreateDynamicCP( 1516.6716, -1458.9398, 9.5000, 3.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_FIGHTSTYLE_LS ] = CreateDynamicCP( 772.0868, 12.6397, 1000.6996, 1.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_BANK_MENU_LS ] = CreateDynamicCP( 2136.4946, 1226.1787, 1017.1369, 1.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_VEHDEALER_3 ] = CreateDynamicCP( 540.7507, -1299.1378, 17.2859, 1.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_REFILL_AMMO_LS ] = CreateDynamicCP( 1579.5439, -1635.5166, 13.5609, 1.0, -1, -1, -1, 20.0 );
 	CreateDynamic3DTextLabel("[PURCHASE VEHICLE]", COLOR_GOLD, 540.7507, -1299.1378, 17.2859, 20.0);
 	CreateDynamic3DTextLabel("[BANK MENU]", COLOR_GOLD, 2136.4946, 1226.1787, 1017.1369, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1569.0277, -1694.1566, 5.8906, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1516.6716, -1458.9398, 9.5000, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1569.0277, -1694.1566, 5.8906, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1516.6716, -1458.9398, 9.5000, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 772.0868, 12.6397, 1000.6996, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 10);
 	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, 1911.2462, -1775.8755, 13.3828, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD, 1172.0767, -1323.3257, 15.4029, 20.0);
@@ -28001,6 +27846,7 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, 1579.5439, -1635.5166, 13.5609, 20.0);
 	#endif
 
+	CreateDynamic3DTextLabel("[ROCK CRUSHER]", COLOR_GOLD,  -1999.9487, 1781.2325, 43.7386, 50.0);
 	CreateDynamic3DTextLabel("[CASINO BAR]", COLOR_GOLD,  2655.8694, 1591.1545, 1506.1793, 50.0);
 	CreateDynamic3DTextLabel("[AIRPORT]", COLOR_GOLD,  1672.53640, 1447.86160, 10.7881, 50.0);
 	CreateDynamic3DTextLabel("[AIRPORT]", COLOR_GOLD,  1642.22740, -2335.4978, 13.5469, 50.0);
@@ -28010,9 +27856,9 @@ stock initializeCheckpoints( )
 	CreateDynamic3DTextLabel("[SHOP]", COLOR_GOLD, -29.0409,-184.7446,1003.5469, 20.0);
 	CreateDynamic3DTextLabel("[BANK MENU]", COLOR_GOLD, -1405.0657, 831.0966, 984.7126, 20.0);
 	CreateDynamic3DTextLabel("[BANK MENU]", COLOR_GOLD, 2156.1299, 1640.2460, 1041.6124, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -1577.0952, 683.9492, 7.2440, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -2446.6785, 522.9684, 30.2548, 20.0);
-	CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1651.6956, 700.8394, 38.2422, 50.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -1577.0952, 683.9492, 7.2440, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -2446.6785, 522.9684, 30.2548, 20.0);
+	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1651.6956, 700.8394, 38.2422, 50.0);
 	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, -1923.7546, 303.3475, 41.0469, 20.0);
 	CreateDynamic3DTextLabel("[GUN STORE]", COLOR_GOLD, 296.3782, -38.4512, 1001.5156, 20.0);
 	CreateDynamic3DTextLabel("[GUN STORE]", COLOR_GOLD, 295.4524, -80.7487, 1001.5156, 20.0);
@@ -28078,7 +27924,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 		}
 		else GetDynamicObjectPos( g_C4Data[ playerid ] [ i ] [ E_OBJECT ], X, Y, Z );
 
-		if ( IsPointToPoint( 10.0, X, Y, Z, -2038.6539, 1840.0137, 21.7857 ) )
+		if ( IsPointToPoint( 10.0, X, Y, Z, -2016.7365, 1826.2612, 43.1458 ) )
 		{
 			if ( g_iTime > g_alcatrazTimestamp )
 			{
@@ -28088,7 +27934,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 				GivePlayerWantedLevel( playerid, 24 );
 				Achievement::HandleJailBlown( playerid );
 
-				SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"Alcatraz gate{FFFFFF}!", ReturnPlayerName( playerid ), playerid );
+				SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"Alcatraz Rock{FFFFFF}!", ReturnPlayerName( playerid ), playerid );
 				massUnjailPlayers( CITY_SF, .alcatraz = true );
 			}
 		}
@@ -29937,10 +29783,10 @@ stock getRandomCreatedHouse( )
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
 	// first find homes to ignore
-	foreach ( new i : houses )
+	for ( new i = 0; i < MAX_HOUSES; i ++ )
 	{
 		// Avoid Hills / Avoid V.I.P or Clan Homes
-		if ( g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
+		if ( ! Iter_Contains( houses, i ) || g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
 			ignoredHomes[ i ] = i;
 			continue;
 		}
@@ -30891,7 +30737,7 @@ stock CreateFire( )
 	    {
 			house = getRandomCreatedHouse( );
 
-			if ( house != ITER_NONE )
+			if ( Iter_Contains( houses, house ) )
 			{
 				g_fireData[ i ] [ E_HEALTH ] = 100.0 + fRandomEx( 1, 25 );
 				g_fireData[ i ] [ E_HOUSE ] = house;
@@ -31129,7 +30975,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	else if ( !IsPlayerSpawned( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're not spawned." );
 //	else if ( IsPlayerJailed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're jailed." );
 	else if ( IsPlayerTazed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're tazed." );
-	else if ( IsPlayerDetained( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're detained." );
+	//else if ( IsPlayerDetained( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're detained." );
 	else if ( IsPlayerCuffed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're cuffed." );
 	else if ( IsPlayerTied( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're tied." );
 	else if ( IsPlayerKidnapped( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're kidnapped." );
@@ -31241,40 +31087,6 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false ) {
 	    }
 	}
 	return false;
-}
-
-stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU_BUY, Float: custom_multplier = 1.0, bool: unlimited_ammo = false )
-{
-	new
-		szString[ 420 ];
-
-	if ( listitem == MENU_ARMOR ) szString = ""COL_WHITE"Item\t"COL_WHITE"Price\n";
-	else if ( unlimited_ammo ) szString = ""COL_WHITE"Weapon\t"COL_WHITE"Price\n";
-	else szString = ""COL_WHITE"Weapon\t"COL_WHITE"Ammo\t"COL_WHITE"Price\n";
-
-	for( new i; i < sizeof( g_AmmunationWeapons ); i++ ) if ( g_AmmunationWeapons[ i ] [ E_MENU ] == listitem )
-	{
-	   	if ( ! unlimited_ammo && listitem != MENU_ARMOR ) // Other multipliers will not specify ammo
-	   		format( szString, sizeof( szString ), "%s%s\t%d\t"COL_GOLD"%s\n", szString, g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
-		else
-			format( szString, sizeof( szString ), "%s%s\t"COL_GOLD"%s\n", szString, g_AmmunationWeapons[ i ] [ E_NAME ], number_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
-	}
-    ShowPlayerDialog( playerid, custom_dialogid, DIALOG_STYLE_TABLIST_HEADERS, custom_title, szString, "Purchase", "Back" );
-    return 1;
-}
-
-stock ShowAmmunationMenu( playerid, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU )
-{
-	static
-		szString[ 70 ];
-
-	if ( !szString[ 0 ] )
-	{
-	    for( new i = 0; i < sizeof( g_AmmunitionCategory ); i++ ) {
-	     	format( szString, sizeof( szString ), "%s%s\n", szString, g_AmmunitionCategory[ i ] );
-	    }
-	}
-	return ShowPlayerDialog( playerid, custom_dialogid, DIALOG_STYLE_LIST, custom_title, szString, "Select", "Cancel" );
 }
 
 stock apartment_CallElevator( level )
@@ -31950,8 +31762,8 @@ stock jailMoveGate( playerid, city, bool: close = false, bool: alcatraz = false 
 
 	if ( alcatraz )
 	{
-		if ( close ) MoveDynamicObject( p_AlcatrazObject[ playerid ], -2038.832641, 1843.541992, 24.695789, 		speed );
-		else  		MoveDynamicObject( p_AlcatrazObject[ playerid ], -2038.832641, 1843.541992, 24.695789 - 10,	speed );
+		if ( close ) MoveDynamicObject( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713, speed );
+		else MoveDynamicObject( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713 - 10.0, speed );
 	 	return;
 	}
 
@@ -32026,7 +31838,7 @@ stock jailDoors( playerid, remove = false, set_closed = true )
 			SetDynamicObjectPos( p_JailObjectLS[ playerid ] [ 1 ], 266.36481, 81.211600, 1001.27979 );
 			SetDynamicObjectPos( p_JailObjectLS[ playerid ] [ 2 ], 266.36481, 76.709470, 1001.27985 );
 
-			SetDynamicObjectPos( p_AlcatrazObject[ playerid ], -2038.832641, 1843.541992, 24.695789 );
+			SetDynamicObjectPos( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713 );
 			return;
 		}
 	}
@@ -32064,7 +31876,9 @@ stock jailDoors( playerid, remove = false, set_closed = true )
 		p_JailObjectLS[ playerid ] [ 1 ] = CreateDynamicObject( 19302, 266.36481, 81.211600, 1001.27979, 0.00000, 0.00000, 90.0000, -1, -1, playerid );
 		p_JailObjectLS[ playerid ] [ 2 ] = CreateDynamicObject( 19302, 266.36481, 76.709470, 1001.27985, 0.00000, 0.00000, 90.0000, -1, -1, playerid );
 
-		p_AlcatrazObject[ playerid ] = 	   CreateDynamicObject( 16775, -2038.832, 1843.5419, 24.695789, 0.00000, 0.00000, 0.999999, -1, -1, playerid );
+		p_AlcatrazObject[ playerid ] = CreateDynamicObject( 749, -2013.164184, 1827.123168, 41.506713, 11.800004, 0.000000, 0.000000, -1, -1, playerid );
+		SetDynamicObjectMaterial( p_AlcatrazObject[ playerid ], 2, 9135, "vgseseabed", "vgs_rockmid1a", -47 );
+		SetDynamicObjectMaterial( p_AlcatrazObject[ playerid ], 1, 0, "none", "none", 0 );
 	}
 	else
 	{
@@ -33569,6 +33383,7 @@ stock resetPlayerToys( playerid, slot ) {
 	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ] = 0.0;
 	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ] = 0.0;
 	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ] = 0.0;
+	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = 0;
 }
 
 thread OnToyLoad( playerid )
@@ -33621,6 +33436,7 @@ thread OnToyOffsetLoad( playerid )
 				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SX ] = cache_get_field_content_float( i, "SX", dbHandle );
 				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SY ] = cache_get_field_content_float( i, "SY", dbHandle );
 				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SZ ] = cache_get_field_content_float( i, "SZ", dbHandle );
+				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_COLOR ] = cache_get_field_content_int( i, "COLOR", dbHandle );
 			}
 		}
 	}
@@ -33634,11 +33450,14 @@ thread OnPlayerAddToy( playerid, slotid ) {
 
 stock showToyEditMenu( playerid, slot )
 {
-	format( szNormalString, 86, "%sEdit Toy Position\n%sEdit Toy Bone\n%s Toy\n"COL_LRED"Remove Toy", p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] ? ( #COL_WHITE ) : ( COL_BLACK ), p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] ? ( #COL_WHITE ) : ( #COL_BLACK ), p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] ? ( "Disable" ) : ( "Enable" ) );
-	return ShowPlayerDialog( playerid, DIALOG_TOYS_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys", szNormalString, "Select", "Back" );
+	if ( p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] ) {
+		return ShowPlayerDialog( playerid, DIALOG_TOYS_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys", ""COL_WHITE"Edit Toy Position\n"COL_WHITE"Edit Toy Bone\n"COL_WHITE"Edit Toy Color\nDisable Toy\n"COL_LRED"Remove Toy", "Select", "Back" );
+	} else {
+		return ShowPlayerDialog( playerid, DIALOG_TOYS_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys", ""COL_BLACK"Edit Toy Position\n"COL_BLACK"Edit Toy Bone\n"COL_BLACK"Edit Toy Color\nEnable Toy", "Select", "Back" );
+	}
 }
 
-stock loadPlayerToys( playerid )
+stock reloadPlayerToys( playerid )
 {
 	// Loop is more slower than this!
 	if ( p_AttachedObjectsData[ playerid ] [ 0 ] [ E_ENABLED ] ) {
@@ -33646,7 +33465,8 @@ stock loadPlayerToys( playerid )
 		SetPlayerAttachedObject( playerid, 7, p_AttachedObjectsData[ playerid ] [ 0 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_BONE ],
 			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OZ ],
 			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SZ ]
+			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SZ ],
+			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_COLOR ]
 		);
 	}
 	if ( p_AttachedObjectsData[ playerid ] [ 1 ] [ E_ENABLED ] ) {
@@ -33654,7 +33474,8 @@ stock loadPlayerToys( playerid )
 		SetPlayerAttachedObject( playerid, 8, p_AttachedObjectsData[ playerid ] [ 1 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_BONE ],
 			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OZ ],
 			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SZ ]
+			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SZ ],
+			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_COLOR ]
 		);
 	}
 	if ( p_AttachedObjectsData[ playerid ] [ 2 ] [ E_ENABLED ] ) {
@@ -33662,9 +33483,11 @@ stock loadPlayerToys( playerid )
 		SetPlayerAttachedObject( playerid, 9, p_AttachedObjectsData[ playerid ] [ 2 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_BONE ],
 			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OZ ],
 			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SZ ]
+			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SZ ],
+			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_COLOR ]
 		);
 	}
+	return 1;
 }
 
 thread OnSettingsLoad( playerid )
@@ -34938,7 +34761,7 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
 	return 1;
 }
 
-thread OnListGangMembers( playerid, gangid )
+thread OnListGangMembers( playerid, gangid, page )
 {
 	new
 	    rows, i;
@@ -34956,7 +34779,10 @@ thread OnListGangMembers( playerid, gangid )
 			format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName );
 		}
 
-		ShowPlayerDialog( playerid, DIALOG_GANG_LIST_MEMBERS, DIALOG_STYLE_LIST, ""COL_WHITE"Gang Members", szLargeString, "Close", "Back" );
+		SetPVarInt( playerid, "gang_members_id", gangid );
+		SetPVarInt( playerid, "gang_members_results", rows );
+		SetPVarInt( playerid, "gang_members_page", page );
+		ShowPlayerDialog( playerid, DIALOG_GANG_LIST_MEMBERS, DIALOG_STYLE_LIST, sprintf( ""COL_WHITE"Gang Members - Page %d", page + 1 ), szLargeString, rows >= 20 ? ( "Next" ) : ( "Close" ), "Back" );
 	}
 	else
 	{
@@ -37964,6 +37790,191 @@ stock SetPlayerMineOre( playerid, m )
 	ShowProgressBar( playerid, "Mining Rock", PROGRESS_MINING, g_oreMiningTime[ g_miningData[ m ] [ E_ORE ] ], g_miningData[ m ] [ E_COLOR ] );
 }
 
+stock TazePlayer( victimid, playerid )
+{
+   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
+	//else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
+	//else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
+	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "There are no players around to taze." );
+	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
+ 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 5.0 && IsPlayerConnected( victimid ) )
+ 	{
+ 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
+		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
+		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
+		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
+		if ( IsPlayerTazed( victimid ) ) return SendError( playerid, "This player is already tazed." );
+		//if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
+		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
+		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
+		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
+		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command while in jail." );
+		if ( IsPlayerTied( victimid ) ) return SendError( playerid, "Tazing a tied player is pretty useless, though you can use /untie for a harder job!" );
+		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
+		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
+		if ( p_TazingImmunity[ victimid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before tazing this player.", p_TazingImmunity[ victimid ] - g_iTime );
+		if ( random( 101 ) < 90 )
+		{
+			GameTextForPlayer( victimid, "~n~~r~TAZED!", 2000, 4 );
+			GameTextForPlayer( playerid, "~n~~y~~h~/cuff", 2000, 4 );
+			SendClientMessageFormatted( victimid, -1, ""COL_RED"[TAZED]{FFFFFF} You have been tazed by %s(%d) for 3 seconds!", ReturnPlayerName( playerid ), playerid );
+		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TAZED]{FFFFFF} You have tazed %s(%d) for 3 seconds!", ReturnPlayerName( victimid ), victimid );
+	        SetTimerEx( "Untaze", 2000, false, "d", victimid ); // previous 3000
+			TogglePlayerControllable( victimid, 0 );
+			ApplyAnimation( victimid, "CRACK", "crckdeth2", 5.0, 1, 1, 1, 0, 0 );
+			p_Tazed{ victimid } = true;
+		}
+		else
+		{
+			SendClientMessageFormatted( playerid, -1, ""COL_RED"[TAZE FAIL]{FFFFFF} You have failed to taze %s(%d)!", ReturnPlayerName( victimid ), victimid );
+		  	SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[TAZE FAIL]{FFFFFF} %s(%d) has failed to taze you!", ReturnPlayerName( playerid ), playerid );
+		}
+		p_TazingImmunity[ victimid ] = g_iTime + 6;
+		return 1;
+ 	} else {
+		return SendError( playerid, "There are no players around to taze." );
+	}
+}
+
+stock ArrestPlayer( victimid, playerid )
+{
+	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
+	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
+	//else if ( GetPlayerScore( playerid ) > 200 ) return SendError( playerid, "This feature is no longer available to you. Please use /detain." );
+	// else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/ar(rest) [PLAYER_ID]" );
+	// else if ( victimid == playerid ) return SendError( playerid, "You cannot arrest yourself." );
+	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
+	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
+ 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
+ 	{
+ 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
+		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
+		if ( !IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is not cuffed." );
+		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
+		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is detained, you cannot arrest them." );
+		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
+		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot arrest this person inside a vehicle." );
+		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "You cannot arrest a person that is inside a vehicle." );
+		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
+		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
+		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
+		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
+		GivePlayerCash( playerid, totalCash );
+		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), number_format( totalCash ) ); // 8hska7082bmahu
+		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", number_format( totalCash ), ReturnPlayerName( victimid ), victimid );
+		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
+		CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
+		Untaze( victimid );
+		GivePlayerIrresistiblePoints( victimid, -2 );
+		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
+		JailPlayer( victimid, totalSeconds );
+		return 1;
+ 	}
+ 	else return SendError( playerid, "There are no players around to arrest." );
+}
+
+stock CuffPlayer( victimid, playerid )
+{
+   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
+	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
+	//else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/cuff [PLAYER_ID]" );
+	//else if ( victimid == playerid ) return SendError( playerid, "You cannot cuff yourself." );
+	else if ( !IsPlayerConnected( victimid ) || IsPlayerNPC( victimid ) ) return SendError( playerid, "This player is not connected." );
+	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
+ 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
+ 	{
+ 	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
+		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
+		if ( p_WantedLevel[ victimid ] < 6 ) return SendError( playerid, "This person isn't worth cuffing, ticket them." );
+		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
+		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
+		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
+		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
+		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( !IsPlayerTazed( victimid ) ) return SendError( playerid, "You must taze this player before cuffing them." );
+		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
+		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
+		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
+		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
+		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
+		GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
+		//GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
+		GameTextForPlayer( playerid, "~n~~y~~h~/arrest", 2000, 4 );
+		SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
+	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
+		KillTimer( p_CuffAbuseTimer[ victimid ] );
+   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
+		//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
+		//TogglePlayerControllable( victimid, 0 );
+		p_Cuffed{ victimid } = true;
+		SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
+      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
+
+		if ( ! BreakPlayerCuffs( victimid ) ) {
+			ShowPlayerHelpDialog( victimid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+		} else {
+	    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
+		}
+		return 1;
+ 	}
+ 	else return SendError( playerid, "There are no players around to cuff." );
+}
+
+stock BreakPlayerCuffs( playerid )
+{
+	if ( p_BobbyPins[ playerid ] < 1 )
+	    return 0;
+
+	new
+		bool: success = false,
+		attempts;
+
+	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
+	{
+		if ( random( 101 ) > 20 ) {
+			success = true;
+			break;
+		}
+	}
+
+	if ( ( p_BobbyPins[ playerid ] -= attempts ) > 0 ) {
+		ShowPlayerHelpDialog( playerid, 4500, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
+	}
+
+	if ( success ) {
+		TogglePlayerControllable( playerid, 1 );
+	 	RemovePlayerAttachedObject( playerid, 2 );
+		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+		if ( !IsPlayerInAnyVehicle( playerid ) ) {
+			ClearAnimations( playerid );
+		}
+		p_Cuffed{ playerid } = false;
+		p_Tazed{ playerid } = false;
+		//p_Detained{ playerid } = false;
+		//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
+		//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
+		p_QuitToAvoidTimestamp[ playerid ] = g_iTime + 3;
+		p_TazingImmunity[ playerid ] = g_iTime + 6;
+
+		SendServerMessage( playerid, "You have used %d bobby pins to successfully break your cuffs.", attempts );
+	    GivePlayerWantedLevel( playerid, 6 );
+	} else {
+		SendError( playerid, "You snapped %d bobby pin(s) and failed to break out of your cuffs.", attempts );
+	}
+	return 1;
+}
 
 stock GetServerTime( ) return g_iTime;
 
@@ -37977,6 +37988,8 @@ stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
 
 stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 
+stock GetPlayerGang( playerid ) return p_GangID[ playerid ];
+
 stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 
 stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
@@ -37989,4 +38002,4 @@ stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
 }
 
-stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ];
+stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ] && ! p_pausedToLoad{ playerid };

@@ -168,6 +168,7 @@
 #define DIALOG_FACILITY_SPAWN				1157
 #define DIALOG_IC_MARKET_3 					1158
 #define DIALOG_BUY_VIP 						1159
+#define DIALOG_TOYS_COLOR 					1160
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

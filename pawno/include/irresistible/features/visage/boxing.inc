@@ -72,7 +72,8 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	printf("BOXING MATCH DEATH BY %s -> RETURN %d", ReturnPlayerName(playerid), boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] ));
+	boxing_ForfeitMatch( playerid, g_boxingPlayerData[ playerid ] [ E_OPPONENT ] );
+	// printf("BOXING MATCH DEATH BY %s -> RETURN %d", ReturnPlayerName(playerid), );
 	return 1;
 }
 

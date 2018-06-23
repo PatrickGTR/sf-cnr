@@ -1,3 +1,17 @@
-(+) Total V.I.P restructure please see /vip for a full list of features with all V.I.P packages.
-(+) You will now get 2 wanted if you are starting to take over a turf.
-(/) Hits amounts will be now more random every 24 minutes.
+(+) Private ammunation added for gang facilities. Higher the respect, cheaper the weapons/gear.
+(+) You can now access the inside of a gang facility so long as you're in the gang / own the facility's turf.
+(+) New Alcatraz Map thanks to Gal. You can now mine ores at the Alcatraz prison also.
+(+) You can now edit your toy color through toys.
+(+) Public gangs can now be joined by anyone simply by accessing their facility's checkpoint.
+(+) There are now pages to the list of gang members shown.
+(*) Fixes issue with many toys not being able to be selected.
+(-) /breakcuff command removed. Breaking cuffs are now automatically done, as soon as you are cuffed.
+(-) /detain command removed. The feature was rather abused than used.
+(-) /cuttie command removed. Cutting ties are now automatically done, as soon as you are tied.
+(/) /taze, /cuff, /ar no longer require id parameters. Can use MMB as a bind.
+(/) Breaking cuffs will keep repeating until it successfully breaks cuffs.
+(/) If you break your cuffs you will have 6 seconds of immunity to taze/cuff/arrest.
+(/) Players are now tazed half a second shorter.
+(/) /hitlist now can be accessed by all classes.
+(/) Break cuff has an 80% success rate.
+(/) Safe loot increased by 20%.

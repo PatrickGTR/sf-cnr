@@ -290,7 +290,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			{
 				GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
     			AddPlayerNote( playerid, -1, sprintf( ""COL_GOLD"%s" #COL_WHITE, g_irresistibleMarketItems[ listitem ] [ E_NAME ] ) );
-    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a VIP Coke Business. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+    			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a %s. (/viewnotes)", ReturnPlayerName( playerid ), playerid, g_irresistibleMarketItems[ listitem ] [ E_NAME ] );
     			SendServerMessage( playerid, "You have ordered a "COL_GOLD"%s"COL_WHITE" for %s Irresistible Coins!", g_irresistibleMarketItems[ listitem ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
     			SendServerMessage( playerid, "Online admins have been notified of your purchase. Use "COL_GREY"/notes"COL_WHITE" to track your orders and to remind online admins." );
     			ShowPlayerHelpDialog( playerid, 10000, "You can use ~y~/notes~w~ to track your orders.~n~~n~Also, admins can be called using this command." );

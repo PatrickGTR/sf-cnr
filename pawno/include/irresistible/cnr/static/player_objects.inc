@@ -6310,7 +6310,7 @@ stock initializeObjects( )
 	CreateDynamicObject( 1557, 1989.559204, 2094.033935, 14.557316, 0.000000, 0.000000, 180.000000 );
 	CreateDynamicObject( 3525, 1989.986206, 2093.843994, 15.577322, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 3525, 1985.975952, 2093.843994, 15.577322, 0.000000, 0.000000, 0.000000 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, 1992.5368, 2081.0703, 12.2363, 0.0000, -0.1000, -0.2994 ), 0, "FaZe's Cafe", 130, "Impact", 32, 0, -8092540, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, 1992.5368, 2081.0703, 12.2363, 0.0000, -0.1000, -0.2994 ), 0, "Nibble Cafe", 130, "Impact", 32, 0, -8092540, 0, 1 );
 
 	// Godfather Mansion Extension
 	CreateDynamicObject( 19585, -2914.379394, 461.606353, 5.039083, 0.000000, 0.000000, 0.000000 );
@@ -10922,40 +10922,6 @@ stock initializeObjects( )
 	CreateDynamicObject( 19817, -1293.137939, -719.424621, 58.693904, 0.000000, 0.000000, -45.000000 );
 	CreateDynamicObject( 3525, -1281.895019, -757.517517, 70.801536, 0.000000, 0.000000, 45.000000 );
 	CreateDynamicObject( 3525, -1279.014648, -754.638549, 70.801536, 0.000000, 0.000000, 45.000000 );
-
-	// paintball house
-	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2240.016601, 266.421875, 34.180316, 0.000000, 90.000000, -51.299999 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2239.103027, 265.282409, 34.180316, 0.000000, 90.000000, -51.299999 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2225.420410, 263.522399, 26.870332, 90.000000, 0.000000, 90.000000 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2225.420410, 240.512634, 26.870332, 90.000000, 0.000000, 90.000000 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2239.087158, 238.746093, 34.180316, 0.000000, 90.000000, 51.399921 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2240.016845, 237.589599, 34.180316, 0.000000, 90.000000, 51.399921 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2225.690673, 251.552886, 26.870332, 90.000000, 0.000000, 0.000000 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2229.437255, 253.790481, 33.840286, 0.000000, 90.000000, 0.000000 ), 0, 13691, "bevcunto2_lahills", "ws_patio1", 0 );
-	CreateDynamicObject( 3515, -2237.908203, 260.086822, 33.470420, 0.000000, 0.000000, 0.000000 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -2241.446044, 234.706878, 34.780334, 0.000000, 90.000000, 90.000000 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -2241.446044, 269.306945, 34.780334, 0.000000, 90.000000, 90.000000 ), 0, 8399, "vgs_shops", "vgsclubwall05_128", 0 );
-	CreateDynamicObject( 640, -2241.460449, 259.542144, 35.570304, 0.000000, 0.000000, 180.000000 );
-	CreateDynamicObject( 640, -2241.460449, 264.581970, 35.570304, 0.000000, 0.000000, 180.000000 );
-	CreateDynamicObject( 640, -2241.460449, 244.502212, 35.570304, 0.000000, 0.000000, 180.000000 );
-	CreateDynamicObject( 640, -2241.460449, 239.432266, 35.570304, 0.000000, 0.000000, 180.000000 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -2236.931152, 261.812835, 31.850328, 0.000000, 0.000000, 0.000000 ), 0, 9495, "vict_sfw", "Grass_128HV", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 18765, -2236.931152, 242.212677, 31.850328, 0.000000, 0.000000, 0.000000 ), 0, 9495, "vict_sfw", "Grass_128HV", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2238.631103, 247.236816, 34.870285, 0.000000, 0.000000, 0.000000 ), 0, 3905, "libertyhi2", "glass_fence_64hv", -268435456 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2234.118896, 247.236816, 34.870285, 0.000000, 0.000000, 0.000000 ), 0, 3905, "libertyhi2", "glass_fence_64hv", -268435456 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2238.631103, 256.727142, 34.870285, 0.000000, 0.000000, 0.000000 ), 0, 3905, "libertyhi2", "glass_fence_64hv", -268435456 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2234.118896, 256.726867, 34.870285, 0.000000, 0.000000, 0.000000 ), 0, 3905, "libertyhi2", "glass_fence_64hv", -268435456 );
-	CreateDynamicObject( 1557, -2226.141357, 250.501144, 34.300373, 0.000000, 0.000000, 90.000000 );
-	CreateDynamicObject( 1557, -2226.141357, 253.531250, 34.300373, 0.000000, 0.000000, -90.000000 );
-	CreateDynamicObject( 3525, -2226.281982, 253.974609, 35.730285, 0.000000, 0.000000, -90.000000 );
-	CreateDynamicObject( 3525, -2226.281982, 250.054824, 35.730285, 0.000000, 0.000000, -90.000000 );
-	CreateDynamicObject( 3515, -2237.908203, 244.046768, 33.470420, 0.000000, 0.000000, 0.000000 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 5422, -2229.038085, 240.954986, 36.310279, 0.000000, 0.000000, 90.000000 ), 0, 17562, "coast_apts", "garagedoor5_law", 0 );
-	SetDynamicObjectMaterial( CreateDynamicObject( 5422, -2229.038085, 263.055084, 36.310279, 0.000000, 0.000000, 90.000000 ), 0, 17562, "coast_apts", "garagedoor5_law", 0 );
-	CreateDynamicObject( 869, -2233.871093, 260.942504, 34.714874, 0.000000, 0.000000, 90.000000 );
-	CreateDynamicObject( 869, -2233.871093, 259.002563, 34.714874, 0.000000, 0.000000, 90.000000 );
-	CreateDynamicObject( 869, -2233.871093, 245.122589, 34.714874, 0.000000, 0.000000, 90.000000 );
-	CreateDynamicObject( 869, -2233.871093, 242.512603, 34.714874, 0.000000, 0.000000, 90.000000 );
 
 	// [ZF]IMakeMyOwnCAKE City Map
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1689.194946, 815.914489, 23.384389, 0.000000, 90.000000, 0.000000 ), 0, 3906, "libertyhi5", "marblekb_256128", -4368 );

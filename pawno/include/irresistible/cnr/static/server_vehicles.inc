@@ -375,14 +375,6 @@ static stock InitializeServerVehicles( )
 	AddStaticVehicle( 487, -1129.844200, -196.243300, 14.419300, 17.569400, -1, -1 );
 	AddStaticVehicle( 487, -1112.967000, -179.658400, 14.441800, 17.569400, -1, -1 );
 	AddStaticVehicle( 487, -1107.054600, -201.881600, 14.421300, 17.569400, -1, -1 );
-	AddStaticVehicle( 473, -2061.434800, 1649.142500, -0.294100, 174.99280, -1, -1 );
-	AddStaticVehicle( 473, -2067.982200, 1649.720200, -0.244300, 174.99280, -1, -1 );
-	AddStaticVehicle( 473, -2072.878400, 1650.152500, -0.207100, 174.99280, -1, -1 );
-	AddStaticVehicle( 473, -1967.595200, 1691.162200, -0.415600, 175.43550, -1, -1 );
-	AddStaticVehicle( 473, -1960.556200, 1690.641800, -0.222000, 175.51280, -1, -1 );
-	AddStaticVehicle( 473, -1912.116100, 1774.927000, -0.393800, 175.68510, -1, -1 );
-	AddStaticVehicle( 473, -1907.980200, 1858.248400, -0.175000, 250.12210, -1, -1 );
-	AddStaticVehicle( 473, -1906.774000, 1869.304700, -0.441600, 248.84890, -1, -1 );
 	CreateVehicle( 498, -2460.731200, -2.41190000, 28.007300, 269.90640, -1, -1, -1 ); // BoxVille
 	CreateVehicle( 498, -2460.730500, -5.54940000, 28.004800, 269.33500, -1, -1, -1 ); // BoxVille
 	CreateVehicle( 498, -2460.730000, -11.6038000, 28.159400, 270.65460, -1, -1, -1 ); // BoxVille
@@ -413,22 +405,9 @@ static stock InitializeServerVehicles( )
 	AddStaticVehicle( 488, -1882.6461, -204.7765, 23.2701, 268.0665, -1, -1 ); // cake hq vehicles
 	AddStaticVehicle( 480, -1871.6210, -199.5918, 18.2159, 270.0637, -1, -1 ); // cake hq vehicles
 	AddStaticVehicle( 521, -722.95300, -123.1921, 67.8943, 114.2874, -1, -1 ); // cake hq vehicles
-
-	// Gal Race
-	tmpVariable = AddStaticVehicle( 494, -1158.1777, 1341.4666, 1132.1697, 180.8421, 36, 117 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1152.7059, 1341.3110, 1132.1720, 181.7808, 98, 109 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1148.2886, 1341.3065, 1132.2030, 182.0001, 92, 101 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1144.0511, 1341.3103, 1132.1731, 179.2510, 75, 79 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1139.7194, 1341.1389, 1132.1704, 184.7887, 54, 36 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1135.2349, 1341.2239, 1132.1724, 182.0041, 42, 33 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
-	tmpVariable = AddStaticVehicle( 494, -1130.7087, 1341.2335, 1132.1774, 180.8928, 42, 30 );
-	SetVehicleVirtualWorld( tmpVariable, 32 ), LinkVehicleToInterior( tmpVariable, 9 );
+	AddStaticVehicle( 473,-2132.7664, 1689.1938, -0.2510, 145.6282, -1 , -1 ); // alca dinghy
+	AddStaticVehicle( 473,-2124.7256, 1680.1863, -0.3078, 211.8767, -1 , -1 ); // alca dinghy
+	AddStaticVehicle( 473,-2147.2537, 1693.4557, -0.2553, 220.9750, -1 , -1 ); // alca dinghy
 
 	// Vehicle Dealership
 	tmpVariable = AddStaticVehicle( 494, -1867.3900, -621.3196, 1007.0273, 130.5349, -1, -1 ); // DL1

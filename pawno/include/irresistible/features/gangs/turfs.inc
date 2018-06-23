@@ -473,6 +473,14 @@ stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner
 	return id;
 }
 
+stock Turf_GetOwner( id ) {
+	return g_gangTurfData[ id ] [ E_OWNER ];
+}
+
+stock Turf_GetFacility( id ) {
+	return g_gangTurfData[ id ] [ E_FACILITY_GANG ];
+}
+
 stock Turf_GetFirstTurf( playerid )
 {
 	new
