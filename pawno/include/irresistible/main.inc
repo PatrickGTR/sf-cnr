@@ -24,6 +24,7 @@
 #include < irresistible\gta\weapon_data >
 
 // cnr configuration
+#include < irresistible\cnr\classes >
 #include < irresistible\cnr\cities >
 #include < irresistible\cnr\dialog_ids >
 #include < irresistible\cnr\vip >
@@ -35,6 +36,7 @@
 #include < irresistible\features\furniture >
 #include < irresistible\features\weapon_drop >
 #include < irresistible\features\ammunation >
+#include < irresistible\features\duel >
 // #include < irresistible\features\pilot >
 // #include < irresistible\features\fishing >
 // #include < irresistible\features\vote >

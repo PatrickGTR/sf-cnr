@@ -63,7 +63,25 @@ hook OnGameModeInit( )
 		// mysql_single_query( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE UNIX_TIMESTAMP()-`USERS`.`LASTLOGGED` > 1209600" );
 
 		// Remove gangs with a non existant gang leader / unmatched player gang id to gang leader id
-		mysql_single_query( "DELETE g FROM GANGS g LEFT JOIN USERS u ON g.LEADER = u.ID WHERE u.GANG_ID != g.ID OR u.ID IS NULL" );
+		mysql_single_query( "DELETE g FROM GANGS g LEFT JOIN USERS u ON g.LEADER = u.ID WHERE (u.GANG_ID != g.ID OR u.ID IS NULL) AND g.LEADER >= 0" );
 	#endif
+	return 1;
+}
+
+/* ** Functions ** */
+stock SetPlayerGang( playerid, joining_gang )
+{
+	if ( ! Iter_Contains( gangs, joining_gang ) )
+		return 0;
+
+	// remove from existing gang
+	if ( p_GangID[ playerid ] != INVALID_GANG_ID ) {
+		RemovePlayerFromGang( playerid, GANG_LEAVE_QUIT );
+	}
+
+	p_GangID[ playerid ] = joining_gang;
+    if ( GetPlayerWantedLevel( playerid ) < 1 ) SetPlayerColor( playerid, g_gangData[ joining_gang ] [ E_COLOR ] );
+	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ joining_gang ] [ E_SQL_ID ], GetPlayerAccountID( playerid ) ) );
+	SendClientMessageToGang( joining_gang, g_gangData[ joining_gang ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has joined the gang.", ReturnPlayerName( playerid ), playerid );
 	return 1;
 }

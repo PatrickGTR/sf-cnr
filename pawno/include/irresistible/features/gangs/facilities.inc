@@ -97,6 +97,7 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 				// begin entrance
 	        	pauseToLoad( playerid );
+	        	SetPVarInt( playerid, "in_facility", facility );
 			    UpdatePlayerEntranceExitTick( playerid );
 				SetPlayerPos( playerid, g_gangFacilityInterior[ int_type ] [ E_X ], g_gangFacilityInterior[ int_type ] [ E_Y ], g_gangFacilityInterior[ int_type ] [ E_Z ] );
 			  	SetPlayerVirtualWorld( playerid, g_gangFacilities[ facility ] [ E_WORLD ] );
@@ -129,21 +130,23 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_GANG_JOIN && response )
 	{
-		if ( p_GangID[ playerid ] != -1 )
+		if ( p_GangID[ playerid ] != -1 ) {
 			return SendServerMessage( playerid, "You are already in a gang." );
+		}
 
 		new
 			joining_gang = GetPVarInt( playerid, "gang_facility_join" );
 
-		if ( ! Iter_Contains( gangs, joining_gang ) || IsGangPrivate( joining_gang ) )
-			return SendError( playerid, "You can no longer join this gang." );
+		if ( IsGangPrivate( joining_gang ) ) {
+			return SendError( playerid, "You can no longer join this gang as it is private." );
+		}
 
-		p_GangID[ playerid ] = joining_gang;
-	    if ( GetPlayerWantedLevel( playerid ) < 1 ) SetPlayerColor( playerid, g_gangData[ joining_gang ] [ E_COLOR ] );
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ joining_gang ] [ E_SQL_ID ], GetPlayerAccountID( playerid ) ) );
-		SendClientMessageToGang( joining_gang, g_gangData[ joining_gang ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has joined the gang.", ReturnPlayerName( playerid ), playerid );
+		if ( ! SetPlayerGang( playerid, joining_gang ) ) {
+			SendError( playerid, "You can no longer join this gang." );
+		}
 		return 1;
 	}
+
 	else if ( dialogid == DIALOG_FACILITY_AMMU && response )
 	{
 		new player_gang = GetPlayerGang( playerid );
@@ -156,19 +159,25 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		SetPVarInt( playerid, "facility_weapon_cat", listitem );
       	RedirectAmmunation( playerid, listitem, "{FFFFFF}Gang Facility - Purchase Weapons", DIALOG_FACILITY_AMMU_BUY, discount );
 	}
+
 	else if ( dialogid == DIALOG_FACILITY_AMMU_BUY )
 	{
 		if ( response )
 		{
-			new player_gang = GetPlayerGang( playerid );
+			new facility = GetPVarInt( playerid, "in_facility" );
 
-			if ( ! Iter_Contains( gangs, player_gang ) ) return SendError( playerid, "You are not in any gang." );
+			if ( ! Iter_Contains( gangfacilities, facility ) )
+				return SendError( playerid, "Cannot identify current gang facility. Please enter facility again." );
+
+			new facility_gangid = Turf_GetFacility( g_gangFacilities[ facility ] [ E_TURF_ID ] );
+
+			if ( ! Iter_Contains( gangs, facility_gangid ) ) return SendError( playerid, "You are not in any gang." );
 		    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot buy weapons in jail." );
 		    if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot buy weapons in an event." );
 			if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED || !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You are unable to purchase any weapons at this time." );
 
 			new gun_category = GetPVarInt( playerid, "facility_weapon_cat" );
-			new Float: gun_discount = ( FACILITY_AMMU_RESPECT - float( g_gangData[ player_gang ] [ E_RESPECT ] ) ) / FACILITY_AMMU_RESPECT;
+			new Float: gun_discount = ( FACILITY_AMMU_RESPECT - float( g_gangData[ facility_gangid ] [ E_RESPECT ] ) ) / FACILITY_AMMU_RESPECT;
 
 			// make sure player doesnt get credited money lol
 			if ( gun_discount < 0.0 ) {

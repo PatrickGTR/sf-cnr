@@ -54,7 +54,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 	if ( IsPlayerConnected( killerid ) )
 	{
-		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) )
+		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
 			return 1;
 
 		new

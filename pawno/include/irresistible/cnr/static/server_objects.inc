@@ -41,8 +41,6 @@ stock initializeServerObjects( )
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1605.713989, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "5'", 140, "arial", 40, 1, -16777216, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1605.364013, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "4'", 140, "arial", 40, 1, -16777216, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19328, 229.054992, 87.705001, 1605.014038, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "3'", 140, "arial", 40, 1, -16777216, 0, 1 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, 235.143997, 86.369003, 1608.019042, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "Irresistible Gaming", 130, "IMPACT", 40, 1, -1, 0, 1 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, 235.143997, 88.598999, 1008.018981, 0.000000, 0.000000, 90.000000, .priority = 9999, .streamdistance = -1.0 ), 0, "Presents", 130, "IMPACT", 40, 1, -15019521, 0, 1 );
 	tmpVariable = CreateDynamicObject( 18066, 229.000000, 86.862998, 1006.598999, -8.199999, 0.000000, -90.000000, .priority = 9999, .streamdistance = -1.0 );
 	SetDynamicObjectMaterialText( tmpVariable, 0, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
 	SetDynamicObjectMaterialText( tmpVariable, 1, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
@@ -5284,4 +5282,18 @@ stock initializeServerObjects( )
 	CreateDynamicObject( 8168, -2126.154052, 1839.961059, 44.222999, 0.000000, 0.000000, 64.500000, -1, -1, -1 );
 	CreateDynamicObject( 16327, -1983.401977, 1835.933959, 41.668998, 0.000000, 0.000000, 33.200000, -1, -1, -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 10610, -2087.221923, 1745.951049, 52.969001, 0.000000, 0.000000, -167.699996, -1, -1, -1 ), 1, 13008, "sw_block01", "sw_brewbrick01", -47 );
+
+	// Duel Arena
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 243.059402, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 260.958953, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 247.239334, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 256.799194, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 252.469284, 33.310489, 0.000000, 90.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 251.399551, 33.310497, 0.000000, 90.000000, -90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 243.059005, 34.840000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 260.959014, 34.840000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 247.238998, 34.840000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 256.799011, 34.840000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 252.468994, 33.310001, 0.000000, 90.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2160.705810, 251.399993, 33.310001, 0.000000, 90.000000, -90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
 }
