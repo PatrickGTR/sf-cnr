@@ -35,6 +35,7 @@ enum duelData
 	duelCountdown,
 	duelTimer,
 	duelLocation,
+	duelRemainingRounds
 };
 
 enum locationData
@@ -411,6 +412,8 @@ CMD:duel(playerid, params[])
 		duelInfo[targetid][duelPlayer] = playerid;
 		duelInfo[playerid][duelPlayer] = targetid;
 		duelInfo[playerid][duelBet] = duelInfo[targetid][duelBet];
+		duelInfo[playerid][duelRemainingRounds] = 1;
+		duelInfo[targetid][duelRemainingRounds] = 1;
 
 		new id = duelInfo[targetid][duelLocation];
 
@@ -525,14 +528,20 @@ static stock forfeitPlayerDuel(playerid)
 
 	SpawnPlayer(winnerid);
 	ClearDuelInvites(winnerid);
-	p_playerDueling{playerid} = false;
 
-	if (0 < amount_waged < 10000000) {
-		new winning_prize = floatround(float(amount_waged) * 1.9); // We take 5% of the total pot
-		GivePlayerCash(winnerid, winning_prize);
-		SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]{FFFFFF} %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid, number_format(winning_prize));
-	} else {
-		SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]{FFFFFF} %s(%d) has won the duel against %s(%d)!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid);
+	// decrement rounds
+	duelInfo[playerid][duelRemainingRounds] --;
+	duelInfo[winnerid][duelRemainingRounds] = duelInfo[playerid][duelRemainingRounds];
+
+	// check if theres a remaining round
+	if (duelInfo[playerid][duelRemainingRounds] == 0) {
+		if (0 < amount_waged < 10000000) {
+			new winning_prize = floatround(float(amount_waged) * 1.95); // We take 2.5% of the total pot
+			GivePlayerCash(winnerid, winning_prize);
+			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]{FFFFFF} %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid, number_format(winning_prize));
+		} else {
+			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]{FFFFFF} %s(%d) has won the duel against %s(%d)!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid);
+		}
 	}
 	return 1;
 }
