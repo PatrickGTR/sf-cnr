@@ -38,25 +38,25 @@ static const Float: aWaterPlaces[ 20 ] [ 4 ] =
 };
 
 stock vCheckForFlyHacks( playerid, iTicks )
-{	
+{
 	if( iTicks > p_FlyHacksTick[ playerid ] )
 	{
 		new
 			pSurfingObject = GetPlayerSurfingObjectID( playerid ),
 			pSurfingVehicle = GetPlayerSurfingVehicleID( playerid )
 		;
-		
+
 		if( pSurfingVehicle == INVALID_VEHICLE_ID && pSurfingObject == INVALID_OBJECT_ID )
 	    {
-	        new 
+	        new
 	        	iAnimation = GetPlayerAnimationIndex( playerid );
-	     
+
 	     	if( iAnimation == 1538 || iAnimation == 1539 || iAnimation == 1543 )
 	     	{
-	     		if( !ac_IsPlayerInWater( playerid ) ) 
+	     		if( !ac_IsPlayerInWater( playerid ) )
 	     		{
 	     			if( p_FlyHacksWarns{ playerid }++ >= 2 )
-						CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_FLYHACKS ), p_FlyHacksWarns{ playerid } = 3;
+						CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_FLYHACKS, 0 ), p_FlyHacksWarns{ playerid } = 3;
 	     		}
 	     		else p_FlyHacksWarns{ playerid } = 0;
 	     	}
@@ -73,12 +73,12 @@ stock ac_IsPlayerInWater( playerid )
 
     if( GetPlayerPos( playerid, X, Y, Z ) )
     {
-	 	if( ac_IsPointInArea( X, Y, 2347.080, 521.70, 2372.65, 545.1971 ) || ac_IsPointInArea( X, Y, 2286.61, 521.70, 2301.45, 545.1971 ) ) 
+	 	if( ac_IsPointInArea( X, Y, 2347.080, 521.70, 2372.65, 545.1971 ) || ac_IsPointInArea( X, Y, 2286.61, 521.70, 2301.45, 545.1971 ) )
 	 		return false; // Kar Fix
 
 	 	if( ac_PointDistance( X, Y, -965.0, 2438.0 ) <= squared( 700.0 ) && Z < 44.0 )
 	    	return true;
-	  
+
 		for( i = 0; i < sizeof( aWaterPlaces ); i++ )
 		    if( ac_PointDistance( X, Y, aWaterPlaces[ i ] [ 1 ], aWaterPlaces[ i ] [ 2 ] ) <= squared( aWaterPlaces[ i ] [ 0 ] ) && Z < aWaterPlaces[ i ] [ 3 ] )
 				return true;

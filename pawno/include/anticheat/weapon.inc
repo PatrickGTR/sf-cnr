@@ -28,15 +28,21 @@
 #include 							< anticheat\global >
 #include 							< anticheat\player >
 
+// Player Variables
+
+static p_PlayerWeaponUpdateTime[ MAX_PLAYERS ];
+static p_CurrentArmedWeapon[ MAX_PLAYERS char ];
+
 // Function Hook (GivePlayerWeapon)
 
 stock AC_GivePlayerWeapon( playerid, weaponid, ammo )
 {
-	//p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
+	p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
 
-	if( weaponid < AC_MAX_WEAPONS )
+	if( 0 <= weaponid < AC_MAX_WEAPONS ) {
 		p_PlayerHasWeapon[ playerid ] { weaponid } = true;
-
+		p_CurrentArmedWeapon{ playerid } = weaponid;
+	}
     return GivePlayerWeapon( playerid, weaponid, ammo );
 }
 
@@ -47,11 +53,29 @@ stock AC_GivePlayerWeapon( playerid, weaponid, ammo )
 #endif
 #define GivePlayerWeapon AC_GivePlayerWeapon
 
+// Function Hook (SetPlayerArmedWeapon)
+
+stock AC_SetPlayerArmedWeapon( playerid, weaponid )
+{
+	if ( 0 <= weaponid <= AC_MAX_WEAPONS && p_CurrentArmedWeapon{ playerid } != weaponid ) {
+		p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
+		p_CurrentArmedWeapon{ playerid } = weaponid;
+	}
+    return SetPlayerArmedWeapon( playerid, weaponid );
+}
+
+#if defined _ALS_SetPlayerArmedWeapon
+    #undef SetPlayerArmedWeapon
+#else
+    #define _ALS_SetPlayerArmedWeapon
+#endif
+#define SetPlayerArmedWeapon AC_SetPlayerArmedWeapon
+
 // Function Hook (ResetPlayerWeapons)
 
 stock AC_ResetPlayerWeapons( playerid )
 {
-	//p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
+	p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
 
 	for ( new i = 0; i < AC_MAX_WEAPONS; i++ )
 		p_PlayerHasWeapon[ playerid ] { i } = false;
@@ -171,15 +195,15 @@ stock AC_CreateDynamicPickup( modelid, type, Float: x, Float: y, Float: z, world
 
 stock vWeaponHackCheck( playerid, keys )
 {
-	if( ( keys & KEY_FIRE ) && ac_IsPlayerSpawned( playerid ) ) {
-		new
-			iWeapon = GetPlayerWeapon( playerid );
+	if ( ( keys & KEY_FIRE ) && ac_IsPlayerSpawned( playerid ) ) {
+		new iWeapon = GetPlayerWeapon( playerid );
+		new iTickCount = GetTickCount( );
 
-		if( iWeapon > -1 && iWeapon < AC_MAX_WEAPONS )
+		if ( iTickCount > p_PlayerWeaponUpdateTime[ playerid ] && 0 <= iWeapon < AC_MAX_WEAPONS )
 		{
-			if( !p_PlayerHasWeapon[ playerid ] { iWeapon } && ( iWeapon != 0 && iWeapon != 40 ) ) {
-				CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_WEAPON );
-				printf("[weapon] %d seems to weapon hack (weapon id %d).", playerid, iWeapon );
+			if( !p_PlayerHasWeapon[ playerid ] { iWeapon } && ( iWeapon != 0 && iWeapon != 40 ) && ! ( IsPlayerInAnyVehicle( playerid ) && p_CurrentArmedWeapon{ playerid } != iWeapon ) ) {
+				CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_WEAPON, iWeapon );
+				// printf("[weapon] %d seems to weapon hack (weapon id %d).", playerid, iWeapon );
 			}
 		}
 	}

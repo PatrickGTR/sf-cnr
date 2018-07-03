@@ -47,7 +47,7 @@ stock bCheckPlayerRemoteJacking( playerid )
         if( ( GetVehicleModel( iVehicle ) == 577 ) || ( GetVehicleModel( iVehicle ) == 592 )) fOffset = 25.0; // Andromanda | AT-400
 
         if( fDistance > fOffset )
-			CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_REMOTE_JACK );
+			CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_REMOTE_JACK, 0 );
 
         GetPlayerPos( playerid, p_remoteJackData[ playerid ] [ E_LAST_X ], p_remoteJackData[ playerid ] [ E_LAST_Y ], p_remoteJackData[ playerid ] [ E_LAST_Z ] );
         p_remoteJackData[ playerid ] [ E_LAST_VEH ] = iVehicle;

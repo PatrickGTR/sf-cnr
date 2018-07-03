@@ -413,21 +413,8 @@ hook OnPlayerDeath(playerid, killerid, reason)
 {
 	if ( !IsPlayerNPC( playerid ) )
 	{
-    	// Health/Armour Hack
-	    if( GetPVarInt( playerid, "CustomKill" ) )
-	    {
-			new
-				customKiller = GetPVarInt( playerid, "KillerID" );
-
-	  		CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, customKiller != playerid ? customKiller : INVALID_PLAYER_ID, GetPVarInt( playerid, "WeaponID" ), 3.3, 3 );
-
-		    DeletePVar( playerid, "KillerID" );
-		    DeletePVar( playerid, "WeaponID" );
-	    	DeletePVar( playerid, "CustomKill" );
-	    }
-
 	    // Died in Vehicle
-	    else if( GetPlayerVehicleID( playerid ) && ac_IsPlayerSpawned( playerid ) )
+		if ( GetPlayerVehicleID( playerid ) && ac_IsPlayerSpawned( playerid ) )
 	    {
 			if( ( GetTickCount( ) - p_LastTookDamage[ playerid ] ) > 2500 )
 				p_LastDamageIssuer[ playerid ] = INVALID_PLAYER_ID, p_LastWeaponIssuer[ playerid ] = 51;
@@ -448,9 +435,10 @@ hook OnPlayerDeath(playerid, killerid, reason)
 /* ** Functions ** */
 stock ForcePlayerKill( playerid, killerid, weaponid )
 {
-	SetPVarInt( playerid, "KillerID", killerid );
-	SetPVarInt( playerid, "WeaponID", weaponid );
-	SetPVarInt( playerid, "CustomKill", 1 );
+	p_LastTookDamage[ playerid ] = GetTickCount( );
+	p_LastDamageIssuer[ playerid ] = killerid;
+	p_LastWeaponIssuer[ playerid ] = weaponid;
+	p_LastDamageIssued[ playerid ] = 100.0;
 
 	SetPlayerHealth( playerid, -1 );
 }

@@ -73,7 +73,7 @@ stock vCheckForSilentAimbot( playerid, hittype, hitid )
 
 		    	if( iTicks - p_silentAimbotLastCalled[ playerid ] <= 5000 ) {
 		    		printf("[PRO-AIM] Detected %d - last %dms", playerid, iTicks - p_silentAimbotLastCalled[ playerid ]);
-					CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_PROAIM );
+					CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_PROAIM, 0 );
 		    	}
 
 				p_silentAimbotLastCalled[ playerid ] = iTicks;

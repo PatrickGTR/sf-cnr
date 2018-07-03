@@ -51,7 +51,7 @@ stock bCheckForSpectatingHacks( playerid, iState, iTicks )
 	if( iTicks > p_PlayerSpectateUpdateTime[ playerid ] )
 	{
 		if( iState == PLAYER_STATE_SPECTATING && !p_SpectatePermission{ playerid } ) {
-			CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_SPECTATE );
+			CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_SPECTATE, 0 );
 			printf("[spectate] [%d] %d seems to spectate hack (state id %d, perm %d).", GetTickCount( ), playerid, iState, p_SpectatePermission{ playerid } );
 		}
 		p_PlayerSpectateUpdateTime[ playerid ] = iTicks + 1000;

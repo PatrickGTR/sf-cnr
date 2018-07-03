@@ -37,7 +37,7 @@
 
 stock vAutoCbugKeyState( playerid, newkeys, oldkeys )
 {
-	if( !p_cbugKeyTicks[ playerid ] ) 
+	if( !p_cbugKeyTicks[ playerid ] )
 		p_cbugKeyTicks[ playerid ] = GetTickCount( ), p_cbugWarns{ playerid } = 0;
 
 	if( ( ( ( newkeys & ( KEY_CROUCH ) ) == ( KEY_CROUCH ) ) || ( ( oldkeys & ( KEY_CROUCH ) ) == ( KEY_CROUCH ) ) ) )
@@ -48,9 +48,9 @@ stock vCheckForAutoCbug( playerid, weaponid )
 {
 	// Anti-Rapid Fire
 	if( !p_cbugFireTicks[ playerid ] ) p_cbugFireTicks[ playerid ] = GetTickCount( );
-	else 
+	else
 	{
-		new 
+		new
 			iTicks = GetTickCount( ),
 			iInterval = iTicks - p_cbugFireTicks[ playerid ],
 			iKeyInterval = iTicks - p_cbugKeyTicks[ playerid ],
@@ -59,7 +59,7 @@ stock vCheckForAutoCbug( playerid, weaponid )
 
 		if( weaponid == WEAPON_DEAGLE || weaponid == WEAPON_SHOTGUN || weaponid == WEAPON_RIFLE || weaponid == WEAPON_SNIPER )
 		{
-			new 
+			new
 				iCompare = iKeyInterval - iInterval,
 				Float: fOwnPacketLoss = NetStats_PacketLossPercent( playerid )
 			;
@@ -75,10 +75,10 @@ stock vCheckForAutoCbug( playerid, weaponid )
 			if( iInterval < iHardInterval && iCompare > 1500 && fOwnPacketLoss < 0.8 ) {
 				if( p_cbugWarns{ playerid }++ >= 2 ) {
 					printf( "[autocbug detect] %d detected (wep %d, interval %d, compare %d, warns %d)", playerid, weaponid, iInterval, iCompare, p_cbugWarns{ playerid });
-					CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_AUTOCBUG );					
+					CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_AUTOCBUG, 0 );
 				}
 			}
 		}
-		p_cbugFireTicks[ playerid ] = iTicks;		
+		p_cbugFireTicks[ playerid ] = iTicks;
 	}
 }

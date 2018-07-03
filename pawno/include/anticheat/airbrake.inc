@@ -46,7 +46,7 @@ stock AC_SetPlayerPos( playerid, Float: x, Float: y, Float: z )
     #define _ALS_SetPlayerPos
 #endif
 #define SetPlayerPos AC_SetPlayerPos
- 
+
 // Function Hook (SetPlayerPosFindZ)
 
 stock AC_SetPlayerPosFindZ(playerid, Float:x, Float:y, Float:z)
@@ -61,17 +61,17 @@ stock AC_SetPlayerPosFindZ(playerid, Float:x, Float:y, Float:z)
     #define _ALS_SetPlayerPosFindZ
 #endif
 #define SetPlayerPosFindZ AC_SetPlayerPosFindZ
- 
+
 // Functions
 
 stock bCheckForAirbrake( playerid, iTicks, iState )
-{ 
+{
     if( iState == 0 || iState == 2 || iState == 3 || iState == 7 || iState == 9 )
 		p_abLastTick[ playerid ] = iTicks + 1000;
 
     else if( !IsPlayerInAnyVehicle( playerid ) && GetPlayerSurfingVehicleID( playerid ) == INVALID_VEHICLE_ID && GetPlayerSurfingObjectID( playerid ) == INVALID_VEHICLE_ID ) // && !IsPlayerNPC( playerid )
     {
-        new 
+        new
             Float: iPacketLoss = NetStats_PacketLossPercent( playerid );
 
         if( iTicks > p_abLastTick[ playerid ] && iPacketLoss < 0.8 )
@@ -89,7 +89,7 @@ stock bCheckForAirbrake( playerid, iTicks, iState )
                 if( floatabs( distance ) >= 75.0 && ( floatabs( p_abLastPosition[ playerid ] [ 1 ] - y ) >= 50.0 || floatabs( p_abLastPosition[ playerid ] [ 0 ] - x ) >= 50.0 ) )
                 {
                     if( ++p_abDetected{ playerid } >= 3 )
-						CallLocalFunction( "OnPlayerCheatDetected", "dd", playerid, CHEAT_TYPE_AIRBRAKE );
+						CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_AIRBRAKE, 0 );
 
                     if( p_abResetTimer[ playerid ] == -1 )
                         p_abResetTimer[ playerid ] = SetTimerEx( "AC_ResetABDetected", 60000, false, "d", playerid );

@@ -238,7 +238,7 @@ stock
 
 // Forwards (Global)
 
-public OnPlayerCheatDetected( playerid, detection );
+public OnPlayerCheatDetected( playerid, detection, params );
 
 // Functions (Global)
 
