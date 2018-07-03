@@ -56,17 +56,17 @@ forward OnPlayerLeaveGang( playerid, gangid, reason );
 forward ZoneTimer( );
 
 /* ** Hooks ** */
-hook OnGameModeInit( )
+/*hook OnGameModeInit( )
 {
 	#if !defined DEBUG_MODE
 		// Remove inactive gang members
 		// mysql_single_query( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE UNIX_TIMESTAMP()-`USERS`.`LASTLOGGED` > 1209600" );
 
-		// Remove gangs with a non existant gang leader / unmatched player gang id to gang leader id
-		mysql_single_query( "DELETE g FROM GANGS g LEFT JOIN USERS u ON g.LEADER = u.ID WHERE (u.GANG_ID != g.ID OR u.ID IS NULL) AND g.LEADER >= 0" );
+		// Remove gangs with a non existant gang leader / unmatched player gang id to gang leader id (***broken query***)
+		// mysql_single_query( "DELETE g FROM GANGS g LEFT JOIN USERS u ON g.LEADER = u.ID WHERE (u.GANG_ID != g.ID OR u.ID IS NULL) AND g.LEADER >= 0" );
 	#endif
 	return 1;
-}
+}*/
 
 /* ** Functions ** */
 stock SetPlayerGang( playerid, joining_gang )
