@@ -1,8 +1,11 @@
-(+) Adds a 1v1 duel arena behind paintball, where you can wage money against eachother. Thanks Stev.
-(+) Adds /discordurl for level 5 admins to update the sfcnr.com/discord redirect.
-(+) You now get a Shotgun with 25 ammo when you enter a police car.
-(+) You can now join public gangs through /gangs.
-(/) Wanted levels over 30 will place you in Alcatraz Prison.
-(/) Price of supa save items have been generally increased.
-(/) Speed of robberies has been increased.
-(/) Bail is doubled if you are in Alcatraz.
+(+) Orbital cannon now accessible through gang facilities. Costs $250,000 per missile.
+(+) 2.5% fee on player duels... To counter aggressive money transfers.
+(+) You can now buy an RPG at an ammunation for $10,000 per rocket.
+(+) Adds fast travel, 24/7 and a private ATM within gang facilities.
+(+) Orbital cannon now shows player tags.
+(+) Adds backpack to toys.
+(/) When a player commits a crime, a red blip will slowly fade out at the location of robbery.
+(/) Takes at least 120 seconds to take over a facility.
+(/) Weapon dealers now sell 5X the ammo of a standard ammunation. Though, 1 RPG only.
+(*) Fixes a few anti weapon hack bugs, admins are also now reported with the weapon in question.
+(*) Addresses some toy unlocking issues.

@@ -5282,8 +5282,17 @@ stock initializeServerObjects( )
 	CreateDynamicObject( 8168, -2126.154052, 1839.961059, 44.222999, 0.000000, 0.000000, 64.500000, -1, -1, -1 );
 	CreateDynamicObject( 16327, -1983.401977, 1835.933959, 41.668998, 0.000000, 0.000000, 33.200000, -1, -1, -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 10610, -2087.221923, 1745.951049, 52.969001, 0.000000, 0.000000, -167.699996, -1, -1, -1 ), 1, 13008, "sw_block01", "sw_brewbrick01", -47 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2135.994140, 1756.071655, 52.015850, 0.000000, 14.100008, 2.300049, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2125.268066, 1729.023315, 61.948272, 0.000000, 0.000000, 26.800050, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2129.566406, 1840.423706, 41.849170, 0.000000, 0.000000, -54.799930, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2118.684082, 1835.784790, 41.789211, 0.000000, 0.000000, -167.100112, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1992.245117, 1789.131347, 41.937107, 0.000000, 0.000000, 2.699999, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1981.197998, 1756.649902, 39.467201, 0.000000, 0.000000, 10.600001, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1980.224121, 1732.872070, 39.467201, 0.000000, 0.000000, -6.100002, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2075.446533, 1709.991943, 39.931343, 0.000000, 0.000000, 93.099952, -1, -1, -1 ), 0, 0, "none", "none", 0 );
 
 	// Duel Arena
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, -2232.130126, 263.019104, 36.146163, 0.000000, 0.000000, 0.099999, -1, -1, -1 ), 0, "Thanks Stev!", 130, "Impact", 32, 0, -16777216, 0, 1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 243.059402, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 260.958953, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 970, -2237.906250, 247.239334, 34.840320, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 8463, "vgseland", "tiadbuddhagold", 0 );

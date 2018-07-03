@@ -82,7 +82,6 @@ native gpci 						( playerid, serial[ ], len );
 #define IsPlayerKidnapped(%1)       (p_Kidnapped{%1})
 #define IsPlayerBlowingCock(%0)   	(p_GivingBlowjob{%0})
 #define IsPlayerGettingBlowed(%0) 	(p_GettingBlowjob{%0})
-#define IsPlayerAdminOnDuty(%0)     (p_AdminOnDuty{%0})
 #define IsPlayerMining(%0)			(p_isMining{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerOnSlotMachine(%0)	(p_usingSlotMachine[%0]!=-1)
@@ -96,7 +95,6 @@ native gpci 						( playerid, serial[ ], len );
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
 #define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + p_Cash[%0]) // Bank Money and Money
-#define IsPlayerAFK(%0)				((GetTickCount()-p_AFKTime[%0])>=2595)
 #define GetPlayerMethLabVehicle(%0)	(GetPlayerVirtualWorld(%0)-VW_METH)
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0]==1)
 #define Achievement:: 				ach_
@@ -1156,13 +1154,17 @@ new
 ;
 
 /* ** ATM System ** */
-#define MAX_ATMS 					48
+#if defined MAX_FACILITIES
+	#define MAX_ATMS 				( 48 + MAX_FACILITIES )
+#else
+	#define MAX_ATMS				( 48 )
+#endif
 
 enum E_ATM_DATA
 {
 	E_CHECKPOINT, 		Float: E_HEALTH, 	E_TIMESTAMP,
 	E_OBJECT,			Text3D: E_LABEL, 	bool: E_DISABLED,
-	E_PICKUP,			E_LOOT
+	E_PICKUP,			E_LOOT,				E_WORLD
 };
 
 new
@@ -1404,6 +1406,7 @@ new
 
 /* ** Toy System ** */
 #define MAX_TOYS                ( sizeof( g_ToyData ) )
+#define MAX_TOY_UNLOCKS 		( 200 ) // should be ideally MAX_TOYS
 
 #define CATEGORY_WATCHES 		( 0 )
 #define CATEGORY_BERETS 		( 1 )
@@ -1502,7 +1505,7 @@ new
 		{ CATEGORY_MASKS, 96, 	"Gucci Balaclava",			19801, 	10000,	2 },
 		{ CATEGORY_MASKS, 45,	"Black Mask",				18912, 	6000,	2 },
 		{ CATEGORY_MASKS, 46,	"Green Mask",				18913, 	5200,	2 },
-		// { CATEGORY_MASKS, 47,	"Versace Mask",				18915, 	4500,	2 },
+		{ CATEGORY_MASKS, 47,	"Weed Bandana",				18894, 	4500,	2 },
 		{ CATEGORY_MASKS, 48,	"Gimp Mask",				19163, 	300,	2 },
 		{ CATEGORY_MASKS, 49,	"Hockey Mask White",		19036, 	250,	2 },
 		{ CATEGORY_MASKS, 50,	"Hockey Mask Red",			19037, 	250,	2 },
@@ -1539,11 +1542,7 @@ new
 		// { CATEGORY_GLASSES, 71,	"Versace Vintage", 			19033, 520, 	2 },
 		// { CATEGORY_GLASSES, 72,	"Versace Havana Wrap", 		19030, 490, 	2 },
 		{ CATEGORY_GLASSES, 73,	"Oakley Whisker", 			19008, 400, 	2 },
-		// { CATEGORY_GLASSES, 74,	"Oakley Wiretap", 			19009, 400, 	2 },
-		// { CATEGORY_GLASSES, 75,	"Versace Brown Square", 	19031, 360, 	2 },
 		{ CATEGORY_GLASSES, 76,	"Versace Marble Square", 	19035, 380, 	2 },
-		// { CATEGORY_GLASSES, 77,	"Oakley Valve", 			19010, 300, 	2 },
-		// { CATEGORY_GLASSES, 78,	"Oakley Crankshaft", 		19007, 260, 	2 },
 
 		// HANDHELD
 		{ CATEGORY_HANDHELD, 100, "Antique Sword", 			19590, 	15000, 	6 },
@@ -1573,8 +1572,9 @@ new
 
 		// MISC
 		{ CATEGORY_MISC, 99, "Gold Bar", 					19941, 	38000,	1 },
-		{ CATEGORY_MISC, 128, "Cowboy Boots",				11735, 	3000,	1 }, // LATEST
-		{ CATEGORY_MISC, 127, "Pistol Holster",				19773, 	1000,	1 },
+		{ CATEGORY_MISC, 74, "Cowboy Boots",				11735, 	3000,	1 },
+		{ CATEGORY_MISC, 77, "Marijuana Roll",				2901, 	2000, 	1 },
+		{ CATEGORY_MISC, 75, "Pistol Holster",				19773, 	1000,	1 },
 		{ CATEGORY_MISC, 79, "Police Light",   				19419, 	600,	1 },
 		{ CATEGORY_MISC, 94, "Xmas Box 1",					19054,  500,	1 },
 		{ CATEGORY_MISC, 95, "Xmas Box 2",					19056,  500,	1 },
@@ -1583,6 +1583,7 @@ new
 		{ CATEGORY_MISC, 81, "Glider",         				2512, 	150,	1 },
 		{ CATEGORY_MISC, 82, "Plane",          				2510, 	120,	1 },
 		{ CATEGORY_MISC, 98, "Hiker Backpack", 				19559, 	100, 	1 },
+		{ CATEGORY_MISC, 78, "Backpack",					3026,	90,		1 },
 		{ CATEGORY_MISC, 83, "Rubbish Bin",   				1343, 	80,		1 },
 		{ CATEGORY_MISC, 84, "Chainsaw Dildo",				19086, 	69,		5 },
 		{ CATEGORY_MISC, 85, "Easter Egg",					19344, 	50,		2 },
@@ -1608,7 +1609,7 @@ new
 	p_ToySlotSelected			[ MAX_PLAYERS char ],
 	p_ToyCategorySelected 		[ MAX_PLAYERS char ],
 	p_ToyIDSelected 			[ MAX_PLAYERS char ],
-	bool: p_ToyUnlocked     	[ MAX_PLAYERS ] [ 200 char ] // change back to MAX_TOYS
+	bool: p_ToyUnlocked     	[ MAX_PLAYERS ] [ MAX_TOY_UNLOCKS char ]
 ;
 
 /* ** C4 Data ** */
@@ -3517,56 +3518,6 @@ public OnGameModeInit()
 	#endif
 	/* ** Entrances/Exits ** */
 
-	// Houses
-	/*CreateEntrance( "[ROOFTOP]", 			-2440.5149, 820.9702, 35.1838, -2438.1204, 819.7362, 65.5078, 			0,   0, false, true ); // Jendral
-	CreateEntrance( "[ROOFTOP]", 			-2475.4238, 161.5239, 35.1406, -2476.4043, 155.6541, 64.9332, 			0,   0, false, true ); // Queens' Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2281.2776, 923.6173, 66.7333, -2280.6958, 907.2256, 96.8359, 			0,   0, false, true ); // Juniper Hill Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2372.5613, 851.7944, 41.0832, -2372.9949, 856.7742, 57.6094, 			0,   0, false, true ); // Near-supa Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1696.3392, 1030.7318, 45.210, -1693.0250, 1030.273, 56.906, 			0,   0, false, true ); // MrFreeze's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2113.2771, 1087.924, 71.5219, -2120.263, 1060.5692, 96.9456, 			0,   0, false, true ); // Arros' Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1991.5497, 821.0363, 45.4453, -1984.2457, 821.7531, 92.3203, 			0,   0, false, true ); // Deedz's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1887.0532, 761.1137, 45.4469, -1860.1149, 783.4689, 93.9143, 			0,   0, false, true ); // Arntz's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2018.7081, 1194.185, 45.4574, -2019.5271, 1198.3176, 80.750, 			0,   0, false, true ); // Deedz's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1782.7190, 1216.257, 32.6563, -1718.9036, 1208.9364, 48.7988, 			0,   0, false, true ); // MrFreeze's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2160.8496, 648.1808, 52.3672, -2163.1775, 648.1913, 60.6982, 			0,   0, false, true ); // Dope's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2724.6169, 73.51550, 4.33590, -2727.8027, 60.5538, 11.1953, 			0,   0, false, true ); // Cake's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1948.4548, 827.3771, 42.5405, -1947.5352, 813.5648, 77.7300,			0,   0, false, true ); // [RR]Natushi's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1779.6537, 1013.5704, 24.8906, -1774.9280, 1019.5374, 97.6932,			0,   0, false, true ); // Diller's Rooftop
-	CreateEntrance( "[HOUSE]", 				-2121.4160, 659.9059, 52.3985, -2120.5251, 659.9581, 60.7005, 			0,   0, false, false ); // _[Esteban]_'s Rooftop
-	CreateEntrance( "[HOUSE]", 				-2106.3545, 659.9128, 52.3932, -2107.2461, 659.8979, 60.7005, 			0,   0, false, false ); // _[Esteban]_'s Rooftop
-	CreateEntrance( "[ROOFTOP]", 			2238.6887, 2225.6982, 10.8203, 2220.8872, 2245.8870, 24.9297, 			0,   0, false, true ); // PrinZeco's Rooftop
-	CreateEntrance( "[STUDIO]", 			-692.3306, 939.6115, 13.6328, -699.7916, 6335.1655, 84.2296, 			0,   0, true , true ); // Uuri's Rooftop
-	CreateEntrance( "[SECURITY ROOM]", 		-2042.2239, 246.3592, 29.0572, -2040.1056, 273.7458, 904.9886, 			0,   0, true , true ); // Gal's Rooftop
-	CreateEntrance( "[ROOFTOP]",			-1757.2357, 774.0584, 45.2970, -1739.3662, 787.6291, 167.6535, 			0, 	 0, false, true ); // Executive Esuite Roof
-	CreateEntrance( "[HOUSE]",				-1737.0885, 801.0515, 24.8906, -1757.2689, 805.6949, 45.3265, 			0, 	 0, false, true ); // Executive Esuite Roof
-	CreateEntrance( "[ROOFTOP]", 			1370.8140, -1341.3876, 13.5469, 1378.1222, -1381.7068, 34.5537, 		0,   0, false, true ); // Assassin's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2591.5420, 147.2977, 4.3359, -2586.2024, 142.7569, 17.6344, 			0,   0, false, true ); // Versec's Rooftop
-	CreateEntrance( "[ROOFTOP]",			-2496.0562, 92.0874, 25.6172, -2506.0942, 105.3671, 35.1719,			0,	 0,	false, true ); // levi69's Rooftop
-	CreateEntrance( "[ROOFTOP]",			-1732.3933, 632.2880, 25.0978, -1734.8120, 634.4911, 105.1406,			0,	 0,	false, true ); // Robox's Rooftop
-	CreateEntrance( "[ROOFTOP]",			-1975.7041, 743.8552, 45.4453, -1981.0834, 759.7982, 85.9219,			0,	 0,	false, true ); // Amy's Rfooftop
-	CreateEntrance( "[ROOFTOP]",			2408.4724, 2005.9023, 10.8203, 2400.1514, 1997.0370, 19.1563,			0,	 0,	false, true ); // Zorba's Rooftop
-	CreateEntrance( "[ROOFTOP]",			2576.9863, 2082.4280, 10.8130, 2592.8230, 2091.7559, 15.6720,			0,	 0,	false, true ); // iTHUG's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			2119.9629, 1483.1409, 10.8302, 2162.6362, 1452.8992, 24.1406,			0,	 0,	false, true ); // Chrome_TV's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2455.2925, -113.9168, 26.0669, -2450.1252, -129.2207, 51.8439,			0,	 0,	false, true ); // Rexer's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			606.6136, -1447.5503, 14.1969, 595.2242, -1484.3589, 73.8816,			0,	 0,	false, true ); // Zorba's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2421.5044, -730.3824, 133.1481, -2432.5017, -747.6622, 141.2511,		0,	 0,	false, true ); // Gal's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1681.3436, 1349.8549, 7.1722, -1691.0605, 1333.9678, 16.2976,			0,	 0,	false, true ); // Gal's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1990.2039, 767.3861, 45.4453, -1982.2228, 790.7831, 107.0313,			0,	 0,	false, true ); // Thecover's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2517.2058, 234.8540, 16.5137, -2517.2146, 233.6684, 21.9738,			0,	 0,	false, true ); // Niels's Rooftop
-	CreateEntrance( "[HOUSE]", 				-2521.8391, 248.8841, 11.0938, -2521.7922, 248.8820, 16.4937,			0,	 0,	false, true ); // Niels's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2430.8696, 1.8262, 35.3203, -2435.1899, -3.0185, 47.9531,				0,	 0,	false, true ); // Miley's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2246.1819, 457.2802, 40.4719,-2275.6460, 444.2489, 46.7418,			0,	 0,	false, true ); // Gal's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1833.8469, 679.3009, 35.1919,-1840.6748, 685.3052, 81.3984,			0,	 0,	false, true ); // Kidz's Rooftop
-	CreateEntrance( "[VAULT]", 				-2912.6204,461.5075,9.7935, -2875.3625, 459.9657, 1240.3340,			0,	 0,	true, false ); // Wolf's Rooftop
-	CreateEntrance( "[SUBMARINE]",			-34.6946, 234.4038, 2.1994, -35.3430, 244.1769, 770.9557,				0,	 0,	true, false ); // Wolf's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2533.1726, 72.5313, 10.3846, -2575.0229, 60.0100, 18.0653,				0,	 0,	false, true ); // Daniel's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1806.3270, 998.9644, 24.8906, -1823.3782, 988.7065, 77.1422,			0,	 0,	false, true ); // Syndicate's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1977.4973, 955.7825, 45.4453, -1988.9637, 967.9180, 50.9922,			0,	 0,	false, true ); // Bang.'s Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1880.3057, 960.5383, 35.1719, -1860.1345, 977.6763, 49.8047,			0,	 0,	false, true ); // Biscuits's Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-1962.5211, 743.8117, 45.4453, -1964.0610, 758.8718, 84.6016,			0,	 0,	false, true ); // Retrieval's Rooftop
-	CreateEntrance( "[UNDERWATER]", 		-2705.6335, -448.8924, 4.5261, -2714.9460, -442.7717, -12.2039,			0,	 0,	false, false ); // Veloxity_'s Rooftop
-	CreateEntrance( "[ROOFTOP]", 			-2629.4785, 696.2841, 27.9394, -2697.6145, 689.0028, 66.0922,			0,	 0,	false, true ); // Faze's Rooftop*/
-
 	// Custom Interiors
 	// CreateEntrance( "[SEWER]",				-1990.7736, 1033.7378, 55.7266, 3638.4670, 5215.5024, 1203.3168, 		1,   1, true, true, -1 ); // Milky
 	CreateEntrance( "[BANK]", 				-1493.1296, 920.1409, 7.1875, -1444.2537, 831.0490, 985.7027, 			0,  g_bankvaultData[ CITY_SF ] [ E_WORLD ], true, false, 52 );
@@ -4947,7 +4898,7 @@ public OnServerUpdate( )
 			if ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 45000 )
 			{
 				// AFK Jail
-				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) ) { // && !IsPlayerDetained( playerid )
+				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) && IsPlayerSpawned( playerid ) ) { // && !IsPlayerDetained( playerid )
 			    	JailPlayer( playerid, 60, 1 );
 		        	SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
 				}
@@ -5300,7 +5251,7 @@ public OnServerUpdate( )
 			DestroyDynamicMapIcon( g_informedRobberies[ ir ] [ E_MAP_ICON ] );
 			Iter_SafeRemove(InformedRobbery, cur, ir);
 		}
-		else Streamer_SetIntData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ ir ] [ E_MAP_ICON ], E_STREAMER_COLOR, setAlpha( COLOR_YELLOW, g_informedRobberies[ ir ] [ E_ALPHA ] ) );
+		else Streamer_SetIntData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ ir ] [ E_MAP_ICON ], E_STREAMER_COLOR, setAlpha( COLOR_WANTED12, g_informedRobberies[ ir ] [ E_ALPHA ] ) );
 	}
 
 	// Soft delete gang
@@ -5380,7 +5331,7 @@ public OnServerUpdate( )
 			UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, "[ATM]\n"COL_GREY"100%" );
 			DestroyDynamicPickup( g_atmData[ i ] [ E_PICKUP ] ), g_atmData[ i ] [ E_PICKUP ] = -1;
 			g_atmData[ i ] [ E_LOOT ] = 0, g_atmData[ i ] [ E_DISABLED ] = false, g_atmData[ i ] [ E_HEALTH ] = 100.0;
-			ReplaceObjectModel( g_atmData[ i ] [ E_OBJECT ], 19324 );
+			Streamer_SetIntData( STREAMER_TYPE_OBJECT, g_atmData[ i ] [ E_OBJECT ], E_STREAMER_MODEL_ID, 19324 );
  		}
 
  		// Replenish product
@@ -5531,7 +5482,7 @@ public ZoneTimer( )
 			      	oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] );
 
 				new
-					attacker_time_required = -10 * ( attacker_member_count - TAKEOVER_NEEDED_PEOPLE ) + 60;
+					attacker_time_required = -10 * ( attacker_member_count - TAKEOVER_NEEDED_PEOPLE ) + ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] == INVALID_GANG_ID ? 60 : 120 );
 
 			   	// minimum of 20 seconds
 				if ( attacker_time_required < 20 )
@@ -6071,11 +6022,7 @@ public OnLookupComplete( playerid, success )
 	SendDeathMessage( INVALID_PLAYER_ID, playerid, 200 );
 
 	if ( IsProxyEnabledForPlayer( playerid ) ) {
-		if ( IsPlayerUnderCover( playerid ) ) {
-			format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server! (MX)", ReturnPlayerName( playerid ), playerid );
-		} else {
-			format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server! (%s)", ReturnPlayerName( playerid ), playerid, GetPlayerCountryName( playerid ) );
-		}
+		format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server! (%s)", ReturnPlayerName( playerid ), playerid, GetPlayerCountryName( playerid ) );
 	} else {
 		format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server!", ReturnPlayerName( playerid ), playerid );
 	}
@@ -6443,10 +6390,10 @@ public OnPlayerDisconnect( playerid, reason )
 
 		if ( i < MAX_GANGS ) 	p_gangInvited[ playerid ] [ i ] = false;
 		if ( i < MAX_SETTINGS ) p_PlayerSettings[ playerid ] { i } = false;
-		if ( i < MAX_TOYS ) 	p_ToyUnlocked[ playerid ] { i } = false;
 		if ( i < MAX_WEAPONS ) 	p_WeaponKills[ playerid ] [ i ] = 0;
 		if ( i < MAX_RACES )	p_raceInvited[ playerid ] [ i ] = false;
 		if ( i < MAX_STREAKS ) 	p_streakData[ playerid ] [ i ] [ E_BEST_STREAK ] = 0, p_streakData[ playerid ] [ i ] [ E_STREAK ] = 0;
+		if ( i < MAX_TOY_UNLOCKS ) p_ToyUnlocked[ playerid ] { i } = false;
 
 		p_BlockedPM[ playerid ] [ i ] = false;
 	}
@@ -6467,6 +6414,7 @@ public OnPlayerSpawn( playerid )
 	UpdatePlayerTime( playerid );
 	DeletePVar( playerid, "attached_mugshot" );
 
+	PlayerPlaySound( playerid, 0, 0.0, 0.0, 0.0 );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	HidePlayerTogglableTextdraws( playerid );
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
@@ -6989,10 +6937,12 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 			if ( p_Class[ playerid ] == CLASS_POLICE )
 				return 1; // Prevent police from damaging atms
 
-			new
-				Float: Damage = GetWeaponDamageFromDistance( weaponid, GetPlayerDistanceFromPoint( playerid, x, y, z ) );
+			new Float: Damage = GetWeaponDamageFromDistance( weaponid, GetPlayerDistanceFromPoint( playerid, x, y, z ) );
+			new player_world = GetPlayerVirtualWorld( playerid );
 
 			foreach ( new i : atms ) {
+
+				if ( g_atmData[ i ] [ E_WORLD ] != -1 && g_atmData[ i ] [ E_WORLD ] != player_world ) continue;
 
 				if ( g_atmData[ i ] [ E_OBJECT ] == objectid && !g_atmData[ i ] [ E_DISABLED ] )
 				{
@@ -7005,7 +6955,7 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 							UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, szNormalString );
 						} else {
 							UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, "[ATM]\n"COL_RED"Disabled" );
-							ReplaceObjectModel( g_atmData[ i ] [ E_OBJECT ], 2943 );
+							Streamer_SetIntData( STREAMER_TYPE_OBJECT, g_atmData[ i ] [ E_OBJECT ], E_STREAMER_MODEL_ID, 2943 );
 
 							g_atmData[ i ] [ E_TIMESTAMP ] = g_iTime + 240;
 							g_atmData[ i ] [ E_DISABLED ] = true;
@@ -7022,7 +6972,7 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 								SendServerMessage( playerid, "There seems to be no money in the ATM that you have breached." );
 							} else {
 								GetDynamicObjectRot( objectid, rZ, rZ, rZ );
-								g_atmData[ i ] [ E_PICKUP ] = CreateDynamicPickup( 1550, 1, X + 1.0 * -floatsin( -rZ, degrees ), Y + 1.0 * -floatcos( -rZ, degrees ), Z + 0.33 );
+								g_atmData[ i ] [ E_PICKUP ] = CreateDynamicPickup( 1550, 1, X + 1.0 * -floatsin( -rZ, degrees ), Y + 1.0 * -floatcos( -rZ, degrees ), Z + 0.33, .worldid = g_atmData[ i ] [ E_WORLD ] );
 								g_atmData[ i ] [ E_LOOT ] = RandomEx( 320, 750 );
 
 								if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
@@ -7438,7 +7388,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 
     if ( ! IsPlayerNPC( killerid ) && IsPlayerConnected( killerid ) && GetPVarInt( playerid, "used_cmd_kill" ) != 1 )
     {
-		if ( !IsPlayerStreamedIn( killerid, playerid ) ) {
+		if ( ! IsPlayerStreamedIn( killerid, playerid ) && ! IsPlayerUsingOrbitalCannon( killerid ) ) {
 			printf( "[DEBUG] %s was killed for possible fake kill. (0x1B)", ReturnPlayerName( playerid ) );
 	    	return SendServerMessage( playerid, "Possible Fake-kill detected - 0x1B" ), KickPlayerTimed( playerid );
 		}
@@ -14177,8 +14127,8 @@ CMD:takeover( playerid, params[ ] )
 	if ( GetPlayerInterior( playerid ) != 0 && GetPlayerVirtualWorld( playerid ) != 0 )
 	    return SendError( playerid, "You cannot do this inside interiors." );
 
-	if ( IsPlayerJailed( playerid ) )
-		return SendError( playerid, "You cannot use this while you are in jail." );
+	if ( IsPlayerJailed( playerid ) || IsPlayerUsingOrbitalCannon( playerid ) )
+		return SendError( playerid, "You cannot do this at the moment." );
 
 	new
 		g_isAFK = 0,
@@ -15584,14 +15534,7 @@ CMD:geolocate( playerid, params[ ] )
 	else if ( p_AdminLevel[ pID ] >= 5 || strmatch( ReturnPlayerName( pID ), "Lorenc" ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
  	else
  	{
- 		if ( IsPlayerUnderCover( pID ) )
- 		{
-			SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from Mexico (MX) [%s]", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
-		}
-		else
-		{
-	 		SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from %s (%s) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );
- 		}
+		SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from %s (%s) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );
 	}
 	return 1;
 }
@@ -15859,7 +15802,7 @@ CMD:giveweapon( playerid, params[ ] )
     else if ( IsWeaponBanned( wep ) && p_AdminLevel[ pID ] < 5 ) return SendError( playerid, "This weapon is a banned weapon, you cannot spawn this." );
     else
 	{
-		printf("%s banned wep %d - admin level %d", ReturnPlayerName( pID ), wep, p_AdminLevel[ playerid ]);
+		//printf("%s banned wep %d - admin level %d", ReturnPlayerName( pID ), wep, p_AdminLevel[ playerid ]);
         GetWeaponName( wep, gunname, sizeof( gunname ) );
         AddAdminLogLineFormatted( "%s(%d) has given %s(%d) a %s", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, gunname );
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have given %s(%d) a %s(%d)", ReturnPlayerName( pID ), pID, gunname, wep );
@@ -17152,6 +17095,7 @@ CMD:forceac( playerid, params[ ] )
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
+    //else if ( GetPlayerScore( pID ) < 100 ) return SendError( playerid, "This player's score is under 100, please spectate instead." );
     else
 	{
 		if ( p_forcedAnticheat[ pID ] <= 0 )
@@ -18844,8 +18788,9 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 		}
 	#endif
 
-	if ( ! g_Driveby )
+	if ( ! g_Driveby ) {
 		SetPlayerArmedWeapon( playerid, 0 );
+	}
 
 	if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
 	{
@@ -20091,7 +20036,7 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 			    Get2DCity				( szCity, X, Y, Z );
 			    GetZoneFromCoordinates	( szLocation, X, Y, Z );
 
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from an ATM near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( iLoot ), szLocation, szCity );
+				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from an ATM near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( iLoot ), szLocation, szCity );
 				return SendServerMessage( playerid, "You have successfully taken "COL_GOLD"%s"COL_WHITE" dispensed from the ATM.", number_format( iLoot ) );
 			}
 		}
@@ -21190,7 +21135,7 @@ function unpause_Player( playerid )
 }
 
 #if defined AC_INCLUDED
-	public OnPlayerCheatDetected( playerid, detection )
+	public OnPlayerCheatDetected( playerid, detection, params )
 	{
 		if ( detection == CHEAT_TYPE_REMOTE_JACK )
 		{
@@ -21216,7 +21161,15 @@ function unpause_Player( playerid )
 			// SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for fly hacks.", ReturnPlayerName( playerid ), playerid );
 			// AdvancedBan( playerid, "Server", "Fly Hacks", ReturnPlayerIP( playerid ) );
 		}
-		else SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for %s.", ReturnPlayerName( playerid ), playerid, detectionToString( detection ) );
+		else if ( detection == CHEAT_TYPE_WEAPON )
+		{
+			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for weapon hack (%s).", ReturnPlayerName( playerid ), playerid, ReturnWeaponName( params ) );
+			return 1;
+		}
+		else
+		{
+			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for %s.", ReturnPlayerName( playerid ), playerid, detectionToString( detection ) );
+		}
 		return 1;
 	}
 #endif
@@ -21331,9 +21284,9 @@ public OnPlayerEditAttachedObject( playerid, response, index, modelid, boneid, F
 	{
 		new bool: modded;
 
-	    if ( fScaleX < 0.25 || fScaleX > 2.5 ) fScaleX = 1.0, modded = true;
-	    if ( fScaleY < 0.25 || fScaleY > 2.5 ) fScaleY = 1.0, modded = true;
-	    if ( fScaleZ < 0.25 || fScaleZ > 2.5 ) fScaleZ = 1.0, modded = true;
+	    if ( fScaleX < 0.1 || fScaleX > 2.5 ) fScaleX = 1.0, modded = true;
+	    if ( fScaleY < 0.1 || fScaleY > 2.5 ) fScaleY = 1.0, modded = true;
+	    if ( fScaleZ < 0.1 || fScaleZ > 2.5 ) fScaleZ = 1.0, modded = true;
 	    if ( modded ) SendServerMessage( playerid, "Some scaling parts were either too small, or too big. They have been scaled to the default size." );
 
 	   	p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ] = boneid;
@@ -21577,10 +21530,10 @@ thread OnPlayerLogin( playerid, password[ ] )
 		  	SendServerMessage( playerid, "You have " COL_GREEN "successfully" COL_WHITE " logged in!" );
 
 		  	// UNDERCOVER USERS
-			if ( IsPlayerUnderCover( playerid ) ) {
+			/*if ( IsPlayerUnderCover( playerid ) ) {
 		  		// all undercover are american ips
 				format( p_PlayerIP[ playerid ], 16, "187.237.240.%d", random( 255 ) );
-		  	}
+		  	}*/
 
 		  	// Search for valid gang
 			new gang_sql = cache_get_field_content_int( 0, "GANG_ID", dbHandle );
@@ -22259,19 +22212,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    cmd_h( playerid, "config" );
 			    return 1;
 			}
-			if ( GetPlayerWeapon( playerid ) == 16 || GetPlayerWeapon( playerid ) == 42 )
-			{
+			new current_weapon = GetPlayerWeapon( playerid );
+			new current_ammo = GetPlayerAmmo( playerid );
+			if ( ( 16 <= current_weapon <= 18 ) || current_weapon == 35 ) {
 			    SendError( playerid, "You cannot store this weapon." );
 			    cmd_h( playerid, "config" );
 			    return 1;
 			}
-			new iAmmo = GetPlayerAmmo( playerid );
-			if ( iAmmo > 0x7FFF || iAmmo <= 0 ) iAmmo = 0x7FFF;
+			if ( current_ammo > 0x7FFF || current_ammo <= 0 ) current_ammo = 0x7FFF;
 			listitem = p_HouseWeaponAddSlot{ playerid };
-            g_HouseWeapons[ p_InHouse[ playerid ] ] [ listitem ] = GetPlayerWeapon( playerid );
-            g_HouseWeaponAmmo[ p_InHouse[ playerid ] ] [ listitem ] = iAmmo;
-            SendServerMessage( playerid, "You have inserted your "COL_GREY"%s"COL_WHITE" into your weapon storage.", ReturnWeaponName( GetPlayerWeapon( playerid ) ) );
-            RemovePlayerWeapon( playerid, GetPlayerWeapon( playerid ) );
+            g_HouseWeapons[ p_InHouse[ playerid ] ] [ listitem ] = current_weapon;
+            g_HouseWeaponAmmo[ p_InHouse[ playerid ] ] [ listitem ] = current_ammo;
+            SendServerMessage( playerid, "You have inserted your "COL_GREY"%s"COL_WHITE" into your weapon storage.", ReturnWeaponName( current_weapon ) );
+            RemovePlayerWeapon( playerid, current_weapon );
          	SaveHouseWeaponStorage( p_InHouse[ playerid ] );
 			ShowHouseWeaponStorage( playerid );
 	    }
@@ -22727,7 +22680,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	                GivePlayerXP( playerid, -100 );
 	                for( new i; i < MAX_WEAPONS; i++ )
 					{
-					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && !( 16 <= i <= 18 ) && i != 47 && i != WEAPON_BOMB )
+					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && !( 16 <= i <= 18 ) && i != 35 && i != 47 && i != WEAPON_BOMB )
 					    {
 					        GivePlayerWeapon( playerid, i, 15000 );
 					    }
@@ -22914,7 +22867,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
         if ( g_shopItemData[ listitem ] [ E_LIMIT ] == LIMIT_ONE )
         {
-        	cmd_shop( playerid, "" );
+        	ShowPlayerShopMenu( playerid );
 
         	if ( GetPlayerCash( playerid ) < g_shopItemData[ listitem ] [ E_PRICE ] ) return SendError( playerid, "You don't have enough money for this item." );
 
@@ -22990,7 +22943,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
     		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
     	}
-    	else cmd_shop( playerid, "" );
+    	else ShowPlayerShopMenu( playerid );
     }
 	if ( ( dialogid == DIALOG_XPMARKET ) && response )
 	{
@@ -24380,7 +24333,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 
 	    p_WeaponDealMenu{ playerid } = listitem;
-      	RedirectAmmunation( playerid, listitem, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
+      	RedirectAmmunation( playerid, listitem, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, 5 );
 	}
 	if ( dialogid == DIALOG_WEAPON_DEAL_BUY )
 	{
@@ -24407,7 +24360,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					 	if ( price > GetPlayerCash( playerid ) )
 						{
 						    SendError( playerid, "You don't have enough money for this." );
-      						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
+      						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, 5 );
 							return 1;
 						}
 						GivePlayerCash( weapondealerid, floatround( price * 0.75 ) );
@@ -24415,10 +24368,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						SetPVarInt( playerid, "purchased_weapon", GetPVarInt( playerid, "purchased_weapon" ) + 1 );
 						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, 100.0 );
-						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], 15000 ); // Infinite
+						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] * ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 35 ? 1 : 5 ) );
 						SetPlayerArmedWeapon( playerid, 0 );
 						GivePlayerCash( playerid, -( price ) );
-						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, true );
+						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, 5 );
 						break;
 		            }
 		            x ++;
@@ -26350,6 +26303,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetPlayerPos( playerid, 1642.2274, -2335.4978, 13.5469 );
 			}
 		}
+
+		// set interior/world
+		SetPlayerVirtualWorld( playerid, 0 );
+		SetPlayerInterior( playerid, 0 );
+		PlayerPlaySound( playerid, 0, 0.0, 0.0, 0.0 );
 	}
 	if ( dialogid == DIALOG_SPAWN && response )
 	{
@@ -28132,7 +28090,7 @@ stock ResetPlayerCash( playerid )
 }
 
 stock IsWeaponBanned( weaponid ) {
-	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 35 || weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
+	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
 }
 
 stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
@@ -30632,7 +30590,7 @@ stock GetDayToString( day )
 	return string;
 }
 
-stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0 )
+stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0, world = -1 )
 {
 	new ID = Iter_Free( atms );
 
@@ -30647,9 +30605,10 @@ stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0 
 
 		Iter_Add( atms, ID );
 		g_atmData[ ID ] [ E_HEALTH ] = 100.0;
-		g_atmData[ ID ] [ E_CHECKPOINT ] = CreateDynamicCP( nX, nY, Z, 1.0 , -1, -1, -1, 100.0 );
-		g_atmData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 19324, X, Y, Z, 0.0, 0.0, rX, -1, -1, -1, 100.0, .priority = 2 );
-		g_atmData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "[ATM]\n"COL_GREY"100%", COLOR_GOLD, nX, nY, Z, 20.0 );
+		g_atmData[ ID ] [ E_CHECKPOINT ] = CreateDynamicCP( nX, nY, Z, 1.0, .worldid = world );
+		g_atmData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 19324, X, Y, Z, 0.0, 0.0, rX, .priority = 2, .worldid = world );
+		g_atmData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "[ATM]\n"COL_GREY"100%", COLOR_GOLD, nX, nY, Z, 20.0, .worldid = world );
+		g_atmData[ ID ] [ E_WORLD ] = world;
 	}
 	return ID;
 }
@@ -33388,7 +33347,7 @@ stock showToyCategoryItems( playerid, category, bool: pawnshop = false )
 
 stock UnlockPlayerToy( playerid, toy_id )
 {
-	if ( toy_id > MAX_TOYS )
+	if ( toy_id > MAX_TOY_UNLOCKS )
 		return;
 
 	p_ToyUnlocked[ playerid ] { toy_id } = true;
@@ -33426,7 +33385,7 @@ thread OnToyLoad( playerid )
 		while( ++i < rows ) {
 			new iToy = cache_get_field_content_int( i, "TOY_ID", dbHandle );
 
-			if ( iToy < MAX_TOYS ) // Must be something wrong otherwise...
+			if ( iToy < MAX_TOY_UNLOCKS ) // Must be something wrong otherwise...
 				p_ToyUnlocked[ playerid ] { iToy } = true;
 		}
 	}
@@ -34831,17 +34790,6 @@ stock ShowSoundsMenu( playerid )
 	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
 
-stock ReplaceObjectModel( &objectid, modelid ) {
-	static
-		Float: X, Float: Y, Float: Z, Float: rX, Float: rY, Float: rZ;
-
-	GetDynamicObjectPos( objectid, X, Y, Z );
-	GetDynamicObjectRot( objectid, rX, rY, rZ );
-
-	DestroyDynamicObject( objectid );
-	objectid = CreateDynamicObject( modelid, X, Y, Z, rX, rY, rZ );
-}
-
 stock GivePlayerLeoWeapons( playerid ) {
 	GivePlayerWeapon( playerid, 3, 1 );
 	GivePlayerWeapon( playerid, 22, 250 );
@@ -35951,8 +35899,8 @@ stock CreateCrimeReport( playerid )
 	  	else GetPlayerPos( playerid, X, Y, Z );
 
 	  	// Create marker
-	  	g_informedRobberies[ iCrimeReport ] [ E_ALPHA ] = 0xFF;
-	  	g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, COLOR_RED, -1, -1, 0, 1000.0, MAPICON_GLOBAL );
+	  	g_informedRobberies[ iCrimeReport ] [ E_ALPHA ] = 0xAA;
+	  	g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, COLOR_WANTED12, -1, -1, 0, 1000.0, MAPICON_GLOBAL );
 
 	  	// Reset Players In Map Icon
 	  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
@@ -37721,14 +37669,8 @@ stock FillHomeWithFurniture( houseid, interior_id ) {
 	// else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Domus Interior" ) )
 }
 
-stock IsPlayerUnderCover( playerid ) {
-	if ( ( p_AccountID[ playerid ] == 577142 || p_AccountID[ playerid ] == 536230 || p_AccountID[ playerid ] == 668504 ) && p_PlayerLogged{ playerid } ) // StefiTV852, Shepard23, JamesComey
-		return 1;
-
-	if ( strmatch( ReturnPlayerName( playerid ), "Bonbo" ) )
-		return 1;
-
-	return 0;
+stock IsPlayerUnderCover( playerid ) { // StefiTV852, Shepard23, JamesComey
+	return ( p_AccountID[ playerid ] == 577142 || p_AccountID[ playerid ] == 536230 || p_AccountID[ playerid ] == 668504 ) && p_PlayerLogged{ playerid };
 }
 
 stock ShowPlayerSpawnMenu( playerid ) {
@@ -38019,6 +37961,8 @@ stock GetPlayerVIPDuration( playerid ) return p_VIPExpiretime[ playerid ] - g_iT
 
 stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
 
+stock IsPlayerMovieMode( playerid ) return p_inMovieMode{ playerid };
+
 stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 
 stock GetPlayerGang( playerid ) return p_GangID[ playerid ];
@@ -38031,10 +37975,16 @@ stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 
 
 stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 
+stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
+
 stock IsPlayerEmailVerified( playerid ) return p_accountSecurityData[ playerid ] [ E_ID ];
+
+stock IsPlayerAFK( playerid ) return ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 2595 );
 
 stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
 }
 
 stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ] && ! p_pausedToLoad{ playerid };
+
+stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };

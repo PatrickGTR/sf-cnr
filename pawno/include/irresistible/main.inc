@@ -45,6 +45,7 @@
 #include < irresistible\features\gangs\gangs >
 #include < irresistible\features\gangs\facilities >
 #include < irresistible\features\gangs\turfs >
+#include < irresistible\features\gangs\cannon >
 
 // visage casino
 #include < irresistible\features\visage\roulette >

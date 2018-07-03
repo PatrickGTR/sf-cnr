@@ -29,7 +29,7 @@ new
 	g_AmmunitionCategory[ ] [ ] =
 	{
 		{ "Assault" },  { "Melee" }, { "Submachine Guns" }, { "Pistols" },
-		{ "Rifles" }, { "Shotguns" }, { "Thrown" }, { "Armor" }
+		{ "Rifles" }, { "Shotguns" }, { "Thrown" }, { "Special" }
 	},
 	g_AmmunationWeapons[ ][ E_WEAPONS_DATA ] =
 	{
@@ -67,25 +67,25 @@ new
 		{ MENU_THROWN, 		"Grenade",			16,		1,		1200 },
 		{ MENU_THROWN, 		"Molotov Cocktail",	18,		4,		1400 },
 
-		{ MENU_ARMOR, 		"Armor", 			101, 	100, 	12500 }
+		{ MENU_ARMOR, 		"Armor", 			101, 	100, 	12500 },
+		{ MENU_ARMOR, 		"RPG",				35,		1,		10000 }
 	},
  	p_AmmunationMenu               [ MAX_PLAYERS char ]
 ;
 
 /* ** Functions ** */
-stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU_BUY, Float: custom_multplier = 1.0, bool: unlimited_ammo = false )
+stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Nation", custom_dialogid = DIALOG_AMMU_BUY, Float: custom_multplier = 1.0, ammo_multiplier = 1 )
 {
 	new
 		szString[ 420 ];
 
 	if ( listitem == MENU_ARMOR ) szString = ""COL_WHITE"Item\t"COL_WHITE"Price\n";
-	else if ( unlimited_ammo ) szString = ""COL_WHITE"Weapon\t"COL_WHITE"Price\n";
 	else szString = ""COL_WHITE"Weapon\t"COL_WHITE"Ammo\t"COL_WHITE"Price\n";
 
 	for( new i; i < sizeof( g_AmmunationWeapons ); i++ ) if ( g_AmmunationWeapons[ i ] [ E_MENU ] == listitem )
 	{
-	   	if ( ! unlimited_ammo && listitem != MENU_ARMOR ) { // Other multipliers will not specify ammo
-	   		format( szString, sizeof( szString ), "%s%s\t%d\t", szString, g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
+	   	if ( listitem != MENU_ARMOR ) { // Other multipliers will not specify ammo
+	   		format( szString, sizeof( szString ), "%s%s\t%d\t", szString, g_AmmunationWeapons[ i ] [ E_NAME ], listitem == MENU_MELEE ? 1 : ( g_AmmunationWeapons[ i ] [ E_AMMO ] * ammo_multiplier ) );
 		} else {
 			format( szString, sizeof( szString ), "%s%s\t", szString, g_AmmunationWeapons[ i ] [ E_NAME ] );
 		}
