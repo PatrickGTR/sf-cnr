@@ -85,22 +85,24 @@ hook OnPlayerConnect( playerid )
 
 hook OnPlayerSpawn( playerid )
 {
-	// General
-	p_acSpawned{ playerid } = true;
-
 	// Weapon Hack
-	for ( new i = 0; i < 3; i++ )
-	{
+	for ( new i = 0; i < 3; i++ ) {
 		new
 			weaponid = mAvailableSpawns[ p_SelectedClassID[ playerid ] ] [ E_WEAPONS ] [ i ];
 
-		if( weaponid != -1 && weaponid < AC_MAX_WEAPONS )
+		if( weaponid != -1 && weaponid < AC_MAX_WEAPONS ) {
 			p_PlayerHasWeapon[ playerid ] { weaponid } = true;
+		}
 	}
+
+	p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
 
 	// Airbrake
     p_abDetected{ playerid } = 0;
     p_abLastTick[ playerid ] = GetTickCount( ) + 3000;
+
+	// General
+	p_acSpawned{ playerid } = true;
 	return 1;
 }
 

@@ -28,11 +28,6 @@
 #include 							< anticheat\global >
 #include 							< anticheat\player >
 
-// Player Variables
-
-static p_PlayerWeaponUpdateTime[ MAX_PLAYERS ];
-static p_CurrentArmedWeapon[ MAX_PLAYERS char ];
-
 // Function Hook (GivePlayerWeapon)
 
 stock AC_GivePlayerWeapon( playerid, weaponid, ammo )

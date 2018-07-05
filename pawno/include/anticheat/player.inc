@@ -52,6 +52,8 @@ new
 	bool: p_PlayerHasWeapon 		[ MAX_PLAYERS ] [ AC_MAX_WEAPONS char ],
 	//p_PlayerWeaponUpdateTime 		[ MAX_PLAYERS ],
 	p_SelectedClassID 				[ MAX_PLAYERS ],
+	p_PlayerWeaponUpdateTime 		[ MAX_PLAYERS ],
+	p_CurrentArmedWeapon 			[ MAX_PLAYERS char ],
 
 	// Spectating
 	//bool: p_SpectatePermission 		[ MAX_PLAYERS char ],
