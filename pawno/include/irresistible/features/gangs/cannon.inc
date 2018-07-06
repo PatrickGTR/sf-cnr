@@ -84,6 +84,16 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath(playerid, killerid, reason)
+#endif
+{
+	ClosePlayerOrbitalCannon( playerid );
+	return 1;
+}
+
 /* ** Callbacks ** */
 function OnPlayerOrbitalCannonUpdate( facilityid, playerid )
 {
@@ -99,9 +109,11 @@ function OnPlayerOrbitalCannonUpdate( facilityid, playerid )
 	MapAndreas_FindZ_For2DCoord( current_pos[ 0 ], current_pos[ 1 ], current_pos[ 2 ] );
 
 	// close
-	if ( ( keys & KEY_CROUCH ) || IsPlayerJailed( playerid ) || IsPlayerAFK( playerid ) )
+	if ( ( keys & KEY_CROUCH ) || IsPlayerJailed( playerid ) || IsPlayerAFK( playerid ) || ( GetPlayerCash( playerid ) < 250000 && ! g_orbitalCannonData[ facilityid ] [ E_COOL_DOWN ] ) )
 	{
 		SetPVarInt( playerid, "left_cannon", facilityid );
+		HidePlayerHelpDialog( playerid );
+		if ( IsPlayerMovieMode( playerid ) ) cmd_moviemode( playerid, "" );
 		ClosePlayerOrbitalCannon( playerid );
 		return TogglePlayerSpectating( playerid, 0 );
 	}
@@ -109,13 +121,6 @@ function OnPlayerOrbitalCannonUpdate( facilityid, playerid )
     // fire ammo
     if ( ( keys & KEY_SPRINT ) && ! g_orbitalCannonData[ facilityid ] [ E_COOL_DOWN ] )
     {
-    	if ( GetPlayerCash( playerid ) < 250000 ) {
-			SetPVarInt( playerid, "left_cannon", facilityid );
-			ClosePlayerOrbitalCannon( playerid );
-			TogglePlayerSpectating( playerid, 0 );
-    		return SendError( playerid, "You need $250,000 to fire an orbital cannon." );
-    	}
-
     	// add tick (ms) for countdown
     	g_orbitalCannonData[ facilityid ] [ E_FIRE_TICK ] += ORBITAL_CANNON_TICK;
 
@@ -339,8 +344,6 @@ stock ClosePlayerOrbitalCannon( playerid ) {
 	// remove user
 	p_usingOrbitalCannon[ playerid ] = -1;
 	TextDrawHideForPlayer( playerid, g_orbitalAimTD );
-	HidePlayerHelpDialog( playerid );
-	if ( IsPlayerMovieMode( playerid ) ) cmd_moviemode( playerid, "" );
 
 	// reset facility portion
 	if ( 0 <= facilityid < sizeof( g_orbitalCannonData ) )

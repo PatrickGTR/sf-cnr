@@ -158,6 +158,9 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 				if ( GetPlayerCash( playerid ) < 250000 )
 					return SendError( playerid, "You need at least $250,000 available to begin operating the orbital cannon." );
 
+				if ( GetPlayerClass( playerid ) != CLASS_CIVILIAN )
+					return SendError( playerid, "You must be a civilian to use this feature." );
+
 				if ( StartPlayerOrbitalCannon( playerid, facility ) )
 				{
 					return SendServerMessage( playerid, "You are now operating this facility's orbital cannon." );
