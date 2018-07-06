@@ -15,7 +15,7 @@
 #pragma compat 1
 //#pragma option -d3
 #pragma dynamic 7200000
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -801,6 +801,7 @@ enum E_GATE_DATA
 	E_OBJECT,			E_PASS[ 8 ], 			Float: E_SPEED,
 	Float: E_RANGE,		E_MODEL, 				bool: E_MOVING,
 	E_OWNER,			E_NAME[ 24 ],			E_TIME,
+	E_GANG_SQL_ID,
 
 	Float: E_X,			Float: E_Y,				Float: E_Z,
 	Float: E_RX,		Float: E_RY,			Float: E_RZ,
@@ -2882,7 +2883,6 @@ new
     bool: p_PlayerLogged    		[ MAX_PLAYERS char ],
     p_AccountID						[ MAX_PLAYERS ],
     p_AdminLevel       				[ MAX_PLAYERS ],
-    p_Class 						[ MAX_PLAYERS ],
     p_Job               			[ MAX_PLAYERS char ],
     p_VIPJob               			[ MAX_PLAYERS char ],
     bool: p_JobSet            		[ MAX_PLAYERS char ],
@@ -3113,7 +3113,9 @@ new
 	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
 	p_SpawningKey 					[ MAX_PLAYERS ] [ 4 ],
 	p_SpawningIndex 				[ MAX_PLAYERS ],
-	p_TazingImmunity 				[ MAX_PLAYERS ]
+	p_TazingImmunity 				[ MAX_PLAYERS ],
+	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
+	p_PlayerAltBindTick 			[ MAX_PLAYERS ]
 ;
 
 /* ** Server Data ** */
@@ -3205,7 +3207,7 @@ public OnGameModeInit()
 {
 	SetGameModeText( "Cops And Robbers / DM / Gangs" );
 	SetServerRule( "hostname", SERVER_NAME );
-	SetServerRule( "language", "All (English)" );
+	SetServerRule( "language", "English" );
 	UsePlayerPedAnims( );
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
@@ -5433,9 +5435,15 @@ public ZoneTimer( )
 				new
 					profit = 0;
 
-				foreach( new zoneid : turfs ) if ( g_gangTurfData[ zoneid ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == g ) {
+				foreach( new zoneid : turfs ) if ( g_gangTurfData[ zoneid ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == g )
+				{
+					// facilities will not pay out respect
+					if ( g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] == INVALID_GANG_ID ) {
+						g_gangData[ g ] [ E_RESPECT ] ++;
+					}
+
+					// accumulate profit
 					profit += Turf_GetProfitability( zoneid, online_members - afk_members );
-					g_gangData[ g ] [ E_RESPECT ] ++; // pay the gang respect each 24 hours
 				}
 
 				g_gangData[ g ] [ E_BANK ] += profit;
@@ -6313,6 +6321,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_ViewingGangTalk[ playerid ] = -1;
 	p_forcedAnticheat[ playerid ] = 0;
 	p_StartedLumberjack{ playerid } = false;
+	p_PlayerAltBind[ playerid ] = -1;
 	p_RconLoginFails{ playerid } = 0;
 	p_SpawningKey[ playerid ] [ 0 ] = '\0';
 	p_SpawningIndex[ playerid ] = 0;
@@ -7012,6 +7021,18 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( IsPlayerJailed( playerid ) || IsPlayerJailed( issuerid ) )
 		return 0;
 
+	// alert admins
+	new
+		attack_difference = GetTickCount( ) - p_PlayerAltBindTick[ playerid ];
+
+	if ( attack_difference < 1000 )
+	{
+		foreach ( new i : Player ) if ( p_Spectating{ i } && p_PlayerAltBind[ i ] == playerid && p_whomSpectating[ i ] == issuerid ) {
+			SendClientMessageFormatted( i, COLOR_RED, "%s damaged %s within %d ms of moving", ReturnPlayerName( issuerid ), ReturnPlayerName( playerid ), attack_difference );
+		}
+	}
+
+	// RDM with Knife
 	if ( weaponid == WEAPON_KNIFE && amount > 256.0 && IsRandomDeathmatch( issuerid, playerid ) )
 	{
 		new
@@ -8637,6 +8658,22 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 	return 1;
 }
 
+CMD:altbind( playerid, params[ ] )
+{
+	new
+		targetid;
+
+	if ( p_AccountID[ playerid ] != 25834 && p_AccountID[ playerid ] != 1 && p_AccountID[ playerid ] != 536230 ) return 0;
+	else if ( sscanf( params, "u", targetid ) ) return SendUsage( playerid, "/altbind [PLAYER_ID]" );
+	else if ( ! IsPlayerConnected( targetid ) ) return SendError( playerid, "Invalid Player ID." );
+	else
+	{
+		p_PlayerAltBind[ playerid ] = targetid;
+		SendServerMessage( playerid, "Alt binded to %s(%d)", ReturnPlayerName( targetid ), targetid );
+	}
+	return 1;
+}
+
 CMD:spawn( playerid, params[ ] ) {
 	return ShowPlayerSpawnMenu( playerid );
 }
@@ -9872,8 +9909,8 @@ CMD:gate( playerid, params[ ] )
 		if ( g_gateData[ gID ] [ E_OWNER ] != p_AccountID[ playerid ] )
 			return SendError( playerid, "You need to be the owner of this gate to edit it." );
 
-		format( szNormalString, sizeof( szNormalString ), "Name\t\t\t\t"COL_GREY"%s"COL_WHITE"\nPassword\t\t\t"COL_GREY"%s"COL_WHITE"", g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ] );
-		ShowPlayerDialog( playerid, DIALOG_GATE_OWNER, DIALOG_STYLE_LIST, "{FFFFFF}Edit Gate", szNormalString, "Select", "Cancel" );
+		format( szNormalString, sizeof( szNormalString ), ""COL_WHITE"Gate Label\t"COL_GREY"%s\n"COL_WHITE"Gate Password\t"COL_GREY"%s\n"COL_WHITE"Gate Gang ID\t"COL_GREY"%d", g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ], g_gateData[ gID ] [ E_GANG_SQL_ID ] );
+		ShowPlayerDialog( playerid, DIALOG_GATE_OWNER, DIALOG_STYLE_TABLIST, "{FFFFFF}Edit Gate", szNormalString, "Select", "Cancel" );
 
 		SetPVarInt( playerid, "gate_o_editing", gID );
 		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GATE]"COL_WHITE" You're now editing "COL_GREY"%s"COL_WHITE".", g_gateData[ gID ] [ E_NAME ] );
@@ -9899,17 +9936,9 @@ CMD:gate( playerid, params[ ] )
 			if ( strcmp( szPassword, g_gateData[ g ] [ E_PASS ], false ) )
 				continue; // return SendError( playerid, "Incorrect password. Please try again." );
 
-			if ( g_gateData[ g ] [ E_CLOSE_TIMER ] != -1 )
-				continue; // return SendError( playerid, "This gate is currently in operation. Please wait." );
-
-			if ( !strmatch( g_gateData[ g ] [ E_NAME ], "N/A" ) )
-				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GATE]"COL_WHITE" You've opened "COL_GREY"%s"COL_WHITE".", g_gateData[ g ] [ E_NAME ] );
-
-			new
-				travelInterval = MoveDynamicObject( g_gateData[ g ] [ E_OBJECT ], g_gateData[ g ] [ E_MOVE_X ], g_gateData[ g ] [ E_MOVE_Y ], g_gateData[ g ] [ E_MOVE_Z ], g_gateData[ g ] [ E_SPEED ], g_gateData[ g ] [ E_MOVE_RX ], g_gateData[ g ] [ E_MOVE_RY ], g_gateData[ g ] [ E_MOVE_RZ ] );
-
-			g_gateData[ g ] [ E_CLOSE_TIMER ] = SetTimerEx( "StartGateClose", travelInterval + g_gateData[ g ] [ E_TIME ], false, "d", g );
-			gates++;
+			if ( OpenPlayerGate( playerid, g ) ) {
+				gates ++;
+			}
 		}
 		return !gates ? SendError( playerid, "Either a gate is in operation, not in range or simply incorrect password." ) : 1;
 	}
@@ -11722,7 +11751,7 @@ CMD:emp( playerid, params[ ] )
 	{
 	    /* ** ANTI EMP SPAM ** */
 	    if ( p_AntiEmpSpam[ pID ] > g_iTime )
-	    	return SendError( playerid, "You cannot EMP this person for another minute." );
+	    	return SendError( playerid, "You cannot EMP this person for %s.", secondstotime( p_AntiEmpSpam[ pID ] - g_iTime ) );
 	    /* ** END OF ANTI SPAM ** */
 
 	    new
@@ -15516,7 +15545,7 @@ CMD:getip( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/getip [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	else if ( p_AdminLevel[ pID ] >= 5 || strmatch( ReturnPlayerName( pID ), "Lorenc" ) ) return SendError( playerid, "I love this person so much that I wont give you his IP :)");
+	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerLorenc( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his IP :)");
 	else
 	{
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
@@ -15531,7 +15560,7 @@ CMD:geolocate( playerid, params[ ] )
  	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/geolocate [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsProxyEnabledForPlayer( pID ) ) return SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
-	else if ( p_AdminLevel[ pID ] >= 5 || strmatch( ReturnPlayerName( pID ), "Lorenc" ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
+	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerLorenc( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
  	else
  	{
 		SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from %s (%s) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );
@@ -16585,8 +16614,8 @@ CMD:editgate( playerid, params[ ] )
 	else
 	{
 		format( szLargeString, sizeof( szLargeString ),
-			""COL_RED"Remove This Gate?\t \nOwner ID\t"COL_GREY"%d\nName\t"COL_GREY"%s\nPassword\t"COL_GREY"%s\nModel\t"COL_GREY"%d\nSpeed\t"COL_GREY"%f\nRange\t"COL_GREY"%f\nPause\t"COL_GREY"%d MS\nChange Closed Positioning\t \nChange Opened Positioning\t ",
-			g_gateData[ gID ] [ E_OWNER ], g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ], g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_SPEED ], g_gateData[ gID ] [ E_RANGE ], g_gateData[ gID ] [ E_TIME ]
+			""COL_RED"Remove This Gate?\t \nOwner ID\t"COL_GREY"%d\nName\t"COL_GREY"%s\nPassword\t"COL_GREY"%s\nModel\t"COL_GREY"%d\nSpeed\t"COL_GREY"%f\nRange\t"COL_GREY"%f\nPause\t"COL_GREY"%d MS\nGang ID\t%d\nChange Closed Positioning\t \nChange Opened Positioning\t ",
+			g_gateData[ gID ] [ E_OWNER ], g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ], g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_SPEED ], g_gateData[ gID ] [ E_RANGE ], g_gateData[ gID ] [ E_TIME ], g_gateData[ gID ] [ E_GANG_SQL_ID ]
 		);
 
 		SetPVarInt( playerid, "gate_editing", gID );
@@ -20490,6 +20519,35 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
  	// Spectation
 	if ( p_Spectating{ playerid } == true )
 	{
+		if ( PRESSED( KEY_WALK ) )
+		{
+			new spectatingid = p_whomSpectating[ playerid ];
+			new targetid = p_PlayerAltBind[ playerid ];
+
+			if ( targetid != -1 )
+			{
+				static
+					Float: sX, Float: sY, Float: sZ;
+
+				GetPlayerPos( spectatingid, sX, sY, sZ );
+				GetPlayerPos( targetid, X, Y, Z );
+
+				Angle = atan2( sY - Y, sX - X ) - 90.0;
+
+				if ( Angle == -90.0 ) {
+					SendError( playerid, "You have not set the aiming alt-binded player properly." );
+				} else {
+					SendServerMessage( playerid, "Played moved %0.2f degrees from fighting positions.", Angle );
+				}
+
+			    X += 4.0 * floatsin( Angle + 90.0, degrees );
+			    Y += 4.0 * -floatcos( Angle + 90.0, degrees );
+
+				SetPlayerPos( targetid, X, Y, Z );
+				p_PlayerAltBindTick[ targetid ] = GetTickCount( );
+			}
+		}
+
 	    if ( PRESSED( KEY_FIRE ) )
 	    {
 			for( new i = p_whomSpectating[ playerid ] + 1; i < MAX_PLAYERS; i++ )
@@ -20501,7 +20559,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				}
 			}
 	    }
-	    if ( PRESSED( KEY_AIM ) )
+	    else if ( PRESSED( KEY_AIM ) )
 	    {
 			for( new i = p_whomSpectating[ playerid ] - 1; i > -1; i-- )
 			{
@@ -21084,7 +21142,8 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	// taze mechanism
 	else if ( PRESSED( KEY_LOOK_BEHIND ) )
 	{
-		if ( p_Class[ playerid ] == CLASS_POLICE ) {
+		if ( p_Class[ playerid ] == CLASS_POLICE )
+		{
 			new
 				closestid = GetClosestPlayer( playerid );
 
@@ -21096,6 +21155,23 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				} else {
 					TicketPlayer( closestid, playerid );
 				}
+			}
+		}
+
+
+		// MMB to open gate
+		new
+			Float: gate_distance = 99999.9,
+			gate_id = getClosestGate( playerid, gate_distance )
+		;
+
+		if ( gate_id != INVALID_OBJECT_ID && gate_distance < g_gateData[ gate_id ] [ E_RANGE ] )
+		{
+			new
+				gangId = p_GangID[ playerid ];
+
+			if ( p_AdminLevel[ playerid ] >= 5 || g_gateData[ gate_id ] [ E_OWNER ] == p_AccountID[ playerid ] || ( Iter_Contains( gangs, gangId ) && g_gateData[ gate_id ] [ E_GANG_SQL_ID ] == g_gangData[ gangId ] [ E_SQL_ID ] ) ) {
+				OpenPlayerGate( playerid, gate_id );
 			}
 		}
 	}
@@ -21482,7 +21558,6 @@ thread OnPlayerLogin( playerid, password[ ] )
 				DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 0 ] ), p_HighrollersBarrier[ playerid ] [ 0 ] = -1;
 				DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
 			}
-
 
 			// Load some other variables too
 		   	p_OwnedHouses 		[ playerid ] = GetPlayerOwnedHouses( playerid );
@@ -22415,6 +22490,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( ( dialogid == DIALOG_VEHICLE_LOCATE ) && response )
 	{
+		if ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) )
+			return SendError( playerid, "You cannot use this feature inside of an interior." );
+
 	    new
 		    Float: X, Float: Y, Float: Z;
 
@@ -24923,7 +25001,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GATE]"COL_WHITE" You have removed a gate: "COL_GREY"%s"COL_WHITE".", g_gateData[ objectid ] [ E_NAME ] );
 		}
-		else if ( listitem < 8 ) ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
+		else if ( listitem < 9 ) ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
 		else
 		{
 			SendServerMessage( playerid, "Hit the save icon to update the position of the gate." );
@@ -24937,36 +25015,75 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 	if ( dialogid == DIALOG_GATE_OWNER_EDIT )
 	{
+		new
+			gID = GetPVarInt( playerid, "gate_o_editing" );
+
+		if ( ! Iter_Contains( gates, gID ) )
+			return SendError( playerid, "Invalid gate detected, please try again." );
+
+		if ( g_gateData[ gID ] [ E_OWNER ] != p_AccountID[ playerid ] )
+			return SendError( playerid, "You need to be the owner of this gate to edit it." );
+
 		if ( response )
 		{
-			new
-				gID = GetPVarInt( playerid, "gate_o_editing" );
-
 			switch( GetPVarInt( playerid, "gate_o_edititem" ) )
 			{
 				case 0:
 				{
 					if ( strlen( inputtext ) < 3 || strlen( inputtext ) >= 24 )
-						return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_RED"The name must range between 3 and 24 characters.\n\n"COL_WHITE"What would you like to change this to?", "Commit", "Back" );
+						return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"What would you like to change this to?\n\n"COL_RED"The name must range between 3 and 24 characters.", "Commit", "Back" );
 
 					format( g_gateData[ gID ] [ E_NAME ], 24, "%s", inputtext );
+					SendServerMessage( playerid, "Your gate name has been set to \"%s\".", g_gateData[ gID ] [ E_NAME ] );
+					UpdateGateData( gID, .recreate_obj = false );
 				}
 				case 1:
 				{
 					if ( strlen( inputtext ) < 3 || strlen( inputtext ) >= 8 )
-				 		return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_RED"The password must range between 3 and 8 characters.\n\n"COL_WHITE"What would you like to change this to?", "Commit", "Back" );
+				 		return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"What would you like to change this to?\n\n"COL_RED"The password must range between 3 and 8 characters.", "Commit", "Back" );
 
 					format( g_gateData[ gID ] [ E_PASS ], 8, "%s", inputtext );
+					SendServerMessage( playerid, "Your gate password has been set to \"%s\".", g_gateData[ gID ] [ E_PASS ] );
+					UpdateGateData( gID, .recreate_obj = false );
+				}
+				case 2:
+				{
+					new
+						sql_id;
+
+					if ( sscanf( inputtext, "D(0)", sql_id ) ) {
+						return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"What would you like to change this to?\n\n"COL_RED"The Gang ID must be an integer.", "Commit", "Back" );
+					}
+
+					// check if valid gang lol
+					if ( sql_id != 0 )
+					{
+						new
+							gangId = -1;
+
+						foreach ( new g : gangs ) if ( sql_id == g_gangData[ g ] [ E_SQL_ID ] ) {
+							gangId = g;
+						}
+
+						if ( gangId == -1 ) {
+							return ShowPlayerDialog( playerid, DIALOG_GATE_OWNER_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"What would you like to change this to?\n\n"COL_RED"This gang is invalid or not currently online.", "Commit", "Back" );
+						} else {
+							SendServerMessage( playerid, "Your gate will be openable by members of \"%s\".", g_gangData[ gangId ] [ E_NAME ] );
+						}
+					} else {
+						SendServerMessage( playerid, "You have unassigned a gang from your gate." );
+					}
+
+					g_gateData[ gID ] [ E_GANG_SQL_ID ] = sql_id;
+					mysql_single_query( sprintf( "UPDATE `GATES` SET `GANG_ID`=%d WHERE `ID`=%d", sql_id, gID ) );
 				}
 			}
-			UpdateGateData( gID );
-			Streamer_Update( playerid ); // SyncObject( playerid );
-			cmd_gate( playerid, "edit" );
-			DeletePVar( playerid, "gate_o_edititem" );
-			DeletePVar( playerid, "gate_o_editing" );
-			SendServerMessage( playerid, "You have successfully updated this gate." );
 		}
-		else cmd_gate( playerid, "edit" );
+
+		// redirect
+		format( szNormalString, sizeof( szNormalString ), ""COL_WHITE"Gate Label\t"COL_GREY"%s\n"COL_WHITE"Gate Password\t"COL_GREY"%s\n"COL_WHITE"Gate Gang ID\t"COL_GREY"%d", g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ], g_gateData[ gID ] [ E_GANG_SQL_ID ] );
+		ShowPlayerDialog( playerid, DIALOG_GATE_OWNER, DIALOG_STYLE_TABLIST, "{FFFFFF}Edit Gate", szNormalString, "Select", "Cancel" );
+		return 1;
 	}
 	if ( dialogid == DIALOG_GATE_EDIT )
 	{
@@ -25046,6 +25163,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						SendError( playerid, "This value must be numerical." );
 						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
 					}
+					else if ( ! ( 1.0 <= range <= 100.0 ) && ! IsPlayerLorenc( playerid ) )
+					{
+						SendError( playerid, "Please specify a range between 1.0 and 100.0 metres." );
+						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
+					}
 					g_gateData[ gID ] [ E_RANGE ] = range;
 				}
 				case 7:
@@ -25065,9 +25187,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					g_gateData[ gID ] [ E_TIME ] = time;
 				}
+				case 8:
+				{
+					new
+						sql_id;
+
+					if ( sscanf( inputtext, "d", sql_id ) )
+					{
+						SendError( playerid, "This value must be numerical." );
+						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
+					}
+					else if ( ! ( 0 <= sql_id < 1000000 ) )
+					{
+						SendError( playerid, "Invalid Gang ID specified." );
+						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
+					}
+					g_gateData[ gID ] [ E_GANG_SQL_ID ] = sql_id;
+					mysql_single_query( sprintf( "UPDATE `GATES` SET `GANG_ID`=%d WHERE `ID`=%d", sql_id, gID ) );
+				}
 			}
 			UpdateGateData( gID );
-			Streamer_Update( playerid ); // SyncObject( playerid );
+			Streamer_Update( playerid );
 			cmd_editgate( playerid, sprintf( "%d", gID ) );
 			SendServerMessage( playerid, "You have successfully updated this gate." );
 		}
@@ -26273,16 +26413,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	{
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot travel while you're in jail." );
 		if ( p_WantedLevel[ playerid ] ) return SendError( playerid, "You cannot travel while you are wanted." );
+		if ( GetPlayerCash( playerid ) < 2000 ) return SendError( playerid, "You need $2,000 to travel between cities." );
 
-		new bool: using_rewards = false;
-
-		// check for rewards
-		if ( p_CasinoRewardsPoints[ playerid ] > 5.0 ) {
-			using_rewards = true, p_CasinoRewardsPoints[ playerid ] -= 5.0;
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS`=%f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
-		}
-		else if ( GetPlayerCash( playerid ) > 2000 ) GivePlayerCash( playerid, -2000 );
-		else return SendError( playerid, "You need $2,000 to travel between cities." );
+		new bool: using_rewards = p_CasinoRewardsPoints[ playerid ] > 5.0;
 
 		// set position
 		switch ( listitem )
@@ -26303,6 +26436,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetPlayerPos( playerid, 1642.2274, -2335.4978, 13.5469 );
 			}
 		}
+
+		// check for rewards
+		if ( using_rewards ) {
+			p_CasinoRewardsPoints[ playerid ] -= 5.0;
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS`=%f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
+		}
+		else GivePlayerCash( playerid, -2000 );
 
 		// set interior/world
 		SetPlayerVirtualWorld( playerid, 0 );
@@ -27905,6 +28045,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 		}
 		else GetDynamicObjectPos( g_C4Data[ playerid ] [ i ] [ E_OBJECT ], X, Y, Z );
 
+		// blow up alcatraz rock
 		if ( IsPointToPoint( 10.0, X, Y, Z, -2016.7365, 1826.2612, 43.1458 ) )
 		{
 			if ( g_iTime > g_alcatrazTimestamp )
@@ -27920,6 +28061,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 			}
 		}
 
+		// blow up various vaults
 		for( new j = 0; j < sizeof( g_bankvaultData ); j++ )
 		{
 			// Blow Bank Vault
@@ -27968,6 +28110,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 			}
 		}
 
+		// prevent spamming wanted for farming
 		if ( GetPVarInt( playerid, "C4WantedCD" ) < g_iTime && p_Class[ playerid ] != CLASS_POLICE ) {
 			GivePlayerWantedLevel( playerid, 6 );
 			SetPVarInt( playerid, "C4WantedCD", g_iTime + 30 );
@@ -32003,7 +32146,6 @@ thread OnGatesLoad( )
 {
 	new
 		rows, fields, i = -1, gID,
-		Field[ 20 ],
 	    loadingTick = GetTickCount( )
 	;
 
@@ -32012,26 +32154,29 @@ thread OnGatesLoad( )
 	{
 		while( ++i < rows )
 		{
-			cache_get_field_content( i, "ID", Field ),			gID = strval( Field );
+			gID = cache_get_field_content_int( i, "ID", dbHandle );
+
 			cache_get_field_content( i, "PASSWORD", 			g_gateData[ gID ] [ E_PASS ], dbHandle, 8 );
 			cache_get_field_content( i, "NAME", 				g_gateData[ gID ] [ E_NAME ], dbHandle, 24 );
-			cache_get_field_content( i, "OWNER", Field ),     	g_gateData[ gID ] [ E_OWNER ] = strval( Field );
-			cache_get_field_content( i, "MODEL", Field ),     	g_gateData[ gID ] [ E_MODEL ] = strval( Field );
-			cache_get_field_content( i, "TIME", Field ),     	g_gateData[ gID ] [ E_TIME ] = strval( Field );
-			cache_get_field_content( i, "SPEED", Field ),     	g_gateData[ gID ] [ E_SPEED ] = floatstr( Field );
-			cache_get_field_content( i, "RANGE", Field ),     	g_gateData[ gID ] [ E_RANGE ] = floatstr( Field );
-			cache_get_field_content( i, "X", Field ),         	g_gateData[ gID ] [ E_X ] = floatstr( Field );
-			cache_get_field_content( i, "Y", Field ),         	g_gateData[ gID ] [ E_Y ] = floatstr( Field );
-			cache_get_field_content( i, "Z", Field ),         	g_gateData[ gID ] [ E_Z ] = floatstr( Field );
-			cache_get_field_content( i, "RX", Field ),         	g_gateData[ gID ] [ E_RX ] = floatstr( Field );
-			cache_get_field_content( i, "RY", Field ),         	g_gateData[ gID ] [ E_RY ] = floatstr( Field );
-			cache_get_field_content( i, "RZ", Field ),         	g_gateData[ gID ] [ E_RZ ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_X", Field ),     	g_gateData[ gID ] [ E_MOVE_X ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_Y", Field ),   	g_gateData[ gID ] [ E_MOVE_Y ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_Z", Field ),    	g_gateData[ gID ] [ E_MOVE_Z ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_RX", Field ),   	g_gateData[ gID ] [ E_MOVE_RX ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_RY", Field ),    	g_gateData[ gID ] [ E_MOVE_RY ] = floatstr( Field );
-			cache_get_field_content( i, "MOVE_RZ", Field ),  	g_gateData[ gID ] [ E_MOVE_RZ ] = floatstr( Field );
+
+			g_gateData[ gID ] [ E_OWNER ] = cache_get_field_content_int( i, "OWNER", dbHandle );
+			g_gateData[ gID ] [ E_MODEL ] = cache_get_field_content_int( i, "MODEL", dbHandle );
+			g_gateData[ gID ] [ E_TIME ] = cache_get_field_content_int( i, "TIME", dbHandle );
+			g_gateData[ gID ] [ E_SPEED ] = cache_get_field_content_float( i, "SPEED", dbHandle );
+			g_gateData[ gID ] [ E_RANGE ] = cache_get_field_content_float( i, "RANGE", dbHandle );
+			g_gateData[ gID ] [ E_X ] = cache_get_field_content_float( i, "X", dbHandle );
+			g_gateData[ gID ] [ E_Y ] = cache_get_field_content_float( i, "Y", dbHandle );
+			g_gateData[ gID ] [ E_Z ] = cache_get_field_content_float( i, "Z", dbHandle );
+			g_gateData[ gID ] [ E_RX ] = cache_get_field_content_float( i, "RX", dbHandle );
+			g_gateData[ gID ] [ E_RY ] = cache_get_field_content_float( i, "RY", dbHandle );
+			g_gateData[ gID ] [ E_RZ ] = cache_get_field_content_float( i, "RZ", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_X ] = cache_get_field_content_float( i, "MOVE_X", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_Y ] = cache_get_field_content_float( i, "MOVE_Y", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_Z ] = cache_get_field_content_float( i, "MOVE_Z", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_RX ] = cache_get_field_content_float( i, "MOVE_RX", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_RY ] = cache_get_field_content_float( i, "MOVE_RY", dbHandle );
+			g_gateData[ gID ] [ E_MOVE_RZ ] = cache_get_field_content_float( i, "MOVE_RZ", dbHandle );
+			g_gateData[ gID ] [ E_GANG_SQL_ID ] = cache_get_field_content_int( i, "GANG_ID", dbHandle );
 
 			g_gateData[ gID ] [ E_CLOSE_TIMER ] = -1;
 			g_gateData[ gID ] [ E_OBJECT ] = CreateDynamicObject( g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
@@ -32071,6 +32216,7 @@ stock CreateGate( playerid, password[ 8 ], model, Float: speed, Float: range, Fl
 		g_gateData[ gID ] [ E_MOVE_RX ] = rx;
 		g_gateData[ gID ] [ E_MOVE_RY ] = ry;
 		g_gateData[ gID ] [ E_MOVE_RZ ] = rz;
+		g_gateData[ gID ] [ E_GANG_SQL_ID ] = 0;
 
 		format( szBigString, sizeof( szBigString ), "INSERT INTO `GATES` VALUES(%d,%d,'%s','Gate',%d,2000,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f)", gID, playerid, mysql_escape( password ), model, speed, range, x, y, z, rx, ry, rz, x, y, z, rx, ry, rz );
 		mysql_single_query( szBigString );
@@ -32098,7 +32244,7 @@ stock getClosestGate( playerid, &Float: dis = 99999.99 )
 	return object;
 }
 
-stock UpdateGateData( gID )
+stock UpdateGateData( gID, bool: recreate_obj = true )
 {
 	if ( Iter_Contains( gates, gID ) )
 	{
@@ -32110,10 +32256,30 @@ stock UpdateGateData( gID )
 
 		mysql_single_query( szLargeString );
 
-		DestroyDynamicObject( g_gateData[ gID ] [ E_OBJECT ] );
-		g_gateData[ gID ] [ E_OBJECT ] = CreateDynamicObject( g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
+		if ( recreate_obj ) {
+			DestroyDynamicObject( g_gateData[ gID ] [ E_OBJECT ] );
+			g_gateData[ gID ] [ E_OBJECT ] = CreateDynamicObject( g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
+		}
 	}
 }
+
+stock OpenPlayerGate( forplayerid, g )
+{
+	if ( g_gateData[ g ] [ E_CLOSE_TIMER ] != -1 ) {
+		return 0;
+	}
+
+	if ( forplayerid != INVALID_PLAYER_ID && !strmatch( g_gateData[ g ] [ E_NAME ], "N/A" ) ) {
+		SendClientMessageFormatted( forplayerid, -1, ""COL_GREY"[GATE]"COL_WHITE" You've opened "COL_GREY"%s"COL_WHITE".", g_gateData[ g ] [ E_NAME ] );
+	}
+
+	new
+		travelInterval = MoveDynamicObject( g_gateData[ g ] [ E_OBJECT ], g_gateData[ g ] [ E_MOVE_X ], g_gateData[ g ] [ E_MOVE_Y ], g_gateData[ g ] [ E_MOVE_Z ], g_gateData[ g ] [ E_SPEED ], g_gateData[ g ] [ E_MOVE_RX ], g_gateData[ g ] [ E_MOVE_RY ], g_gateData[ g ] [ E_MOVE_RZ ] );
+
+	g_gateData[ g ] [ E_CLOSE_TIMER ] = SetTimerEx( "StartGateClose", travelInterval + g_gateData[ g ] [ E_TIME ], false, "d", g );
+	return 1;
+}
+
 
 function StartGateClose( gID ) {
 	g_gateData[ gID ] [ E_CLOSE_TIMER ] = -1;
@@ -33444,33 +33610,16 @@ stock showToyEditMenu( playerid, slot )
 
 stock reloadPlayerToys( playerid )
 {
-	// Loop is more slower than this!
-	if ( p_AttachedObjectsData[ playerid ] [ 0 ] [ E_ENABLED ] ) {
-		RemovePlayerAttachedObject( playerid, 7 );
-		SetPlayerAttachedObject( playerid, 7, p_AttachedObjectsData[ playerid ] [ 0 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_BONE ],
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_OZ ],
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_SZ ],
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 0 ] [ E_COLOR ]
-		);
-	}
-	if ( p_AttachedObjectsData[ playerid ] [ 1 ] [ E_ENABLED ] ) {
-		RemovePlayerAttachedObject( playerid, 8 );
-		SetPlayerAttachedObject( playerid, 8, p_AttachedObjectsData[ playerid ] [ 1 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_BONE ],
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_OZ ],
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_SZ ],
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 1 ] [ E_COLOR ]
-		);
-	}
-	if ( p_AttachedObjectsData[ playerid ] [ 2 ] [ E_ENABLED ] ) {
-		RemovePlayerAttachedObject( playerid, 9 );
-		SetPlayerAttachedObject( playerid, 9, p_AttachedObjectsData[ playerid ] [ 2 ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_BONE ],
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_OZ ],
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_SZ ],
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ 2 ] [ E_COLOR ]
-		);
+	for ( new i = 0; i < sizeof ( p_AttachedObjectsData[ ] ); i ++ ) {
+		if ( p_AttachedObjectsData[ playerid ] [ i ] [ E_ENABLED ] ) {
+			RemovePlayerAttachedObject( playerid, 7 + i );
+			SetPlayerAttachedObject( playerid, 7 + i, p_AttachedObjectsData[ playerid ] [ i ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ i ] [ E_BONE ],
+				p_AttachedObjectsData[ playerid ] [ i ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_OZ ],
+				p_AttachedObjectsData[ playerid ] [ i ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_RZ ],
+				p_AttachedObjectsData[ playerid ] [ i ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_SZ ],
+				p_AttachedObjectsData[ playerid ] [ i ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ i ] [ E_COLOR ]
+			);
+		}
 	}
 	return 1;
 }
@@ -37917,14 +38066,14 @@ stock BreakPlayerCuffs( playerid )
 
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) > 25 ) {
+		if ( random( 101 ) > 30 ) {
 			success = true;
 			break;
 		}
 	}
 
 	if ( ( p_BobbyPins[ playerid ] -= attempts ) > 0 ) {
-		ShowPlayerHelpDialog( playerid, 4500, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
+		ShowPlayerHelpDialog( playerid, 5000, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
 	}
 
 	if ( success ) {
@@ -37968,8 +38117,6 @@ stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 stock GetPlayerGang( playerid ) return p_GangID[ playerid ];
 
 stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
-
-stock GetPlayerClass( playerid ) return p_Class[ playerid ];
 
 stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
 
