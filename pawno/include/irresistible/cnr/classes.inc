@@ -8,6 +8,9 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Functions ** */
+#define GetPlayerClass(%0)			(p_Class[%0])
+
 /* ** Definitions ** */
 #define CLASS_CIVILIAN              ( 0 )
 #define CLASS_POLICE              	( 1 )
@@ -26,6 +29,4 @@ stock CLASS_FIRE_RANGE 				[ 2 ];
 stock CLASS_MEDIC_RANGE 			[ 2 ];
 stock CLASS_ARMY_RANGE;
 
-/* ** Hooks ** */
-
-/* ** Functions ** */
+new p_Class 						[ MAX_PLAYERS ];
