@@ -190,76 +190,14 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer( playerid, 3059, 2521.5229, -1272.8842, 34.893, 50.0 ); // Niels LS
 	RemoveBuildingForPlayer(playerid, 3876, -1748.6250, 620.5703, 103.9297, 0.25); // Robox
 	RemoveBuildingForPlayer(playerid, 3876, -1748.6250, 627.2734, 103.9297, 0.25); // Robox
-	RemoveBuildingForPlayer(playerid, 705, -2588.2656, -55.7344, 3.7109, 0.25); // JOJO [BB] HQ START
-	RemoveBuildingForPlayer(playerid, 708, -2556.5078, 20.4297, 11.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 708, -2588.1719, 19.8359, 3.5625, 0.25);
-	RemoveBuildingForPlayer(playerid, 705, -2570.1172, -54.8984, 7.1328, 0.25);
-	RemoveBuildingForPlayer(playerid, 705, -2573.2813, 18.2656, 5.1875, 0.25);
-	RemoveBuildingForPlayer(playerid, 10557, -2573.1797, -15.4219, 9.5391, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2586.0313, -2.6953, 3.6250, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2586.0313, -11.0234, 3.6250, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2585.9766, -19.3438, 3.6172, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2586.0313, -27.6719, 3.6250, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2585.6406, 1.7656, 3.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2585.6406, -6.9141, 3.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2585.6406, -15.3516, 3.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2585.6406, -23.7734, 3.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2585.6406, -32.8281, 3.3125, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2580.8906, -43.8125, 7.1172, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2579.7500, -26.7344, 7.5781, 0.25);
-	RemoveBuildingForPlayer(playerid, 669, -2581.2969, 20.9453, 4.1250, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2580.8906, 12.3203, 7.1172, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2579.7500, -4.9766, 7.5781, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2575.4219, -27.5547, 7.4219, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2575.3672, -19.2344, 7.4141, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2575.1250, -23.7734, 7.0781, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2575.1250, -32.8281, 7.0781, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2576.0938, -43.8125, 9.9141, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2575.4219, -10.9063, 7.4219, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2575.1250, -6.9141, 7.0781, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2575.1250, -15.3516, 7.0781, 0.25);
-	RemoveBuildingForPlayer(playerid, 10442, -2573.1797, -15.4219, 11.1172, 0.25);
-	RemoveBuildingForPlayer(playerid, 10443, -2573.1797, -15.4219, 9.5391, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2575.4219, -2.5859, 7.4219, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2575.1250, 1.7656, 7.0781, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2576.0938, 12.3203, 9.9141, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2570.7031, -43.7969, 10.9141, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2569.5703, -26.7344, 12.1719, 0.25);
-	RemoveBuildingForPlayer(playerid, 669, -2563.1406, -52.5313, 11.4453, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2564.0234, -27.1719, 12.0078, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2561.9297, -15.3516, 11.6953, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2561.9297, -23.7734, 11.6953, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2561.9297, -32.8281, 11.6953, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2564.7031, -43.7969, 14.5078, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2553.9375, -43.8516, 18.5000, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2553.9453, -38.0781, 18.5000, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2559.5938, -19.6719, 12.0078, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2554.4531, -26.7422, 12.1719, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2564.0781, -10.5234, 12.0078, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2561.9297, -6.9141, 11.6953, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2561.9297, 1.7656, 11.6953, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2569.5703, -4.9766, 12.1719, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2559.5938, -3.0234, 12.0078, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2554.4531, -4.9844, 12.1719, 0.25);
-	RemoveBuildingForPlayer(playerid, 1280, -2554.8750, 9.1797, 12.0078, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2570.7031, 12.3359, 10.9141, 0.25);
-	RemoveBuildingForPlayer(playerid, 1232, -2564.7031, 12.3359, 14.5078, 0.25);
-	RemoveBuildingForPlayer(playerid, 669, -2567.1016, 25.7578, 8.1328, 0.25);
-	RemoveBuildingForPlayer(playerid, 669, -2561.2578, 16.3516, 11.6016, 0.25);
-	RemoveBuildingForPlayer(playerid, 669, -2589.8281, -47.4531, 3.6641, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2592.0859, -26.5781, 3.8281, 0.25);
-	RemoveBuildingForPlayer(playerid, 737, -2597.7500, 14.5625, 3.4297, 0.25);
-	RemoveBuildingForPlayer(playerid, 3878, -2592.0859, -4.8203, 3.8281, 0.25); // JOJO [BB] HQ FINISH
 	RemoveBuildingForPlayer(playerid, 1412, -2491.1172, -175.3516, 25.8281, 30.0); // Garcia House Gate
 	RemoveBuildingForPlayer(playerid, 7163, 2549.3906, 2018.9844, 12.7734, 0.25); // Ahmmy LV Cafe
 	RemoveBuildingForPlayer(playerid, 6922, 2549.3906, 2018.9844, 12.7734, 0.25); // Ahmmy LV Cafe
 	RemoveBuildingForPlayer(playerid, 2779, -21.8125, -57.7656, 1002.5859, 0.25); // gas station fix
 	RemoveBuildingForPlayer(playerid, 2872, -20.5234, -57.7734, 1002.5859, 0.25); // gas station fix
 	RemoveBuildingForPlayer( playerid, 792, -2035.648681, 473.131896, 35.172294, 25.000 ); // facility trees (dope casino)
-	// RemoveBuildingForPlayer( playerid, 1227, -2751.422119, 94.378883, 7.031250, 10.000 ); // shini trash facility
 	RemoveBuildingForPlayer(playerid, 9919, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility
 	RemoveBuildingForPlayer(playerid, 9937, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility LOD ^
-
 
 	// Wolfganja (Diamond Donor)
 	RemoveBuildingForPlayer(playerid, 1280, -2911.4219, 422.3516, 4.2891, 60.0);
@@ -306,12 +244,6 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 712, 2100.8125, -1764.3750, 21.3906, 0.25);
 	RemoveBuildingForPlayer(playerid, 620, 2105.0859, -1765.6094, 10.8047, 0.25);
 	RemoveBuildingForPlayer(playerid, 1226, 2114.7188, -1785.1797, 16.3984, 0.25);
-
-	// Ahmyy HQ [DS] HQ
-	RemoveBuildingForPlayer(playerid, 10708, -2608.3125, -15.0391, 13.8203, 0.25);
-	RemoveBuildingForPlayer(playerid, 1226, -2600.3203, -20.6016, 7.2031, 0.25);
-	RemoveBuildingForPlayer(playerid, 1308, -2594.4453, -20.3750, 3.6406, 0.25);
-	RemoveBuildingForPlayer(playerid, 1308, -2594.4453, 17.8203, 3.6406, 0.25);
 
 	// Zach Warehouse
 	RemoveBuildingForPlayer(playerid, 17350, -54.9922, -1130.7266, 4.5781, 0.25);
