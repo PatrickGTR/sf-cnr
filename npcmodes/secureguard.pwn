@@ -29,7 +29,7 @@ new iIdleTS 			= 0;
 new iRestartTS 			= 0;
 
 /* ** Messages ** */
-new 
+new
 	g_LeavingMessages[ ] [ ] =
 	{
 		{ "We've secured the security truck without any conflict." },
@@ -60,13 +60,13 @@ public OnSecurityGuardUpdate( );
 
 main( ) { }
 
-public OnNPCModeInit( ) 
+public OnNPCModeInit( )
 {
 	t_NPCUpdate = SetTimer( "OnSecurityGuardUpdate", 500, true );
 	return 1;
 }
 
-public OnNPCModeExit( ) 
+public OnNPCModeExit( )
 {
 	KillTimer( t_NPCUpdate );
 	return 1;
@@ -78,7 +78,7 @@ public OnNPCDisconnect( reason[ ] )
 	return 1;
 }
 
-public OnRecordingPlaybackEnd( ) 
+public OnRecordingPlaybackEnd( )
 {
 	if( b_Idle ) {
 		// Constant idle at 2K, 2K, 2K
@@ -90,7 +90,7 @@ public OnRecordingPlaybackEnd( )
 	return 1;
 }
 
-public OnNPCSpawn( ) 
+public OnNPCSpawn( )
 {
 	GenerateNewPlayback( );
 	return 1;
@@ -108,7 +108,7 @@ public OnClientMessage( color, text[ ] )
 		if( !b_Disabled ) {
 			b_Disabled = true;
 			PauseRecordingPlayback( );
-			//SendChat( "I can't move my truck? What the hell..." );			
+			//SendChat( "I can't move my truck? What the hell..." );
 		}
 		return 1;
 	}
@@ -138,13 +138,13 @@ public OnClientMessage( color, text[ ] )
 	return 1;
 }
 
-public OnSecurityGuardUpdate( ) 
+public OnSecurityGuardUpdate( )
 {
-	new 
+	new
 		time = gettime( );
 
 	if( !( b_Disabled || b_Provoked || b_Idle ) ) {
-		new 
+		new
 			hasAnyPlayersInfront = IsAnyPlayerInfrontOfMe( )
 		;
 
@@ -155,7 +155,7 @@ public OnSecurityGuardUpdate( )
 				b_Paused = true;
 			}
 		}
-		else 
+		else
 		{
 			if( b_Paused == true ) {
 				ResumeRecordingPlayback( );
@@ -196,10 +196,10 @@ stock SetMeIdleForRestart( ) {
 	b_Idle = true;
 	iIdleTS = 0;
 	SendChat( "End Security Guard" );
-	
+
 	if( !b_Robbed )
 		SendChat( g_LeavingMessages[ random( sizeof( g_LeavingMessages ) ) ] );
-	else 
+	else
 		SendChat( g_RobbedMessages[ random( sizeof( g_RobbedMessages ) ) ] );
 
 	StopRecordingPlayback( );
@@ -218,11 +218,11 @@ stock resetNPCData( ) {
 }
 
 stock GenerateNewPlayback( ) {
-	new 
+	new
 		szLocation[ 16 ], iRandom;
 
 	find_track:
-	if( ( iRandom = random( 11 ) ) == iRecentTrack ) {
+	if( ( iRandom = random( 4 ) ) == iRecentTrack ) {
 		goto find_track;
 	}
 
@@ -244,21 +244,21 @@ stock IsAnyPlayerInfrontOfMe( )
 	    if ( !IsPlayerConnected( i ) || !IsPlayerStreamedIn( i ) )
 	        continue;
 
-	    new 
+	    new
 	    	iState = GetPlayerState( i );
 
 	   	if( iState == PLAYER_STATE_ONFOOT || iState == PLAYER_STATE_DRIVER ) {
 	   		GetXYInfrontOfMe( 10.0, X, Y, Z );
 	   		return IsPlayerInRangeOfPoint( i, 10.0, X, Y, Z );
 	   	}
-	    
+
 	}
 	return 0;
 }
 
 stock GetXYInfrontOfMe( Float:distance, &Float: x, &Float: y, &Float: z )
 {
-    static 
+    static
    		Float: angle;
 
     GetMyPos( x, y, z );
