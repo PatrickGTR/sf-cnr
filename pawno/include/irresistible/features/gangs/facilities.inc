@@ -9,9 +9,13 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
+#define FACILITY_TAKEOVER_ENABLED 	( false )
+
 #define	MAX_FACILITIES 				( 24 )
+#define MAX_FACILITY_BOMB 			( 2 )
 
 #define FACILITY_AMMU_RESPECT 		( 75000.0 )
+#define FACILITY_BLOWUP_TIME 		( 10 )
 
 #define DIALOG_GANG_JOIN 			( 9238 )
 #define DIALOG_FACILITY_AMMU 		( 9239 )
@@ -28,7 +32,12 @@ enum E_GANG_FACILITIES
 	Float: E_X, 					Float: E_Y, 					Float: E_Z,
 
 	E_AMMU_CP,						E_SHOP_CP,						E_CANNON_CP,
-	E_TRAVEL_CP
+	E_TRAVEL_CP,
+
+	bool: E_WAR,					E_WAR_TIMER,					E_WAR_TICK,
+
+	E_BOMB_OBJECT[ 2 ],				E_BLOWUP_COUNT[ 2 ],
+	bool: E_BLOWN[ 2 ]
 };
 
 enum E_FACILITY_INTERIOR
@@ -38,7 +47,9 @@ enum E_FACILITY_INTERIOR
 	Float: E_AMMU_POS[ 4 ],
 	Float: E_SHOP_POS[ 4 ],
 	Float: E_TRAVEL_POS[ 4 ],
-	Float: E_ATM_POS[ 4 ]
+	Float: E_ATM_POS[ 4 ],
+	Float: E_BOMB_POS_1[ 4 ],
+	Float: E_BOMB_POS_2[ 4 ]
 	//Float: E_MECHANIC_POS[ 4 ]
 };
 
@@ -52,7 +63,9 @@ new
 			{ 248.5042, 1797.5060, 1857.4143, 0.000000 },
 			{ 259.9110, 1850.9300, 1858.7600, 0.000000 },
 			{ 261.0079, 1869.5808, 1858.7600, 90.00000 },
-			{ 262.5575, 1850.0053, 1858.3671, 180.0000 }
+			{ 262.5575, 1850.0053, 1858.3671, 180.0000 },
+			{ 246.722503, 1816.183593, 1855.371826, 90.000000 },
+			{ 246.722503, 1827.754516, 1855.371826, 90.000000 }
 		}
 	},
 	g_gangFacilities 				[ MAX_FACILITIES ] [ E_GANG_FACILITIES ],
@@ -393,6 +406,12 @@ thread OnGangFaciltiesLoad( )
 					CreateDynamicActor( 268, 244.6742, 1843.2554, 1858.7576, 0.000000, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 					ApplyDynamicActorAnimation( CreateDynamicActor( 70, 212.868576, 1819.894531, 1856.413818, 117.200050, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] ), "COP_AMBIENT", "Coplook_loop", 4.1, 1, 1, 1, 1, 0 );
 					ApplyDynamicActorAnimation( CreateDynamicActor( 70, 213.705627, 1827.192993, 1856.413818, 60.300289, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] ), "COP_AMBIENT", "Coplook_think", 4.1, 1, 1, 1, 1, 0 );
+
+				#if FACILITY_TAKEOVER_ENABLED == true
+					// labels
+					CreateDynamic3DTextLabel( "Server\n"COL_WHITE"Press ALT to Plant C4", COLOR_GREY, g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ], 20.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+					CreateDynamic3DTextLabel( "Server\n"COL_WHITE"Press ALT to Plant C4", COLOR_GREY, g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ], 20.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+				#endif
 				}
 				else
 				{
@@ -424,6 +443,209 @@ stock GetFacilityInteriorType( gang_sql_id )
 	// todo
 	return 0;
 }
+
+#if FACILITY_TAKEOVER_ENABLED == true
+CMD:plant( playerid, params[ ] ) {
+	PlantFacilityC4( playerid, GetPVarInt( playerid, "in_facility" ) );
+	return 1;
+}
+
+CMD:war( playerid, params[ ] ) {
+	StartFacilityWar( GetPVarInt( playerid, "in_facility" ), 0 );
+	return 1;
+}
+
+#define PROGRESS_FACILITY_PLANT 10
+stock PlantFacilityC4( playerid, facility )
+{
+	new type = g_gangFacilities[ facility ] [ E_INTERIOR_TYPE ];
+	new Float: infront_x, Float: infront_y, Float: infront_z;
+
+	if ( IsPlayerInRangeOfPoint( playerid, 2.0, g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ] ) )
+	{
+		if ( IsValidDynamicObject( g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ 0 ] ) )
+			return 1;
+
+		infront_x = g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ] + 0.75 * floatsin( g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 3 ], degrees );
+		infront_y = g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ] + 0.75 * floatcos( g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 3 ], degrees );
+		infront_z = g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ] - 0.5;
+
+		SetPlayerFacingAngle( playerid, g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 3 ] );
+		ShowProgressBar( playerid, "Planting C4", PROGRESS_FACILITY_PLANT, 3000, COLOR_RED, 0 );
+	}
+
+	else if ( IsPlayerInRangeOfPoint( playerid, 2.0, g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ] ) )
+	{
+		if ( IsValidDynamicObject( g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ 1 ] ) )
+			return 1;
+
+		infront_x = g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ] + 0.75 * floatsin( g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 3 ], degrees );
+		infront_y = g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ] + 0.75 * floatcos( g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 3 ], degrees );
+		infront_z = g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ] - 0.5;
+
+		SetPlayerFacingAngle( playerid, g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 3 ] );
+		ShowProgressBar( playerid, "Planting C4", PROGRESS_FACILITY_PLANT, 3000, COLOR_RED, 1 );
+	}
+
+	else return 1;
+
+	TogglePlayerControllable( playerid, 0 );
+	SetPlayerPos( playerid, infront_x, infront_y, infront_z );
+
+	SetPVarInt( playerid, "planting_facility", facility );
+	return 1;
+}
+
+hook OnProgressCompleted( playerid, progressid, params )
+{
+	if ( progressid == PROGRESS_FACILITY_PLANT )
+	{
+		new facility = GetPVarInt( playerid, "planting_facility" );
+
+		if ( ! Iter_Contains( gangfacilities, facility ) || ( params != 0 && params != 1 ) )
+			return 0;
+
+		new type = g_gangFacilities[ facility ] [ E_INTERIOR_TYPE ];
+
+		// plant according to which site
+		if ( ! params )
+		{
+			g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ 0 ] = CreateDynamicObject( 363,
+				g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ],
+				0.000000, 0.000000, g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 3 ],
+				.worldid = g_gangFacilities[ facility ] [ E_WORLD ]
+			);
+
+			// alarm
+			foreach ( new i : Player ) if ( GetPVarInt( i, "in_facility" ) == facility ) {
+				PlayerPlaySound( i, 14800, g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ] );
+			}
+		}
+		else
+		{
+			g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ 1 ] = CreateDynamicObject( 363,
+				g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ],
+				0.000000, 0.000000, g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 3 ],
+				.worldid = g_gangFacilities[ facility ] [ E_WORLD ]
+			);
+
+			// alarm
+			foreach ( new i : Player ) if ( GetPVarInt( i, "in_facility" ) == facility ) {
+				PlayerPlaySound( i, 14800, g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ] );
+			}
+		}
+
+		TogglePlayerControllable( playerid, 1 );
+		g_gangFacilities[ facility ] [ E_BLOWN ] [ params ] = false;
+		g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ params ] = FACILITY_BLOWUP_TIME + 1;
+		return 1;
+	}
+	return 1;
+}
+
+function OnFacilityWarUpdate( facility )
+{
+	new
+		type = g_gangFacilities[ facility ] [ E_INTERIOR_TYPE ];
+
+	// decrement timer
+	if ( g_gangFacilities[ facility ] [ E_WAR_TICK ] -- <= 0 ) {
+		print( "End Round" );
+	}
+
+	// bomb timers
+	for ( new siteid = 0; siteid < 2; siteid ++ ) if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ siteid ] >= 0 )
+	{
+		if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ siteid ] -- <= 0 && IsValidDynamicObject( g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ siteid ] ) )
+		{
+			if ( siteid == 0 ) {
+				CreateExplosion( g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_1 ] [ 2 ], 0, 10.0 );
+			} else if ( siteid == 1 ) {
+				CreateExplosion( g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 0 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 1 ], g_gangFacilityInterior[ type ] [ E_BOMB_POS_2 ] [ 2 ], 0, 10.0 );
+			}
+
+			Streamer_SetIntData( STREAMER_TYPE_OBJECT, g_gangFacilities[ facility ] [ E_BOMB_OBJECT ] [ siteid ], E_STREAMER_MODEL_ID, 18689 );
+			g_gangFacilities[ facility ] [ E_BLOWN ] [ siteid ] = true;
+		}
+	}
+	return ShowServerStatus( facility );
+}
+
+stock StartFacilityWar( facility, attacker )
+{
+	if ( g_gangFacilities[ facility ] [ E_WAR ] )
+		return 0;
+
+	g_gangFacilities[ facility ] [ E_WAR ] = true;
+	g_gangFacilities[ facility ] [ E_WAR_TICK ] = 300;
+	g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 0 ] = FACILITY_BLOWUP_TIME + 1;
+	g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 1 ] = FACILITY_BLOWUP_TIME + 1;
+	g_gangFacilities[ facility ] [ E_WAR_TIMER ] = SetTimerEx( "OnFacilityWarUpdate", 960, true, "d", facility );
+	return 1;
+}
+
+stock EndFacilityWar( facility, bool: attacker_won )
+{
+	if ( ! g_gangFacilities[ facility ] [ E_WAR ] )
+		return 1;
+
+	g_gangFacilities[ facility ] [ E_WAR ] = 0;
+
+	// add respect
+	if ( attacker_won )
+	{
+		new
+			defender_facility_count = 0;
+
+		foreach ( new f : gangfacilities ) if ( g_gangFacilities[ f ] [ E_GANG_SQL_ID ] == g_gangFacilities[ facility ] [ E_GANG_SQL_ID ] ) {
+			defender_facility_count ++;
+		}
+
+		new
+			respect_earned = floatround( float( g_gangFacilities[ attacker ] [ E_RESPECT ] ) * ( 0.25 / float( defender_facility_count ) ) );
+
+		printf("Earned %d respect (defender had %d facilities)", respect_earned, defender_facility_count);
+	}
+	return 1;
+}
+
+static stock ShowServerStatus( facility )
+{
+	new
+		color[ 2 ] = "g";
+
+	if ( g_gangFacilities[ facility ] [ E_WAR_TICK ] < 150 ) color = "y";
+	else if ( g_gangFacilities[ facility ] [ E_WAR_TICK ] < 30 ) color = "r";
+
+	format( szNormalString, sizeof( szNormalString ), "~%s~~h~Time Remaining: %s~w~~n~~n~Server 1: ", color, TimeConvert ( g_gangFacilities[ facility ] [ E_WAR_TICK ] ) );
+
+	// server 1
+	if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 0 ] > FACILITY_BLOWUP_TIME ) {
+		strcat( szNormalString, "~g~Secure~w~~n~" );
+	} else if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 0 ] <= 0 ) {
+		strcat( szNormalString, "~r~Blown~w~~n~" );
+	} else {
+		format( szNormalString, sizeof( szNormalString ), "%s~r~~h~~h~%d until blown~w~~n~", szNormalString, g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 0 ] );
+	}
+
+	strcat( szNormalString, "Server 2: ");
+
+	// server 2
+	if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 1 ] >= 10 ) {
+		strcat( szNormalString, "~g~Secure~w~" );
+	} else if ( g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 1 ] <= 0 ) {
+		strcat( szNormalString, "~r~Blown~w~" );
+	} else {
+		format( szNormalString, sizeof( szNormalString ), "%s~r~~h~~h~%d until blown", szNormalString, g_gangFacilities[ facility ] [ E_BLOWUP_COUNT ] [ 1 ] );
+	}
+
+	// alert
+	foreach ( new i : Player ) if ( GetPVarInt( i, "in_facility" ) == facility ) {
+		ShowPlayerHelpDialog( i, 0, szNormalString );
+	}
+	return 1;
+}
+#endif
 
 static stock initializeFacilityObjects( )
 {
@@ -657,8 +879,6 @@ static stock initializeFacilityObjects( )
 	CreateDynamicObject( 1885, 256.321441, 1858.931884, 1857.696533, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 2662, 238.587280, 1849.567504, 1860.304809, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 0, "Gang Vehicles", 120, "Impact", 84, 0, -13421773, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 2662, 263.417633, 1869.281738, 1860.304809, 0.000000, 0.000000, -90.000000, -1, -1, -1 ), 0, "Fast Travel", 120, "Impact", 84, 0, -13421773, 0, 1 );
-	CreateDynamicObject( 363, 246.722503, 1816.183593, 1855.371826, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
-	CreateDynamicObject( 363, 246.722503, 1827.754516, 1855.371826, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 }
 
 /* ** SCHEMA ** */
