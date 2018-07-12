@@ -50,12 +50,13 @@ hook OnPlayerDeath( playerid, killerid, reason )
 	static
 		Float: X, Float: Y, Float: Z;
 
-	GetPlayerPos( playerid, X, Y, Z );
-
-	if ( IsPlayerConnected( killerid ) )
+	if ( IsPlayerConnected( killerid ) && ! IsPlayerNPC( killerid ) )
 	{
 		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
 			return 1;
+
+		GetPlayerPos( playerid, X, Y, Z );
+
 
 		new
 			killer_rank = GetPlayerRank( killerid ),
@@ -118,13 +119,15 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 			}
 			else
 			{
+				new current_weapon = GetPlayerWeapon( playerid );
 
 				GetPlayerKeys( playerid, keys, existing_weapon, existing_weapon );
 				GetPlayerWeaponData( playerid, g_weaponDropData[ dropid ] [ E_SLOT_ID ], existing_weapon, existing_ammo );
 
-				// printf("Existing Weapon %d, Dropped Weapon %d, Slot id %d", existing_weapon, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_SLOT_ID ] );
+				new holding_replace_key = ( keys & KEY_ACTION );
+
 				// if ( existing_weapon > g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
-				if ( existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
+				if ( existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! holding_replace_key && existing_ammo )
 				{
 					ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
 					return 1;
@@ -135,6 +138,11 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 				#endif
 
 				GivePlayerWeapon( playerid, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_AMMO ] );
+
+				// don't change player weapon
+				if ( ! holding_replace_key ) {
+					SetPlayerArmedWeapon( playerid, current_weapon );
+				}
 			}
 
 			// destroy health pickup
