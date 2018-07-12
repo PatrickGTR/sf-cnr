@@ -45,6 +45,7 @@
 #include 							< merrandom >
 // #include 							< sampac >
 #include 							< MathParser >
+#include 							< mapandreas >
 #include 							< md-sort >
 native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
@@ -140,7 +141,7 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.30.90"
+#define FILE_BUILD                	"v11.35.100"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_WEBSITE              "www.irresistiblegaming.com"
 #define SERVER_IP                   "192.169.82.202:7777"
@@ -2482,16 +2483,16 @@ enum E_RANK_DATA
 stock const
 	g_aPlayerRanks[ ] [ E_RANK_DATA ] =
 	{
-		{ 9497.2,	"Elite V", 		19780, COLOR_GOLD },
-		{ 5301.7,	"Elite IV", 	19782, COLOR_GOLD },
-		{ 2959.61, 	"Elite III", 	19781, COLOR_GOLD },
-		{ 1652.17, 	"Elite II", 	19784, COLOR_GOLD },
-		{ 922.303, 	"Elite I", 		19783, COLOR_GOLD },
-		{ 514.865,	"Silver V", 	19780, COLOR_GREY },
-		{ 287.417,	"Silver IV", 	19782, COLOR_GREY },
-		{ 160.45, 	"Silver III", 	19781, COLOR_GREY },
-		{ 89.56, 	"Silver II", 	19784, COLOR_GREY },
-		{ 50.0, 	"Silver I", 	19783, COLOR_GREY },
+		{ 11871.5,	"Elite V", 		19780, COLOR_GOLD },
+		{ 6627.13,	"Elite IV", 	19782, COLOR_GOLD },
+		{ 3699.51, 	"Elite III", 	19781, COLOR_GOLD },
+		{ 2065.21, 	"Elite II", 	19784, COLOR_GOLD },
+		{ 1152.88, 	"Elite I", 		19783, COLOR_GOLD },
+		{ 643.581,	"Silver V", 	19780, COLOR_GREY },
+		{ 359.271,	"Silver IV", 	19782, COLOR_GREY },
+		{ 200.563, 	"Silver III", 	19781, COLOR_GREY },
+		{ 111.95, 	"Silver II", 	19784, COLOR_GREY },
+		{ 62.5, 	"Silver I", 	19783, COLOR_GREY },
 		{ 0.0, 		"unranked",		19300, COLOR_GREY }
 	}
 ;
@@ -2586,8 +2587,8 @@ new
 
 /* ** Robbery NPCs ** */
 #define ENABLED_NPC_ROBBERIES		( true )
-#define MAX_ROBBERY_NPCS 			( MAX_ROBBERIES )
-#define MAX_CIVILIANS				( 100 )
+#define MAX_ROBBERY_NPCS 			( 50 ) //( MAX_ROBBERIES )
+#define MAX_CIVILIANS				( 50 )
 
 #if ENABLED_NPC_ROBBERIES == true
 #include <FCNPC>
@@ -3170,7 +3171,7 @@ public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerChainsawTree( playerid, treeid );
 public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 public OnPlayerProgressUpdate( playerid, progressid, params );
-public OnPlayerProgressComplete( playerid, progressid, params );
+public OnProgressCompleted( playerid, progressid, params );
 public OnPlayerUnjailed( playerid, reasonid );
 public onSafeBust( playerid, robberyid, type, index );
 public OnMethamphetamineCooking( playerid, vehicleid, last_chemical );
@@ -3208,6 +3209,7 @@ public OnGameModeInit()
 	SetGameModeText( "Cops And Robbers / DM / Gangs" );
 	SetServerRule( "hostname", SERVER_NAME );
 	SetServerRule( "language", "English" );
+	SetServerRule( "mapname", "San Fierro" );
 	UsePlayerPedAnims( );
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
@@ -3216,13 +3218,9 @@ public OnGameModeInit()
 	#if defined DEBUG_MODE
 	mysql_log( LOG_ERROR | LOG_WARNING );
 	#endif
-	// Streamer_SetVisibleItems( STREAMER_TYPE_OBJECT, 950 );
-	// MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
-	//SetBannedWeapons( 17, 35, 36, 37, 38, 39, 44, 45 );
-
-	//EnableVehicleFriendlyFire( );
-	//SetServerRule( "mapname", "San Fierro" );
+	// start map andreas
+	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
 
 	/* ** Intalize Data ** */
 	initializeCheckpoints( );
@@ -3366,7 +3364,7 @@ public OnGameModeInit()
 
 	/* ** Robbery Points ** */
 	static const ROBBERY_BOT_PAY = 2000; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 6000; // max pay from robbing safes
+	static const ROBBERY_SAFE_PAY = 7000; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -3381,25 +3379,25 @@ public OnGameModeInit()
 	CreateMultipleRobberies( "Hospital", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.25 ), -2638.146484, 662.669677, 969.852905, -90.0000, -1 );
 
 	CreateMultipleRobberies( "Sex Shop", 			ROBBERY_SAFE_PAY, -108.273361, -8.523513, 1000.188232, 90.000000, 16, 32, 51, 64 );
-	CreateRobberyNPC( "Sex Shop Clerk",				ROBBERY_BOT_PAY, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
+	//CreateRobberyNPC( "Sex Shop Clerk",				ROBBERY_BOT_PAY, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
 
 	CreateMultipleRobberies( "Off Track Betting", 	ROBBERY_SAFE_PAY, 822.206787, 8.124695, 1004.423278, 169.80003, -1 );
-	CreateRobberyNPC( "Betting Clerk",				ROBBERY_BOT_PAY, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
+	//CreateRobberyNPC( "Betting Clerk",				ROBBERY_BOT_PAY, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
 
 	CreateMultipleRobberies( "Zero's RC Shop", 		ROBBERY_SAFE_PAY, -2221.724365, 132.967208, 1035.223022, 180.00000, 6 );
-	CreateRobberyNPC( "Zero",						ROBBERY_BOT_PAY, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
+	//CreateRobberyNPC( "Zero",						ROBBERY_BOT_PAY, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
 
 	CreateMultipleRobberies( "Prolaps", 			ROBBERY_SAFE_PAY, 204.282577, -126.326202, 1002.937255, 0.0000000, 39, 36 );
-	CreateRobberyNPC( "Prolaps Clerk",				ROBBERY_BOT_PAY, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
+	//CreateRobberyNPC( "Prolaps Clerk",				ROBBERY_BOT_PAY, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
 
 	CreateMultipleRobberies( "Disco", 				ROBBERY_SAFE_PAY, 503.633575, -24.120403, 1000.119323, 270.00000, 17, 71 );
-	CreateRobberyNPC( "Disco Bartender",			ROBBERY_BOT_PAY, 501.6992,-20.5021,1000.6797,89.2442, 46, 17, 71 );
+	//CreateRobberyNPC( "Disco Bartender",			ROBBERY_BOT_PAY, 501.6992,-20.5021,1000.6797,89.2442, 46, 17, 71 );
 
 	CreateMultipleRobberies( "Restaurant", 			ROBBERY_SAFE_PAY, -221.279922, 1407.674072, 27.22343200, 0.0000000, 53, 54 );
-	CreateRobberyNPC( "Restaurant Owner",			ROBBERY_BOT_PAY, -223.3083,1403.9852,27.7734,91.9926, 168, 53, 54 );
+	//CreateRobberyNPC( "Restaurant Owner",			ROBBERY_BOT_PAY, -223.3083,1403.9852,27.7734,91.9926, 168, 53, 54 );
 
 	CreateMultipleRobberies( "Brothel", 			ROBBERY_SAFE_PAY, 971.980346, -44.324848, 1001.677368, 270.00000, 42 );
-	CreateRobberyNPC( "Brothel Manager",			ROBBERY_BOT_PAY, 970.8360, -44.8730, 1001.1172, 92.0651, 113, 42 );
+	//CreateRobberyNPC( "Brothel Manager",			ROBBERY_BOT_PAY, 970.8360, -44.8730, 1001.1172, 92.0651, 113, 42 );
 
 	CreateMultipleRobberies( "Ammu-Nation", 		ROBBERY_SAFE_PAY, 299.776275, -41.373123, 1000.945068, -137.0001, 15 );
 	CreateRobberyNPC( "Gunsdealer",					ROBBERY_BOT_PAY, 296.4001,-40.2152,1001.5156,0.9079, 179, 15 );
@@ -3411,79 +3409,79 @@ public OnGameModeInit()
 	CreateRobberyNPC( "Gunsdealer",					ROBBERY_BOT_PAY, 312.8466,-167.7639,999.5938,359.6548, 179, 42, 45, 47, 5, 75, 32, 23, 27 );
 
 	CreateMultipleRobberies( "ZIP", 				ROBBERY_SAFE_PAY, 163.303283, -79.763473, 1001.274536, -90.00000, 3, 45, 59, 27 );
-	CreateRobberyNPC( "ZIP Clerk",					ROBBERY_BOT_PAY, 162.7249, -81.1920,1001.8047, 182.6196, 217, 3, 45, 59, 27 );
+	//CreateRobberyNPC( "ZIP Clerk",					ROBBERY_BOT_PAY, 162.7249, -81.1920,1001.8047, 182.6196, 217, 3, 45, 59, 27 );
 
 	CreateMultipleRobberies( "Binco", 				ROBBERY_SAFE_PAY, 207.486953, -96.336982, 1004.707275, 0.0000000, 12, 47, 48, 53 );
-	CreateRobberyNPC( "Binco Clerk",				ROBBERY_BOT_PAY, 208.8378,-98.7054,1005.2578,183.2461, 217, 12, 47, 48, 53 );
+	//CreateRobberyNPC( "Binco Clerk",				ROBBERY_BOT_PAY, 208.8378,-98.7054,1005.2578,183.2461, 217, 12, 47, 48, 53 );
 
 	CreateMultipleRobberies( "Victim", 				ROBBERY_SAFE_PAY, 200.075378, -5.995379, 1000.650390, 180.00000, 1, 21, 49 );
-	CreateRobberyNPC( "Victim Clerk",				ROBBERY_BOT_PAY, 204.6066, -9.2214, 1001.2109, 268.2160, 211, 1, 21, 49 );
+	//CreateRobberyNPC( "Victim Clerk",				ROBBERY_BOT_PAY, 204.6066, -9.2214, 1001.2109, 268.2160, 211, 1, 21, 49 );
 
 	CreateMultipleRobberies( "Suburban", 			ROBBERY_SAFE_PAY, 204.337600, -42.450820, 1001.254699, 180.00000, 21, 41, 39 );
-	CreateRobberyNPC( "Suburban Clerk",				ROBBERY_BOT_PAY, 203.2509,-41.6712, 1001.8047, 178.8591, 211, 21, 41, 39 );
+	//CreateRobberyNPC( "Suburban Clerk",				ROBBERY_BOT_PAY, 203.2509,-41.6712, 1001.8047, 178.8591, 211, 21, 41, 39 );
 
 	CreateMultipleRobberies( "Bar", 				ROBBERY_SAFE_PAY, 498.197845, -80.120513, 999.3255610, 180.00000, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
-	CreateRobberyNPC( "Bartender",					ROBBERY_BOT_PAY, 497.0969,-77.5612,998.7651,1.5118, 124, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
+	//CreateRobberyNPC( "Bartender",					ROBBERY_BOT_PAY, 497.0969,-77.5612,998.7651,1.5118, 124, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
 
 	CreateMultipleRobberies( "Burger Shot", 		ROBBERY_SAFE_PAY, 381.988861, -56.370349, 1000.957275, 0.0000000, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
-	CreateRobberyNPC( "Burger Worker",				ROBBERY_BOT_PAY, 376.5223,-65.8494,1001.5078,182.3066, 205, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
+	//CreateRobberyNPC( "Burger Worker",				ROBBERY_BOT_PAY, 376.5223,-65.8494,1001.5078,182.3066, 205, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
 
 	CreateMultipleRobberies( "Cluckin' Bell", 		ROBBERY_SAFE_PAY, 371.999816, -2.711749, 1002.278808, 0.0000000, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
-	CreateRobberyNPC( "Chicken Worker",				ROBBERY_BOT_PAY, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
+	//CreateRobberyNPC( "Chicken Worker",				ROBBERY_BOT_PAY, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
 
 	CreateMultipleRobberies( "Well Stacked Pizza", 	ROBBERY_SAFE_PAY, 380.231140, -116.337081, 1000.951721, -90.00000, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
-	CreateRobberyNPC( "Pizza Worker",				ROBBERY_BOT_PAY, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
+	//CreateRobberyNPC( "Pizza Worker",				ROBBERY_BOT_PAY, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
 
 	CreateMultipleRobberies( "24/7",      			ROBBERY_SAFE_PAY, -8.180466, -180.865447, 1002.996337, 180.00000, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
-	CreateRobberyNPC( "24/7 Worker",				ROBBERY_BOT_PAY, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
+	//CreateRobberyNPC( "24/7 Worker",				ROBBERY_BOT_PAY, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
 
 	CreateMultipleRobberies( "Barber", 				ROBBERY_SAFE_PAY, 408.697540, -56.145412, 1001.337951, 180.00000, 23, 24, 48, 21, 18, 22, 20 );
-	CreateRobberyNPC( "Barber",						ROBBERY_BOT_PAY, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
+	//CreateRobberyNPC( "Barber",						ROBBERY_BOT_PAY, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
 
 	CreateMultipleRobberies( "Donut Shop", 			ROBBERY_SAFE_PAY, 382.413513, -186.959243, 1001.132995, -90.00000, 19, 20, 10 );
-	CreateRobberyNPC( "Donut Worker",				ROBBERY_BOT_PAY, 380.7286,-189.1152,1000.6328,182.3538, 8, 19, 20, 10 );
+	//CreateRobberyNPC( "Donut Worker",				ROBBERY_BOT_PAY, 380.7286,-189.1152,1000.6328,182.3538, 8, 19, 20, 10 );
 
 	CreateMultipleRobberies( "Strip Club", 			ROBBERY_SAFE_PAY, 1211.948974, -16.412891, 1001.421752, 180.00000, 3, 22 );
-	CreateRobberyNPC( "Stripper",					ROBBERY_BOT_PAY, 1214.2621,-15.2605,1000.9219,359.1004, 246, 3, 22 );
+	//CreateRobberyNPC( "Stripper",					ROBBERY_BOT_PAY, 1214.2621,-15.2605,1000.9219,359.1004, 246, 3, 22 );
 
 	CreateMultipleRobberies( "Otto's cars", 		ROBBERY_SAFE_PAY, -1657.916870, 1206.418701, 6.709994000, 180.00000, 0 );
-	CreateRobberyNPC( "Otto",						ROBBERY_BOT_PAY, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
+	//CreateRobberyNPC( "Otto",						ROBBERY_BOT_PAY, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
 
 	CreateMultipleRobberies( "Wang Cars", 			ROBBERY_SAFE_PAY, -1950.600952, 302.176483, 34.91876200, -90.00000, 0 );
-	CreateRobberyNPC( "Salesman",					ROBBERY_BOT_PAY, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
+	//CreateRobberyNPC( "Salesman",					ROBBERY_BOT_PAY, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
 
 	CreateMultipleRobberies( "Jizzy's", 			ROBBERY_SAFE_PAY, -2664.599853, 1425.926391, 906.3808590, -90.00000, 18 );
-	CreateRobberyNPC( "Jizzy",						ROBBERY_BOT_PAY, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
+	//CreateRobberyNPC( "Jizzy",						ROBBERY_BOT_PAY, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
 
 	CreateMultipleRobberies( "Didier Sachs", 		ROBBERY_SAFE_PAY, 206.808502, -154.612808, 999.953369, 0.0000000, 14 );
-	CreateRobberyNPC( "Didier Sach Clerk",			ROBBERY_BOT_PAY, 203.2169,-157.8303,1000.5234,180.5475, 211, 14 );
+	//CreateRobberyNPC( "Didier Sach Clerk",			ROBBERY_BOT_PAY, 203.2169,-157.8303,1000.5234,180.5475, 211, 14 );
 
 	CreateMultipleRobberies( "Steakhouse", 			ROBBERY_SAFE_PAY, 441.640106, -81.971298, 999.0115, 90.00000, 53, 54, 23, 27, 22 );
-	CreateRobberyNPC( "Steakhouse Owner",			ROBBERY_BOT_PAY, 449.4273, -82.2324, 999.5547, 179.9200, 168, 53, 54, 23, 27, 22 );
+	//CreateRobberyNPC( "Steakhouse Owner",			ROBBERY_BOT_PAY, 449.4273, -82.2324, 999.5547, 179.9200, 168, 53, 54, 23, 27, 22 );
 
 	CreateMultipleRobberies( "Church", 				ROBBERY_SAFE_PAY, 1964.069335, -349.456512, 1096.640380, 0.0000000, 1 );
-	CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 1964.0864,-371.6995,1093.7289,358.7696, 68, 1 );
+	//CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 1964.0864,-371.6995,1093.7289,358.7696, 68, 1 );
 
 	CreateMultipleRobberies( "Church", 				ROBBERY_SAFE_PAY, 2390.926757, 3195.784179, 1016.920837, -90.00000, 39, 40, 41, 62, 24 );
-	CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 2383.1968,3193.2842,1017.7320,1.0113, 68, 39, 40, 41, 62, 24 );
+	//CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 2383.1968,3193.2842,1017.7320,1.0113, 68, 39, 40, 41, 62, 24 );
 
 	CreateMultipleRobberies( "Hotel de Solanum", 	ROBBERY_SAFE_PAY, -1967.766357, 1367.773925, 6.879500000, 86.700000, 0 );
-	CreateRobberyNPC( "Hotel Bartender",			ROBBERY_BOT_PAY, -1944.5562,1362.2947,7.3546,86.4801, 126, 0 );
+	//CreateRobberyNPC( "Hotel Bartender",			ROBBERY_BOT_PAY, -1944.5562,1362.2947,7.3546,86.4801, 126, 0 );
 
 	CreateMultipleRobberies( "Vehicle Dealership",	ROBBERY_SAFE_PAY, -1862.799682, -652.836608, 1001.578125, -89.80000, 0 );
-	CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -1864.9419,-648.5046,1002.1284,357.5644, 186, 0 );
+	//CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -1864.9419,-648.5046,1002.1284,357.5644, 186, 0 );
 
 	CreateMultipleRobberies( "Vehicle Dealership",	ROBBERY_SAFE_PAY, -125.972930, 122.111770, 1004.083740, 0.000000, 31, 32 );
-	CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -125.2779,121.3010,1004.7233,345.3443, 186, 31, 32 );
+	//CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -125.2779,121.3010,1004.7233,345.3443, 186, 31, 32 );
 
 	CreateMultipleRobberies( "Bank",				ROBBERY_SAFE_PAY, 2165.008544, 1649.773925, 1041.061889, 90.000000, 45, 24, 25, 78 );
-	CreateRobberyNPC( "Banker",						ROBBERY_BOT_PAY, 2157.9255,1647.9972,1041.6124,270.1911, 17, 45, 24, 25, 78 );
+	//CreateRobberyNPC( "Banker",						ROBBERY_BOT_PAY, 2157.9255,1647.9972,1041.6124,270.1911, 17, 45, 24, 25, 78 );
 
 	CreateMultipleRobberies( "Pawnshop", 			ROBBERY_SAFE_PAY, 1331.349731, -1079.761108, 967.495605, -90.00000, 11, 22, 33 );
-	CreateRobberyNPC( "Pawnbroker",					ROBBERY_BOT_PAY, 1330.7424,-1081.0117,968.0360,270.1916, 261, 11, 22, 33 );
+	//CreateRobberyNPC( "Pawnbroker",					ROBBERY_BOT_PAY, 1330.7424,-1081.0117,968.0360,270.1916, 261, 11, 22, 33 );
 
 	CreateMultipleRobberies( "Gas Station",      	ROBBERY_SAFE_PAY, -20.583150, -58.166736, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
-	CreateRobberyNPC( "Gas Cashier",				ROBBERY_BOT_PAY, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
+	//CreateRobberyNPC( "Gas Cashier",				ROBBERY_BOT_PAY, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 
 	CreateMultipleRobberies( "Drug House", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.5 ), 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
 	CreateRobberyNPC( "Triad Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
@@ -4502,7 +4500,7 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 
 			switch( gateItem )
 			{
-				case 8:
+				case 9:
 				{
 					g_gateData[ gID ] [ E_X ] = x;
 					g_gateData[ gID ] [ E_Y ] = y;
@@ -4512,7 +4510,7 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 					g_gateData[ gID ] [ E_RZ ] = float( floatround( rz ) );
 					SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GATE]"COL_WHITE" Gate Open Position: "COL_GREY" %f, %f, %f, %f, %f, %f", g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
 				}
-				case 9:
+				case 10:
 				{
 					g_gateData[ gID ] [ E_MOVE_X ] = x;
 					g_gateData[ gID ] [ E_MOVE_Y ] = y;
@@ -6806,7 +6804,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 					{
 						if ( IsPointToPoint( 0.25, fX, fY, fZ, g_secureTruckOffsets[ i ] [ E_X ], g_secureTruckOffsets[ i ] [ E_Y ], g_secureTruckOffsets[ i ] [ E_Z ] ) )
 						{
-							new Float: hingeDamage = floatdiv( Damage, 4 );
+							new Float: hingeDamage = floatdiv( Damage, 2 );
 							if ( floatround( g_secureTruckOffsets[ i ] [ E_HP ] -= hingeDamage ) > 0.0 ) {
 								SendClientMessage( g_secureTruckDriver, 0x112233FF, "[0x01][NPC] PROVOKED." );
 								format( szNormalString, 6, "%0.0f%%", g_secureTruckOffsets[ i ] [ E_HP ] );
@@ -8126,7 +8124,7 @@ public OnPlayerProgressUpdate( playerid, progressid, params )
 	return 1;
 }
 
-public OnPlayerProgressComplete( playerid, progressid, params )
+public OnProgressCompleted( playerid, progressid, params )
 {
 	static
 	    iRandom, Float: X, Float: Y, Float: Z;
@@ -9229,6 +9227,13 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		return 1;
 	}
 	return SendUsage( playerid, "/irresistiblecoins [MARKET/SEND] "COL_GREY"(type /irresistiblecoins to see your coins)" );
+}
+
+CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
+CMD:highscores( playerid, params[ ] )
+{
+	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests", "Select", "Close" );
+	return 1;
 }
 
 CMD:rank( playerid, params[ ] )
@@ -12401,6 +12406,11 @@ CMD:h( playerid, params[ ] )
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
+	if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) && ! strmatch( params, "sell" ) ) {
+		ResetSpawnLocation( playerid );
+		return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
+	}
+
 	new
 	    ID = p_InHouse[ playerid ],
 	    query[ 140 ]
@@ -12688,6 +12698,14 @@ CMD:v( playerid, params[ ] )
 {
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
+	// force hoarders to sell
+	if ( ! p_VIPLevel[ playerid ] && p_OwnedVehicles[ playerid ] > GetPlayerVehicleSlots( playerid ) && ! strmatch( params, "sell" ) ) {
+		for( new i = 0; i < p_OwnedVehicles[ playerid ]; i++ ) if ( g_vehicleData[ playerid ] [ i ] [ E_OWNER_ID ] == p_AccountID[ playerid ] ) {
+			g_vehicleData[ playerid ] [ i ] [ E_LOCKED ] = false;
+		}
+		return SendError( playerid, "Please renew your V.I.P or sell this vehicle to match your vehicle allocated limit. (/v sell)" );
+	}
 
 	new
 		vehicleid = GetPlayerVehicleID( playerid ),
@@ -15210,25 +15228,23 @@ CMD:specoff( playerid, params[ ] )
 	return 1;
 }
 
-
 CMD:goto( playerid, params[ ] )
 {
     new
-		pID, veh,
+		pID,
 		Float: X,
 		Float: Y,
 		Float: Z
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"D(1)", pID, veh ) ) return SendUsage( playerid, "/goto [PLAYER_ID] [IN_VEHICLE]" );
-    else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
-    else if ( !( 0 <= veh <= 1 ) ) return SendError( playerid, "The no vehicle parameter must be set between 0 and 1." );
+    else if ( sscanf( params, "d", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
+    else if ( ! IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot go to yourself.");
     else
     {
         GetPlayerPos( pID, X, Y, Z );
-		SetPlayerPosition( playerid, X, Y + 2, Z, GetPlayerInterior( pID ), GetPlayerVirtualWorld( pID ), veh );
+		SetPlayerPosition( playerid, X, Y + 2, Z, GetPlayerInterior( pID ), GetPlayerVirtualWorld( pID ) );
         AddAdminLogLineFormatted( "%s(%d) has teleported to %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
         if ( p_InHouse[ playerid ] != -1 ) p_InHouse[ playerid ] = -1;
         if ( p_InGarage[ playerid ] != -1 ) p_InGarage[ playerid ] = -1;
@@ -22124,6 +22140,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		if ( ! response )
 			return ShowPlayerSpawnMenu( playerid );
 
+		if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) ) {
+			ResetSpawnLocation( playerid );
+			return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
+		}
+
     	new x = 0;
 
 	    foreach ( new i : houses ) if ( strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
@@ -26575,7 +26596,82 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 		return 1;
 	}
+	if ( dialogid == DIALOG_HIGHSCORES && response )
+	{
+		switch ( listitem )
+		{
+			// seasonal
+			case 0: mysql_function_query( dbHandle, "SELECT `NAME`, `RANK` as `SCORE_VAL` FROM `USERS` ORDER BY `RANK` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 0 );
+
+			// total score
+			case 1: mysql_function_query( dbHandle, "SELECT `NAME`, `SCORE` as `SCORE_VAL` FROM `USERS` ORDER BY `SCORE` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 1 );
+
+			// total kills
+			case 2: mysql_function_query( dbHandle, "SELECT `NAME`, `KILLS` as `SCORE_VAL` FROM `USERS` ORDER BY `KILLS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 2 );
+
+			// total arrests
+			case 3: mysql_function_query( dbHandle, "SELECT `NAME`, `ARRESTS` as `SCORE_VAL` FROM `USERS` ORDER BY `ARRESTS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 3 );
+		}
+	}
+	if ( dialogid == DIALOG_HIGHSCORES_BACK && ! response ) {
+		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests", "Select", "Close" );
+	}
 	return 1;
+}
+
+thread OnHighScoreCheck( playerid, highscore_item )
+{
+	new
+		rows;
+
+	cache_get_data( rows, tmpVariable );
+
+	if ( ! rows ) {
+		return SendError( playerid, "There is no information to show. Try again later." );
+	}
+
+	new
+		name[ MAX_PLAYER_NAME ];
+
+	switch ( highscore_item )
+	{
+		case 0: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Seasonal Rank\n", szSmallString = "Top 25 Seasonal";
+		case 1: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Score\n", szSmallString = "Top 25 Score";
+		case 2: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Kills\n", szSmallString = "Top 25 Kills";
+		case 3: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Arrests\n", szSmallString = "Top 25 Arrests";
+	}
+
+	for ( new row = 0; row < rows; row ++ )
+	{
+		// get name
+		cache_get_field_content( row, "NAME", name );
+
+		// format item appropriately
+		switch ( highscore_item )
+		{
+			case 0:
+			{
+				new
+					Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle ), rank;
+
+				for( rank = 0; rank < sizeof( g_aPlayerRanks ); rank++ ) {
+					if ( score_value >= g_aPlayerRanks[ rank ] [ E_POINTS ] ) {
+						break;
+					}
+				}
+
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, g_aPlayerRanks[ rank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ rank ] [ E_NAME ] );
+			}
+			default:
+			{
+				new
+					score_value = cache_get_field_content_int( row, "SCORE_VAL", dbHandle );
+
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t%d\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, score_value );
+			}
+		}
+	}
+	return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES_BACK, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}Highscores - %s", szSmallString ), szLargeString, "Close", "Back" ), 1;
 }
 
 stock StartBusinessDrugProduction( businessid )
@@ -29009,9 +29105,6 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
 				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
 	}
-
-	// trigger the robbery bot
-	// TriggerRobberyForClerks( playerid, robberyid );
 
 	// start the drill/c4
 	switch( type )
@@ -31601,7 +31694,7 @@ function ProgressBar_Update( playerid, progressid, tickrate, params )
 	if ( p_ProgressStatus[ playerid ] >= 388 )
 	{
     	StopProgressBar( playerid );
-    	CallLocalFunction( "OnPlayerProgressComplete", "ddd", playerid, progressid, params );
+    	CallLocalFunction( "OnProgressCompleted", "ddd", playerid, progressid, params );
     	return 1;
  	}
  	KillTimer( p_ProgressUpdateTimer[ playerid ] ); // Just incase.
@@ -32592,6 +32685,9 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 						SetPlayerArmedWeapon( playerid, 0 );
 						RemovePlayerAttachedObject( playerid, 0 );
 			        	SetPlayerAttachedObject( playerid, 0, 18634, 6, 0.073999, 0.036999, 0.095999, 88.400009, 0.000000, 0.000000, 1.000000, 1.000000, 1.000000 );
+
+						// trigger the robbery bot
+						TriggerRobberyForClerks( playerid, robberyid );
 
 						SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C or type /stoprob to cancel the operation." );
 						g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
@@ -34116,10 +34212,10 @@ stock ShowPlayerBankMenuDialog( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information", "Select", "Cancel" );
 }
 
-stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0, worldid = 0, in_vehicle = 1 )
+stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0, worldid = 0 )
 {
 	new
-		vehicleid = ( in_vehicle ? GetPlayerVehicleID( playerid ) : INVALID_VEHICLE_ID );
+		vehicleid = GetPlayerVehicleID( playerid );
 
     SetPlayerInterior( playerid, interiorid );
     SetPlayerVirtualWorld( playerid, worldid );
@@ -35494,7 +35590,7 @@ stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
     return iCurrent;
 }
 
-/*stock TriggerRobberyForClerks( playerid, robberyid )
+stock TriggerRobberyForClerks( playerid, robberyid )
 {
 	new
 		clerkid = GetClosestRobberyNPC( robberyid );
@@ -35514,7 +35610,7 @@ stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
 		TriggerClosestCivilians( playerid, clerkid );
 		SendServerMessage( playerid, "You have committed a robbery while the clerk is concious! "COL_ORANGE"The police have been informed." );
 	}
-}*/
+}
 
 stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: rZ, skinid, ... )
 {
@@ -35693,17 +35789,17 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 		CreateCrimeReport( playerid );
 		DeletePVar( playerid, sprintf( "robbedNpc_%d", clerkid ) );
-		PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is intimidated" );
+		PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is scared" );
 		UpdateDynamic3DTextLabelText( g_robberyNpcData[ clerkid ] [ E_LABEL ], COLOR_GOLD, sprintf( "%s\n"COL_GREY"Currently Being Robbed", g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] ) );
 	}
 	else
 	{
-		/*new
+		new
 			targetplayerid = GetPlayerTargetPlayer( playerid );
 
 		// If the player aint aiming at the assistant, whip out a gun
 		if ( targetplayerid != npcid || 0 < GetPlayerWeapon( playerid ) < 1 || !( 0.0 < distance < 25.0 ) ) {
-			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~r~~h~~h~Clerk is getting ideas" );
+			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~r~~h~~h~Clerk might draw out gun" );
 
 			// Shoot player
 			if ( random( 101 ) < 20 && p_Robberies[ playerid ] > 10 ) {
@@ -35713,8 +35809,8 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 		}
 		else
 		{
-			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is intimidated" );
-		}*/
+			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is scared" );
+		}
 
 		new
 			amount = RandomEx( 250, 500 ),
@@ -35952,6 +36048,7 @@ stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 1
 		FCNPC_Spawn( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], skinId[ randomSkin ], position[ 0 ], position[ 1 ], position[ 2 ] );
 		FCNPC_SetAngle( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], ( g_civilianNpcData[ civilianid ] [ E_RZ ] = position[ 3 ] ) );
 	}
+	else print( "[ERROR] Civilian cannot be added due to small limit, please raise." );
 }
 
 stock GetCivilianNpcFromPlayer( playerid )

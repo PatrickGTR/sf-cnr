@@ -169,6 +169,8 @@
 #define DIALOG_IC_MARKET_3 					1158
 #define DIALOG_BUY_VIP 						1159
 #define DIALOG_TOYS_COLOR 					1160
+#define DIALOG_HIGHSCORES 					1161
+#define DIALOG_HIGHSCORES_BACK 				1162
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
