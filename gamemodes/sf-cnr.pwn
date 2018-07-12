@@ -306,7 +306,7 @@ stock const
         { "{8ADE47}Stephanie:"COL_WHITE" Remember to check the "COL_GREY"/rules{FFFFFF}! Disobeying the rules can lead to punishment!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Seen a cheater? Use "COL_GREY"/report {FFFFFF}to tell an admin." },
 		{ "{8ADE47}Stephanie:"COL_WHITE" To change your class, type "COL_GREY"/changeclass{FFFFFF}." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Detaining a suspect as a cop pays more than arresting by itself, and killing." },
+		// { "{8ADE47}Stephanie:"COL_WHITE" Detaining a suspect as a cop pays more than arresting by itself, and killing." },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Being annoyed by some member via PM? "COL_GREY"/dnd{FFFFFF} to block them!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" See "COL_GREY"/animlist {FFFFFF}for animations." },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Type "COL_GREY"/help {FFFFFF}for information on the server!" },
@@ -824,7 +824,7 @@ new
 #define MAX_ROBBERIES 				( 500 )
 #define MAX_ROBBERY_WAIT            ( 300 )
 #define MAX_DRILL_STRENGTH 			( 200 )
-#define ROBBERY_MONEYCASE_BONUS		( 1.5 )
+#define ROBBERY_MONEYCASE_BONUS		( 1.4 )
 
 #define STATE_NONE 					( 0 )
 #define STATE_ROBBED 				( 1 )
@@ -12700,11 +12700,11 @@ CMD:v( playerid, params[ ] )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
 	// force hoarders to sell
-	if ( ! p_VIPLevel[ playerid ] && p_OwnedVehicles[ playerid ] > GetPlayerVehicleSlots( playerid ) && ! strmatch( params, "sell" ) ) {
+	if ( ! p_VIPLevel[ playerid ] && p_OwnedVehicles[ playerid ] > GetPlayerVehicleSlots( playerid ) && ! strmatch( params, "sell" ) && ! strmatch( params, "bring" ) ) {
 		for( new i = 0; i < p_OwnedVehicles[ playerid ]; i++ ) if ( g_vehicleData[ playerid ] [ i ] [ E_OWNER_ID ] == p_AccountID[ playerid ] ) {
 			g_vehicleData[ playerid ] [ i ] [ E_LOCKED ] = false;
 		}
-		return SendError( playerid, "Please renew your V.I.P or sell this vehicle to match your vehicle allocated limit. (/v sell)" );
+		return SendError( playerid, "Please renew your V.I.P or sell this vehicle to match your vehicle allocated limit. (/v sell/bring only)" );
 	}
 
 	new
@@ -15238,7 +15238,7 @@ CMD:goto( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, "d", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
+    else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
     else if ( ! IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot go to yourself.");
     else
