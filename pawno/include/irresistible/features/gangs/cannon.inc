@@ -11,7 +11,6 @@
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
-#include 							< mapandreas >
 
 /* ** Definitions ** */
 #define ORBITAL_CANNON_TICK 		( 100 )
@@ -33,9 +32,6 @@ new
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-	// start map andreas
-	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
-
 	// textdraw
 	g_orbitalAimTD = TextDrawCreate( 305.000000, 205.000000, "+" );
 	TextDrawBackgroundColor( g_orbitalAimTD, 0 );
