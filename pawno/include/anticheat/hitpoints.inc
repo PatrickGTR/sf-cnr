@@ -426,6 +426,9 @@ hook OnPlayerDeath(playerid, killerid, reason)
 		// General
     	p_acSpawned{ playerid } = false;
 
+    	// Weapon Hack
+		p_PlayerWeaponUpdateTime[ playerid ] = GetTickCount( ) + 2000;
+
 		// Airbrake
         p_abLastTick[ playerid ] = GetTickCount( ) + 3000;
    	}
