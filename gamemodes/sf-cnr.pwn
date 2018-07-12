@@ -15,7 +15,7 @@
 #pragma compat 1
 //#pragma option -d3
 #pragma dynamic 7200000
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -9232,7 +9232,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests", "Select", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
 	return 1;
 }
 
@@ -26611,10 +26611,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			// total arrests
 			case 3: mysql_function_query( dbHandle, "SELECT `NAME`, `ARRESTS` as `SCORE_VAL` FROM `USERS` ORDER BY `ARRESTS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 3 );
+
+			// total robberies
+			case 4: mysql_function_query( dbHandle, "SELECT `NAME`, `ROBBERIES` as `SCORE_VAL` FROM `USERS` ORDER BY `ROBBERIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 4 );
+
 		}
 	}
 	if ( dialogid == DIALOG_HIGHSCORES_BACK && ! response ) {
-		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests", "Select", "Close" );
+		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
 	}
 	return 1;
 }
@@ -26639,6 +26643,7 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		case 1: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Score\n", szSmallString = "Top 25 Score";
 		case 2: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Kills\n", szSmallString = "Top 25 Kills";
 		case 3: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Arrests\n", szSmallString = "Top 25 Arrests";
+		case 4: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Robberies\n", szSmallString = "Top 25 Robberies";
 	}
 
 	for ( new row = 0; row < rows; row ++ )
