@@ -15,7 +15,7 @@
 #pragma compat 1
 //#pragma option -d3
 #pragma dynamic 7200000
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -3364,7 +3364,7 @@ public OnGameModeInit()
 
 	/* ** Robbery Points ** */
 	static const ROBBERY_BOT_PAY = 2000; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 7000; // max pay from robbing safes
+	static const ROBBERY_SAFE_PAY = 6500; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
@@ -32316,7 +32316,7 @@ stock CreateGate( playerid, password[ 8 ], model, Float: speed, Float: range, Fl
 		g_gateData[ gID ] [ E_MOVE_RZ ] = rz;
 		g_gateData[ gID ] [ E_GANG_SQL_ID ] = 0;
 
-		format( szBigString, sizeof( szBigString ), "INSERT INTO `GATES` VALUES(%d,%d,'%s','Gate',%d,2000,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f)", gID, playerid, mysql_escape( password ), model, speed, range, x, y, z, rx, ry, rz, x, y, z, rx, ry, rz );
+		format( szBigString, sizeof( szBigString ), "INSERT INTO `GATES` VALUES(%d,%d,'%s','Gate',%d,2000,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,0)", gID, playerid, mysql_escape( password ), model, speed, range, x, y, z, rx, ry, rz, x, y, z, rx, ry, rz );
 		mysql_single_query( szBigString );
 
 		g_gateData[ gID ] [ E_OBJECT ] = CreateDynamicObject( g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_X ], g_gateData[ gID ] [ E_Y ], g_gateData[ gID ] [ E_Z ], g_gateData[ gID ] [ E_RX ], g_gateData[ gID ] [ E_RY ], g_gateData[ gID ] [ E_RZ ] );
@@ -34357,10 +34357,11 @@ stock GivePlayerIrresistiblePoints( playerid, Float: points )
 	if ( fCurrentPoints < 0.0 )
 		fCurrentPoints = 0.0;
 
-	if ( fCurrentPoints > 10000.0 )
-		fCurrentPoints = 10000.0;
+	new Float: upper_limit = g_aPlayerRanks[ 0 ] [ E_POINTS ] + 500.0;
 
-	// gained
+	if ( fCurrentPoints > upper_limit )
+		fCurrentPoints = upper_limit;
+
 	for( new iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
 	{
 		new
@@ -35597,10 +35598,10 @@ stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
 
 stock TriggerRobberyForClerks( playerid, robberyid )
 {
-	new
-		clerkid = GetClosestRobberyNPC( robberyid );
+	new Float: distance = FLOAT_INFINITY;
+	new	clerkid = GetClosestRobberyNPC( robberyid, distance );
 
-	if ( clerkid != -1 )
+	if ( clerkid != -1 && distance < 50.0 )
 	{
 		new
 			npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
@@ -37236,9 +37237,6 @@ stock UpdateBusinessData( businessid )
 
 stock DestroyBusiness( businessid )
 {
-	if ( businessid < 0 || businessid >= MAX_GARAGES )
-		return 0;
-
 	if ( !Iter_Contains( business, businessid ) )
 	    return 0;
 
@@ -37639,7 +37637,7 @@ stock ShowBusinessMembers( playerid, businessid )
 	new
 		szMembers[ 96 ] = "0";
 
-	for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ ) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] != 0 ) {
+	for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ ) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] ) {
 		format( szMembers, sizeof( szMembers ), "%s,%d", szMembers, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
 	}
 

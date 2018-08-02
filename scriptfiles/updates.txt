@@ -1,9 +1,4 @@
-(+) If you are over the slot limit for houses/vehicles, you will be required to renew in order to restore functionality.
-(+) You can now access server /highscores. You can see top seasonal rank, top score, top kills or top arrests.
-(+) When you pick up a weapon, it will not change your gun unless you are swapping (holding TAB).
-(-) Robbery clerks from stores have been disabled due to irregular use.
-(/) Profit on safes is now increased by 25% due to clerks being reduced.
-(/) You risk being shot by drug house bosses if you are not aiming at them.
-(/) ChuffSec will strictly work in San Fierro for now.
-(*) Weapon hack detection will not bug when someone dies.
-(/) It is now 50% easier to now break ChuffSec's hinges.
+(+) Added an robbery highscore to /highscores.
+(*) Fixed /goto parameter for admins.
+(*) Fixed ranking bug with seasonal ranks.
+(*) Fixed geolocation service.
