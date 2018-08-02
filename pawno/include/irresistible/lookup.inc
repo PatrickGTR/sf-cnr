@@ -13,7 +13,7 @@
 // Variables
 enum E_LOOKUP_DATA
 {
-	E_CODE[ 3 ],		E_COUNTRY[ 45 ]
+	E_COUNTRY[ 45 ],					E_CODE[ 5 ]
 };
 
 stock
@@ -46,7 +46,7 @@ stock LookupPlayerIP( playerid ) {
 
 	GetPlayerIp( playerid, szIP, sizeof( szIP ) );
 
-	format( szQuery, sizeof( szQuery ), "freegeoip.net/csv/%s", szIP );
+	format( szQuery, sizeof( szQuery ), "ip-api.com/csv/%s?fields=3", szIP );
 	return HTTP( playerid, HTTP_GET, szQuery, "", "OnLookupResponse" );
 }
 
@@ -80,32 +80,31 @@ public OnLookupResponse( playerid, response, data[ ] ) {
 	}
 	else
 	{
-		new
-			firstComma = strfind( data, ",", true ),
-			secondComma = strfind( data, ",", true, firstComma + 1 ),
-			thirdComma = strfind( data, ",", true, secondComma + 1 )
-		;
+		// format to length of 96
+		format( CountryData, sizeof( CountryData ), "%s", data );
 
-		strmid( CountryData, data, firstComma + 1, thirdComma );
-		//printf("Received data:%s",CountryData);
+		// search for a quote mark
+	    new
+	    	long_name = strfind( CountryData[ 1 ], "\"," );
 
-		//210.50.38.234,AU,Australia,VIC,Victoria,Melbourne,3000,Australia/Melbourne,-37.8103,144.9544,0
-		if( sscanf( CountryData, "p<,>e<s[3]s[45]>", g_lookup_PlayerData[ playerid ] ) ) // "p< >e<s[60]s[3]s[45]s[43]s[128]d>"
-		{
+	    if ( long_name != -1 )
+	    {
+	    	// Incase a country appears "This, Is, A, Country", TIAC
+	        strmid( g_lookup_PlayerData[ playerid ] [ E_COUNTRY ], CountryData, 1, long_name + 1 );
+	        strmid( g_lookup_PlayerData[ playerid ] [ E_CODE ], CountryData, long_name + 3, sizeof( CountryData ) );
+	    }
+	    else if ( sscanf( CountryData, "p<,>e<s[45]s[5]>", g_lookup_PlayerData[ playerid ] ) )
+	    {
 			if( !g_lookup_Retry{ playerid } ) {
 				g_lookup_Retry{ playerid } = 1;
 				return LookupPlayerIP( playerid );
 			} else {
 				ResetPlayerIPData( playerid );
 			}
-		}
-		else
-		{
-			//printf("Information: %s %s \n",g_lookup_PlayerData[ playerid ] [ E_CODE ], g_lookup_PlayerData[ playerid ] [ E_COUNTRY ] );
-			strreplacechar( g_lookup_PlayerData[ playerid ] [ E_COUNTRY ], '_', ' ' );
-			//strreplacechar( g_lookup_PlayerData[ playerid ] [ E_ISP ], '_', ' ' );
-			g_lookup_Success{ playerid } = 1;
-		}
+	    }
+
+		strreplacechar( g_lookup_PlayerData[ playerid ] [ E_COUNTRY ], '_', ' ' );
+		g_lookup_Success{ playerid } = 1;
 	}
 	return CallLocalFunction( "OnLookupComplete", "ii", playerid, g_lookup_Success{ playerid } );
 }
