@@ -114,8 +114,8 @@ CMD:boxing( playerid, params[ ] ) {
 		if ( ! ( 0 <= betAmount <= 10000000 ) )
 			return SendError( playerid, "Please specify an amount between $0 and $10,000,000." );
 
-		if ( rounds < 1 || rounds == 2 || rounds == 4 || rounds > 5 )
-			return SendError( playerid, "Please choose between 1, 3, or 5 rounds." );
+		if ( rounds != 1 && rounds != 3 && rounds != 5 && rounds != 9 )
+			return SendError( playerid, "Please choose between 1, 3, 5, or 9 rounds." );
 
 		if ( g_boxingPlayerData[ targetID ] [ E_INVITED ] == true )
 			return SendError( playerid, "That player has already been invited to a fight." );
