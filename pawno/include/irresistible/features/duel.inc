@@ -54,8 +54,8 @@ new
         {"Santa Maria Beach",		{369.75770, -1831.576, 7.67190}, {369.65890, -1871.215, 7.67190}},
         {"Greenglass College",		{1078.0353, 1084.4989, 10.8359}, {1095.4019, 1064.7239, 10.8359}},
         {"Baseball Arena",			{1393.0995, 2177.4585, 9.75780}, {1377.7881, 2195.4214, 9.75780}},
-        {"The Visage",				{1960.4512, 1907.6881, 130.937}, {1969.4047, 1923.2622, 130.937}},
-        {" Mount Chilliad",			{-2318.471, -1632.880, 483.703}, {-2329.174, -1604.657, 483.760}},
+        //{"The Visage",				{1960.4512, 1907.6881, 130.937}, {1969.4047, 1923.2622, 130.937}},
+        {"Mount Chilliad",			{-2318.471, -1632.880, 483.703}, {-2329.174, -1604.657, 483.760}},
         {"The Farm",				{-1044.856, -996.8120, 129.218}, {-1125.599, -996.7523, 129.218}},
         {"Tennis Courts",			{755.93790, -1280.710, 13.5565}, {755.93960, -1238.688, 13.5516}},
         {"Underwater World",		{520.59600, -2125.663, -28.257}, {517.96600, -2093.610, -28.257}},
@@ -126,6 +126,10 @@ hook SetPlayerRandomSpawn(playerid)
 
 hook OnPlayerEnterDynamicCP(playerid, checkpointid)
 {
+	if (GetPlayerState(playerid) == PLAYER_STATE_SPECTATING) {
+		return 1;
+	}
+
 	if (checkpointid == g_DuelCheckpoint)
 	{
 		ShowPlayerDuelMenu(playerid);
