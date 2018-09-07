@@ -213,6 +213,8 @@ CMD:boxing( playerid, params[ ] ) {
 
 		}
 
+		g_boxingArenaData[ E_OCCUPIED ] = true;
+
 		g_boxingPlayerData[ playerid ] [ E_FIGHTING ] = true;
 		g_boxingPlayerData[ playerid ] [ E_INVITED ] = false;
 

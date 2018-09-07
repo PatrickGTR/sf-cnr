@@ -71,7 +71,7 @@ native gpci 						( playerid, serial[ ], len );
 	#define AC_INCLUDED
 #endif
 
-/* ** irresistible gaming ** */
+/* ** SF-CNR ** */
 #include 							< irresistible\main >
 
 /* ** Useful macros ** */
@@ -141,9 +141,9 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 /* ** Configuration ** */
-#define FILE_BUILD                	"v11.35.100"
+#define FILE_BUILD                	"v11.36.105"
 #define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
-#define SERVER_WEBSITE              "www.irresistiblegaming.com"
+#define SERVER_WEBSITE              "www.sfcnr.com"
 #define SERVER_IP                   "192.169.82.202:7777"
 
 #define ADMIN_COMMAND_REJECT        "You don't have an appropriate administration level to use this command."
@@ -346,7 +346,8 @@ stock const
 		{ "{8ADE47}Stephanie:"COL_WHITE" Play Poker with your friends at any casino! Beat your way to riches!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Get casino rewards points by gambling at any casino! Use "COL_GREY"/casino rewards"COL_WHITE" to spend them!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Want 3 days of free V.I.P? Add an "COL_GREY"/email"COL_WHITE" to your account!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" Want 3 days of free V.I.P? Add an "COL_GREY"/email"COL_WHITE" to your account!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Contribute to our feature "COL_GREY"/crowdfunds"COL_WHITE"! Early supporters get benefits!" }
 	},
 	killedWords[ ] [ ] =
 	{
@@ -3258,8 +3259,8 @@ public OnGameModeInit()
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "hitman_budget", "0", GLOBAL_VARTYPE_INT );
-	AddServerVariable( "connectsong", "http://files.irresistiblegaming.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
-	AddServerVariable( "discordurl", "http://irresistiblegaming.com", GLOBAL_VARTYPE_STRING );
+	AddServerVariable( "connectsong", "http://files.sfcnr.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
+	AddServerVariable( "discordurl", "http://sfcnr.com/discord", GLOBAL_VARTYPE_STRING );
 
 	/* ** CIVILIAN ** */
 	CLASS_CIVILIAN_RANGE[ 0 ] = AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
@@ -4097,7 +4098,7 @@ public OnGameModeInit()
 	CreateDynamicObject(19362, 1417.20593, 7.58543, 1008.36200,   0.00000, 0.00000, 90.00000); // Warehouse 1 Door
 
 	// Billboards
-	CreateBillboard( "Want V.I.P? Consider Donating!\n"COL_GREY"donate.irresistiblegaming.com", -2016.22, 326.580, 37.950, 48.9000 );
+	CreateBillboard( "Want V.I.P? Consider Donating!\n"COL_GREY"donate.sfcnr.com", -2016.22, 326.580, 37.950, 48.9000 );
 	CreateBillboard( "Save us on your favourites!\n"#SERVER_IP"", -1809.64, -590.29, 19.360, -147.30 );
 	CreateBillboard( "You can catch updates on our website!\n"COL_GREY""#SERVER_WEBSITE"", -1571.11, 939.860, 10.030, 45.9600 );
 	CreateBillboard( "Remember to check the "COL_GREY"/rules"COL_WHITE"!\nDisobeying the rules can lead to punishment!", -1911.05, 858.870, 36.290, 44.5200 );
@@ -4311,7 +4312,7 @@ public OnGameModeInit()
 	rl_ServerUpdate = SetTimer( "OnServerUpdate", 960, true );
 	rl_ZoneUpdate = SetTimer( "ZoneTimer", 980, true );
 
-	HTTP( 0, HTTP_GET, "files.irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
 
 	printf( "[SF-CNR] SF-CnR has been successfully initiaized. (Build: "#FILE_BUILD" | Time: %d)", ( g_ServerUptime = gettime( ) ) );
 	return 1;
@@ -4321,7 +4322,7 @@ public OnDonationRedemptionResponse( index, response_code, data[ ] )
 {
     if ( response_code == 200 )
     {
-		if ( strmatch( data, "{FFFFFF}Unable to identify transaction." ) ) ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", data, "Okay", "" );
+		if ( strmatch( data, "{FFFFFF}Unable to identify transaction." ) ) ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", data, "Okay", "" );
 		else
 		{
 			static aDonation[ E_DONATION_DATA ];
@@ -4330,7 +4331,7 @@ public OnDonationRedemptionResponse( index, response_code, data[ ] )
 			// printf("donation {id:%s, name:%s, amount:%s, purpose:%s, date:%d}", aDonation[ E_TRANSACTION_ID ],aDonation[ E_NAME ],aDonation[ E_AMOUNT ],aDonation[ E_PURPOSE ],aDonation[ E_DATE ]);
 			if ( strfind( aDonation[ E_PURPOSE ], "San Fierro: Cops And Robbers" ) == -1 )
 			{
-				ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"This donation is not specifically for this server thus you are unable to retrieve anything.", "Okay", "" );
+				ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"This donation is not specifically for this server thus you are unable to retrieve anything.", "Okay", "" );
 				return 0;
 			}
 
@@ -4339,7 +4340,7 @@ public OnDonationRedemptionResponse( index, response_code, data[ ] )
 	 		mysql_function_query( dbHandle, szNormalString, true, "OnCheckForRedeemedVIP", "is", index, data );
 		}
 	}
- 	else ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"Unable to connect to the donation database. Please try again later.", "Okay", "" );
+ 	else ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"Unable to connect to the donation database. Please try again later.", "Okay", "" );
 	return 1;
 }
 
@@ -4357,7 +4358,7 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 			szName[ MAX_PLAYER_NAME ];
 
 		cache_get_field_content( 0, "REDEEMER", szName );
-		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", sprintf( ""COL_WHITE"Sorry this transaction ID has already been redeemed by %s.", szName ), "Okay", "" );
+		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", sprintf( ""COL_WHITE"Sorry this transaction ID has already been redeemed by %s.", szName ), "Okay", "" );
 	}
 	else
 	{
@@ -4394,7 +4395,7 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 		format( szBigString, 256, ""COL_GREY"Transaction ID:\t"COL_WHITE"%s\n"COL_GREY"Donor Name:\t"COL_WHITE"%s\n"COL_GREY"Amount:\t"COL_WHITE"$%0.2f\n"COL_GREY"Total Coins:\t"COL_WHITE"%0.0f\n"COL_GREY"Time Ago:\t"COL_WHITE"%s",
 				aDonation[ E_TRANSACTION_ID ], aDonation[ E_NAME ], floatstr( aDonation[ E_AMOUNT ] ), iCoins, secondstotime( g_iTime - aDonation[ E_DATE ] ) );
 
-		ShowPlayerDialog( playerid, DIALOG_DONATED, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", szBigString, "Continue", "" );
+		ShowPlayerDialog( playerid, DIALOG_DONATED, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szBigString, "Continue", "" );
 	}
 	return 1;
 }
@@ -5412,7 +5413,7 @@ public ZoneTimer( )
 
 		foreach(new p : Player) {
 			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
-				PlayAudioStreamForPlayer( p, "http://files.irresistiblegaming.com/game_sounds/pls_donate.mp3" );
+				PlayAudioStreamForPlayer( p, "http://files.sfcnr.com/game_sounds/pls_donate.mp3" );
 			}
 		}
 
@@ -7237,7 +7238,7 @@ thread OnTaxEconomy( starting )
 		UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + eventbank, 0.0, "", GLOBAL_VARTYPE_INT );
 
 		// hitman budget
-		new hitman_budget = floatround( profit * 150000.0 ); // 15%
+		new hitman_budget = floatround( profit * 100000.0 ); // 10%
 		UpdateServerVariable( "hitman_budget", GetGVarInt( "hitman_budget" ) + hitman_budget, 0.0, "", GLOBAL_VARTYPE_INT );
 
 		// add to server vars
@@ -7248,38 +7249,15 @@ thread OnTaxEconomy( starting )
 	return 1;
 }
 
-/*stock GetPlayerTax( playerid, &Float: tax_percentage_formula = 0.0 )
-{
-	if ( ! GetPlayerTotalCash( playerid ) ) return 0;
-
-	// http://www.analyzemath.com/parabola/three_points_para_calc.html
-	// (0.1, 0), (10, 3), (50, 6) where x = money/1M, y = percentage
-	new Float: player_money = float( p_Cash[ playerid ] ) + ( float( p_BankMoney[ playerid ] ) * 0.6 );
-	new Float: player_millions = player_money / 1000000.0; // working off $1,000,000s
-
-	// check player money to avoid intensive calculations
-	if ( player_millions < 0.1 ) tax_percentage_formula = 0.0;
-	else if ( player_millions > 50.0 ) tax_percentage_formula = 6.0; // max 6 percent
-	else tax_percentage_formula = -0.002 * floatpower( player_millions, 2 ) + 0.22 * player_millions - 0.022;
-
-	// limit of 6% per hour, or 0.0% fixed
-	if ( tax_percentage_formula > 6.0 ) tax_percentage_formula = 6.0;
-	if ( tax_percentage_formula < 0.0 ) tax_percentage_formula = 0.0;
-
-	//printf("%f -> %0.2f tax -> %0.0f\n", player_money, tax_percentage_formula, player_money * tax_percentage_formula/100.0 );
-	// return final tax
-	new final_tax = floatround( ( tax_percentage_formula / 100.0 ) * player_money );
-	return final_tax > 0 ? final_tax : 0;
-}*/
-
 #if defined AC_INCLUDED
 public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
 public OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	if ( !p_PlayerLogged{ playerid } )
+	if ( !p_PlayerLogged{ playerid } ) {
 	    return SendServerMessage( playerid, "Possible Fake-kill detected - 0x0A" ), KickPlayerTimed( playerid );
+	}
 
 	switch( g_iTime - LastDeath[ playerid ] )
 	{
@@ -8403,7 +8381,7 @@ public OnProgressCompleted( playerid, progressid, params )
 					AttachDynamicObjectToVehicle( GetGVarInt( "meth_smoke", vehicleid ), vehicleid, -0.524999, -0.974999, -0.375000, 0.000000, 0.000000, 0.000000 );
 
 					ShowPlayerHelpDialog( playerid, 5000, "Okay, okay, everything seems to be cooking fine. Wait till for the next chemical to be added." );
-	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.irresistiblegaming.com/game_sounds/meth_cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
+	   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/meth_cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
 					SetGVarInt( "meth_cooktimer", SetTimerEx( "OnMethamphetamineCooking", 10000, false, "ddd", playerid, vehicleid, chemical ), vehicleid );
 				}
 			}
@@ -9145,7 +9123,7 @@ thread readplayervipnotes( playerid )
 CMD:hitmarker( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < 1 )
-		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 	ShowSoundsMenu( playerid );
 	return 1;
@@ -9204,7 +9182,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 
 	    if ( sscanf( params[ 5 ],""#sscanf_u"f", senttoid, coins ) ) return SendUsage( playerid, "/irresistiblecoins send [PLAYER_ID] [COINS]" );
 	    else if ( !IsPlayerConnected( senttoid ) || IsPlayerNPC( senttoid ) ) return SendError( playerid, "Invalid Player ID." );
-		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	    else if ( coins < 0.1 || coins > 5000.0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." );
 		else if ( coins > 99999999 || coins < 0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." ); // Making cash go over billions...
 	    else if ( p_IrresistibleCoins[ playerid ] < coins ) return SendError( playerid, "You do not have this number of coins to send." );
@@ -9709,7 +9687,7 @@ CMD:deathmessage( playerid, params[ ] ) return cmd_deathmsg( playerid, params );
 CMD:deathmsg( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < 1 )
-		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 	new
 		szDeathMessage[ sizeof( p_DeathMessage[ ] ) ];
@@ -9799,7 +9777,7 @@ CMD:idletime( playerid, params[ ] )
 CMD:redeemvip( playerid, params[ ] ) return cmd_donated( playerid, params );
 CMD:donated( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_VIP, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"Enter the transaction ID of your donation below.\n\n"COL_GREY"See http://forum.irresistiblegaming.com/showthread.php?10125 for details.", "Redeem", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_VIP, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"Enter the transaction ID of your donation below.\n\n"COL_GREY"See http://forum.sfcnr.com/showthread.php?10125 for details.", "Redeem", "Close" );
 	return 1;
 }
 
@@ -10657,7 +10635,7 @@ CMD:vsay( playerid, params[ ] )
     	time = g_iTime
     ;
 
-    if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+    if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
     else if ( sscanf( params, "s[100]", msg ) ) return SendUsage( playerid, "/vsay [MESSAGE]" );
 	else if ( textContainsIP( msg ) ) return SendServerMessage( playerid, "Please do not advertise." );
     else
@@ -10714,7 +10692,7 @@ CMD:viplist( playerid, params[ ] )
 
 CMD:vipcmds( playerid, params[ ] )
 {
-	if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+	if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 	erase( szLargeString );
 	strcat( szLargeString,	""COL_GREY"/vipspawnwep\tConfigure your spawning weapons\n"\
@@ -10732,7 +10710,7 @@ CMD:vipcmds( playerid, params[ ] )
 
 CMD:vipspawnwep( playerid, params[ ] )
 {
-	if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+	if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	format( szNormalString, sizeof( szNormalString ), "%s\n"COL_BRONZE"%s\n"COL_GOLD"%s", p_VIPWep1{ playerid } ? ReturnWeaponName( p_VIPWep1{ playerid } ) : ( "Nothing" ), p_VIPWep2{ playerid } ? ReturnWeaponName( p_VIPWep2{ playerid } ) : ( "Nothing" ), p_VIPWep3{ playerid } ? ReturnWeaponName( p_VIPWep3{ playerid } ) : ( "Nothing" ) );
     ShowPlayerDialog( playerid, DIALOG_VIP_WEP, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Weapons", szNormalString, "Select", "" );
 	return 1;
@@ -10741,7 +10719,7 @@ CMD:vipspawnwep( playerid, params[ ] )
 CMD:vipgun( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-	    return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+	    return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 	if ( !IsPlayerInRangeOfPoint( playerid, 5.0, -1966.1591, 852.7100, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, -1944.1324, 830.0725, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, 60.3115, 121.5226, 1017.4534 ) )
 		return SendError( playerid, "You must be near a gun vending machine inside the V.I.P lounge to use this." );
@@ -10755,7 +10733,7 @@ CMD:vipskin( playerid, params[ ] )
 	new
 	    skin
 	;
-	if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+	if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	else if ( GetPlayerAnimationIndex( playerid ) == 1660 ) return SendError( playerid, "You cannot use this command since you're using a vending machine." );
 	else if ( IsPlayerRobbing( playerid ) ) return SendError( playerid, "You cannot use this command since you're robbing a store." );
 	/*else if ( strmatch( params, "toggle" ) )
@@ -10793,7 +10771,7 @@ CMD:vipjob( playerid, params[ ] )
 	    iJob;
 
 	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 	if ( p_VIPLevel[ playerid ] < VIP_GOLD )
 		return SendError( playerid, "This command requires you to be Gold V.I.P." );
@@ -10898,7 +10876,7 @@ CMD:tweets( playerid, params[ ] ) return cmd_twitter( playerid, params );
 CMD:twitter( playerid, params[ ] )
 {
     SendServerMessage( playerid, "Reading latest tweets from {00CCFF}www.twitter.com/IrresistibleDev{FFFFFF}, please wait!" );
-	HTTP( playerid, HTTP_GET, "files.irresistiblegaming.com/cnr_twitter.php", "", "OnTwitterHTTPResponse" );
+	HTTP( playerid, HTTP_GET, "files.sfcnr.com/cnr_twitter.php", "", "OnTwitterHTTPResponse" );
 	return 1;
 }
 
@@ -11897,7 +11875,7 @@ CMD:labelcolor( playerid, params[ ] )
 		szLabel[ 7 ];
 
 	if ( sscanf( params, "s[7]", szLabel ) ) return SendUsage( playerid, "/labelcolor [HEX CODE (= normal)]" );
-	else if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+	else if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	else if ( strmatch( szLabel, "normal" ) )
 	{
 		p_LabelColor[ playerid ] = COLOR_GREY;
@@ -12445,7 +12423,7 @@ CMD:h( playerid, params[ ] )
 						return SendError( playerid, "You don't have enough money to purchase this house." );
 
 					if ( g_houseData[ i ] [ E_COST ] == 1337 && !p_VIPLevel[ playerid ] )
-						return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+						return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 					GivePlayerCash( playerid, -( g_houseData[ i ] [ E_COST ] ), .force_save = true );
 					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", number_format( g_houseData[ i ] [ E_COST ] ) );
@@ -12529,7 +12507,7 @@ CMD:h( playerid, params[ ] )
 		if ( !IsPlayerConnected( sellerid ) ) SendError( playerid, "The person who offered you a house is no longer online." );
 		else if ( p_HouseOfferTicks[ playerid ] < g_iTime ) SendError( playerid, "This house offer has expired %d seconds ago.", g_iTime - p_HouseOfferTicks[ playerid ] );
 		else if ( GetPlayerCash( playerid ) < p_HouseSellingPrice[ playerid ] ) SendError( playerid, "You do not have enough money to accept this offer (%s).", number_format( p_HouseSellingPrice[ playerid ] ) );
-		else if ( g_houseData[ houseid ] [ E_COST ] <= 1337 && !p_VIPLevel[ playerid ] ) SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+		else if ( g_houseData[ houseid ] [ E_COST ] <= 1337 && !p_VIPLevel[ playerid ] ) SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 		else if ( p_OwnedHouses[ playerid ] >= GetPlayerHouseSlots( playerid ) ) SendError( playerid, "You cannot purchase any more houses, you've reached the limit." );
 		else
 		{
@@ -13114,7 +13092,7 @@ CMD:r( playerid, params[ ] )
 	    new pID = p_PmResponder[ playerid ];
 
 		if ( IsPlayerLorenc( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
-			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.sfcnr.com" );
 		}
 
 		if ( p_BlockedPM[ playerid ] [ pID ] == true ) {
@@ -13157,7 +13135,7 @@ CMD:pm( playerid, params[ ] )
 	else
 	{
 		if ( IsPlayerLorenc( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
-			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.sfcnr.com" );
 		}
 
 		if ( p_BlockedPM[ playerid ] [ pID ] == true ) {
@@ -14594,7 +14572,7 @@ CMD:acmds( playerid, params[ ] )
     SendClientMessage( playerid, COLOR_WHITE, " " );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /goto, /spec(off), /(un)jail, /asay, /slap, /a, /getstats, /stpfr, /setskin, /frules, /fpc, /ticketlog" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /pinfo, /warn, /aspawn, /ans, /stpfa, /alog, /(un)freeze, /aod, /respawnalluv, /reports, /questions" );
-    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /respond, /mutelist, /aka, /arepair" );
+    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 1: /respond, /mutelist, /aka, /arepair, /viewdeathmsg" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 2: /kick, /vdestroy, /(un)mute, /explode, /vrespawn, /arenas, /suspend, /viewnotes, /slay" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 3: /ban, /bring, /clearchat, /(ann)ounce, /giveweapon, /vadminpark, /vcreate, /healall, /getip, /smlog, /iclog" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 3: /vadminstats, /pingimmune, /vbring, /countdown, /forcecoptutorial, /vgoto, /copwarn, /armywarn, /resetwep" );
@@ -14612,6 +14590,26 @@ CMD:acmds( playerid, params[ ] )
     }
 
     SendClientMessage( playerid, COLOR_GREY, "|_____________________________________________________________________________________________|" );
+	return 1;
+}
+
+CMD:viewdeathmsg( playerid, params[ ] )
+{
+	if ( p_AdminLevel[ playerid ] < 1 )
+		return SendError( playerid, ADMIN_COMMAND_REJECT );
+
+	new targetid;
+
+	if ( sscanf( params, "u", targetid ) ) return SendUsage( playerid, "/viewdeathmsg [PLAYER_ID]" );
+	else if ( ! IsPlayerConnected( targetid ) || IsPlayerNPC( targetid ) ) return SendError( playerid, "Invalid Player ID." );
+	else
+	{
+		if ( ! strlen( p_DeathMessage[ targetid ] ) ) {
+			SendError( playerid, "This player does not have an active death message." );
+		} else {
+			SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d)'s death message is: "COL_GREY"%s", ReturnPlayerName( targetid ), targetid, p_DeathMessage[ targetid ] );
+		}
+	}
 	return 1;
 }
 
@@ -17525,7 +17523,7 @@ CMD:updaterules( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 6 )
 		return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	HTTP( 0, HTTP_GET, "files.irresistiblegaming.com/en_rules.txt", "", "OnRulesHTTPResponse" );
+	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
 	SendServerMessage( playerid, "Rules should be updated now." );
 	return 1;
 }
@@ -17587,6 +17585,21 @@ CMD:weather( playerid, params[ ] )
 }
 
 /* Level RCON */
+CMD:resetgangrespect( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) )
+		return 0;
+
+	// reset preloaded and database
+	foreach ( new g : gangs ) {
+		g_gangData[ g ] [ E_RESPECT ] = 0;
+	}
+
+	mysql_single_query( "UPDATE `GANGS` SET `RESPECT` = 0" );
+	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has reset all gang respect!", ReturnPlayerName( playerid ), playerid );
+	return 1;
+}
+
 CMD:hitmanbudget( playerid, params[ ] )
 {
 	if ( ! IsPlayerAdmin( playerid ) )
@@ -19522,7 +19535,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 public OnPlayerAccessEntrance( playerid, entranceid )
 {
     if ( g_entranceData[ entranceid ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
-        return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" ), 0;
+        return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" ), 0;
     }
     return 1;
 }
@@ -19648,12 +19661,12 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 		{
 			new
 				iTimeElapsed = g_iTime - p_TruckingTimeElapsed[ playerid ],
-				iTheoreticalFinish = floatround( p_TruckingDistance[ playerid ] / 25.0 ) // distance / 25m/s (2000m / 25m/s)
+				iTheoreticalFinish = floatround( p_TruckingDistance[ playerid ] / 30.0 ) // distance / 25m/s (2000m / 25m/s)
 			;
 
 			// Check if it is really quick to finish
 			if ( iTimeElapsed < iTheoreticalFinish ) {
-		    	SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC)." );
+		   		SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC-%d-%d).", iTheoreticalFinish, iTimeElapsed );
 		    	KickPlayerTimed( playerid );
 		    	return 1;
 			}
@@ -19748,12 +19761,12 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 		new
 			Float: fDistance = GetDistanceFromPointToPoint( -2330.8535, -113.9084, g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 0 ], g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 1 ] ),
 			iTimeElapsed = g_iTime - p_LumberjackTimeElapsed[ playerid ],
-			iTheoreticalFinish = floatround( fDistance / 25.0 ) // distance / 25m/s (2000m / 25m/s)
+			iTheoreticalFinish = floatround( fDistance / 30.0 ) // distance / 25m/s (2000m / 25m/s)
 		;
 
 		// Check if it is really quick to finish
 		if ( iTimeElapsed < iTheoreticalFinish ) {
-	    	SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking." );
+		    SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC-%d-%d).", iTheoreticalFinish, iTimeElapsed );
 	    	KickPlayerTimed( playerid );
 	    	return 1;
 		}
@@ -22288,7 +22301,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			else
 			{
-				if ( listitem > 2 && p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+				if ( listitem > 2 && p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 				p_HouseWeaponAddSlot{ playerid } = listitem;
 				ShowPlayerDialog( playerid, DIALOG_HOUSE_WEAPONS_ADD, DIALOG_STYLE_MSGBOX, "{FFFFFF}House Weapon Storage", "{FFFFFF}Would you like to insert your current weapon into this slot?", "Insert", "Back" );
 			}
@@ -22396,7 +22409,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					else if ( g_houseInteriors[ intid ] [ E_VIP ] && !p_VIPLevel[ playerid ] )
 					{
 						ShowPlayerDialog( playerid, DIALOG_HOUSE_INT_CONFIRM, DIALOG_STYLE_LIST, "{FFFFFF}House Interiors", "Purchase House Interior\nPreview House Interior", "Select", "Back" );
-						SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+						SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 					}
 					else if ( ArePlayersInHouse( p_InHouse[ playerid ], playerid ) )
 					{
@@ -22633,7 +22646,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	      	SetGangColorsToGang( p_GangID[ playerid ] );
 		}
 		else {
-			if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+			if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 			ShowPlayerDialog( playerid, DIALOG_GANG_COLOR_INPUT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Colors", "{FFFFFF}Write a hexidecimal color within the textbox", "Submit", "Cancel" );
 		}
 	}
@@ -23470,7 +23483,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid } );
 
 				    	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-				        	return SendError( playerid, "You must be a V.I.P to use this, to become one visit "COL_GREY"donate.irresistiblegaming.com" ), 1;
+				        	return SendError( playerid, "You must be a V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" ), 1;
 
 						if ( ( ( p_VIPExpiretime[ playerid ] - g_iTime ) / 86400 ) < 3 )
 							return SendError( playerid, "You need more than 3 days of V.I.P in order to complete this." ), 1;
@@ -23900,7 +23913,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	        }
 	        case 10:
 	        {
-				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 				cmd_vipcmds( playerid, "" );
 	        }
 	    }
@@ -24052,7 +24065,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if ( g_BuyableVehicleData[ data_id ] [ E_VIP ] )
 				{
 					if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-						return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+						return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 					if ( ( ( p_VIPExpiretime[ playerid ] - g_iTime ) / 86400 ) < 3 )
 						return SendError( playerid, "You need more than 3 days of V.I.P in order to complete this." );
@@ -24245,12 +24258,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if ( p_AddedEmail{ playerid } )
 					return SendError( playerid, "You already added an email to your account before." );
 
-				if ( GetPlayerScore( playerid ) < 50 )
-					return SendServerMessage( playerid, "Get at least 50 score, then use this feature." );
+				if ( GetPlayerScore( playerid ) < 1000 )
+					return SendServerMessage( playerid, "Get at least 1000 score, then use this feature." );
 
 				Beep( playerid );
 				p_AddedEmail{ playerid } = true;
-				//p_IrresistibleCoins[ playerid ] += 5.0;
 				SetPlayerVipLevel( playerid, VIP_REGULAR, .interval = 259560 ); // 3 days of vip
 				mysql_single_query( sprintf( "UPDATE `USERS` SET `USED_EMAIL`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
 				SendGlobalMessage( COLOR_GOLD, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_GOLD"/email"COL_GREY" and received 3 days of V.I.P!", ReturnPlayerName( playerid ), playerid );
@@ -24370,7 +24382,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
 			if ( settingid == SETTING_VIPSKIN )
 			{
-				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 				SyncObject( playerid );
 				ClearAnimations( playerid );
 				SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
@@ -24427,7 +24439,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 
 		if ( p_VIPLevel[ playerid ] < VIP_GOLD && listitem == MENU_ARMOR ) {
-			SendError( playerid, "You are not Gold V.I.P, to become one visit "COL_GREY"donate.irresistiblegaming.com" );
+			SendError( playerid, "You are not Gold V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 			return ShowAmmunationMenu( playerid, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL );
 		}
 
@@ -25248,7 +25260,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			return SendServerMessage( playerid, "Our anti-exploit system requires you to wait another %d seconds before redeeming.", g_redeemVipWait - g_iTime );
 		}
 
-		HTTP( playerid, HTTP_GET, sprintf( "irresistiblegaming.com/donate/validate_code/%s", inputtext ), "", "OnDonationRedemptionResponse" );
+		HTTP( playerid, HTTP_GET, sprintf( "donate.sfcnr.com/validate_code/%s", inputtext ), "", "OnDonationRedemptionResponse" );
 		SendServerMessage( playerid, "We're now looking up this transaction. Please wait." );
 	}
 	if ( dialogid == DIALOG_DONATED )
@@ -25258,10 +25270,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								""COL_GREY" * What do I do with Irresistible Coins?"COL_WHITE" You can claim the V.I.P of your choice via "COL_GREY"/irresistiblecoins market"COL_WHITE".\n" );
 		strcat( szLargeString,	""COL_GREY" * How many do I have?"COL_WHITE" You can see how many Irresistible Coins you have via "COL_GREY"/irresistiblecoins"COL_WHITE".\n" \
 								""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThank you once again for your contribution to our community! :P"  );
-		return ShowPlayerDialog( playerid, DIALOG_FINISHED_DONATING, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", szLargeString, "Got it!", "" );
+		return ShowPlayerDialog( playerid, DIALOG_FINISHED_DONATING, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szLargeString, "Got it!", "" );
 	}
 	if ( dialogid == DIALOG_FINISHED_DONATING ) {
-		return ShowPlayerDialog( playerid, DIALOG_LATEST_DONOR, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"Would you like to be shown as the latest donor?", "Yes", "No" );
+		return ShowPlayerDialog( playerid, DIALOG_LATEST_DONOR, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"Would you like to be shown as the latest donor?", "Yes", "No" );
 	}
 	if ( dialogid == DIALOG_LATEST_DONOR ) {
 		if ( GetPVarType( playerid, "just_donated" ) != PLAYER_VARTYPE_FLOAT )
@@ -25283,12 +25295,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if ( sscanf( inputtext, #sscanf_u, pID ) )
 			{
 				SendError( playerid, "Please enter a player's ID or name." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
 			}
 			else if ( !IsPlayerConnected( pID ) )
 			{
 				SendError( playerid, "This player is not connected." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
 			}
 			else
 			{
@@ -25314,12 +25326,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if ( sscanf( inputtext, #sscanf_u, pID ) )
 			{
 				SendError( playerid, "Please enter a player's ID or name." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
 			}
 			else if ( !IsPlayerConnected( pID ) )
 			{
 				SendError( playerid, "This player is not connected." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Gaming Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
 			}
 			else
 			{
@@ -26746,7 +26758,7 @@ stock ShowPlayerVipRedeemedDialog( playerid )
 							""COL_GREY" * What did I receive?"COL_WHITE" Check through your V.I.P package contents via our site (forum -> announcements board).\n" );
 	strcat( szLargeString,	""COL_GREY" * How to redeem my houses/vehicles?"COL_WHITE" You will be announced to the admins and noted down for assistance, so please wait!\n"\
 							""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThanks for choosing to spend your Irresistible Coins, enjoy what you've got! :P"  );
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Gaming Donation", szLargeString, "Got it!", "" );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szLargeString, "Got it!", "" );
 }
 
 thread OnFetchCategoryResponse( playerid, category )
@@ -27460,11 +27472,12 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 	TextDrawBoxColor(g_ObjectLoadTD, 117);
 	TextDrawTextSize(g_ObjectLoadTD, 0.000000, 180.000000);
 
-	g_WebsiteTD = TextDrawCreate(33.000000, 427.000000, "www.IrresistibleGaming.com");
+	g_WebsiteTD = TextDrawCreate(84.000000, 429.000000, "www.SFCNR.com");
+	TextDrawAlignment(g_WebsiteTD, 2);
 	TextDrawBackgroundColor(g_WebsiteTD, 255);
 	TextDrawFont(g_WebsiteTD, 1);
 	TextDrawLetterSize(g_WebsiteTD, 0.220000, 1.200000);
-	TextDrawColor(g_WebsiteTD, 1289224191);
+	TextDrawColor(g_WebsiteTD, 0xfa4d4cff); // 1289224191
 	TextDrawSetOutline(g_WebsiteTD, 1);
 	TextDrawSetProportional(g_WebsiteTD, 1);
 
@@ -27508,11 +27521,11 @@ forward InitializeTextDraws( ); public InitializeTextDraws( )
 	TextDrawBoxColor(g_MovieModeTD[ 3 ], 255);
 	TextDrawTextSize(g_MovieModeTD[ 3 ], 620.000000, 0.000000);
 
-	g_MovieModeTD[ 4 ] = TextDrawCreate(515.000000, 385.000000, "www.IrresistibleGaming.com");
+	g_MovieModeTD[ 4 ] = TextDrawCreate(530.000000, 385.000000, "www.SFCNR.com");
 	TextDrawBackgroundColor(g_MovieModeTD[ 4 ], 255);
 	TextDrawFont(g_MovieModeTD[ 4 ], 1);
 	TextDrawLetterSize(g_MovieModeTD[ 4 ], 0.200000, 1.000000);
-	TextDrawColor(g_MovieModeTD[ 4 ], 13434879);
+	TextDrawColor(g_MovieModeTD[ 4 ], 0xfa4d4cff);
 	TextDrawSetOutline(g_MovieModeTD[ 4 ], 1);
 	TextDrawSetProportional(g_MovieModeTD[ 4 ], 1);
 
@@ -35350,7 +35363,7 @@ thread OnGrabLatestDonor( hidden )
 
 		// Play sound
 		foreach(new p : Player) if ( !IsPlayerUsingRadio( p ) ) {
-			PlayAudioStreamForPlayer( p, "http://files.irresistiblegaming.com/game_sounds/donated.mp3" );
+			PlayAudioStreamForPlayer( p, "http://files.sfcnr.com/game_sounds/donated.mp3" );
 		}
 
 		TextDrawSetString( g_TopDonorTD, sprintf( "Le Latest Donor %s - $%0.2f", szName, fAmount ) );

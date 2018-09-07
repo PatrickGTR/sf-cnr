@@ -14155,7 +14155,7 @@ stock initializeObjects( )
 	ApplyDynamicActorAnimation( CreateDynamicActor( 186, -790.101013, 668.494995, 24.556999, 53.500000, .worldid = -1, .interiorid = -1 ), "casino", "Slot_wait", 4.1, 1, 1, 1, 1, 0 );
 	ApplyDynamicActorAnimation( CreateDynamicActor( 187, -792.096008, 669.533996, 24.556999, -122.699996, .worldid = -1, .interiorid = -1 ), "casino", "Slot_wait", 4.1, 1, 1, 1, 1, 0 );
 	CreateBlackjackTable( 1000000, -790.151977, 662.466979, 19.318000, -25.000000, 0 );
-	CreatePokerTable( 5000000, 1000, -794.861022, 662.072021, 18.708000, 4, 0, 0 );
+	CreatePokerTable( 5000000, 50000, -794.861022, 662.072021, 18.708000, 4, 0, 0 );
 	CreateRouletteTable( -783.210021, 656.974975, 19.337999, -25.000000, 0 );
 
 	// pornstar mansion nibble
