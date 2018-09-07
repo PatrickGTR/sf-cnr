@@ -37,6 +37,7 @@
 #include < irresistible\features\weapon_drop >
 #include < irresistible\features\ammunation >
 #include < irresistible\features\duel >
+#include < irresistible\features\crowdfund >
 // #include < irresistible\features\pilot >
 // #include < irresistible\features\fishing >
 // #include < irresistible\features\vote >
