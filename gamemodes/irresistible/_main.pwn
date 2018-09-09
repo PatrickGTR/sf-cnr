@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming 2018
  * Developed by Lorenc Pekaj
- * Module: main.inc
+ * Module: _main.inc
  * Purpose: centralize includes
  */
 
@@ -28,30 +28,3 @@
 // cnr configuration
 #include "irresistible\cnr\_cnr.pwn"
 
-// commands
-
-// features
-#include "irresistible\features\fps.pwn"
-#include "irresistible\features\radio.pwn"
-#include "irresistible\features\cash_cards.pwn"
-#include "irresistible\features\furniture.pwn"
-#include "irresistible\features\weapon_drop.pwn"
-#include "irresistible\features\ammunation.pwn"
-#include "irresistible\features\duel.pwn"
-#include "irresistible\features\crowdfund.pwn"
-// #include "irresistible\features\pilot.pwn"
-// #include "irresistible\features\fishing.pwn"
-// #include "irresistible\features\vote.pwn"
-
-// gangs and facilities
-#include "irresistible\features\gangs\gangs.pwn"
-#include "irresistible\features\gangs\facilities.pwn"
-#include "irresistible\features\gangs\turfs.pwn"
-#include "irresistible\features\gangs\cannon.pwn"
-// #include "irresistible\features\gangs\gvehicles.pwn"
-
-// visage casino
-#include "irresistible\features\visage\_visage.pwn"
-
-// static cnr features
-#include "irresistible\cnr\static\_cnr_static.pwn"
