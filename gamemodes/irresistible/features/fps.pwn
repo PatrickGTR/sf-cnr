@@ -8,9 +8,6 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
-/* ** Defines ** */
-#define GetPlayerFPS(%1)			p_FPS[%1]
-
 /* ** Variables ** */
 new
 	Text:  p_FPSCounterTD 			[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
@@ -58,10 +55,29 @@ CMD:drawdistance( playerid, params[ ] )
 }
 #endif
 
+/* ** Hooks ** */
+hook OnScriptInit( )
+{
+	for ( new playerid; playerid != MAX_PLAYERS; playerid ++ )
+	{
+		p_FPSCounterTD[ playerid ] = TextDrawCreate(636.000000, 2.000000, "_");
+		TextDrawAlignment(p_FPSCounterTD[ playerid ], 3);
+		TextDrawBackgroundColor(p_FPSCounterTD[ playerid ], 255);
+		TextDrawFont(p_FPSCounterTD[ playerid ], 3);
+		TextDrawLetterSize(p_FPSCounterTD[ playerid ], 0.300000, 1.500000);
+		TextDrawColor(p_FPSCounterTD[ playerid ], -1);
+		TextDrawSetOutline(p_FPSCounterTD[ playerid ], 1);
+		TextDrawSetProportional(p_FPSCounterTD[ playerid ], 1);
+	}
+	return 1;
+}
+
 /* ** Functions ** */
-stock formatFPSCounter( playerid ) {
-	if( !p_FPSCounter{ playerid } )
+stock formatFPSCounter( playerid )
+{
+	if( !p_FPSCounter{ playerid } ) {
 		return;
+	}
 
 	static
 		iFPS,
@@ -80,18 +96,6 @@ stock formatFPSCounter( playerid ) {
 	TextDrawSetString( p_FPSCounterTD[ playerid ], szFPS );
 }
 
-/* ** Hooks ** */
-hook InitializeTextDraws( )
-{
-	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
-	{
-		p_FPSCounterTD[ playerid ] = TextDrawCreate(636.000000, 2.000000, "_");
-		TextDrawAlignment(p_FPSCounterTD[ playerid ], 3);
-		TextDrawBackgroundColor(p_FPSCounterTD[ playerid ], 255);
-		TextDrawFont(p_FPSCounterTD[ playerid ], 3);
-		TextDrawLetterSize(p_FPSCounterTD[ playerid ], 0.300000, 1.500000);
-		TextDrawColor(p_FPSCounterTD[ playerid ], -1);
-		TextDrawSetOutline(p_FPSCounterTD[ playerid ], 1);
-		TextDrawSetProportional(p_FPSCounterTD[ playerid ], 1);
-	}
+stock GetPlayerFPS( playerid ) {
+	return p_FPS[ playerid ];
 }

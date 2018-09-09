@@ -6,8 +6,7 @@
  */
 
 // config
-#include "irresistible\config\database.pwn" // keep #1
-#include "irresistible\config\colors.pwn"
+#include "irresistible\config\_config.pwn"
 
 // anticheat
 #include "irresistible\anticheat\_anticheat.pwn"
@@ -27,12 +26,9 @@
 #include "irresistible\gta\_gta.pwn"
 
 // cnr configuration
-#include "irresistible\cnr\player.pwn"
-#include "irresistible\cnr\global.pwn"
-#include "irresistible\cnr\classes.pwn"
-#include "irresistible\cnr\cities.pwn"
-#include "irresistible\cnr\dialog_ids.pwn"
-#include "irresistible\cnr\vip.pwn"
+#include "irresistible\cnr\_cnr.pwn"
+
+// commands
 
 // features
 #include "irresistible\features\fps.pwn"
