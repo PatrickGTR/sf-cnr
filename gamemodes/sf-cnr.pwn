@@ -91,7 +91,6 @@ native gpci 						( playerid, serial[ ], len );
 
 /* Dynamic Macros */
 #define IsDoubleXP()				(GetGVarInt("doublexp")!=0)
-#define IsProxiesBanned()			(GetGVarInt("proxyban")!=0)
 
 #define UpdateBusinessTitle(%0) \
 	 mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `BUSINESSES` m ON m.`OWNER_ID`=f.`ID` WHERE m.`ID`=%d",%0),true,"OnUpdateBusinessTitle","i",%0)
@@ -2956,7 +2955,6 @@ public OnGameModeInit()
 	AddServerVariable( "eventhost", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
-	AddServerVariable( "proxyban", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "hitman_budget", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "connectsong", "http://files.sfcnr.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 	AddServerVariable( "discordurl", "http://sfcnr.com/discord", GLOBAL_VARTYPE_STRING );
@@ -17622,14 +17620,6 @@ CMD:replenishsafe( playerid, params[ ] )
 	return 1;
 }
 
-CMD:proxies( playerid, params[ ] )
-{
-	if ( !IsPlayerAdmin( playerid ) ) return 0;
-	UpdateServerVariable( "proxyban", GetGVarInt( "proxyban" ) != 0 ? 0 : 1, 0.0, "", GLOBAL_VARTYPE_INT );
-	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You are have %s proxies.", IsProxiesBanned( ) ? ("enabled") : ("disabled"));
-	return 1;
-}
-
 CMD:driveby( playerid, params[ ] )
 {
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
@@ -28201,8 +28191,8 @@ thread OnHouseLoad( )
 				cache_get_field_content( i, "AMMO", weapon_info ), sscanf( weapon_info, "p<.>e<ddddddd>", g_HouseWeaponAmmo[ handle ] );
 			}
 		}
+		printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 	}
-	printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 
 	// Make Lorenc the owner of unowned VIP houses
 	foreach ( new houseid : houses ) if ( g_houseData[ houseid ] [ E_COST ] < 10000 ) {
@@ -29695,8 +29685,12 @@ stock TimeConvert( seconds )
 	return szTime;
 }
 
-stock getRandomCreatedHouse( )
+stock GetRandomCreatedHouse( )
 {
+	if ( ! Iter_Count( houses ) ) {
+		return -1;
+	}
+
 	static szCity[ MAX_ZONE_NAME ];
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
@@ -30652,9 +30646,10 @@ stock CreateFire( )
 	}
 	else
 	{
-	    for( new i, house; i < sizeof( g_fireData ); i ++ )
+	    for( new i = 0; i < sizeof( g_fireData ); i ++ )
 	    {
-			house = getRandomCreatedHouse( );
+			new
+				house = GetRandomCreatedHouse( );
 
 			if ( Iter_Contains( houses, house ) )
 			{
