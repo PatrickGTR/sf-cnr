@@ -6,10 +6,10 @@
  */
 
 /* ** Includes ** */
-#include "irresistible\features\visage\roulette.pwn"
-#include "irresistible\features\visage\blackjack.pwn"
-#include "irresistible\features\visage\poker.pwn"
-#include "irresistible\features\visage\fireworks.pwn"
-#include "irresistible\features\visage\casino.pwn"
-#include "irresistible\features\visage\apartments.pwn"
-#include "irresistible\features\visage\boxing.pwn"
+#include "irresistible\cnr\features\visage\roulette.pwn"
+#include "irresistible\cnr\features\visage\blackjack.pwn"
+#include "irresistible\cnr\features\visage\poker.pwn"
+#include "irresistible\cnr\features\visage\fireworks.pwn"
+#include "irresistible\cnr\features\visage\casino.pwn"
+#include "irresistible\cnr\features\visage\apartments.pwn"
+#include "irresistible\cnr\features\visage\boxing.pwn"
