@@ -15,7 +15,8 @@
 #pragma compat 1
 //#pragma option -d3
 #pragma dynamic 7200000
-//#define DEBUG_MODE
+
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -43,7 +44,6 @@
 #include                            < gvar >
 #include 							< RouteConnector >
 #include 							< merrandom >
-// #include 							< sampac >
 #include 							< MathParser >
 #include 							< mapandreas >
 #include 							< md-sort >
@@ -51,28 +51,8 @@ native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
 
-/* ** Anticheat ** */
-#if !defined AC_INCLUDED
-	#include 						< anticheat\global >
-	#include 						< anticheat\player >
-
-	#include 						< anticheat\weapon >
-	//#include 						< anticheat\spectate >
-	#include 						< anticheat\airbrake >
-	#include 						< anticheat\proaim >
-	#include 						< anticheat\autocbug >
-	#include 						< anticheat\flying >
-	#include 						< anticheat\remotejack > // Works fine
-
-	#include 						< anticheat\hooks >
-
-	#include 						< anticheat\hitpoints >  // Good
-
-	#define AC_INCLUDED
-#endif
-
 /* ** SF-CNR ** */
-#include 							< irresistible\main >
+#include 							"irresistible\_main.pwn"
 
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
@@ -103,7 +83,6 @@ native gpci 						( playerid, serial[ ], len );
 #define replacePercentageSymbol(%0)	strreplacechar(szString,'%','#')
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
-#define INVALID_TIMER_ID			(-1)
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define GetBusinessSecurity(%0) 	(g_businessSecurityData[%0][E_LEVEL])
 #define ResetSpawnLocation(%0)		SetPlayerSpawnLocation(%0, "")
@@ -260,6 +239,8 @@ enum E_DONATION_DATA
 #define CP_AIRPORT_LV 				( 37 )
 #define CP_CASINO_BAR 				( 38 )
 #define CP_ALCATRAZ_EXPORT			( 39 )
+
+new g_Checkpoints           		[ ALL_CHECKPOINTS ];
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -2879,288 +2860,6 @@ new
 	Iterator:business<MAX_BUSINESSES>
 ;
 
-/* ** Player Data ** */
-new
-    bool: p_Spawned    				[ MAX_PLAYERS char ],
-    bool: p_PlayerLogged    		[ MAX_PLAYERS char ],
-    p_AccountID						[ MAX_PLAYERS ],
-    p_AdminLevel       				[ MAX_PLAYERS ],
-    p_Job               			[ MAX_PLAYERS char ],
-    p_VIPJob               			[ MAX_PLAYERS char ],
-    bool: p_JobSet            		[ MAX_PLAYERS char ],
-    // bool: p_CitySet            		[ MAX_PLAYERS char ],
-  	p_JailTime          			[ MAX_PLAYERS ],
-  	p_AdminJailed					[ MAX_PLAYERS char ],
-   	p_JailTimer       				[ MAX_PLAYERS ],
-    bool: p_Jailed          	  	[ MAX_PLAYERS char ],
-   	p_WantedLevel       			[ MAX_PLAYERS ],
-    bool: p_Tazed           	  	[ MAX_PLAYERS char ],
-  	p_LastVehicle       			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... },
-  	bool: p_Cuffed          	  	[ MAX_PLAYERS char ],
-	p_CuffAbuseTimer    			[ MAX_PLAYERS ],
- 	p_Cash              			[ MAX_PLAYERS ],
- 	p_AntiRobSpam       			[ MAX_PLAYERS ],
- 	p_AntiRapeSpam      			[ MAX_PLAYERS ],
-  	bool: p_Tied            	  	[ MAX_PLAYERS char ],
- 	p_Ropes             			[ MAX_PLAYERS ],
-  	bool: p_Kidnapped       	  	[ MAX_PLAYERS char ],
-  	bool: p_ToggledViewPM        	[ MAX_PLAYERS char ],
-  	p_TicketTimestamp  				[ MAX_PLAYERS ],
-   	p_TicketIssuer           		[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_CheckpointEnterTick   	    [ MAX_PLAYERS ],
-	bool: p_pausedToLoad    	    [ MAX_PLAYERS char ],
-	bool: p_CantUseReport           [ MAX_PLAYERS char ],
-	p_pausedToLoadTimer     	    [ MAX_PLAYERS ],
-	p_BankMoney               	 	[ MAX_PLAYERS ],
-	p_OwnedHouses                   [ MAX_PLAYERS ],
-	p_OwnedVehicles                 [ MAX_PLAYERS ],
-	p_OwnedBusinesses				[ MAX_PLAYERS ],
-	p_TrackingTimer             	[ MAX_PLAYERS ] = { INVALID_TIMER_ID, ... },
-	p_ContractedAmount          	[ MAX_PLAYERS ],
-	p_MetalMelter                   [ MAX_PLAYERS ],
-	p_Kills                         [ MAX_PLAYERS ],
-	p_Deaths                        [ MAX_PLAYERS ],
-	p_VIPLevel                     	[ MAX_PLAYERS ],
-	p_XP                            [ MAX_PLAYERS ],
-	p_CureDealer                    [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_CureTick                      [ MAX_PLAYERS ],
-	p_HealDealer					[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_HealTick						[ MAX_PLAYERS ],
-	bool: p_Spectating            	[ MAX_PLAYERS char ],
-	bool: p_Muted                   [ MAX_PLAYERS char ],
-	bool: p_InfectedHIV             [ MAX_PLAYERS char ],
-	p_InHouse                       [ MAX_PLAYERS ],
-	p_ExperienceHideTimer           [ MAX_PLAYERS ],
-	p_AntiTextSpam                  [ MAX_PLAYERS ],
-	bool: p_BlockedPM            	[ MAX_PLAYERS ] [ MAX_PLAYERS ],
-	bool: p_inFBI                   [ MAX_PLAYERS char ],
-	bool: p_inArmy                  [ MAX_PLAYERS char ],
-	p_MutedTime                     [ MAX_PLAYERS ],
-    p_AntiCommandSpam               [ MAX_PLAYERS ],
-    p_PmResponder                  	[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-    bool: justConnected        		[ MAX_PLAYERS char ],
-	p_BailOfferer                   [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
-	Text3D: p_InfoLabel             [ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	p_InfoLabelString               [ MAX_PLAYERS ] [ 32 ],
-	bool: p_inMovieMode             [ MAX_PLAYERS char ],
-	bool: p_inCIA                   [ MAX_PLAYERS char ],
-	p_AntiEmpSpam                   [ MAX_PLAYERS ],
-	bool: p_inPaintBall           	[ MAX_PLAYERS char ],
-	p_Scissors                      [ MAX_PLAYERS ],
-	// p_TaxTime              			[ MAX_PLAYERS ],
-	bool: p_GPSToggled            	[ MAX_PLAYERS char ],
-	p_GPSTimer                      [ MAX_PLAYERS ] = { 0xFF, ... },
-	p_GPSLocation               	[ MAX_PLAYERS ],
-	p_GPSObject                   	[ MAX_PLAYERS ] = { INVALID_OBJECT_ID, ... },
-	p_VIPArmourRedeem               [ MAX_PLAYERS ],
-	p_VIPWeaponRedeem               [ MAX_PLAYERS ],
-	p_VIPExpiretime                 [ MAX_PLAYERS ],
-	p_LastSkin                      [ MAX_PLAYERS ],
-	bool: p_MoneyBag                [ MAX_PLAYERS char ],
-	p_CopBanned                     [ MAX_PLAYERS char ],
-	p_AntiEMP                       [ MAX_PLAYERS ],
-	p_FireDistanceTimer             [ MAX_PLAYERS ] = { 0xFF, ... },
-	p_Warns                         [ MAX_PLAYERS ],
-	p_Wood							[ MAX_PLAYERS ],
-	p_LumberjackDeliver				[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_LumberjackReturn				[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_LumberjackTimeElapsed			[ MAX_PLAYERS ],
-	bool: p_StartedLumberjack		[ MAX_PLAYERS char ],
-	p_Uptime                        [ MAX_PLAYERS ],
-	p_AchievementTimer              [ MAX_PLAYERS ] = { 0xFF, ... },
-	bool: p_SecureWallet          	[ MAX_PLAYERS char ],
-	p_WeedGrams                     [ MAX_PLAYERS ],
-	p_WeedDealer                    [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_WeedTick                      [ MAX_PLAYERS ],
-	p_WeedSellingGrams 				[ MAX_PLAYERS ],
-	p_Arrests                       [ MAX_PLAYERS ],
-	bool: p_AidsVaccine          	[ MAX_PLAYERS char ],
-	bool: p_CantUseAsk              [ MAX_PLAYERS char ],
-	bool: p_AdminLog                [ MAX_PLAYERS char ],
-	LastDeath						[ MAX_PLAYERS ],
-	DeathSpam						[ MAX_PLAYERS char ],
-	bool: p_beingSpectated			[ MAX_PLAYERS ],
-	p_whomSpectating				[ MAX_PLAYERS ],
-	bool: p_InAnimation        		[ MAX_PLAYERS char ],
-	p_AntiSaveStatsSpam				[ MAX_PLAYERS ],
-	p_AntiMechFixSpam				[ MAX_PLAYERS ],
-	p_AntiMechNosSpam				[ MAX_PLAYERS ],
-	p_AntiMechEmpSpam				[ MAX_PLAYERS ],
-	bool: p_GivingBlowjob         	[ MAX_PLAYERS char ],
-	bool: p_GettingBlowjob         	[ MAX_PLAYERS char ],
-	p_AntiBlowJobSpam               [ MAX_PLAYERS ],
-	p_EntranceTickcount            	[ MAX_PLAYERS ],
-    p_VIPWep1                       [ MAX_PLAYERS char ],
-    p_VIPWep2                       [ MAX_PLAYERS char ],
-    p_VIPWep3                       [ MAX_PLAYERS char ],
-    p_VIPWep_Modify                	[ MAX_PLAYERS char ],
-    p_BobbyPins                     [ MAX_PLAYERS ],
-    p_IncorrectLogins               [ MAX_PLAYERS char ],
-    p_Robberies                     [ MAX_PLAYERS ],
-    p_ViewingStats                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-    p_CarWarpTime					[ MAX_PLAYERS ],
-    p_CarWarpVehicleID              [ MAX_PLAYERS ],
-	p_AntiTextSpamCount				[ MAX_PLAYERS char ],
-	Float: p_PlayerBuggerX			[ MAX_PLAYERS ],
-	Float: p_PlayerBuggerY			[ MAX_PLAYERS ],
-	Float: p_PlayerBuggerZ			[ MAX_PLAYERS ],
-	p_DamageSpamTime				[ MAX_PLAYERS ],
-	p_DamageSpamCount				[ MAX_PLAYERS char ],
-	p_PingImmunity                  [ MAX_PLAYERS char ],
-	p_Fires                         [ MAX_PLAYERS ],
-	p_ApartmentEnter                [ MAX_PLAYERS char ],
-	p_AntiTieSpam                   [ MAX_PLAYERS ],
-	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_RansomAmount                  [ MAX_PLAYERS ],
-	p_LastDrovenPoliceVeh			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... },
-	Text3D: p_SpawnKillLabel		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	p_AntiSpawnKill                 [ MAX_PLAYERS ],
-    bool: p_AntiSpawnKillEnabled	[ MAX_PLAYERS char ],
-    p_HitsComplete                  [ MAX_PLAYERS ],
-    /*p_CopTutorial                   [ MAX_PLAYERS char ],
-    p_CopTutorialProgress			[ MAX_PLAYERS char ],
-    p_CopTutorialTick               [ MAX_PLAYERS ],*/
-	p_WeaponDealTick				[ MAX_PLAYERS ],
-	p_WeaponDealer					[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_WeaponDealMenu				[ MAX_PLAYERS char ],
-	p_WeaponLockerMenu				[ MAX_PLAYERS char ],
-	bool: p_WeaponDealing			[ MAX_PLAYERS char ],
-	p_BlowjobOfferer				[ MAX_PLAYERS ],
-	p_BlowjobDealTick				[ MAX_PLAYERS ],
-	p_LastEnteredEntrance          	[ MAX_PLAYERS ] = { -1, ... },
-	p_ViewingGangTalk               [ MAX_PLAYERS ] = { -1, ... },
-	p_SearchedCountTick	        	[ MAX_PLAYERS ],
-	p_SellingWeedTick               [ MAX_PLAYERS ],
-	p_AntiKidnapSpam                [ MAX_PLAYERS ],
-	//p_JoinTimestamp                 [ MAX_PLAYERS ],
-	p_PasswordedHouse               [ MAX_PLAYERS ],
-	p_HouseWeaponAddSlot            [ MAX_PLAYERS char ],
-	Text3D: p_AdminLabel         	[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	bool: p_AdminOnDuty             [ MAX_PLAYERS char ],
-	p_FurnitureCategory             [ MAX_PLAYERS char ],
-	p_FurnitureRotAxis              [ MAX_PLAYERS char ],
-	Float: p_ProgressStatus         [ MAX_PLAYERS ],
-	bool: p_ProgressStarted         [ MAX_PLAYERS char ],
-	p_HouseCrackingPW				[ MAX_PLAYERS ],
-	p_PawnStoreExport				[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_Burglaries                    [ MAX_PLAYERS ],
-    p_ArmyBanned                    [ MAX_PLAYERS char ],
-	//Text3D: p_DetainedLabel       [ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-    //bool: p_Detained          	[ MAX_PLAYERS char ],
-	//p_DetainedBy                  [ MAX_PLAYERS ],
-	p_BailTimestamp					[ MAX_PLAYERS ],
-	p_AFKTime						[ MAX_PLAYERS ],
-	bool: p_ClassSelection			[ MAX_PLAYERS char ],
-	p_MiningExport					[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	Text3D: p_WeedLabel				[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	LastPickupTimestamp				[ MAX_PLAYERS ],
-	PreviousPickupID				[ MAX_PLAYERS ],
-	//p_LastAnimIndex					[ MAX_PLAYERS ],
-	p_SpawningCity					[ MAX_PLAYERS char ],
-	p_UsingRobberySafe 				[ MAX_PLAYERS ] = { -1, ... },
-	bool: p_CancelProgress 			[ MAX_PLAYERS char ],
-	p_LumberjackMapIcon 			[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_PawnStoreMapIcon 				[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_SpectateWeapons 				[ MAX_PLAYERS ] [ 13 ] [ 2 ],
-	bool: p_LeftCuffed 				[ MAX_PLAYERS char ],
-	p_LabelColor					[ MAX_PLAYERS ] = { COLOR_GREY, ... },
-	p_RapidFireTickCount			[ MAX_PLAYERS ],
-	p_RapidFireShots				[ MAX_PLAYERS char ],
-	p_BulletInvulnerbility 			[ MAX_PLAYERS ],
-	p_ProgressUpdateTimer			[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_DeathMessage 					[ MAX_PLAYERS ] [ 32 ],
-	p_ViewingInterior 				[ MAX_PLAYERS char ],
-	p_MethYielded 					[ MAX_PLAYERS ],
-	p_CarsJacked 					[ MAX_PLAYERS ],
-	p_BankBlown						[ MAX_PLAYERS ],
-	p_JailsBlown					[ MAX_PLAYERS ],
-	p_AntiExportCarSpam 			[ MAX_PLAYERS ],
-	p_AntiMechFlipSpam 				[ MAX_PLAYERS ],
-	bool: p_inAlcatraz 				[ MAX_PLAYERS char ],
-	Float: p_LastPickupPos 			[ MAX_PLAYERS ] [ 3 ],
-	Text3D: p_TiedLabel       		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	p_TiedBy 						[ MAX_PLAYERS ],
-	p_BlowjobPrice 					[ MAX_PLAYERS ],
-	p_DesyncTime 					[ MAX_PLAYERS ],
-	p_AnswerDelay					[ MAX_PLAYERS ],
-	p_LastPlayerState 				[ MAX_PLAYERS char ],
-	p_RespondDelay 					[ MAX_PLAYERS ],
-	p_VisibleOnRadar 				[ MAX_PLAYERS ],
-	p_InGarage 						[ MAX_PLAYERS ] = { -1, ... },
-	p_WorkCooldown 					[ MAX_PLAYERS ],
-	p_AntiSpammyTS 					[ MAX_PLAYERS ],
-	p_TruckedCargo 					[ MAX_PLAYERS ],
-	p_KidnapImmunity				[ MAX_PLAYERS ],
-	p_GangSplitProfits 				[ MAX_PLAYERS ],
-	Float: p_IrresistiblePoints 	[ MAX_PLAYERS ],
-	p_SafeHelperTimer				[ MAX_PLAYERS ] = { -1, ... },
-	p_HouseOfferer					[ MAX_PLAYERS ],
-	p_HouseOfferTicks				[ MAX_PLAYERS ],
-	p_HouseSellingID				[ MAX_PLAYERS ],
-	p_HouseSellingPrice				[ MAX_PLAYERS ],
-	p_RansomTimestamp 				[ MAX_PLAYERS ],
-	p_QuitToAvoidTimestamp 			[ MAX_PLAYERS ],
-	p_TimeTiedAt 					[ MAX_PLAYERS ],
-	p_CopRefillTimestamp			[ MAX_PLAYERS ],
-	p_AdminCommandPause 			[ MAX_PLAYERS ],
-	p_WeaponKills					[ MAX_PLAYERS ] [ MAX_WEAPONS ],
-	p_forcedAnticheat				[ MAX_PLAYERS ],
-	p_TiedAtTimestamp 				[ MAX_PLAYERS ],
-	bool: p_AutoSpin				[ MAX_PLAYERS char ],
-	p_InBusiness 					[ MAX_PLAYERS ] = { -1, ... },
-	p_VehicleBringCooldown 			[ MAX_PLAYERS ],
-	p_Fireworks 					[ MAX_PLAYERS ],
-	p_ExplosiveBullets 				[ MAX_PLAYERS ],
-	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
-	p_SpawningKey 					[ MAX_PLAYERS ] [ 4 ],
-	p_SpawningIndex 				[ MAX_PLAYERS ],
-	p_TazingImmunity 				[ MAX_PLAYERS ],
-	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
-	p_PlayerAltBindTick 			[ MAX_PLAYERS ]
-;
-
-/* ** Server Data ** */
-new
-    g_Checkpoints           		[ ALL_CHECKPOINTS ],
-	g_redeemVipWait 				= 0,
-	g_TrolleyVehicles               [ 5 ],
-	engine, lights, doors, bonnet, boot, objective, alarm, panels, tires,
-	g_RestoreRobberiesBribes  		= 0,
-	g_ServerUptime 					= 0,
-	rl_ServerUpdate					= 0xFF,
-	rl_ZoneUpdate                   = 0xFF,
-	rl_AutoVehicleRespawner         = 0xFF,
-	bool: g_adminSpawnedCar     	[ MAX_VEHICLES char ],
-	g_WorldClockSeconds             = 0,
-	g_WorldDayCount                 = 0,
-	g_WorldWeather                  = 10,
-	g_LogsInStock 					= 0,
-	g_PingLimit                     = 1024,
-	g_circleall_CD                  = false,
-	g_randomMessageTick 			= 0,
-	log__Text						[ 6 ][ 90 ],
-	szReportsLog 					[ 8 ][ 128 ],
-	szQuestionsLog 					[ 8 ][ 128 ],
-	bool: g_CommandLogging			= false,
-	bool: g_DialogLogging			= false,
-	szRules							[ 3300 ],
- 	g_BannedDrivebyWeapons 			[ ] =
- 	{
- 		24, 26, 27, 34, 33
- 	},
- 	bool: g_Debugging 				= false,
- 	bool: g_Driveby 				= false,
- 	bool: g_VipPrivateMsging 		= false,
- 	bool: g_HappyHour				= false,
- 	Float: g_HappyHourRate			= 0.0,
- 	g_iTime 						= 0,
- 	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
- 	g_VehicleLastAttacked 			[ MAX_VEHICLES ],
-	g_TopDonorWall 					= INVALID_OBJECT_ID,
-	g_AlcatrazArea 					= -1
-;
-
 /* ** Forwards ** */
 public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdate( );
@@ -5728,7 +5427,7 @@ public OnPlayerRequestClass( playerid, classid )
 	PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 	KillTimer( p_TrackingTimer[ playerid ] );
-	p_TrackingTimer[ playerid ] = INVALID_TIMER_ID;
+	p_TrackingTimer[ playerid ] = -1;
 	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	HidePlayerTogglableTextdraws( playerid );
@@ -7316,7 +7015,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	p_ClassSelection{ playerid } = false;
 	p_TicketIssuer[ playerid ] = INVALID_PLAYER_ID;
 	KillTimer( p_TrackingTimer[ playerid ] );
-	p_TrackingTimer[ playerid ] = INVALID_TIMER_ID;
+	p_TrackingTimer[ playerid ] = -1;
 	p_GPSLocation	[ playerid ] = 0;
 	p_GPSToggled	{ playerid } = false;
 	TextDrawHideForPlayer( playerid, p_GPSInformation[ playerid ] );
@@ -13300,10 +12999,10 @@ CMD:hidetracker( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	if ( !JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
-	if ( p_TrackingTimer[ playerid ] == INVALID_TIMER_ID ) return SendError( playerid, "Your tracker is already deactivated." );
+	if ( p_TrackingTimer[ playerid ] == -1 ) return SendError( playerid, "Your tracker is already deactivated." );
 	SendServerMessage(playerid, "You have de-activated the tracker.");
 	KillTimer( p_TrackingTimer[ playerid ] );
-	p_TrackingTimer[ playerid ] = INVALID_TIMER_ID;
+	p_TrackingTimer[ playerid ] = -1;
 	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
 	return 1;
 }
@@ -13335,7 +13034,7 @@ function TrackPlayer_timer( playerid, victimid )
 {
 	if ( !IsPlayerConnected( victimid ) || p_AdminOnDuty{ victimid } == true || GetPlayerState( victimid ) == PLAYER_STATE_SPECTATING || !JobEquals( playerid, JOB_HITMAN ) || p_Class[ playerid ] != CLASS_CIVILIAN )
 	{
-		KillTimer( p_TrackingTimer[ playerid ] ), p_TrackingTimer[ playerid ] = INVALID_TIMER_ID;
+		KillTimer( p_TrackingTimer[ playerid ] ), p_TrackingTimer[ playerid ] = -1;
 		TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
 	}
 	else
@@ -18756,24 +18455,6 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 		SendClientMessageToRace( iRace, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has exited their vehicle and left the race.", ReturnPlayerName( playerid ), playerid );
 		RemovePlayerFromRace( playerid );
 	}
-
-#if defined AC_INCLUDED
-
-	// Weapon Hacks - credits to wups
-
-	switch( GetVehicleModel( vehicleid ) )
-	{
-		case 457:
-			p_PlayerHasWeapon[ playerid ] { 2 } = true;
-
-		case 592, 577, 511, 512, 520, 593, 553, 476, 519, 460, 513, 548, 425, 417, 487, 488, 497, 563, 447, 469:
-			p_PlayerHasWeapon[ playerid ] { 46 } = true;
-
-		case 596, 597, 598, 599:
-			p_PlayerHasWeapon[ playerid ] { 25 } = true;
-	}
-
-#endif
 	return 1;
 }
 
@@ -20736,10 +20417,12 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 								GivePlayerWantedLevel( playerid, 6 - p_WantedLevel[ playerid ] );
 							}
 
-							// prevent team kills
-							if ( p_Class[ playerid ] != CLASS_POLICE && p_Class[ i ] != CLASS_POLICE ) {
-								AC_UpdateDamageInformation( i, playerid, PRESSED( KEY_FIRE ) ? 51 : 38 );
-							}
+							#if defined AC_INCLUDED
+								// prevent team kills
+								if ( p_Class[ playerid ] != CLASS_POLICE && p_Class[ i ] != CLASS_POLICE ) {
+									AC_UpdateDamageInformation( i, playerid, PRESSED( KEY_FIRE ) ? 51 : 38 );
+								}
+							#endif
 						}
 
 						// debug
@@ -21273,7 +20956,7 @@ function unpause_Player( playerid )
 		}
 		else
 		{
-			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for %s.", ReturnPlayerName( playerid ), playerid, detectionToString( detection ) );
+			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for %s.", ReturnPlayerName( playerid ), playerid, AC_DetectedCheatToString( detection ) );
 		}
 		return 1;
 	}

@@ -23,6 +23,9 @@ plugins/*
 
 # gamemodes
 gamemodes/*
+!gamemodes/irresistible
+!gamemodes/irresistible/**
+gamemodes/irresistible/config/database.pwn
 !gamemodes/sf-cnr.pwn
 !gamemodes/COD8.pwn
 
