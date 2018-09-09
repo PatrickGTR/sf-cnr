@@ -115,8 +115,13 @@ new
 ;
 
 /* ** Hooks ** */
-hook OnGameModeInit( )
+hook OnScriptInit( )
 {
+    // initialize textdraws
+    for ( new i = 0; i < MAX_BLACKJACK_TABLES; i ++ ) {
+        initializeBlackjackTextdraws( i );
+    }
+
     // for tracking bets
     AddServerVariable( "blackjack_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
     AddServerVariable( "blackjack_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
@@ -295,13 +300,6 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		}
 	}
 	return 1;
-}
-
-hook InitializeTextDraws( )
-{
-    for ( new i = 0; i < MAX_BLACKJACK_TABLES; i ++ ) {
-        initializeBlackjackTextdraws( i );
-    }
 }
 
 /* ** Functions ** */
