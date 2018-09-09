@@ -7,12 +7,6 @@
 
 /* ** Debug ** */
 
-// Added class detection for civilains - ShowPlayerDuelMenu(playerid)
-
-
-// #define GivePlayerCash			GivePlayerMoney
-// #define GetPlayerCash			GetPlayerMoney
-
 /* ** Definitions ** */
 #define COL_DUEL 					"{B74AFF}"
 #define DIALOG_DUEL 				7360

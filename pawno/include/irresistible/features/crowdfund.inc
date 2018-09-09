@@ -49,6 +49,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			viewing_crowdfund = GetPVarInt( playerid, "viewing_crowdfund" );
 
+		if ( ! viewing_crowdfund ) {
+			return SendError( playerid, "There was an error. Please attempt to contribute to the crowdfund again." );
+		}
+
 		switch ( listitem )
 		{
 			case 0:
@@ -107,9 +111,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Commands ** */
-CMD:crowdfunds( playerid, params[ ] ) {
-	return ShowPlayerCrowdfunds( playerid );
-}
+CMD:crowdfund( playerid, params[ ] ) return cmd_crowdfunds( playerid, params );
+CMD:crowdfunds( playerid, params[ ] ) return ShowPlayerCrowdfunds( playerid );
 
 /* ** Functions ** */
 stock ShowPlayerCrowdfunds( playerid ) {
@@ -264,16 +267,27 @@ thread OnDisplayCrowdfunds( playerid )
 			new release_timestamp = cache_get_field_content_int( row, "RELEASE", dbHandle );
 			new end_timestamp = cache_get_field_content_int( row, "END", dbHandle );
 
-			format( szLargeString, sizeof( szLargeString ),
-				"%s%s%s\t%s IC\t%s IC\t%s%0.1f%\n",
-				szLargeString,
-				( curr_timestamp > release_timestamp && release_timestamp != 0 ) || ( curr_timestamp > end_timestamp ) ? ( COL_GREY ) : ( COL_WHITE ),
-				feature,
-				number_format( amount_raised, .prefix = '\0', .decimals = 1 ),
-				number_format( target_amount, .prefix = '\0', .decimals = 1 ),
-				percent_raised >= 100.0 ? ( COL_GREEN ) : ( COL_WHITE ),
-				percent_raised
-			);
+			// inactive
+			if ( ( curr_timestamp > release_timestamp && release_timestamp != 0 ) || ( curr_timestamp > end_timestamp ) )
+			{
+				format( szLargeString, sizeof( szLargeString ),
+					"%s{333333}%s\t{333333}%s IC\t{333333}%s IC\t%s%0.1f%\n",
+					szLargeString, feature,
+					number_format( amount_raised, .prefix = '\0', .decimals = 1 ),
+					number_format( target_amount, .prefix = '\0', .decimals = 1 ),
+					percent_raised >= 100.0 ? ( COL_GREEN ) : ( COL_WHITE ), percent_raised
+				);
+			}
+			else
+			{
+				format( szLargeString, sizeof( szLargeString ),
+					"%s%s\t%s IC\t%s IC\t%s%0.1f%\n",
+					szLargeString, feature,
+					number_format( amount_raised, .prefix = '\0', .decimals = 1 ),
+					number_format( target_amount, .prefix = '\0', .decimals = 1 ),
+					percent_raised >= 100.0 ? ( COL_GREEN ) : ( COL_WHITE ), percent_raised
+				);
+			}
 		}
 		format( crowdfund_ids, sizeof( crowdfund_ids ), "%s%d ", crowdfund_ids, id );
 	}
