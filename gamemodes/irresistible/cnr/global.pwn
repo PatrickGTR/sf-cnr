@@ -44,3 +44,6 @@ new
 	g_TopDonorWall 					= INVALID_OBJECT_ID,
 	g_AlcatrazArea 					= -1
 ;
+
+/* ** Getters and Setters ** */
+stock GetServerTime( ) return g_iTime;

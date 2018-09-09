@@ -244,3 +244,22 @@ new
 	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
 	p_PlayerAltBindTick 			[ MAX_PLAYERS ]
 ;
+
+/* ** Getters And Setters** */
+stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
+
+stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
+
+stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
+
+stock IsPlayerMovieMode( playerid ) return p_inMovieMode{ playerid };
+
+stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
+
+stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
+
+stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
+
+stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
+
+stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };

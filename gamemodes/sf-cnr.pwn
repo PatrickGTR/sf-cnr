@@ -28191,8 +28191,8 @@ thread OnHouseLoad( )
 				cache_get_field_content( i, "AMMO", weapon_info ), sscanf( weapon_info, "p<.>e<ddddddd>", g_HouseWeaponAmmo[ handle ] );
 			}
 		}
-		printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
 	}
+	printf( "[HOUSES]: %d houses have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
 
 	// Make Lorenc the owner of unowned VIP houses
 	foreach ( new houseid : houses ) if ( g_houseData[ houseid ] [ E_COST ] < 10000 ) {
@@ -37891,38 +37891,16 @@ stock BreakPlayerCuffs( playerid )
 	return 1;
 }
 
-stock GetServerTime( ) return g_iTime;
-
-stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
-
-stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
-
-stock GetPlayerVIPDuration( playerid ) return p_VIPExpiretime[ playerid ] - g_iTime;
-
-stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
-
-stock IsPlayerMovieMode( playerid ) return p_inMovieMode{ playerid };
-
-stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
-
-stock GetPlayerGang( playerid ) return p_GangID[ playerid ];
-
-stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
-
-stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
-
-stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
-
-stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
-
 stock IsPlayerEmailVerified( playerid ) return p_accountSecurityData[ playerid ] [ E_ID ];
 
 stock IsPlayerAFK( playerid ) return ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 2595 );
+
+stock GetPlayerVIPDuration( playerid ) return p_VIPExpiretime[ playerid ] - g_iTime;
+
+stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
 
 stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
 }
 
 stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ] && ! p_pausedToLoad{ playerid };
-
-stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };

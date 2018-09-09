@@ -16,6 +16,7 @@
 
 /* ** Macros ** */
 #define IsGangPrivate(%0)			( g_gangData[ %0 ] [ E_INVITE_ONLY ] )
+#define GetPlayerGang(%0) 			( p_GangID[ %0 ] )
 
 /* ** Variables ** */
 enum e_gang_data
