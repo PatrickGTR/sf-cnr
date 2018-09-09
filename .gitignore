@@ -9,27 +9,7 @@ samp.ban
 include/*
 
 # pawno
-pawno/pawn.ico
-pawno/new.pwn
-pawno/settings.ini
-pawno/.pwn
-pawno/pawndisasm.pdb
-pawno/pawncc.pdb
-pawno/pawnc.pdb
-pawno/include/**/*
-!pawno/pawn.cfg
-!pawno/include/a_ig.inc
-!pawno/include/sf-cnr.inc
-!pawno/include/lookupffs.inc
-!pawno/include/a_analytics.inc
-!pawno/include/a_explosion.inc
-!pawno/include/a_weapondata.inc
-!pawno/include/attachments.inc
-!pawno/include/anticheat
-!pawno/include/anticheat/**
-!pawno/include/irresistible
-!pawno/include/irresistible/**
-
+pawno/*
 
 # filterscripts
 filterscripts/*
