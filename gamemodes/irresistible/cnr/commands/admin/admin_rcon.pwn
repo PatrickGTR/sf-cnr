@@ -269,47 +269,6 @@ thread OnQueryServerViaRCON( playerid )
 	}
 #endif
 
-#if ENABLED_EASTER_EGG == true
-	CMD:setegg( playerid, params[ ] )
-	{
-		if ( !IsPlayerAdmin( playerid ) ) return 0;
-		if ( g_EasterHunt ) return SendError( playerid, "The " #EASTEREGG_NAME " hunt has already started." );
-
-		new
-		    Float: X, Float: Y, Float: Z;
-
-		if ( GetPlayerPos( playerid, X, Y, Z ) ) {
-			if ( CreateEasterEgg( X, Y, Z ) != -1 ) {
-				SendServerMessage( playerid, "Planted " #EASTEREGG_NAME " at your current position." );
-				AddAdminLogLineFormatted( "%s(%d) has set a " #EASTEREGG_NAME "", ReturnPlayerName( playerid ), playerid );
-			}
-			else SendError( playerid, "There isn't enough room for another " #EASTEREGG_NAME "." );
-		}
-		return 1;
-	}
-
-	CMD:treasurehunt( playerid, params[ ] )
-	{
-		if ( !IsPlayerAdmin( playerid ) )
-			return 0;
-
-		if ( Iter_Count(eastereggs) < 1 )
-			return SendError( playerid, "There are not enough " #EASTEREGG_NAME "s planted to start the treasure hunt." );
-
-		// if its false, destroy all egs
-		if ( ( g_EasterHunt = ! g_EasterHunt ) == false )
-	    {
-			for ( new i = 0; i < MAX_EGGS; i ++)
-				DestroyEasterEgg( i );
-	    }
-
-	    // alert admin log
-		AddAdminLogLineFormatted( "%s(%d) has started a treasurehunt", ReturnPlayerName( playerid ), playerid );
-	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_GOLD" Treasure Hunt has been %s", g_EasterHunt == true ? ("activated, look around for " #EASTEREGG_NAME "s and get a free gift.") : ("de-activated.") );
-		return 1;
-	}
-#endif
-
 CMD:addcomponent( playerid, params[ ] )
 {
 	new

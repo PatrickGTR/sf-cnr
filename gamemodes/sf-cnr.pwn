@@ -1487,30 +1487,6 @@ new
 	p_HighrollersBarrier 				[ MAX_PLAYERS ] [ 2 ]
 ;
 
-
-/* ** Easter Eggs ** */
-#define ENABLED_EASTER_EGG 			( false )
-
-#if ENABLED_EASTER_EGG == true
-	#define EASTEREGG_LABEL 			"[EASTER EGG]"
-	#define EASTEREGG_NAME 				"Easter Egg"
-	#define EASTEREGG_MODEL 			randarg( 19341, 19342, 19343, 19344, 19345 )
-	#define MAX_EGGS 					( 4 )
-
-	enum E_EASTEREGG_DATA
-	{
-		Float: E_X,     		Float: E_Y,			Float: E_Z,
-		E_PICK_UP, 				Text3D: E_LABEL
-	};
-
-	new
-		g_EasterEggs                    [ MAX_EGGS ] [ E_EASTEREGG_DATA ],
-		bool: g_EasterHunt              = false,
-
-		Iterator:eastereggs<MAX_EGGS>
-	;
-#endif
-
 /* ** Secure Truck Mod ** */
 #define ENABLED_SECURE_TRUCK		true
 #define SECURE_TRUCK_DRIVER_NAME 	( "ChuffSec" )
@@ -1969,7 +1945,6 @@ enum E_CASINO_POOL_DATA
 	E_POOL,						E_OBJECT[ POOL_ENTITIES ],		Text3D: E_LABEL[ POOL_ENTITIES ]
 };
 
-
 enum E_SLOT_ODD_DATA
 {
 	E_ENTRY_FEE,				E_SAMPLE_SIZE,					Float: E_TAX,
@@ -2321,7 +2296,6 @@ public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdate( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnRulesHTTPResponse( index, response_code, data[ ] );
-public OnRevCTRLHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerChainsawTree( playerid, treeid );
@@ -3885,8 +3859,10 @@ public OnServerUpdate( )
 	}
 
 	// Begin iterating all players
-	foreach(new playerid : Player)
+	foreach ( new playerid : Player )
 	{
+		CallLocalFunction( "OnPlayerUpdateEx", "dd", playerid );
+
 		if ( IsPlayerSpawned( playerid ) && p_PlayerLogged{ playerid } )
 		{
 			iVehicle 	= GetPlayerVehicleID( playerid );
@@ -4128,60 +4104,6 @@ public OnServerUpdate( )
 					}
 				}
 			}
-
-		#if ENABLED_EASTER_EGG == true
-			// Easter Egg Hunt
-			if ( !p_AdminLevel[ playerid ] )
-			{
-				if ( g_EasterHunt )
-				{
-					foreach(new easterid : eastereggs)
-					{
-						if ( IsPlayerInRangeOfPoint( playerid, 2.0, g_EasterEggs[ easterid ] [ E_X ], g_EasterEggs[ easterid ] [ E_Y ], g_EasterEggs[ easterid ] [ E_Z ] ) )
-						{
-						    new
-						    	iMoney, Float: iCoins, szPrize[ 16 ];
-
-							switch( random( 4 ) )
-							{
-							    case 0:
-							    {
-							    	szPrize = "a home";
-	    							AddPlayerNote( playerid, -1, ""COL_GOLD"Treasure Hunt Home" #COL_WHITE );
-							    	SendClientMessage( playerid, -1, ""COL_GOLD"[HOUSE]"COL_GREY" You have won a house, contact a level 5 admin to redeem a house at a favourable location." );
-							    }
-							    case 1:
-							    {
-							    	szPrize = "a car";
-	    							AddPlayerNote( playerid, -1, ""COL_GOLD"Treasure Hunt Car" #COL_WHITE );
-							    	SendClientMessage( playerid, -1, ""COL_GOLD"[CAR]"COL_GREY" You have won a car, contact a level 5 admin to redeem a car of your choice!" );
-							    }
-							    case 2:
-							    {
-							    	GivePlayerCash( playerid, ( iMoney = RandomEx( 600000, 1500000 ) ) );
-							    	format( szPrize, sizeof( szPrize ), "%s", cash_format( iMoney ) );
-							    }
-							    case 3:
-							    {
-							    	p_IrresistibleCoins[ playerid ] += ( iCoins = fRandomEx( 75.0, 250.0 ) );
-							    	format( szPrize, sizeof( szPrize ), "%0.2f coins", iCoins );
-							    }
-							}
-
-				            DestroyEasterEgg( easterid );
-				            SendGlobalMessage( -1, ""COL_GOLD""#EASTEREGG_LABEL""COL_WHITE" %s(%d) has found a " #EASTEREGG_NAME " and has won "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, szPrize );
-
-							if ( !Iter_Count(eastereggs) )
-							{
-							    g_EasterHunt = false;
-								SendClientMessage( playerid, -1, ""COL_PINK"[ADMIN]"COL_GOLD" Treasure Hunt has been de-activated. All " #EASTEREGG_NAME "s were found." );
-							}
-							break;
-						}
-					}
-				}
-			}
-		#endif
 
 			// Taking Out Fires
 		    if ( p_Class[ playerid ] == CLASS_FIREMAN && ( iKeys & KEY_FIRE ) || ( iKeys & KEY_WALK ) )
@@ -4816,15 +4738,6 @@ public OnTwitterHTTPResponse( index, response_code, data[ ] )
  		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}@IrresistibleDev"COL_WHITE" - Twitter", data, "Okay", "" );
 	else
 		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}@IrresistibleDev"COL_WHITE" - Twitter", ""COL_WHITE"An error has occurred, try again later.", "Okay", "" );
-	return 1;
-}
-
-public OnRevCTRLHTTPResponse( index, response_code, data[ ] )
-{
-    if ( response_code == 200 ) //Did the request succeed?
- 		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}IrresistibleDev/SF-CNR"COL_WHITE" - RevCTRL", data, "Okay", "" );
-	else
-		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}IrresistibleDev/SF-CNR"COL_WHITE" - RevCTRL", ""COL_WHITE"An error has occurred, try again later.", "Okay", "" );
 	return 1;
 }
 
@@ -8879,23 +8792,6 @@ CMD:idletime( playerid, params[ ] )
 	}
 	return 1;
 }
-
-#if ENABLED_EASTER_EGG == true
-	CMD:treasures( playerid, params[ ] )
-	{
-		new
-			count = Iter_Count(eastereggs);
-
-		if ( !g_EasterHunt )
-			return SendError( playerid, "Treasure Hunt isn't activated thus this feature is disabled." );
-
-	 	if ( !count )
-	 		SendServerMessage( playerid, "There are no " #EASTEREGG_NAME "s currently planted." );
-	 	else
-	 		SendServerMessage( playerid, "There are %d " #EASTEREGG_NAME "(s) currently planted at the moment.", count );
-		return 1;
-	}
-#endif
 
 CMD:redeemvip( playerid, params[ ] ) return cmd_donated( playerid, params );
 CMD:donated( playerid, params[ ] )
@@ -25872,35 +25768,6 @@ stock ShowPlayerShopMenu( playerid )
 	}
 	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
 }
-
-#if ENABLED_EASTER_EGG == true
-	stock DestroyEasterEgg( id )
-	{
-		if ( !( 0 <= id < MAX_EGGS ) )
-			return 0;
-
-		Iter_Remove(eastereggs, id);
-	    DestroyDynamicPickup( g_EasterEggs[ id ] [ E_PICK_UP ] );
-	    DestroyDynamic3DTextLabel( g_EasterEggs[ id ] [ E_LABEL ] );
-		return 1;
-	}
-
-	stock CreateEasterEgg( Float: X, Float: Y, Float: Z )
-	{
-		new
-		    ID = Iter_Free(eastereggs);
-
-		if ( ID != ITER_NONE ) {
-			Iter_Add(eastereggs, ID);
-		    g_EasterEggs[ ID ] [ E_X ] = X;
-		    g_EasterEggs[ ID ] [ E_Y ] = Y;
-		    g_EasterEggs[ ID ] [ E_Z ] = Z;
-		    g_EasterEggs[ ID ] [ E_PICK_UP ] = CreateDynamicPickup( EASTEREGG_MODEL, 1, X, Y, Z );
-		    g_EasterEggs[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( EASTEREGG_LABEL, COLOR_GOLD, X, Y, Z, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1, 0 );
-		}
-		return ID;
-	}
-#endif
 
 stock IsPlayerSecurityDriver( playerid ) {
 	#if ENABLED_SECURE_TRUCK == true

@@ -24,6 +24,9 @@
 // #include "irresistible\cnr\features\fishing.pwn"
 // #include "irresistible\cnr\features\vote.pwn"
 
+// disabled
+// #include "irresistible\cnr\features\eastereggs.pwn"
+
 // houses
 #include "irresistible\cnr\features\houses\_houses.pwn"
 
