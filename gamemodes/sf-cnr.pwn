@@ -6994,6 +6994,7 @@ public OnProgressCompleted( playerid, progressid, params )
 
 				if ( p_Methamphetamine{ playerid } >= 128 )
 					return SendError( playerid, "You can only export a maximum of 128 pounds of meth." );
+
 				p_Methamphetamine{ playerid } ++;
 
 				DestroyDynamicObject( GetGVarInt( "meth_yield", vehicleid ) );
@@ -23654,13 +23655,8 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false )
 	    if ( GetPlayerVehicleID( i ) == vehicleid )
 	    	return i;
 
-	    if ( include_vehicle_interior ) {
-			new
-				iWorld = GetPlayerVirtualWorld( i );
-
-			if ( IsPlayerSpawned( i ) && ( ( iWorld - VW_METH ) == vehicleid && iModel == 508 ) || ( ( iWorld - VW_SHAMAL ) == vehicleid && iModel == 519 ) )
-				return i;
-	    }
+		if ( include_vehicle_interior && IsPlayerSpawned( i ) && ( GetPlayerMethLabVehicle( i ) == vehicleid && iModel == 508 ) || ( ( GetPlayerVirtualWorld( i ) - VW_SHAMAL ) == vehicleid && iModel == 519 ) )
+			return i;
 	}
 	return -1;
 }

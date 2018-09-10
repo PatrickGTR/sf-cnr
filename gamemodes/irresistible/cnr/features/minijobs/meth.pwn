@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\minijobs\meth.pwn
+ * Purpose: meth minijob
  */
 
 /* ** Includes ** */
@@ -17,10 +17,6 @@
 #define PROGRESS_GRAB_METH 			7
 
 #define VW_METH 					110
-
-/* ** Macros ** */
-#define IsPlayerInMethlab(%0)		( GetPVarInt( %0, "inMethLab" ) == 1 && GetPlayerInterior( %0 ) == VW_METH )
-#define GetPlayerMethLabVehicle(%0)	( GetPlayerVirtualWorld( %0 ) - VW_METH )
 
 /* ** Variables ** */
 enum E_METH_PROCEEDURE
@@ -390,4 +386,12 @@ stock haltMethamphetamine( playerid, vehicleid, canceled=1 )
 
 		HidePlayerHelpDialog( playerid );
 	}
+}
+
+stock IsPlayerInMethlab( playerid ) {
+	return ( GetPVarInt( playerid, "inMethLab" ) == 1 && GetPlayerInterior( playerid ) == VW_METH );
+}
+
+stock GetPlayerMethLabVehicle( playerid ) {
+	return ( GetPlayerVirtualWorld( playerid ) - VW_METH );
 }
