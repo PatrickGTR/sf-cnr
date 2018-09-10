@@ -7,7 +7,7 @@
 
 /* ** Includes ** */
 
-// core
+// core (needs to be moved to \cnr)
 #include "irresistible\cnr\features\vip.pwn"
 #include "irresistible\cnr\features\irresistibleguard.pwn"
 #include "irresistible\cnr\features\ammunation.pwn"

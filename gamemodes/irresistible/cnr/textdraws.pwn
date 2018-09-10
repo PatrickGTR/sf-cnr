@@ -1,11 +1,9 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module: cnr/textrdraws
- * Purpose:
+ * Module: cnr/textdraws.pwn
+ * Purpose: encloses all textdraws in the server
  */
-
-#define MAX_MACHINES 				54 // Placed top because of textdraws (TEMPORARY / HOTFIX)
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
@@ -34,11 +32,6 @@ new
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentCoinsTD 		= Text: INVALID_TEXT_DRAW,
-	Text:  g_SlotMachineOneTD		[ MAX_MACHINES ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  g_SlotMachineTwoTD		[ MAX_MACHINES ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_SlotMachineFigureTD 	[ MAX_MACHINES ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  g_SlotMachineThreeTD		[ MAX_MACHINES ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  g_SlotMachineBoxTD		[ 2 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
 
@@ -191,20 +184,6 @@ hook OnScriptInit( )
 	TextDrawColor(g_TopDonorTD, -2347265);
 	TextDrawSetOutline(g_TopDonorTD, 1);
 	TextDrawSetProportional(g_TopDonorTD, 1);
-
-	g_SlotMachineBoxTD[ 0 ] = TextDrawCreate(220.000000, 322.000000, "_");
-	TextDrawBackgroundColor(g_SlotMachineBoxTD[ 0 ], 255);
-	TextDrawLetterSize(g_SlotMachineBoxTD[ 0 ], 0.500000, 7.000000);
-	TextDrawUseBox(g_SlotMachineBoxTD[ 0 ], 1);
-	TextDrawBoxColor(g_SlotMachineBoxTD[ 0 ], 112);
-	TextDrawTextSize(g_SlotMachineBoxTD[ 0 ], 430.000000, 3.000000);
-
-	g_SlotMachineBoxTD[ 1 ] = TextDrawCreate(220.000000, 306.000000, "_");
-	TextDrawBackgroundColor(g_SlotMachineBoxTD[ 1 ], 255);
-	TextDrawLetterSize(g_SlotMachineBoxTD[ 1 ], 0.500000, 1.400000);
-	TextDrawUseBox(g_SlotMachineBoxTD[ 1 ], 1);
-	TextDrawBoxColor(g_SlotMachineBoxTD[ 1 ], 238);
-	TextDrawTextSize(g_SlotMachineBoxTD[ 1 ], 430.000000, -18.000000);
 
 	g_currentXPTD = TextDrawCreate(529.000000, 405.000000, "Current XP");
 	TextDrawBackgroundColor(g_currentXPTD, 255);
@@ -447,53 +426,6 @@ hook OnScriptInit( )
 	/* ** Player TextDraws ** */
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
 	{
-		if ( playerid < MAX_MACHINES ) {
-			p_SlotMachineFigureTD[ playerid ] = TextDrawCreate(324.000000, 307.000000, "$20,000");
-			TextDrawAlignment(p_SlotMachineFigureTD[ playerid ], 2);
-			TextDrawBackgroundColor(p_SlotMachineFigureTD[ playerid ], 255);
-			TextDrawFont(p_SlotMachineFigureTD[ playerid ], 3);
-			TextDrawLetterSize(p_SlotMachineFigureTD[ playerid ], 0.250000, 1.100000);
-			TextDrawColor(p_SlotMachineFigureTD[ playerid ], -1);
-			TextDrawSetOutline(p_SlotMachineFigureTD[ playerid ], 1);
-			TextDrawSetProportional(p_SlotMachineFigureTD[ playerid ], 1);
-
-			g_SlotMachineOneTD[ playerid ] = TextDrawCreate(222.000000, 324.000000, "ld_slot:bar1_o");
-			TextDrawBackgroundColor(g_SlotMachineOneTD[ playerid ], 255);
-			TextDrawFont(g_SlotMachineOneTD[ playerid ], 4);
-			TextDrawLetterSize(g_SlotMachineOneTD[ playerid ], 0.500000, 0.399999);
-			TextDrawColor(g_SlotMachineOneTD[ playerid ], -1);
-			TextDrawSetOutline(g_SlotMachineOneTD[ playerid ], 0);
-			TextDrawSetProportional(g_SlotMachineOneTD[ playerid ], 1);
-			TextDrawSetShadow(g_SlotMachineOneTD[ playerid ], 1);
-			TextDrawUseBox(g_SlotMachineOneTD[ playerid ], 1);
-			TextDrawBoxColor(g_SlotMachineOneTD[ playerid ], 255);
-			TextDrawTextSize(g_SlotMachineOneTD[ playerid ], 66.000000, 77.000000);
-
-			g_SlotMachineTwoTD[ playerid ] = TextDrawCreate(292.000000, 324.000000, "ld_slot:bar1_o");
-			TextDrawBackgroundColor(g_SlotMachineTwoTD[ playerid ], 255);
-			TextDrawFont(g_SlotMachineTwoTD[ playerid ], 4);
-			TextDrawLetterSize(g_SlotMachineTwoTD[ playerid ], 0.500000, 0.399999);
-			TextDrawColor(g_SlotMachineTwoTD[ playerid ], -1);
-			TextDrawSetOutline(g_SlotMachineTwoTD[ playerid ], 0);
-			TextDrawSetProportional(g_SlotMachineTwoTD[ playerid ], 1);
-			TextDrawSetShadow(g_SlotMachineTwoTD[ playerid ], 1);
-			TextDrawUseBox(g_SlotMachineTwoTD[ playerid ], 1);
-			TextDrawBoxColor(g_SlotMachineTwoTD[ playerid ], 255);
-			TextDrawTextSize(g_SlotMachineTwoTD[ playerid ], 66.000000, 77.000000);
-
-			g_SlotMachineThreeTD[ playerid ] = TextDrawCreate(362.000000, 324.000000, "ld_slot:bar1_o");
-			TextDrawBackgroundColor(g_SlotMachineThreeTD[ playerid ], 255);
-			TextDrawFont(g_SlotMachineThreeTD[ playerid ], 4);
-			TextDrawLetterSize(g_SlotMachineThreeTD[ playerid ], 0.500000, 0.399999);
-			TextDrawColor(g_SlotMachineThreeTD[ playerid ], -1);
-			TextDrawSetOutline(g_SlotMachineThreeTD[ playerid ], 0);
-			TextDrawSetProportional(g_SlotMachineThreeTD[ playerid ], 1);
-			TextDrawSetShadow(g_SlotMachineThreeTD[ playerid ], 1);
-			TextDrawUseBox(g_SlotMachineThreeTD[ playerid ], 1);
-			TextDrawBoxColor(g_SlotMachineThreeTD[ playerid ], 255);
-			TextDrawTextSize(g_SlotMachineThreeTD[ playerid ], 66.000000, 77.000000);
-		}
-
 		p_ProgressBoxOutsideTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
 		TextDrawBackgroundColor(p_ProgressBoxOutsideTD[ playerid ], 255);
 		TextDrawFont(p_ProgressBoxOutsideTD[ playerid ], 1);
