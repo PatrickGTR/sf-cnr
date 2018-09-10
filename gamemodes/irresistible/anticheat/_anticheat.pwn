@@ -155,11 +155,11 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 }
 
 /* ** Modules (remove to disable) ** */
-#include 							"irresistible\anticheat\money.pwn"
-#include 							"irresistible\anticheat\hitpoints.pwn"
-#include 							"irresistible\anticheat\weapon.pwn"
-#include 							"irresistible\anticheat\airbrake.pwn"
-#include 							"irresistible\anticheat\proaim.pwn"
-#include 							"irresistible\anticheat\autocbug.pwn"
-#include 							"irresistible\anticheat\flying.pwn"
-#include 							"irresistible\anticheat\remotejack.pwn"
+#include "irresistible\anticheat\money.pwn"
+#include "irresistible\anticheat\hitpoints.pwn"
+#include "irresistible\anticheat\weapon.pwn"
+#include "irresistible\anticheat\airbrake.pwn"
+#include "irresistible\anticheat\proaim.pwn"
+#include "irresistible\anticheat\autocbug.pwn"
+#include "irresistible\anticheat\flying.pwn"
+#include "irresistible\anticheat\remotejack.pwn"

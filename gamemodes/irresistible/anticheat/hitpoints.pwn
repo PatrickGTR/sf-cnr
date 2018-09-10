@@ -280,15 +280,6 @@ hook OnPlayerConnect( playerid )
 {
 	if ( 0 <= playerid < MAX_PLAYERS )
 	{
-		// Remove Vending Machines
-		RemoveBuildingForPlayer( playerid, 1302, 0.0, 0.0, 0.0, 6000.0 );
-	    RemoveBuildingForPlayer( playerid, 1209, 0.0, 0.0, 0.0, 6000.0 );
-	    RemoveBuildingForPlayer( playerid, 955, 0.0, 0.0, 0.0, 6000.00 );
-	    RemoveBuildingForPlayer( playerid, 956, 0.0, 0.0, 0.0, 6000.00 );
-	    RemoveBuildingForPlayer( playerid, 1775, 0.0, 0.0, 0.0, 6000.0 );
-	    RemoveBuildingForPlayer( playerid, 1776, 0.0, 0.0, 0.0, 6000.0 );
-	    RemoveBuildingForPlayer( playerid, 1977, 0.0, 0.0, 0.0, 6000.0 );
-
 	    // Reset variables
 		p_PlayerHealth[ playerid ] [ E_UPDATE_FAIL ] = 0;
 		p_PlayerArmour[ playerid ] [ E_UPDATE_FAIL ] = 0;
@@ -599,3 +590,8 @@ stock ForcePlayerKill( playerid, killerid, weaponid )
 
 	SetPlayerHealth( playerid, -1 );
 }
+
+/* ** Modules ** */
+#if defined __ac__money
+	#include "irresistible\anticheat\vending_machines.pwn"
+#endif

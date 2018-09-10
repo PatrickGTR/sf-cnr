@@ -5,6 +5,13 @@
  * Purpose: server-sided money
  */
 
+/* ** Error checking ** */
+#if !defined __ac__money
+    #define __ac__money
+#else
+    #endinput
+#endif
+
 /* ** Variables ** */
 static stock
  	p_Cash              			[ MAX_PLAYERS ];
