@@ -110,8 +110,6 @@ new bool: False = false;
 	do{foreach(new fI : Player){if (p_VIPLevel[fI]>=VIP_REGULAR)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToAmbulance(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_MEDIC)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-#define SendClientMessageToPaintball(%0,%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_inPaintBall{fI}&&p_PaintBallArena{fI}==(%0))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define DCC_SendChannelMessageFormatted(%0,%1,%2) \
 	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
 
@@ -131,7 +129,6 @@ new bool: False = false;
 #define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
-#define sscanf_u					"u"
 
 #define EXCHANGE_XPCASH             10 // Per 1 XP for cash.
 
@@ -4741,7 +4738,7 @@ public ZoneTimer( )
 						if ( in_area )
 							PlayerTextDrawSetString( d, g_ZoneOwnerTD[ d ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( attacker_gang ) ) );
 
-						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! p_inPaintBall{ d } ) {
+						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! IsPlayerInPaintBall( d ) ) {
 							if ( in_area ) {
 								GivePlayerScore( d, 2, .multiplier = 0.5 );
 								GivePlayerWantedLevel( d, 6 );
@@ -5406,6 +5403,7 @@ public OnPlayerDisconnect( playerid, reason )
     // p_CitySet 		{ playerid } = false;
 	p_MoneyBag		{ playerid } = false;
     p_inPaintBall	{ playerid } = false;
+	p_LeftPaintball { playerid } = false;
     p_Job			{ playerid } = 0;
     p_VIPJob 		{ playerid } = 0;
     p_CantUseReport { playerid } = false;
@@ -5415,7 +5413,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_WantedLevel	[ playerid ] = 0;
 	p_Tazed			{ playerid } = false;
 	p_Jailed		{ playerid } = false;
-	p_LeftPaintball { playerid } = false;
 	p_AntiEMP       [ playerid ] = 0;
 	p_LastVehicle	[ playerid ] = INVALID_VEHICLE_ID;
 	p_Cuffed		{ playerid } = false;
@@ -6290,7 +6287,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 		if ( g_paintballData[ lobby_id ] [ E_HEADSHOT ] && (weaponid == WEAPON_SNIPER || weaponid == WEAPON_RIFLE ) && bodypart == 9 )
 		{
-			amount *= (1.666 * 2);
+			amount *= 3.333;
 		}
 	}
 
@@ -6534,14 +6531,9 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
 	/* ** Tax And Medical Fees ** */
-	if ( GetPlayerTotalCash( playerid ) > 0 )
-	{
-		new medical_fees = ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) ? 0 : 100;
-
-		if ( medical_fees )  {
-			ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~%s~w~ in medical fees", number_format( medical_fees ) ) );
-			GivePlayerCash( playerid, -medical_fees );
-		}
+	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
+		ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~$100~w~ in medical fees" ) );
+		GivePlayerCash( playerid, -100 );
 	}
 	/* ** End Of Tax And Medical Fees ** */
 
@@ -6556,11 +6548,6 @@ public OnPlayerDeath( playerid, killerid, reason )
         p_treeExportLocation[ playerid ] = 0xFF;
 		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
 		p_LumberjackMapIcon[ playerid ] = 0xFFFF;
-	}
-
-	// To deny kills etc.
-	if ( IsPlayerConnected( killerid ) ) {
-		if ( p_inPaintBall{ playerid } == true && p_inPaintBall{ killerid } == false ) killerid = INVALID_PLAYER_ID;
 	}
 
 	new
@@ -6580,19 +6567,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 		DeletePVar( killerid, "last_shot" );*/
 
 		SendDeathMessage( killerid, playerid, reason );
-
-		if ( p_inPaintBall{ killerid } == true )
-		{
-			new
-				a = p_PaintBallArena{ killerid };
-
-			if ( g_paintballData[ a ] [ E_REFILLER ] )
-			{
-				SetPlayerHealth( killerid, g_paintballData[ a ] [ E_HEALTH ] );
-				SetPlayerArmour( killerid, g_paintballData[ a ] [ E_ARMOUR ] );
-			}
-			return 1;
-		}
 
 		DCC_SendChannelMessageFormatted( discordGeneralChan, "*%s(%d) has killed %s(%d) - %s!*", ReturnPlayerName( killerid ), killerid,  ReturnPlayerName( playerid ), playerid, ReturnWeaponName( reason ) );
 
@@ -6729,7 +6703,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	    DeletePVar( playerid, "used_cmd_kill" );
 	}
 
-	if ( !p_inPaintBall{ playerid } && !p_LeftPaintball{ playerid } && !IsPlayerAdminOnDuty( playerid ) )
+	if ( ! IsPlayerInPaintBall( playerid ) && !p_LeftPaintball{ playerid } && !IsPlayerAdminOnDuty( playerid ) )
 	{
 		if ( playerGangId != INVALID_GANG_ID )
 			SaveGangData( playerGangId ), g_gangData[ playerGangId ] [ E_DEATHS ]++;
@@ -8032,7 +8006,7 @@ CMD:race( playerid, params[ ] )
 		new
 			inviteid;
 
-		if ( sscanf( params[ 7 ], #sscanf_u, inviteid ) )
+		if ( sscanf( params[ 7 ], "u", inviteid ) )
 			return SendUsage( playerid, "/race invite [PLAYER]" );
 
 		if ( ! IsPlayerConnected( inviteid ) || IsPlayerNPC( inviteid ) )
@@ -8205,7 +8179,7 @@ CMD:race( playerid, params[ ] )
 			raceid = p_raceLobbyId[ playerid ], kickid;
 
 		if ( ! IsRaceHost( playerid, raceid ) ) return SendError( playerid, "You are not a lobby host for any race." );
-		else if ( sscanf( params[ 5 ], #sscanf_u, kickid ) ) return SendUsage( playerid, "/race kick [PLAYER]" );
+		else if ( sscanf( params[ 5 ], "u", kickid ) ) return SendUsage( playerid, "/race kick [PLAYER]" );
 		else if ( ! IsPlayerConnected( kickid ) || IsPlayerNPC( kickid ) ) return SendError( playerid, "This player is not connected." );
 		else if ( p_raceLobbyId[ kickid ] != raceid ) return SendError( playerid, "This player is not in your race." );
 		else
@@ -8385,7 +8359,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		new
 			senttoid, Float: coins;
 
-	    if ( sscanf( params[ 5 ],""#sscanf_u"f", senttoid, coins ) ) return SendUsage( playerid, "/irresistiblecoins send [PLAYER_ID] [COINS]" );
+	    if ( sscanf( params[ 5 ],"uf", senttoid, coins ) ) return SendUsage( playerid, "/irresistiblecoins send [PLAYER_ID] [COINS]" );
 	    else if ( !IsPlayerConnected( senttoid ) || IsPlayerNPC( senttoid ) ) return SendError( playerid, "Invalid Player ID." );
 		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	    else if ( coins < 0.1 || coins > 5000.0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." );
@@ -8424,7 +8398,7 @@ CMD:rank( playerid, params[ ] )
 	new
 	 	watchingid;
 
-	if ( sscanf( params, #sscanf_u, watchingid ) )
+	if ( sscanf( params, "u", watchingid ) )
 		watchingid = playerid;
 
 	if ( !IsPlayerConnected( watchingid ) )
@@ -8944,7 +8918,7 @@ CMD:idletime( playerid, params[ ] )
 	new
 		iPlayer;
 
-	if ( sscanf( params, ""#sscanf_u"", iPlayer ) ) return SendUsage( playerid, "/idletime [PLAYER_ID]" );
+	if ( sscanf( params, "u", iPlayer ) ) return SendUsage( playerid, "/idletime [PLAYER_ID]" );
 	if ( !IsPlayerConnected( iPlayer ) || IsPlayerNPC( iPlayer ) ) return SendError( playerid, "This player isn't connected." );
 
 	new
@@ -9462,7 +9436,7 @@ CMD:ransom( playerid, params[ ] )
 {
 	new victimid, amount;
 
-	if ( sscanf( params, ""#sscanf_u"d", victimid, amount ) ) return SendUsage( playerid, "/ransom [PLAYER_ID] [AMOUNT]" );
+	if ( sscanf( params, "ud", victimid, amount ) ) return SendUsage( playerid, "/ransom [PLAYER_ID] [AMOUNT]" );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
@@ -9573,7 +9547,7 @@ CMD:cure( playerid, params[ ] )
   	;
 
    	if ( p_Class[ playerid ] != CLASS_MEDIC ) return SendError( playerid, "This is restricted to medics only." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/cure [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/cure [PLAYER_ID]" );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 	else if ( playerid == pID ) return SendError( playerid, "You cannot offer to cure yourself." );
@@ -9623,7 +9597,7 @@ CMD:heal( playerid, params[ ] )
   		pID;
 
    	if ( p_Class[ playerid ] != CLASS_MEDIC ) return SendError( playerid, "This is restricted to medics only." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/heal [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/heal [PLAYER_ID]" );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 	else if ( playerid == pID ) return SendError( playerid, "You cannot offer to heal yourself." );
@@ -10375,7 +10349,7 @@ CMD:weed( playerid, params[ ] )
 		if ( !JobEquals( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
 	    else if ( p_SellingWeedTick[ playerid ] > g_iTime ) return SendError( playerid, "You must wait a minute before selling weed again." );
 		else if ( !p_WeedGrams[ playerid ] ) return SendError( playerid, "You don't have any weed with you." );
-	    else if ( sscanf( params[ 5 ],""#sscanf_u"D(1)", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
+	    else if ( sscanf( params[ 5 ],"uD(1)", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
 	    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
@@ -10574,7 +10548,7 @@ CMD:wood( playerid, params[ ] )
 CMD:idof( playerid, params[ ] )
 {
 	new pID;
-	if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/idof [PART_OF_NAME]" );
+	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/idof [PART_OF_NAME]" );
 	if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected." );
 	SendServerMessage( playerid, "%s: "COL_GREY"%d", ReturnPlayerName( pID ), pID );
 	return 1;
@@ -10791,7 +10765,7 @@ CMD:emp( playerid, params[ ] )
 	;
 	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to Police only." );
 	else if ( p_inCIA{ playerid } == false || p_inArmy{ playerid } == true ) return SendError( playerid, "This is restricted to CIA only." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/emp [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/emp [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot do this to yourself." );
 	else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
@@ -11133,7 +11107,7 @@ CMD:sellgun( playerid, params[ ] )
 
 	if ( !JobEquals( playerid, JOB_WEAPON_DEALER ) ) return SendError( playerid, "You aren't a weapon dealer." );
 	else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "Only civilians can use this command." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/sellgun [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/sellgun [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself a weapon." );
 	else if ( p_Class[ pID ] == CLASS_POLICE ) return SendError( playerid, "You cannot sell weapons to law enforcement officers." );
@@ -11160,7 +11134,7 @@ CMD:eject( playerid, params[ ] )
 	    pID
 	;
 
-	if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/eject [PLAYER_ID]" );
+	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/eject [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You're not in any vehicle." );
 	else if ( !IsPlayerInAnyVehicle( pID ) ) return SendError( playerid, "This player isn't in any vehicle" );
@@ -11232,7 +11206,7 @@ CMD:bail( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/bail [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/bail [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot bail yourself." );
 	else if ( !IsPlayerJailed( pID ) ) return SendError( playerid, "This player isn't jailed." );
@@ -11335,7 +11309,7 @@ CMD:bj( playerid, params[ ] )
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	else if ( !JobEquals( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
 	else if ( ( GetTickCount( ) - p_AntiBlowJobSpam[ playerid ] ) < 30000 ) return SendError( playerid, "You must wait 30 seconds before using this command again." );
-	else if ( sscanf( params, ""#sscanf_u"d", pID, price ) ) return SendUsage( playerid, "/(bj)blowjob [PLAYER_ID] [PRICE]" );
+	else if ( sscanf( params, "ud", pID, price ) ) return SendUsage( playerid, "/(bj)blowjob [PLAYER_ID] [PRICE]" );
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected." );
 	else if ( price < 20 || price > 3000 ) return SendError( playerid, "Please specify a price between $20 and $3,000." );
 	else if ( playerid == pID ) return SendError( playerid, "You cannot give a blowjob to yourself." );
@@ -11822,7 +11796,7 @@ CMD:report( playerid, params[ ] )
 		szMessage[ 64 ]
 	;
 
-    if ( sscanf( params, ""#sscanf_u"s[64]", iPlayer, szMessage ) ) return SendUsage( playerid, "/report [PLAYER_ID] [REASON]" );
+    if ( sscanf( params, "us[64]", iPlayer, szMessage ) ) return SendUsage( playerid, "/report [PLAYER_ID] [REASON]" );
     else if ( !IsPlayerConnected( iPlayer ) || IsPlayerNPC( iPlayer ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( p_CantUseReport{ playerid } == true ) return SendError( playerid, "You have been blocked to use this command by an admin." );
 	else if ( GetPVarInt( iPlayer, "report_antispam" ) > g_iTime ) return SendError( playerid, "You must wait 10 seconds before reporting this player." );
@@ -11868,7 +11842,7 @@ CMD:sendmoney( playerid, params[ ] )
 	if ( GetPVarInt( playerid, "sm_antispam" ) > iTime ) return SendError( playerid, "You must wait 10 seconds before sending payments again." );
 	/* ** End of Anti Tie Spam ** */
 
-	if ( sscanf( params, ""#sscanf_u"d", pID, amount ) ) return SendUsage( playerid, "/sendmoney [PLAYER_ID] [AMOUNT]" );
+	if ( sscanf( params, "ud", pID, amount ) ) return SendUsage( playerid, "/sendmoney [PLAYER_ID] [AMOUNT]" );
 	else if ( amount > GetPlayerCash( playerid ) ) return SendError( playerid, "You don't have this amount of money." );
 	else if ( amount < 1 ) return SendError( playerid, "Invalid amount of money." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot send money to yourself." );
@@ -11927,7 +11901,7 @@ CMD:dnd( playerid, params[ ] )
 	new
 	    pID
 	;
-	if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/dnd [PLAYER_ID]" );
+	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/dnd [PLAYER_ID]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot block yourself." );
 	else
@@ -11986,7 +11960,7 @@ CMD:pm( playerid, params[ ] )
 		pID, msg[100]
 	;
 
-	if ( sscanf( params, ""#sscanf_u"s[100]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
+	if ( sscanf( params, "us[100]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot pm yourself." );
     else if ( p_BlockedPM[ pID ] [ playerid ] == true ) return SendError( playerid, "This person has blocked pm's coming from you." );
@@ -12120,7 +12094,7 @@ CMD:placehit( playerid, params[ ] )
 	;
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	else if ( JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "As a hitman you're not allowed to use this command." );
-	else if ( sscanf( params, ""#sscanf_u"d", pID, cash ) ) return SendUsage( playerid, "/placehit [PLAYER_ID] [AMOUNT]" );
+	else if ( sscanf( params, "ud", pID, cash ) ) return SendUsage( playerid, "/placehit [PLAYER_ID] [AMOUNT]" );
 	else if ( cash > GetPlayerCash( playerid ) ) return SendError( playerid, "You don't have enough money to place this much." );
 	else if ( cash < 1000 ) return SendError( playerid, "The minimal hit you can place is $1,000." );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot place a hit on your self.");
@@ -12176,7 +12150,7 @@ CMD:track( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	else if ( !JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/track [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/track [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
@@ -12389,7 +12363,7 @@ CMD:tie( playerid, params[ ] )
 	/* ** End of Anti Tie Spam ** */
 
 	new victimid = GetClosestPlayer( playerid );
-	//if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/tie [PLAYER_ID]" );
+	//if ( sscanf( params, "u", victimid ) ) return SendUsage( playerid, "/tie [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot tie yourself." );
 	//else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
 	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
@@ -12509,7 +12483,7 @@ CMD:location( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is not accessible by civilians." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
 	//else if ( GetPlayerInterior( playerid ) != GetPlayerInterior( pID ) ) return SendError( playerid, "This player is inside a interior, the location is not viewable." );
@@ -12538,7 +12512,7 @@ CMD:search( playerid, params[ ] )
    	    pID
 	;
 	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/search [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/search [PLAYER_ID]" );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) > 10.0 || !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not around." );
 	else if ( p_Class[ pID ] == CLASS_POLICE ) return SendError( playerid, "This player is in your team!" );
 	else if ( !IsPlayerCuffed( pID ) ) return SendError( playerid, "This player must be cuffed." );
@@ -13149,7 +13123,7 @@ CMD:gang( playerid, params[ ] )
 		;
 	    if ( p_GangID[ playerid ] == INVALID_GANG_ID ) return SendError( playerid, "You are not inside a gang." );
 		else if ( !IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) ) return SendError( playerid, "You are not the gang leader." );
-		else if ( sscanf( params[ 7 ], ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/gang leader [PLAYER_ID]" );
+		else if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/gang leader [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 		else if ( pID == playerid ) return SendError( playerid, "You cannot apply this action to yourself." );
 		else if ( p_GangID[ pID ] != p_GangID[ playerid ] ) return SendError( playerid, "This player isn't in your gang." );
@@ -13168,7 +13142,7 @@ CMD:gang( playerid, params[ ] )
 
 	    if ( p_GangID[ playerid ] == INVALID_GANG_ID ) return SendError( playerid, "You are not inside a gang." );
 		else if ( !IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) ) return SendError( playerid, "You are not the gang leader." );
-		else if ( sscanf( params[ 9 ], ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/gang coleader [PLAYER_ID]" );
+		else if ( sscanf( params[ 9 ], "u", pID ) ) return SendUsage( playerid, "/gang coleader [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 		else if ( pID == playerid ) return SendError( playerid, "You cannot apply this action to yourself." );
 		else if ( p_GangID[ pID ] != p_GangID[ playerid ] ) return SendError( playerid, "This player isn't in your gang." );
@@ -13208,7 +13182,7 @@ CMD:gang( playerid, params[ ] )
 
 		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) return SendError( playerid, "You are not inside a gang." );
 		else if ( !IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) ) return SendError( playerid, "You are not the gang leader." );
-		else if ( sscanf( params[ 5 ], ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/gang kick [PLAYER_ID]" );
+		else if ( sscanf( params[ 5 ], "u", pID ) ) return SendUsage( playerid, "/gang kick [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 		else if ( p_GangID[ pID ] != p_GangID[ playerid ] ) return SendError( playerid, "This player isn't in your gang." );
 		else if ( IsPlayerGangLeader( pID, p_GangID[ playerid ], .only_leader = 1 ) ) return SendError( playerid, "This person is the gang leader." );
@@ -13321,7 +13295,7 @@ CMD:gang( playerid, params[ ] )
 		    pID
 		;
 
-		if ( sscanf( params[ 7 ], ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/gang invite [PLAYER_ID]" );
+		if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/gang invite [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "You cannot invite people from non-civilian classes." );
 		else if ( p_PlayerSettings[ pID ] { SETTING_GANG_INVITES } ) return SendError( playerid, "This player has disabled gang invites." );
@@ -13489,7 +13463,7 @@ DQCMD:idof( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID;
-		if ( sscanf( params, ""#sscanf_u"", pID ) ) return 0;
+		if ( sscanf( params, "u", pID ) ) return 0;
 		if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return 0;
 		format( szNormalString, sizeof( szNormalString ), "**In-game ID of %s:** %d", ReturnPlayerName( pID ), pID );
 		DCC_SendChannelMessage( discordGeneralChan, szNormalString );
@@ -13614,7 +13588,7 @@ DQCMD:kick( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !kick [PLAYER_ID] [REASON]" );
+		if (sscanf( params, "uS(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !kick [PLAYER_ID] [REASON]" );
 		if (IsPlayerConnected(pID))
 		{
 			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been kicked.", ReturnPlayerName( pID ), pID );
@@ -13635,7 +13609,7 @@ DQCMD:ban( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID, reason[64];
-		if (sscanf( params, ""#sscanf_u"S(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !ban [PLAYER_ID] [REASON]" );
+		if (sscanf( params, "uS(No reason)[64]", pID, reason)) return DCC_SendUserMessage( user, "**Usage:** !ban [PLAYER_ID] [REASON]" );
 		if (IsPlayerConnected(pID))
 		{
 			DCC_SendChannelMessageFormatted( discordAdminChan, "**Command Success:** %s(%d) has been banned.", ReturnPlayerName( pID ), pID );
@@ -13656,7 +13630,7 @@ DQCMD:suspend( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID, reason[50], hours, days;
-		if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
+		if ( sscanf( params, "uddS(No Reason)[50]", pID, hours, days, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
 		if ( hours < 0 || hours > 24 ) return DCC_SendUserMessage( user, "**Command Error:** Please specify an hour between 0 and 24." );
 		if ( days < 0 || days > 60 ) return DCC_SendUserMessage( user, "**Command Error:** Please specifiy the amount of days between 0 and 60." );
 		if ( days == 0 && hours == 0 ) return DCC_SendUserMessage( user, "**Command Error:** Invalid time specified." );
@@ -13681,7 +13655,7 @@ DQCMD:warn( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID, reason[50];
-		if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, "uS(No Reason)[32]", pID, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
 	    	p_Warns[ pID ] ++;
@@ -13710,7 +13684,7 @@ DQCMD:jail( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID, reason[50], Seconds;
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, Seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !jail [PLAYER_ID] [SECONDS] [REASON]" );
+		if ( sscanf( params, "udS(No Reason)[32]", pID, Seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !jail [PLAYER_ID] [SECONDS] [REASON]" );
 		if ( Seconds > 20000 || Seconds < 1 ) return DCC_SendUserMessage( user, "**Command Error:** You're misleading the seconds limit! ( 0 - 20000 )");
 		if ( IsPlayerConnected( pID ) )
 		{
@@ -13733,7 +13707,7 @@ DQCMD:mute( DCC_Channel: channel, DCC_User: user, params[ ] )
 	{
 	    new pID, seconds, reason[ 32 ];
 
-		if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !amute [PLAYER_ID] [SECONDS] [REASON]");
+		if ( sscanf( params, "udS(No Reason)[32]", pID, seconds, reason ) ) return DCC_SendUserMessage( user, "**Usage:** !amute [PLAYER_ID] [SECONDS] [REASON]");
 	    else if ( !IsPlayerConnected( pID ) ) DCC_SendUserMessage( user, "**Command Error:** Invalid Player ID.");
 		else if ( p_AdminLevel[ pID ] > 4 ) return DCC_SendUserMessage( user, "**Command Error:** No sexy head admin targetting!");
 	    else if ( seconds < 0 || seconds > 10000000 ) return DCC_SendUserMessage( user, "**Command Error:** Specify the amount of seconds from 1 - 10000000." );
@@ -13757,7 +13731,7 @@ DQCMD:unmute( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
     	new pID;
-	    if ( sscanf( params, ""#sscanf_u"", pID )) return DCC_SendUserMessage( user, "/mute [PLAYER_ID]");
+	    if ( sscanf( params, "u", pID )) return DCC_SendUserMessage( user, "/mute [PLAYER_ID]");
 	    else if ( !IsPlayerConnected( pID ) ) return DCC_SendUserMessage( user,  "**Command Error:** Invalid Player ID");
 	    else if ( !p_Muted{ pID } ) return DCC_SendUserMessage( user,  "**Command Error:** This player isn't muted" );
 	    else
@@ -13780,7 +13754,7 @@ DQCMD:getip( DCC_Channel: channel, DCC_User: user, params[ ] )
 	if ( hasPermission )
 	{
 		new pID;
-		if ( sscanf( params, ""#sscanf_u"", pID ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
+		if ( sscanf( params, "u", pID ) ) return DCC_SendUserMessage( user, "**Usage:** !warn [PLAYER_ID] [REASON]" );
 		if ( IsPlayerConnected( pID ) )
 		{
 			if ( p_AdminLevel[ pID ] > 4 ) return DCC_SendUserMessage( user, "**Command Error:** No sexy head admin targetting!");
@@ -19572,7 +19546,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new
 						pID;
 
-					if ( sscanf( inputtext, #sscanf_u, pID ) )
+					if ( sscanf( inputtext, "u", pID ) )
 					{
 						SendError( playerid, "This value must be numerical." );
 						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
@@ -19732,7 +19706,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new
 				pID;
 
-			if ( sscanf( inputtext, #sscanf_u, pID ) )
+			if ( sscanf( inputtext, "u", pID ) )
 			{
 				SendError( playerid, "Please enter a player's ID or name." );
 				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
@@ -19763,7 +19737,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new
 				pID;
 
-			if ( sscanf( inputtext, #sscanf_u, pID ) )
+			if ( sscanf( inputtext, "u", pID ) )
 			{
 				SendError( playerid, "Please enter a player's ID or name." );
 				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
@@ -20717,7 +20691,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new
 			memberid;
 
-		if ( sscanf( inputtext, #sscanf_u, memberid ) ) SendError( playerid, "Specify a name or id of the player you wish to add as a business member." );
+		if ( sscanf( inputtext, "u", memberid ) ) SendError( playerid, "Specify a name or id of the player you wish to add as a business member." );
 		else if ( ! IsPlayerConnected( memberid ) || IsPlayerNPC( memberid ) ) SendError( playerid, "The player specified is not connected." );
 		else if ( p_OwnedBusinesses[ memberid ] >= GetPlayerBusinessSlots( memberid ) )  SendError( playerid, "This player cannot be added to any more businesses." );
 		else
@@ -23627,8 +23601,9 @@ stock GetRandomCreatedHouse( )
 		}
 	}
 
-	new random_home = randomExcept( ignoredHomes, sizeof( ignoredHomes ) );
-	// printf("Fire on %d", random_home);
+	new
+		random_home = randomExcept( ignoredHomes, sizeof( ignoredHomes ) );
+
 	return random_home;
 }
 
@@ -30776,19 +30751,6 @@ public OnVehicleSirenStateChange(playerid, vehicleid, newstate)
     return 1;
 }
 
-stock randomExcept( except[ ], len = sizeof( except ) ) {
-
-    new
-        random_number = random( len );
-
-    for ( new x = 0; x < len; x ++ ) {
-        if ( random_number == except[ x ] ) {
-            return randomExcept( except, len );
-        }
-    }
-    return random_number;
-}
-
 function Timer_DestroyObject( objectid )
 	return DestroyDynamicObject( objectid ), 1;
 
@@ -31093,7 +31055,7 @@ stock SetPlayerMineOre( playerid, m )
 stock TazePlayer( victimid, playerid )
 {
    	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	//else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
+	//else if ( sscanf( params, "u", victimid ) ) return SendUsage( playerid, "/taze [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "There are no players around to taze." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
@@ -31146,7 +31108,7 @@ stock ArrestPlayer( victimid, playerid )
 	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	//else if ( GetPlayerScore( playerid ) > 200 ) return SendError( playerid, "This feature is no longer available to you. Please use /detain." );
-	// else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/ar(rest) [PLAYER_ID]" );
+	// else if ( sscanf( params, "u", victimid ) ) return SendUsage( playerid, "/ar(rest) [PLAYER_ID]" );
 	// else if ( victimid == playerid ) return SendError( playerid, "You cannot arrest yourself." );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
@@ -31184,7 +31146,7 @@ stock CuffPlayer( victimid, playerid )
 {
    	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-	//else if ( sscanf( params, ""#sscanf_u"", victimid ) ) return SendUsage( playerid, "/cuff [PLAYER_ID]" );
+	//else if ( sscanf( params, "u", victimid ) ) return SendUsage( playerid, "/cuff [PLAYER_ID]" );
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot cuff yourself." );
 	else if ( !IsPlayerConnected( victimid ) || IsPlayerNPC( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );

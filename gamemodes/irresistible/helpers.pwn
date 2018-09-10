@@ -320,3 +320,30 @@ stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }:
     }
     return s_szReturn;
 }
+
+// purpose: find a random element in sample space, excluding [a, b, c, ...]
+stock randomExcept( except[ ], len = sizeof( except ), available_element_value = -1 ) {
+
+    new bool: any_available_elements = false;
+
+    // we will check if there are any elements that are not in except[]
+    for ( new x = 0; x < len; x ++ ) if ( except[ x ] == available_element_value ) {
+        any_available_elements = true;
+        break;
+    }
+
+    // if all elements are included in except[], prevent continuing otherwise it will infinite loop
+    if ( ! any_available_elements ) {
+        return -1;
+    }
+
+    new random_number = random( len );
+
+    // use recursion to find another element
+    for ( new x = 0; x < len; x ++ ) {
+        if ( random_number == except[ x ] ) {
+            return randomExcept( except, len );
+        }
+    }
+    return random_number;
+}
