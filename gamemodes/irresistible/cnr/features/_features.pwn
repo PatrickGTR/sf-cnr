@@ -14,12 +14,9 @@
 
 // houses
 #include "irresistible\cnr\features\houses\_houses.pwn"
-
-// gangs and facilities
 #include "irresistible\cnr\features\gangs\_gangs.pwn"
-
-// visage casino
 #include "irresistible\cnr\features\visage\_visage.pwn"
+#include "irresistible\cnr\features\minijobs\_minijobs.pwn"
 
 // other
 #include "irresistible\cnr\features\fps.pwn"

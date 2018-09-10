@@ -69,7 +69,6 @@ new bool: False = false;
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerRobbing(%0)			IsPlayerAttachedObjectSlotUsed(%0,0)
 #define IsPlayerAdminJailed(%0) 	(p_AdminJailed{%0}&&p_JailTime[%0])
-#define IsPlayerInMethlab(%0)		(GetPVarInt(%0,"inMethLab")==1&&GetPlayerInterior(%0)==VW_METH)
 #define IsPlayerInShamal(%0)		(GetPlayerInterior(%0)==VW_SHAMAL)
 #define IsValidApartment(%0)		(0 <= %0 < sizeof(g_apartmentData))
 #define GetPlayerXP(%1)             p_XP[%1]
@@ -77,7 +76,6 @@ new bool: False = false;
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
 #define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + GetPlayerCash(%0)) // Bank Money and Money
-#define GetPlayerMethLabVehicle(%0)	(GetPlayerVirtualWorld(%0)-VW_METH)
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0]==1)
 #define Achievement:: 				ach_
 #define UpdateWoodStockObject()		(format(szNormalString,32,"%d Logs Ready",g_LogsInStock),SetDynamicObjectMaterialText(g_LogCountObject,0,szNormalString,130,"Arial",0,1,-1,0,1))
@@ -131,7 +129,6 @@ new bool: False = false;
 
 #define EXCHANGE_XPCASH             10 // Per 1 XP for cash.
 
-#define VW_METH 					110
 #define VW_SHAMAL 					220
 
 const
@@ -1303,59 +1300,6 @@ new
 	g_apartmentElevatorDoor2		[ MAX_AFLOORS ] = INVALID_OBJECT_ID
 ;
 
-/* ** Methamphetamine ** */
-#define CHEMICAL_CS 				0
-#define CHEMICAL_MU					1
-#define CHEMICAL_HLC				2
-
-enum E_METH_PROCEEDURE
-{
-	E_CHEMICAL, 		E_NAME[ 98 ]
-}
-
-static const
-	sz_mu_MethProduction[  ] [ 56 ] =
-	{
-		{ "This batch looks like it needs some muriatic. Add some." },
-		{ "Continue the cooking process by adding some acid." },
-		{ "Soda. Actually, acid. Yeah, that's it." },
-		{ "It's cooking fine. However, it needs more acid." },
-		{ "If you have any muriatic, pour it in." },
-		{ "Chloride, or... Acid. Muriatic. Add that."},
-		{ "Stone Cleaner, add that in." }
-	},
-
-	sz_cs_MethProduction[  ] [ 54 ] =
-	{
-		{ "It's getting blue, add some soda in though." },
-		{ "Got any soda? Drop it in." },
-		{ "This batch needs some club soda." },
-		{ "Add hydrogen chloride. Actually, add soda!" },
-		{ "Continue the process with some caustic soda." },
-		{ "Cooking up real fine. Needs some caustic soda though." },
-		{ "Get the temperature up by adding caustic soda." },
-		{ "Caustic soda... Or muriatic. Actually, add soda." }
-	},
-
-	sz_hcl_MethProduction[  ] [ 46 ] =
-	{
-		{ "Add some of that chloride." },
-		{ "It needs some bubbles, hydrogen should be it." },
-		{ "This batch needs hydrogen." },
-		{ "Continue the process by adding a gas tank." },
-		{ "Add soda. Actually, add hydrogen." },
-		{ "A gas, what could it be? Hydrogen?" },
-		{ "Cooking right away, needs more gas though." }
-	}
-;
-
-new
-	p_MuriaticAcid					[ MAX_PLAYERS char ],
-	p_CausticSoda 					[ MAX_PLAYERS char ],
-	p_HydrogenChloride 				[ MAX_PLAYERS char ],
-	p_Methamphetamine				[ MAX_PLAYERS char ]
-;
-
 /* ** Shop Data ** */
 #define LIMIT_SCISSORS				16
 #define LIMIT_PINS					16
@@ -1570,125 +1514,6 @@ new
 		{ false, "Auto-Save" }, { true, "Connection Log" }, { true, "Hitmarker" }, { true, "V.I.P Skin" }, { false, "Total Coin Bar" }, { false, "Last Donor Text" }
 	},
 	bool: p_PlayerSettings[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
-;
-
-/* ** Trucking System ** */
-#define RISK_FACTOR_EASY 				( 0x10 )
-#define RISK_FACTOR_HARD 				( 0x8 )
-
-#define INVALID_TRUCKING_ROUTE 			( 0xFF )
-
-enum E_TRUCKING_DATA
-{
-	E_NAME[ 32 ],				E_CITY,
-	Float: E_X,					Float: E_Y,					Float: E_Z
-};
-
-enum E_TRAILER_DATA
-{
-	E_NAME[ 17 ], 				E_BONUS, 					E_RISK
-};
-
-new
-	g_aTruckingLocations[ ] [ E_TRUCKING_DATA ] =
-	{
-		// SF
-		{ "Supa",					CITY_SF, -2492.6143, 768.56420, 34.5737 },
-		{ "SF Hospital",			CITY_SF, -2698.4365, 622.14070, 13.8549 },
-		{ "Golf Club",				CITY_SF, -2729.0786, -311.8507, 6.44090 },
-		{ "SF Airport Fueling",		CITY_SF, -1127.2633, -150.5504, 13.5457 },
-		{ "Herb Farm", 				CITY_SF, -1085.3650, -1644.566, 75.7690 },
-		{ "Farm", 					CITY_SF, -376.94220, -1429.182, 25.1285 },
-		{ "FleischBerg Beer",		CITY_SF, -172.67190, -233.8773, 0.83140 },
-		{ "Chemical Plant",			CITY_SF, -1025.5406, -666.9636, 31.4098 },
-		{ "SF Mine",				CITY_SF, -2755.9512, 1256.9657, 11.1721 },
-		{ "Gas Station",			CITY_SF, -2405.2808, 982.05940, 44.6987 },
-
-		// LV
-		{ "LV SMALL Town",			CITY_LV, -796.19470, 1491.5441, 21.3110 },
-		{ "Small LV Farm", 			CITY_LV, -379.07180, 2217.4116, 41.4955 },
-		{ "Abandoned Airport LV", 	CITY_LV, 386.869300, 2539.4175, 15.9411 },
-		{ "LV Truck Depot", 		CITY_LV, 1439.58200, 989.50120, 10.2221 },
-		{ "LV Airport", 			CITY_LV, 1328.65330, 1613.9368, 10.2221 },
-		{ "LV Construction Site", 	CITY_LV, 2422.11400, 1922.9708, 5.41740 },
-		{ "LV Construction Site", 	CITY_LV, 2618.30830, 833.75980, 4.71790 },
-		{ "LV Casino", 				CITY_LV, 1945.29390, 1347.5150, 8.51120 },
-		{ "LV Train Station", 		CITY_LV, 1433.38670, 2606.7341, 10.0737 },
-		//{ "LV Golf Course", 		CITY_LV, 1467.91980, 2775.1060, 10.0737 },
-		{ "LV Army base",			CITY_LV, 314.20850, 1901.61900, 18.3275 },
-
-		// LS
-		{ "LS Farm", 				CITY_LS, 1933.2828, 171.656600, 36.6801 },
-		{ "LS Farm", 				CITY_LS, 2372.1514, -647.70950, 126.906 },
-		{ "LS Arena", 				CITY_LS, 2687.5447, -1682.9163, 8.84300 },
-		{ "LS Trucking Depot", 		CITY_LS, 2488.4692, -2089.7585, 12.9487 },
-		{ "LS Military Depot", 		CITY_LS, 2760.9412, -2456.6716, 12.9522 },
-		{ "LS Pier", 				CITY_LS, 369.90320, -2027.8804, 7.07380 },
-		{ "LS Airport", 			CITY_LS, 1930.5016, -2396.6973, 14.2341 },
-		{ "LS Town Hall", 			CITY_LS, 1306.2109, -2056.8953, 58.1423 },
-		{ "LS Farm", 				CITY_LS, 1557.1737, 24.4480000, 24.8366 },
-		{ "LS Depot", 				CITY_LS, 2538.0132, -2228.3872, 14.0296 },
-
-		// Assorted
-		{ "Desert town",			CITY_DESERTS, -1495.147, 2614.85550, 56.3716 },
-		{ "Farm",					CITY_DESERTS, -1480.387, 1949.57060, 49.6636 },
-		{ "Hard Desert Town",		CITY_DESERTS, -788.0822, 2415.39090, 157.722 },
-		{ "Desert Town",			CITY_DESERTS, -824.9703, 2728.89160, 46.2619 },
-		{ "Small Town",				CITY_DESERTS, -1648.912, 2475.92090, 87.6510 },
-		{ "Ganja Farm",				CITY_DESERTS, -1116.771, -1115.2540, 128.952 },
-		{ "Farm",					CITY_COUNTRY, -367.4244, -1048.4260, 60.0209 }
-	},
-
-	g_aTrailerData[ 3 ] [ 8 ] [ E_TRAILER_DATA ] =
-	{
-		{
-			{ "Methylamine", 		5000, 	RISK_FACTOR_HARD },
-			{ "Mustard Gas", 		4000, 	RISK_FACTOR_HARD },
-			{ "Ethylamine", 		2000, 	RISK_FACTOR_HARD },
-			{ "Safrole", 			1000, 	RISK_FACTOR_HARD },
-
-			{ "Crude Oil", 			2000,	RISK_FACTOR_EASY },
-			{ "Natural Gas", 		1500,	RISK_FACTOR_EASY },
-			{ "Unleaded Gas", 		1250,	RISK_FACTOR_EASY },
-			{ "Heating Oil", 		750,	RISK_FACTOR_EASY }
-		},
-
-		{
-			{ "Pseudoephedrine", 	5000, 	RISK_FACTOR_HARD },
-			{ "Coca Plant", 		4000, 	RISK_FACTOR_HARD },
-			{ "Kush", 				2000, 	RISK_FACTOR_HARD },
-			{ "Opium", 				1000, 	RISK_FACTOR_HARD },
-
-			{ "Soybeans", 			2000, 	RISK_FACTOR_EASY },
-			{ "Wheat", 				1500, 	RISK_FACTOR_EASY },
-			{ "Cocoa", 				1250, 	RISK_FACTOR_EASY },
-			{ "Coffee", 			750, 	RISK_FACTOR_EASY }
-		},
-
-		{
-			{ "Gold Bullion", 		2000, 	RISK_FACTOR_EASY },
-			{ "Silver Bullion", 	1500, 	RISK_FACTOR_EASY },
-			{ "Platinum Bullion",	1250, 	RISK_FACTOR_EASY },
-			{ "Precious Metals", 	750, 	RISK_FACTOR_EASY },
-
-			{ "Cocaine", 			5000, 	RISK_FACTOR_HARD },
-			{ "Methamphetamine", 	4000, 	RISK_FACTOR_HARD },
-			{ "Heroin", 			2000, 	RISK_FACTOR_HARD },
-			{ "Various Pills", 		1000, 	RISK_FACTOR_HARD }
-		}
-	},
-
-	bool: p_hasTruckingJob			[ MAX_PLAYERS char ],
-	p_TruckingTrailer 				[ MAX_PLAYERS char ],
-	p_TruckingTrailerModel 			[ MAX_PLAYERS char ],
-	Float: p_TruckingDistance 		[ MAX_PLAYERS ],
-	p_TruckingTimeElapsed			[ MAX_PLAYERS ],
-	p_TruckingRoute 				[ MAX_PLAYERS ] [ 2 char ],
-	p_TruckingCheckPoint			[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_TruckingMapIcon 				[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_TruckingCancelTimer 			[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_TruckingPositionTimer 		[ MAX_PLAYERS ] = { 0xFFFF, ... },
-	p_LastAttachedVehicle 			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... }
 ;
 
 /* ** Information System ** */
@@ -3674,10 +3499,6 @@ public OnServerUpdateTimer( )
 			//if ( IsPlayerDetained( playerid ) && isNotNearPlayer( playerid, p_DetainedBy[ playerid ] ) && ( g_iTime - p_TiedAtTimestamp[ playerid ] ) >= 8 )
 			//	Uncuff( playerid );
 
-			// Trucking Trailers
-			if ( iState == PLAYER_STATE_DRIVER && iVehicle && p_hasTruckingJob{ playerid } && !IsTrailerAttachedToVehicle( iVehicle ) && p_TruckingCancelTimer[ playerid ] == 0xFFFF )
-		 		cancelPlayerTruckingCourier( playerid, iVehicle, .ticks = 60 );
-
 		 	// Remove invalid visage highrollers
 		 	if ( ! p_IsCasinoHighRoller{ playerid } && IsPlayerInHighRoller( playerid ) ) {
 		 		SetPlayerPos( playerid, 2597.8943, 1603.1852, 1506.1733 );
@@ -4993,7 +4814,6 @@ public OnPlayerDisconnect( playerid, reason )
 	CutSpectation( playerid );
 	LeavePlayerPaintball( playerid );
 	resetPlayerStreaks( playerid );
-	StopPlayerTruckingCourier( playerid );
     RemovePlayerFromRace( playerid );
 	ClearPlayerRoadblocks( playerid, .distance_check = false );
 	//p_Detained		{ playerid } = false;
@@ -8298,71 +8118,6 @@ CMD:request( playerid, params[ ] )
 
 	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
 	SendServerMessage( playerid, "You have requested for a %s in your area.", GetJobName( iJob ) );
-	return 1;
-}
-
-CMD:work( playerid, params[ ] )
-{
-	new
-		szDifficulty[ 7 ],
-		iVehicle = GetPlayerVehicleID( playerid ),
-		iModel 	 = GetVehicleModel( iVehicle ),
-		iTrailer = GetVehicleModel( GetVehicleTrailer( iVehicle ) )
-	;
-
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be an ordinary civilian to use this command." );
-	else if ( sscanf( params, "S(NORMAL)[7]", szDifficulty ) ) return SendUsage( playerid, "/work [NORMAL/HARDER]" );
-	else if ( strmatch( szDifficulty, "STOP" ) )
-	{
-		StopPlayerTruckingCourier( playerid );
-		return SendServerMessage( playerid, "Your trucking mission has been stopped." );
-	}
-	else if ( !strmatch( szDifficulty, "NORMAL" ) && !strmatch( szDifficulty, "HARDER" ) ) return SendUsage( playerid, "/work [NORMAL/HARDER/STOP]" );
-	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You must be a driver of a vehicle to work." );
-	else if ( !iModel ) return SendError( playerid, "You are not in any vehicle." );
-	else
-	{
-		if ( iModel == 403 || iModel == 514 || iModel == 515 )
-		{
-			if ( !p_hasTruckingJob{ playerid } )
-			{
-				if ( !IsTrailerAttachedToVehicle( iVehicle ) )
-					return SendError( playerid, "You can only begin to work only if you have a trailer attached to your vehicle." );
-
-				if ( p_WorkCooldown[ playerid ] > g_iTime )
-					return SendError( playerid, "You must wait %d seconds before working again.", p_WorkCooldown[ playerid ] - g_iTime );
-
-				static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-				DestroyDynamicMapIcon( p_TruckingMapIcon[ playerid ] );
-
-				p_hasTruckingJob 		{ playerid } = true;
-				p_WorkCooldown			[ playerid ] = g_iTime + 60;
-
-				p_TruckingTrailerModel	{ playerid } = getTrailerType( iTrailer );
-				p_TruckingTrailer 		{ playerid } = getRandomTrailerLoad( p_TruckingTrailerModel{ playerid }, strmatch( szDifficulty, "HARDER" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
-
-				p_TruckingRoute[ playerid ] { 0 } = getClosestTruckingRoute( playerid );
-
-			random_route:
-				p_TruckingRoute[ playerid ] { 1 } = random( sizeof( g_aTruckingLocations ) );
-
-				if ( p_TruckingRoute[ playerid ] { 0 } == p_TruckingRoute[ playerid ] { 1 } )
-					goto random_route;
-
-				p_TruckingTimeElapsed[ playerid ] = g_iTime;
-				p_TruckingDistance	[ playerid ] = GetDistanceBetweenPoints( g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Z ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ] );
-				p_TruckingMapIcon	[ playerid ] = CreateDynamicMapIconEx( g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-				p_TruckingCheckPoint[ playerid ] = CreateDynamicRaceCP( 0, g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Z ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], 10.0, -1, -1, playerid );
-
-				p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, p_TruckingRoute[ playerid ] { 0 } );
-	  			TextDrawShowForPlayer( playerid, p_TruckingTD[ playerid ] );
-
-				ShowPlayerHelpDialog( playerid, 7500, "A ~g~~h~truck blip~w~~h~ has been shown on your radar. Go to where the truck blip is load your trailer with %s.", g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
-			}
-			else SendError( playerid, "You already have a trucking job started! Cancel it with "COL_GREY"/work stop"COL_WHITE"." );
-		}
-		else SendError( playerid, "There are currently no jobs for this particular vehicle." );
-	}
 	return 1;
 }
 
@@ -13459,22 +13214,6 @@ DQCMD:rcon( DCC_Channel: channel, DCC_User: user, params[ ] )
 #endif
 /* ** End of Commands ** */
 
-public OnTrailerUpdate( playerid, vehicleid )
-{
-	new
-		iModel = GetVehicleModel( GetPlayerVehicleID( playerid ) );
-
-	if ( p_LastAttachedVehicle[ playerid ] != vehicleid && iModel != 525 )
-	{
-		if ( !p_hasTruckingJob{ playerid } )
-			ShowPlayerHelpDialog( playerid, 3000, "You can begin a trucking job by typing ~g~~h~/work" );
-		else
-			cancelPlayerTruckingCourier( playerid, GetPlayerVehicleID( playerid ), .ticks = 0 );
-
-		p_LastAttachedVehicle[ playerid ] = vehicleid;
-	}
-	return 1;
-}
 
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
 {
@@ -13872,9 +13611,6 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 
     if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER ) // Driver has a new state?
     {
-    	if ( p_hasTruckingJob{ playerid } )
-			cancelPlayerTruckingCourier( playerid, GetPlayerVehicleID( playerid ), .ticks = 0 );
-
     	if ( p_StartedLumberjack{ playerid } == true )
 		{
 	    	p_StartedLumberjack{ playerid } = false;
@@ -14431,69 +14167,8 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 	;
 
 	static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-	if ( checkpointid == p_TruckingCheckPoint[ playerid ] )
-	{
 
-		if ( !IsTrailerAttachedToVehicle( iVehicle ) )
-			return SendError( playerid, "You cannot import/export anything without a trailer!" );
-
-		DestroyDynamicMapIcon( p_TruckingMapIcon[ playerid ] );
-		DestroyDynamicRaceCP ( p_TruckingCheckPoint[ playerid ] );
-		KillTimer			 ( p_TruckingPositionTimer[ playerid ] );
-
-		if ( g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_RISK ] == RISK_FACTOR_HARD )
-			GivePlayerWantedLevel( playerid, 6 );
-
-		if ( p_TruckingRoute[ playerid ] { 0 } != INVALID_TRUCKING_ROUTE )
-		{
-			p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, p_TruckingRoute[ playerid ] { 1 } );
-  			TextDrawShowForPlayer( playerid, p_TruckingTD[ playerid ] );
-
-			ShowPlayerHelpDialog( playerid, 7500, "Your trailer has been loaded with %s. ~g~~h~Follow the truck blip on your radar to meet the destination.", g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
-			p_TruckingMapIcon	[ playerid ] = CreateDynamicMapIconEx( g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-			p_TruckingCheckPoint[ playerid ] = CreateDynamicRaceCP( 0, g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], 10.0, -1, -1, playerid );
-			return ( p_TruckingRoute[ playerid ] { 0 } = INVALID_TRUCKING_ROUTE ), 1;
-		}
-
-		else if ( p_TruckingRoute[ playerid ] { 1 } != INVALID_TRUCKING_ROUTE )
-		{
-			new
-				iTimeElapsed = g_iTime - p_TruckingTimeElapsed[ playerid ],
-				iTheoreticalFinish = floatround( p_TruckingDistance[ playerid ] / 30.0 ) // distance / 25m/s (2000m / 25m/s)
-			;
-
-			// Check if it is really quick to finish
-			if ( iTimeElapsed < iTheoreticalFinish ) {
-		   		SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC-%d-%d).", iTheoreticalFinish, iTimeElapsed );
-		    	KickPlayerTimed( playerid );
-		    	return 1;
-			}
-
-			new
-				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 2.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
-
-			Achievement::HandleTruckingCouriers( playerid );
-			TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
-
-			GivePlayerScore( playerid, 1 + floatround( p_TruckingDistance[ playerid ] / 1000.0 ) );
-			GivePlayerCash( playerid, iCashEarned );
-
-			p_TruckingDistance		[ playerid ] = 0.0;
-			p_hasTruckingJob		{ playerid } = false;
-			p_TruckingCheckPoint	[ playerid ] = 0xFFFF;
-			p_TruckingMapIcon 		[ playerid ] = 0xFFFF;
-			p_TruckingCancelTimer	[ playerid ] = 0xFFFF;
-
-			//SetTimerEx( "RespawnVehicle", 3500, false, "d", GetVehicleTrailer( iVehicle ) );
-			DetachTrailerFromVehicle( iVehicle );
-
-			ShowPlayerHelpDialog( playerid, 7500, "You have earned ~y~~h~%s~w~~h~ for exporting %s!", cash_format( iCashEarned ), g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
-        	return ( p_TruckingRoute[ playerid ] { 1 } = INVALID_TRUCKING_ROUTE ), 1;
-		}
-		return 1;
-	}
-
-	else if ( checkpointid == p_PawnStoreExport[ playerid ] )
+	if ( checkpointid == p_PawnStoreExport[ playerid ] )
 	{
 	    new vehicleid = GetPlayerVehicleID( playerid );
 	    if ( GetVehicleModel( vehicleid ) == 498 )
@@ -26544,102 +26219,6 @@ stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] ) {
 	Get2DCity( szCity, X, Y, Z );
 	GetZoneFromCoordinates( szLocation, X, Y, Z );
 	return true;
-}
-
-stock getRandomTrailerLoad( iModel, iRisk ) {
-
-	new
-		aRandom[ sizeof( g_aTrailerData[ ] ) ],
-		iRandomIndex = -1
-	;
-
-	for( new i = 0; i < sizeof( g_aTrailerData[ ] ); i++ ) {
-		if ( g_aTrailerData[ iModel ] [ i ] [ E_RISK ] == iRisk ) {
-			aRandom[ ++iRandomIndex ] = i;
-		}
-	}
-
-	return aRandom[ random( iRandomIndex + 1 ) ];
-}
-
-//stock randarg( ... )
-//	return getarg( random( numargs( ) ) );
-
-stock getClosestTruckingRoute( playerid, &Float: distance = FLOAT_INFINITY ) {
-    new
-    	iCurrent = INVALID_PLAYER_ID, Float: fTmp;
-
-    for( new i = 0; i < sizeof( g_aTruckingLocations ); i++ )
-    	if ( 0.0 < ( fTmp = GetDistanceFromPlayerSquared( playerid, g_aTruckingLocations[ i ] [ E_X ], g_aTruckingLocations[ i ] [ E_Y ], g_aTruckingLocations[ i ] [ E_Z ] ) ) < distance )
-    		distance = fTmp, iCurrent = i;
-
-    return iCurrent;
-}
-
-function OnTruckPositionUpdate( playerid, routeid )
-{
-	if ( !IsPlayerInAnyVehicle( playerid ) && !p_hasTruckingJob{ playerid } && ( p_TruckingRoute[ playerid ] { 0 } == 0 && p_TruckingRoute[ playerid ] { 1 } == 0 ) ) {
-	  	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
-		return ( p_TruckingPositionTimer[ playerid ] = 0xFFFF );
-	}
-
-	new
-		Float: fDistance = GetPlayerDistanceFromPoint( playerid, g_aTruckingLocations[ routeid ] [ E_X ], g_aTruckingLocations[ routeid ] [ E_Y ], g_aTruckingLocations[ routeid ] [ E_Z ] );
-
-	TextDrawSetString( p_TruckingTD[ playerid ], sprintf( "~b~Location:~w~ %s~n~~b~Distance:~w~ %0.2fm", g_aTruckingLocations[ routeid ] [ E_NAME ], fDistance ) );
-	return ( p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, routeid ) );
-}
-
-
-stock getTrailerType( model )
-{
-	switch( model ) {
-		case 584:
-			return 0;
-		case 450:
-			return 1;
-		case 435, 591:
-			return 2;
-	}
-	return 0xF;
-}
-
-function cancelPlayerTruckingCourier( playerid, vehicleid, ticks )
-{
-	if ( IsTrailerAttachedToVehicle( vehicleid ) && ticks )
-		return KillTimer( p_TruckingCancelTimer[ playerid ] ), p_TruckingCancelTimer[ playerid ] = 0xFFFF;
-
-	if ( ticks < 1 || !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) )
-	{
-		StopPlayerTruckingCourier( playerid );
-		SendServerMessage( playerid, "Your trucking mission has been stopped." );
-	}
-	else
-	{
-		ShowPlayerHelpDialog( playerid, 1000, "You have %d seconds to attach back the trailer you were using.", ticks - 1 );
-		p_TruckingCancelTimer[ playerid ] = SetTimerEx( "cancelPlayerTruckingCourier", 980, false, "ddd", playerid, vehicleid, ticks - 1 );
-	}
-	return 1;
-}
-
-stock StopPlayerTruckingCourier( playerid )
-{
-	DestroyDynamicRaceCP	( p_TruckingCheckPoint[ playerid ] );
-	DestroyDynamicMapIcon 	( p_TruckingMapIcon[ playerid ] );
-
-	KillTimer 				( p_TruckingPositionTimer[ playerid ] );
-	KillTimer 				( p_TruckingCancelTimer[ playerid ] );
-
-	p_TruckingDistance		[ playerid ] = 0.0;
-	p_hasTruckingJob		{ playerid } = false;
-	p_TruckingCheckPoint	[ playerid ] = 0xFFFF;
-	p_TruckingMapIcon 		[ playerid ] = 0xFFFF;
-	p_TruckingCancelTimer	[ playerid ] = 0xFFFF;
-	p_TruckingPositionTimer [ playerid ] = 0xFFFF;
-	p_TruckingRoute 		[ playerid ] { 0 } = INVALID_TRUCKING_ROUTE;
-	p_TruckingRoute 		[ playerid ] { 1 } = INVALID_TRUCKING_ROUTE;
-
-	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
 }
 
 stock WarnPlayerClass( playerid, bool: bArmy = false, iPoints = 1 )
