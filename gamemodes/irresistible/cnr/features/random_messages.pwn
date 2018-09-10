@@ -100,5 +100,5 @@ hook OnServerUpdate( )
 		// throttle
 		g_randomMessageTick = GetServerTime( ) + 30;
 	}
-	return 1;
+	return Y_HOOKS_CONTINUE_RETURN_1;
 }

@@ -2086,7 +2086,7 @@ new
 
 /* ** Forwards ** */
 public OnPlayerDriveVehicle( playerid, vehicleid );
-public OnServerUpdate( );
+public OnServerUpdateTimer( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
@@ -3222,7 +3222,7 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "SELECT * FROM `BUSINESSES`", true, "OnBusinessLoad", "" );
 
 	/* ** Timers ** */
-	rl_ServerUpdate = SetTimer( "OnServerUpdate", 960, true );
+	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
 	rl_ZoneUpdate = SetTimer( "ZoneTimer", 980, true );
 
 	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
@@ -3583,13 +3583,17 @@ public OnGameModeExit( )
 	return 1;
 }
 
-public OnServerUpdate( )
+public OnServerUpdateTimer( )
 {
 	static
 		iState, iVehicle, iWeapon, iAmmo, iKeys,
 		Float: fX, Float: fY, Float: fZ, Float: fLastRate
 	;
 
+	// for hooks
+	CallLocalFunction( "OnServerUpdate", "" );
+
+	// better to store in a variable as we are getting the timestamp from hardware
 	g_iTime = gettime( );
 
 	// Time For Tax?
@@ -3626,7 +3630,8 @@ public OnServerUpdate( )
 	// Begin iterating all players
 	foreach ( new playerid : Player )
 	{
-		CallLocalFunction( "OnPlayerUpdateEx", "dd", playerid );
+		// For modules that wish to update data appropriately
+		CallLocalFunction( "OnPlayerUpdateEx", "d", playerid );
 
 		if ( IsPlayerSpawned( playerid ) && p_PlayerLogged{ playerid } )
 		{
@@ -4181,7 +4186,7 @@ public OnServerUpdate( )
 
 		g_RestoreRobberiesBribes = g_iTime + 10;
 	}
-	return 1;
+	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
 stock GetGangCapturedTurfs( gangid )
