@@ -215,6 +215,279 @@ new
 ;
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	mysql_function_query( dbHandle, "SELECT * FROM `FURNITURE`", true, "OnFurnitureLoad", "" );
+	return 1;
+}
+
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	if ( dialogid == DIALOG_FURNITURE )
+	{
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+		if ( !IsPlayerHomeOwner( playerid, houseid ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	    if ( response )
+	    {
+			switch( listitem )
+			{
+			    case 0: ShowFurnitureCategory( playerid );
+			    case 1: SendServerMessage( playerid, "You are now editing your furniture. Simply drag your mouse over a piece of furniture and click to edit." ), SelectObject( playerid );
+				case 2: ShowOwnedFurnitureList( playerid, houseid );
+				case 3:
+				{
+					new fhandle = ITER_NONE;
+				    new i = GetClosestFurniture( houseid, playerid, .furniture_handle = fhandle );
+				    if ( i == INVALID_OBJECT_ID || fhandle == ITER_NONE ) return SendError( playerid, "There are no nearby furniture." );
+			    	SetPVarInt( playerid, "furniture_house", houseid );
+			    	SetPVarInt( playerid, "furniture_id", fhandle );
+					ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
+      			}
+      			case 4: ShowPlayerDialog( playerid, DIALOG_TRUNCATE_FURNITURE, DIALOG_STYLE_MSGBOX, "Furniture", ""COL_WHITE"Are you sure you want to truncate your furniture?", "Confirm", "Back" );
+			}
+	    }
+	    else
+	    {
+	    	if ( p_InHouse[ playerid ] != -1 ) return cmd_h( playerid, "config" );
+	    	return cmd_flat( playerid, "config" );
+	    }
+	}
+	else if ( dialogid == DIALOG_TRUNCATE_FURNITURE )
+	{
+	    if ( p_InHouse[ playerid ] == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+		if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+		if ( response )
+	   	 	destroyAllFurniture( p_InHouse[ playerid ] );
+
+		return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	}
+	else if ( dialogid == DIALOG_FURNITURE_CATEGORY )
+	{
+		if ( !response ) return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+		ShowFurnitureList( playerid, listitem );
+		p_FurnitureCategory{ playerid } = listitem;
+	}
+	else if ( dialogid == DIALOG_FURNITURE_MAN_SEL )
+	{
+	    if ( response )
+	    {
+	    	new houseid = p_InHouse[ playerid ];
+
+		    if ( houseid == -1 )
+		   		return SendError( playerid, "You're not inside any house." );
+
+			if ( !IsPlayerHomeOwner( playerid, houseid ) )
+		   	 	return SendError( playerid, "You are not the owner of this house." );
+
+		   	new x = 0;
+
+		   	foreach ( new fhandle : housefurniture[ houseid ] )
+			{
+				new objectid = g_houseFurnitureData[ houseid ] [ fhandle ];
+
+				if ( IsValidDynamicObject( objectid ) )
+				{
+				    if ( x == listitem )
+				    {
+				    	SetPVarInt( playerid, "furniture_house", houseid );
+				    	SetPVarInt( playerid, "furniture_id", fhandle );
+						ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
+				        break;
+				    }
+				    x++;
+				}
+			}
+	    }
+	    else ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	}
+	else if ( dialogid == DIALOG_FURNITURE_OPTION )
+	{
+	    if ( !response )
+	    	return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+
+	 	new editing_house = GetPVarInt( playerid, "furniture_house" );
+	 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
+
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+	    if ( houseid != editing_house )
+	   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
+
+	   	if ( !IsPlayerHomeOwner( playerid, houseid ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	 	new objectid = g_houseFurnitureData[ editing_house ] [ editing_furniture ];
+	 	new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
+
+        switch( listitem )
+        {
+            case 0: EditDynamicObject( playerid, objectid );
+            case 1 .. 3:
+            {
+            	p_FurnitureRotAxis{ playerid } = listitem;
+            	ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.", "Confirm", "Back" );
+            }
+            case 4:
+            {
+				new i = getFurnitureID( modelid );
+
+		        if ( ! Iter_Count( housefurniture[ houseid ] ) )
+		        	return SendError( playerid, "There is no furniture left to sell." );
+
+				if ( i == -1 )
+					return SendError( playerid, "Unable to sell furniture due to an unexpected error (0x8F)." );
+
+                DestroyDynamicObject( objectid );
+				mysql_single_query( sprintf( "DELETE FROM `FURNITURE` WHERE `ID`=%d AND `HOUSE_ID`=%d", editing_furniture, editing_house ) );
+
+				new iNetProfit = floatround( g_houseFurniture[ i ] [ E_COST ] / 2 );
+
+				GivePlayerCash( playerid, iNetProfit );
+				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[FURNITURE]"COL_WHITE" You have successfully sold your "COL_WHITE"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_houseFurniture[ i ] [ E_NAME ], number_format( iNetProfit ) );
+        		ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+			}
+        }
+	}
+	else if ( dialogid == DIALOG_FURNITURE_ROTATION )
+	{
+	 	new editing_house = GetPVarInt( playerid, "furniture_house" );
+	 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
+
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+	    if ( houseid != editing_house )
+	   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
+
+	   	if ( !IsPlayerHomeOwner( playerid, houseid ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+	 	new objectid = g_houseFurnitureData[ editing_house ] [ editing_furniture ];
+
+	    if ( !response )
+	    	return ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+
+		new Float: angle;
+
+		if ( sscanf( inputtext, "f", angle ) )
+			return ShowPlayerDialog( playerid, DIALOG_FURNITURE_ROTATION, DIALOG_STYLE_INPUT, "{FFFFFF}Furniture", "{FFFFFF}Input your axis' value below.\n\n"COL_RED"Invalid Value!", "Confirm", "Back" );
+
+		new Float: rotX, Float: rotY, Float: rotZ;
+	    GetDynamicObjectRot( objectid, rotX, rotY, rotZ );
+
+	    switch( p_FurnitureRotAxis{ playerid } )
+	    {
+			case 1: SetDynamicObjectRot( objectid, angle, rotY, rotZ );
+			case 2: SetDynamicObjectRot( objectid, rotX, angle, rotZ );
+			case 3: SetDynamicObjectRot( objectid, rotX, rotY, angle );
+	    }
+
+	    GetDynamicObjectRot( objectid, rotX, rotY, rotZ ); // finalize
+		format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `RX`=%f,`RY`=%f,`RZ`=%f WHERE `ID`=%d AND `HOUSE_ID`=%d", rotX, rotY, rotZ, editing_furniture, editing_house );
+		mysql_single_query( szBigString );
+
+		SendServerMessage( playerid, "Furniture has been successfully updated." );
+        ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	}
+	else if ( dialogid == DIALOG_FURNITURE_LIST )
+	{
+	    if ( !response ) return ShowFurnitureCategory( playerid );
+
+		new houseid = p_InHouse[ playerid ];
+
+	    if ( houseid == -1 )
+	   		return SendError( playerid, "You're not inside any house." );
+
+	   	if ( !IsPlayerHomeOwner( playerid, houseid ) )
+	   	 	return SendError( playerid, "You are not the owner of this house." );
+
+		new vip_slots = 20 + ( p_VIPLevel[ playerid ] * 10 );
+		new total_furniture = Iter_Count( housefurniture[ houseid ] );
+
+		if ( total_furniture > vip_slots )
+			return SendError( playerid, "You have reached the maximum furniture limit of %d.", vip_slots );
+
+	    for( new i, x = 0; i < sizeof( g_houseFurniture ); i++ )
+		{
+			if ( p_FurnitureCategory{ playerid } == g_houseFurniture[ i ] [ E_CATEGORY ] )
+		 	{
+		       	if ( x == listitem )
+		      	{
+		      		if ( GetPlayerCash( playerid ) < g_houseFurniture[ i ] [ E_COST ] )
+				    {
+						ShowFurnitureList( playerid, p_FurnitureCategory{ playerid } );
+				        return SendError( playerid, "You don't have enough money for this piece of furniture." );
+				    }
+
+					new Float: X, Float: Y, Float: Z;
+					GetXYInFrontOfPlayer( playerid, X, Y, Z, 2.0 );
+
+					new fhandle = CreateFurniture( houseid, g_houseFurniture[ i ] [ E_MODEL ], X, Y, Z, 0.0, 0.0, 0.0, .creator = p_AccountID[ playerid ] );
+
+					if ( fhandle == ITER_NONE )
+						return SendError( playerid, "You do not have any more slots available to add furniture." );
+
+					GivePlayerCash( playerid, -g_houseFurniture[ i ] [ E_COST ] );
+					Streamer_Update( playerid ); // SyncObject( playerid );
+
+					SendServerMessage( playerid, "You have purchased a "COL_GREY"%s"COL_WHITE". "COL_ORANGE"[%d/%d]", g_houseFurniture[ i ] [ E_NAME ], total_furniture + 1, vip_slots );
+					ShowFurnitureList( playerid, p_FurnitureCategory{ playerid } );
+				 	break;
+	      		}
+		      	x ++;
+			}
+		}
+	}
+	return 1;
+}
+
+hook OnPlayerSelectDynObject( playerid, objectid, modelid, Float:x, Float:y, Float:z )
+{
+	new houseid = p_InHouse[ playerid ];
+
+	if ( houseid == -1 )
+		return SendError( playerid, "You're not inside any house." );
+
+	if ( ! IsPlayerHomeOwner( playerid, houseid ) )
+		return SendError( playerid, "You are not the owner of this house." );
+
+	if ( isFurnitureObject( modelid ) )
+	{
+		new fhandle;
+
+		// check the handle of the modelid
+		foreach ( fhandle : housefurniture[ houseid ] ) {
+			new furniture_model = Streamer_GetIntData( STREAMER_TYPE_OBJECT, g_houseFurnitureData[ houseid ] [ fhandle ], E_STREAMER_MODEL_ID );
+			if ( furniture_model == modelid ) break;
+		}
+
+		// notify
+		if ( fhandle != ITER_NONE ) {
+			SetPVarInt( playerid, "furniture_house", houseid );
+			SetPVarInt( playerid, "furniture_id", fhandle );
+			ShowPlayerDialog( playerid, DIALOG_FURNITURE_OPTION, DIALOG_STYLE_LIST, "Furniture", "Use Editor\nEdit Rotation X\nEdit Rotation Y\nEdit Rotation Z\nSell Object", "Select", "Back" );
+		}
+		else SendError( playerid, "This furniture item cannot be edited as its model is unrecogized in the house." );
+	}
+	CancelEdit( playerid );
+	return 1;
+}
+
 hook OnPlayerConnect( playerid )
 {
 	//Katie - 271.884979,306.631988,999.148437 - DEFAULT - 2
@@ -696,4 +969,273 @@ hook OnPlayerConnect( playerid )
 	RemoveBuildingForPlayer( playerid, 1738, -2158.3906, 647.0859, 1057.2344, 0.25 );
 }
 
+/* ** SQL Threads ** */
+thread OnFurnitureLoad( )
+{
+	new rows, i = -1;
+	new loadingTick = GetTickCount( );
+
+	cache_get_data( rows, tmpVariable );
+	if ( rows )
+	{
+		while( ++i < rows )
+		{
+			new fhandle = CreateFurniture(
+				cache_get_field_content_int( i, "HOUSE_ID", dbHandle ),
+				cache_get_field_content_int( i, "MODEL", dbHandle ),
+				cache_get_field_content_float( i, "X", dbHandle ),
+				cache_get_field_content_float( i, "Y", dbHandle ),
+				cache_get_field_content_float( i, "Z", dbHandle ),
+				cache_get_field_content_float( i, "RX", dbHandle ),
+				cache_get_field_content_float( i, "RY", dbHandle ),
+				cache_get_field_content_float( i, "RZ", dbHandle ),
+				cache_get_field_content_int( i, "ID", dbHandle ),
+				.creator = -1
+			);
+			if ( fhandle == ITER_NONE ) printf( "[FURNITURE ERROR] Too much furniture created for house id %d.", fhandle );
+		}
+	}
+	printf( "[FURNITURE]: %d objects have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
+	return 1;
+}
+
 /* ** Functions ** */
+stock CreateFurniture( houseid, modelid, Float: x, Float: y, Float: z, Float: rx, Float: ry, Float: rz, fhandle = ITER_NONE, creator = 0 )
+{
+	if ( ! ( 0 <= houseid < MAX_HOUSES ) )
+		return ITER_NONE;
+
+	if ( fhandle == ITER_NONE ) // find free slot if not preloaded
+		fhandle = Iter_Free( housefurniture[ houseid ] );
+
+	if ( fhandle != ITER_NONE )
+	{
+		// insert into iterator
+		Iter_Add( housefurniture[ houseid ], fhandle );
+		g_houseFurnitureData[ houseid ] [ fhandle ] = CreateDynamicObject( modelid, x, y, z, rx, ry, rz, houseid + MAX_HOUSES );
+
+		// insert into database
+		if ( creator >= 0 )
+		{
+			format( szBigString, sizeof ( szBigString ), "INSERT INTO `FURNITURE`(`ID`,`HOUSE_ID`,`OWNER`,`MODEL`,`X`,`Y`,`Z`,`RX`,`RY`,`RZ`) VALUES (%d,%d,%d,%d,%f,%f,%f,%f,%f,%f)", fhandle, houseid, creator, modelid, x, y, z, rx, ry, rz );
+			mysql_single_query( szBigString );
+		}
+	}
+	return fhandle;
+}
+
+stock isFurnitureObject( modelid )
+{
+	for( new i = 0; i < sizeof( g_houseFurniture ); i++ )
+		if ( g_houseFurniture[ i ] [ E_MODEL ] == modelid )
+		    return true;
+
+	return false;
+}
+
+stock destroyAllFurniture( houseid )
+{
+	if ( ! Iter_Contains( houses, houseid ) )
+	    return 0;
+
+	foreach ( new fhandle : housefurniture[ houseid ] ) {
+		DestroyDynamicObject( g_houseFurnitureData[ houseid ] [ fhandle ] ), g_houseFurnitureData[ houseid ] [ fhandle ] = -1;
+		Iter_SafeRemove( housefurniture[ houseid ], fhandle, fhandle );
+	}
+
+	mysql_single_query( sprintf( "DELETE FROM `FURNITURE` WHERE `HOUSE_ID`=%d", houseid ) );
+	return 1;
+}
+
+stock getFurnitureID( modelid )
+{
+	for( new i = 0; i < sizeof( g_houseFurniture ); i++ )
+		if ( modelid == g_houseFurniture[ i ] [ E_MODEL ] ) return i;
+
+	return -1;
+}
+
+stock ShowOwnedFurnitureList( playerid, houseid )
+{
+	if ( Iter_Count( housefurniture[ houseid ] ) > 0 )
+	{
+		szLargeString = ""COL_WHITE"Furniture Item\n";
+		foreach ( new fhandle : housefurniture[ houseid ] ) {
+			new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, g_houseFurnitureData[ houseid ] [ fhandle ], E_STREAMER_MODEL_ID );
+			new furniture_item = getFurnitureID( modelid );
+			if ( furniture_item != -1 ) {
+				format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseFurniture[ furniture_item ] [ E_NAME ] );
+			} else {
+				strcat( szLargeString, "Unknown\n" );
+			}
+		}
+		ShowPlayerDialog( playerid, DIALOG_FURNITURE_MAN_SEL, DIALOG_STYLE_TABLIST_HEADERS, "Furniture", szLargeString, "Select", "Back" );
+	}
+	else
+	{
+		SendError( playerid, "You don't own any furniture." );
+		ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
+	}
+}
+
+stock ShowFurnitureCategory( playerid )
+{
+	static
+	    szCategory[ 148 ];
+
+	if ( szCategory[ 0 ] == '\0' )
+	{
+	    for( new i = 0; i < sizeof( g_furnitureCategory ); i++ )
+	        format( szCategory, sizeof( szCategory ), "%s%s\n", szCategory, g_furnitureCategory[ i ] );
+	}
+	ShowPlayerDialog( playerid, DIALOG_FURNITURE_CATEGORY, DIALOG_STYLE_LIST, "Furniture", szCategory, "Select", "Back" );
+	return 1;
+}
+
+stock ShowFurnitureList( playerid, category )
+{
+	szLargeString = ""COL_WHITE"Furniture\t"COL_WHITE"Cost\n";
+
+    for( new i = 0; i < sizeof( g_houseFurniture ); i++ ) if ( g_houseFurniture[ i ] [ E_CATEGORY ] == category )
+		format( szLargeString, sizeof( szLargeString ), "%s%s\t"COL_GOLD"%s\n", szLargeString, g_houseFurniture[ i ] [ E_NAME ], number_format( g_houseFurniture[ i ] [ E_COST ] ) );
+
+	ShowPlayerDialog( playerid, DIALOG_FURNITURE_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Furniture", szLargeString, "Select", "Back" );
+}
+
+stock GetClosestFurniture( houseid, playerid, &Float: dis = 99999.99, &furniture_handle = ITER_NONE )
+{
+	new
+		Float: dis2,
+		object = INVALID_OBJECT_ID,
+		Float: X, Float: Y, Float: Z
+	;
+	foreach ( new fhandle : housefurniture[ houseid ] )
+	{
+		new objectid = g_houseFurnitureData[ houseid ] [ fhandle ];
+		if ( IsValidDynamicObject( objectid ) )
+		{
+			GetDynamicObjectPos( objectid, X, Y, Z );
+	    	dis2 = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
+	    	if ( dis2 < dis && dis2 != -1.00 ) {
+	    	    dis = dis2;
+	    	    object = objectid;
+	    	    furniture_handle = fhandle;
+			}
+		}
+	}
+	return object;
+}
+
+stock FillHomeWithFurniture( houseid, interior_id ) {
+	if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Cattus Interior" ) ) {
+		CreateFurniture( houseid, 2181, 273.795989, 304.962005, 998.148010, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 19317, 273.561004, 307.549011, 998.896972, -8.899999, 0.000000, -44.599998 );
+		CreateFurniture( houseid, 1745, 269.713012, 305.380004, 998.057983, 0.000000, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Assum Interior" ) ) {
+		CreateFurniture( houseid, 1745, 246.465103, 302.465484, 998.127441, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 1717, 244.388854, 301.269592, 998.117431, 0.000000, 0.000000, 47.600032 );
+		CreateFurniture( houseid, 1742, 250.075302, 305.350036, 998.127441, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 349, 248.876480, 302.361389, 998.922302, -95.399993, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Fossor Interior" ) ) {
+		CreateFurniture( houseid, 11720, 2210.785888, -1072.437988, 1049.422973, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 2100, 2214.089111, -1078.663940, 1049.483032, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 19317, 2212.149902, -1072.442993, 1051.865966, 0.000000, -45.000000, -90.000000 );
+		CreateFurniture( houseid, 19317, 2212.149902, -1072.442993, 1051.865966, 0.000000, 45.000000, -90.000000 );
+	}
+	/*else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Angusto Interior" ) ) {
+		CreateFurniture( houseid, 11743, 265.862518, 1290.442016, 1080.305175, 0.000000, 0.000000, 180.000000 );
+	}*/
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Organum Interior" ) ) {
+		CreateFurniture( houseid, 2297, 308.390014, 300.296997, 1002.294006, 0.000000, 0.000000, 135.000000 );
+		CreateFurniture( houseid, 1754, 308.322998, 303.714996, 1002.304016, 0.000000, 0.000000, -15.600000 );
+		CreateFurniture( houseid, 1754, 306.437988, 303.539001, 1002.304016, 0.000000, 0.000000, 33.099998 );
+		CreateFurniture( houseid, 19631, 303.839996, 302.459014, 1002.731994, 70.099998, 93.000000, 94.300003 );
+	}
+	/*else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Bulbus Interior" ) ) {
+		CreateFurniture( houseid, 19893, -69.010528, 1362.585815, 1079.770507, 0.000000, 0.000000, -110.200012 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Vindemia Interior" ) ) {
+		CreateFurniture( houseid, 1518, 292.440887, 1472.344360, 1080.087646, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1748, 288.720428, 1490.140014, 1079.787353, 0.000000, 0.000000, 45.699871 );
+		CreateFurniture( houseid, 19893, 302.293579, 1475.090209, 1079.957519, 0.000000, 0.000000, -160.199905 );
+	}*/
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Aurora Interior" ) ) {
+		CreateFurniture( houseid, 1828, -2165.865966, 644.096984, 1056.583007, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 11743, -2162.052978, 637.107971, 1057.515991, 0.000000, 0.000000, 129.699996 );
+		CreateFurniture( houseid, 19830, -2158.127929, 637.051025, 1057.505981, 0.000000, 0.000000, -147.300003 );
+		CreateFurniture( houseid, 19893, -2161.440917, 643.953002, 1057.384033, 0.000000, 0.000000, -85.699996 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Fragor Interior" ) ) {
+		CreateFurniture( houseid, 2563, 307.286010, 1121.037963, 1082.881958, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2313, 318.532989, 1124.858032, 1082.871948, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1786, 319.161987, 1125.123046, 1083.342041, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1828, 323.757995, 1129.447021, 1082.871948, 0.000000, 0.000000, 90.000000 );
+	}
+	/*else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Mundus Interior" ) ) {
+		CreateFurniture( houseid, 19893, 26.778570, 1347.625488, 1088.554687, 0.000000, 0.000000, 124.699920 );
+		CreateFurniture( houseid, 356, 31.855621, 1346.810668, 1083.904663, 85.500068, -65.499977, -2.500000 );
+	}*/
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Artus Interior" ) ) {
+		CreateFurniture( houseid, 19786, 2242.808105, -1065.896972, 1049.543945, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 2313, 2242.090087, -1066.394042, 1048.050048, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1702, 2243.757080, -1069.983032, 1047.969970, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1704, 2244.997070, -1067.770996, 1047.969970, 0.000000, 0.000000, -102.800003 );
+		CreateFurniture( houseid, 1704, 2240.719970, -1068.850952, 1047.969970, 0.000000, 0.000000, 95.699996 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Caelum Interior" ) ) {
+		CreateFurniture( houseid, 11720, 2230.312988, -1106.276000, 1049.852050, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2235.194091, -1110.384033, 1049.881958, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 321, 2230.624023, -1107.496948, 1049.881958, 90.000000, 90.000000, 0.000000 );
+		CreateFurniture( houseid, 362, 2226.039062, -1110.713012, 1050.806030, 0.000000, -5.199999, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Rotta Interior" ) ) {
+		CreateFurniture( houseid, 11743, 2501.027099, -1707.707031, 1014.861999, 0.000000, 0.000000, -91.699996 );
+		CreateFurniture( houseid, 2181, 2492.664062, -1704.439941, 1013.742004, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 1717, 2492.029052, -1694.394042, 1013.786987, 0.000000, 0.000000, -36.900001 );
+		CreateFurniture( houseid, 1755, 2494.482910, -1695.970947, 1013.721984, 0.000000, 0.000000, -124.000000 );
+		CreateFurniture( houseid, 1755, 2492.474121, -1696.670043, 1013.721984, 0.000000, 0.000000, 160.500000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Ascensor Interior" ) ) {
+		CreateFurniture( houseid, 19786, 2325.875000, -1017.260986, 1051.161987, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1743, 2325.341064, -1018.752990, 1049.219970, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1828, 2325.969970, -1022.057983, 1049.189941, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 11720, 2324.851074, -1008.127014, 1053.727050, 0.000000, 0.000000, 0.000000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Colonel Interior" ) ) {
+		CreateFurniture( houseid, 2100, 2810.426025, -1164.852050, 1024.578979, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 2297, 2812.813964, -1171.582031, 1024.578979, 0.000000, 0.000000, -135.000000 );
+		CreateFurniture( houseid, 1704, 2810.127929, -1171.822021, 1024.548950, 0.000000, 0.000000, 72.099998 );
+		CreateFurniture( houseid, 1745, 2817.600097, -1167.550048, 1028.151000, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 19319, 2817.147949, -1171.015991, 1030.425048, 0.000000, 45.000000, 180.000000 );
+	}
+	/*else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Godfather Interior" ) ) {
+		CreateFurniture( houseid, 358, 150.524795, 1370.906127, 1083.410156, -78.500221, 37.299991, -99.299461 );
+	}*/
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Recens Interior" ) ) {
+		CreateFurniture( houseid, 2229, 2257.180908, -1221.848999, 1048.001953, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2181, 2257.602050, -1224.232055, 1047.991943, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 19318, 2258.295898, -1219.160034, 1048.699951, -10.199999, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 357, 2262.698974, -1225.001953, 1048.322998, 0.000000, -90.000000, 0.000000 );
+		CreateFurniture( houseid, 19832, 2262.360107, -1224.750976, 1048.021972, 0.000000, 0.000000, -24.799999 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Novus Interior" ) ) {
+		CreateFurniture( houseid, 1745, 2364.553955, -1122.925048, 1049.864013, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2363.528076, -1129.816040, 1049.874023, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1416, 2374.649902, -1132.967041, 1050.415039, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 372, 2374.791015, -1133.095947, 1050.974975, 90.000000, 90.000000, 0.000000 );
+		CreateFurniture( houseid, 372, 2374.615966, -1133.433959, 1050.974975, 90.000000, 90.000000, -27.100000 );
+	}
+	else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Securuse Interior" ) ) {
+		CreateFurniture( houseid, 1745, 2311.577880, -1139.357055, 1053.293945, 0.000000, 0.000000, 180.000000 );
+		CreateFurniture( houseid, 2181, 2310.585937, -1135.288940, 1053.303955, 0.000000, 0.000000, 0.000000 );
+		CreateFurniture( houseid, 1702, 2322.388916, -1141.819946, 1049.468994, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1702, 2326.492919, -1139.828002, 1049.468994, 0.000000, 0.000000, -90.000000 );
+		CreateFurniture( houseid, 1742, 2318.163085, -1140.253051, 1049.708984, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 1742, 2318.163085, -1141.673950, 1049.708984, 0.000000, 0.000000, 90.000000 );
+		CreateFurniture( houseid, 2100, 2328.367919, -1137.057006, 1049.489013, 0.000000, 0.000000, 0.000000 );
+	}
+	// else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Lorem Interior" ) )
+	// else if ( strmatch( g_houseInteriors[ interior_id ] [ E_NAME ], "Domus Interior" ) )
+}
