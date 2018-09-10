@@ -34,7 +34,7 @@ stock dbHandle;
 stock bool: serverLocked = false;
 
 /* ** Variables ** */
-hook OnGameModeInit( )
+hook OnScriptInit( )
 {
 	// Attempt to connect to database
 	if ( mysql_errno( ( dbHandle = mysql_connect( MYSQL_HOST, MYSQL_USER, MYSQL_DATABASE, MYSQL_PASS ) ) ) ) {
