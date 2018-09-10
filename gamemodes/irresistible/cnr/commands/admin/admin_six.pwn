@@ -26,7 +26,7 @@ CMD:createbusiness( playerid, params[ ] )
 
 	    if ( iTmp != ITER_NONE ) {
 			SaveToAdminLog( playerid, iTmp, "created business" );
-	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" You have created a %s business taking up business id %d.", number_format( cost ), iTmp );
+	    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" You have created a %s business taking up business id %d.", cash_format( cost ), iTmp );
 	    } else {
 			SendClientMessage( playerid, -1, ""COL_PINK"[BUSINESS]"COL_WHITE" Unable to create a business due to a unexpected error." );
 		}

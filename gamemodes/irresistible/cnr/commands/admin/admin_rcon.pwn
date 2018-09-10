@@ -33,7 +33,7 @@ CMD:hitmanbudget( playerid, params[ ] )
 		return SendUsage( playerid, "/hitmanbudget [AMOUNT]" );
 
 	UpdateServerVariable( "hitman_budget", GetGVarInt( "hitman_budget" ) + amount, 0.0, "", GLOBAL_VARTYPE_INT );
-	SendServerMessage( playerid, "Hitman budget now currently at %s.", number_format( GetGVarInt( "hitman_budget" ) ) );
+	SendServerMessage( playerid, "Hitman budget now currently at %s.", cash_format( GetGVarInt( "hitman_budget" ) ) );
 	return 1;
 }
 
@@ -153,7 +153,7 @@ CMD:playsound( playerid, params[ ] )
 		pID,
 		sound;
 
-	if ( sscanf( params, ""#sscanf_u"d", pID, sound ) )
+	if ( sscanf( params, "ud", pID, sound ) )
 		return SendUsage( playerid, "/playsound [PLAYER_ID] [SOUND]" );
 
 	PlayerPlaySound( pID, sound, 0.0, 0.0, 0.0 );
@@ -166,7 +166,7 @@ CMD:addgpci( playerid, params[ ] )
 	    pID;
 
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
-	else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/addgpci [PLAYER_ID]");
+	else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/addgpci [PLAYER_ID]");
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -421,7 +421,7 @@ CMD:givewanted( playerid, params[ ] )
 	    pID, wantedlvl
 	;
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"d", pID, wantedlvl ) ) SendUsage( playerid, "/givewanted [PLAYER_ID] [WANTED_LVL]" );
+	else if ( sscanf( params, "ud", pID, wantedlvl ) ) SendUsage( playerid, "/givewanted [PLAYER_ID] [WANTED_LVL]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -439,7 +439,7 @@ CMD:givescore( playerid, params[ ] )
 	    pID, score
 	;
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"d", pID, score ) ) SendUsage( playerid, "/givescore [PLAYER_ID] [SCORE]" );
+	else if ( sscanf( params, "ud", pID, score ) ) SendUsage( playerid, "/givescore [PLAYER_ID] [SCORE]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -474,7 +474,7 @@ CMD:givexp( playerid, params [ ] )
 	    xp
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"d", pID, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [XP_AMOUNT]" );
+	else if ( sscanf( params, "ud", pID, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [XP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -493,7 +493,7 @@ CMD:giveip( playerid, params [ ] )
 	    ip
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"d", pID, ip ) ) SendUsage( playerid, "/giveip [PLAYER_ID] [IP_AMOUNT]" );
+	else if ( sscanf( params, "ud", pID, ip ) ) SendUsage( playerid, "/giveip [PLAYER_ID] [IP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -512,7 +512,7 @@ CMD:givecoins( playerid, params [ ] )
 	    Float: coins
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"f", sendtoid, coins ) ) SendUsage( playerid, "/givecoins [PLAYER_ID] [COINS]" );
+	else if ( sscanf( params, "uf", sendtoid, coins ) ) SendUsage( playerid, "/givecoins [PLAYER_ID] [COINS]" );
 	else if ( !IsPlayerConnected( sendtoid ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -531,14 +531,14 @@ CMD:givecash( playerid, params [ ] )
 	    cash
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, ""#sscanf_u"d", pID, cash ) ) SendUsage( playerid, "/givecash [PLAYER_ID] [CASH]" );
+	else if ( sscanf( params, "ud", pID, cash ) ) SendUsage( playerid, "/givecash [PLAYER_ID] [CASH]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
 	    GivePlayerCash( pID, cash );
 		AddAdminLogLineFormatted( "%s(%d) has given %s(%d) %d dollars", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, cash );
-	    SendClientMessageFormatted( pID, -1, ""COL_PINK"[ADMIN]{FFFFFF} %s(%d) has given you "COL_GOLD"%s", ReturnPlayerName( playerid ), playerid, number_format( cash ) );
-	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) "COL_GOLD"%s", ReturnPlayerName( pID ), pID, number_format( cash ) );
+	    SendClientMessageFormatted( pID, -1, ""COL_PINK"[ADMIN]{FFFFFF} %s(%d) has given you "COL_GOLD"%s", ReturnPlayerName( playerid ), playerid, cash_format( cash ) );
+	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) "COL_GOLD"%s", ReturnPlayerName( pID ), pID, cash_format( cash ) );
 	}
 	return 1;
 }
@@ -551,7 +551,7 @@ CMD:setviplevel( playerid, params[ ] )
 	;
 
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-    else if ( sscanf( params, ""#sscanf_u"d", pID, level ) ) return SendUsage( playerid, "/setviplevel [PLAYER_ID] [VIP_LEVEL]" );
+    else if ( sscanf( params, "ud", pID, level ) ) return SendUsage( playerid, "/setviplevel [PLAYER_ID] [VIP_LEVEL]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
 	else if ( level > VIP_DIAMOND || level < 0 ) return SendError( playerid, "Specify a level between 0 - 5 please!" );
@@ -572,7 +572,7 @@ CMD:extendvip( playerid, params[ ] )
 	;
 
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
-    else if ( sscanf( params, ""#sscanf_u"d", pID, days ) ) return SendUsage( playerid, "/extendvip [PLAYER_ID] [DAYS]" );
+    else if ( sscanf( params, "ud", pID, days ) ) return SendUsage( playerid, "/extendvip [PLAYER_ID] [DAYS]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( p_VIPLevel[ pID ] < VIP_REGULAR ) return SendError( playerid, "This player doesn't have a V.I.P level." );
 	else if ( days < -365 || days > 365 ) return SendError( playerid, "Extension can only vary from -365 to 365 days." );

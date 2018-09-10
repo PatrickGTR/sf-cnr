@@ -291,7 +291,7 @@ CMD:vadminstats( playerid, params[ ] )
 	                            ""COL_GREY"Vehicle ID:"COL_WHITE" %d\n"\
 	                            ""COL_GREY"Vehicle Price:"COL_WHITE" %s",
 	                            ReturnPlayerName( ownerid ), GetVehicleName( GetVehicleModel( GetPlayerVehicleID( playerid ) ) ),
-	                            g_vehicleData[ ownerid ] [ slotid ] [ E_SQL_ID ], number_format( g_vehicleData[ ownerid ] [ slotid ] [ E_PRICE ] ) );
+	                            g_vehicleData[ ownerid ] [ slotid ] [ E_SQL_ID ], cash_format( g_vehicleData[ ownerid ] [ slotid ] [ E_PRICE ] ) );
 
 	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Vehicle Data", szBigString, "Okay", "" );
 	return 1;

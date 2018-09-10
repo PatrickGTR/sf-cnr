@@ -116,7 +116,7 @@ CMD:creategarage( playerid, params[ ] )
 		    if ( ( iTmp = CreateGarage( 0, cost, 0, X, Y, Z, Angle ) ) != -1 )
 		    {
 				SaveToAdminLog( playerid, iTmp, "created garage" );
-		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GARAGE]"COL_WHITE" You have created a %s garage taking up garage id %d.", number_format( cost ), iTmp );
+		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[GARAGE]"COL_WHITE" You have created a %s garage taking up garage id %d.", cash_format( cost ), iTmp );
 		    }
 			else
 				SendClientMessage( playerid, -1, ""COL_PINK"[GARAGE]"COL_WHITE" Unable to create a garage due to a unexpected error." );
@@ -666,8 +666,8 @@ CMD:createhouse( playerid, params[ ] )
 		{
 		    if ( ( iTmp = CreateHouse( "Home", cost, X, Y, Z ) ) != -1 )
 		    {
-				SaveToAdminLogFormatted( playerid, iTmp, "created house for %s", number_format( cost ) );
-		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You have created a %s house taking up house id %d.", number_format( cost ), iTmp );
+				SaveToAdminLogFormatted( playerid, iTmp, "created house for %s", cash_format( cost ) );
+		    	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" You have created a %s house taking up house id %d.", cash_format( cost ), iTmp );
 		    }
 			else SendClientMessage( playerid, -1, ""COL_PINK"[HOUSE]"COL_WHITE" Unable to create a house due to a unexpected error." );
 		}

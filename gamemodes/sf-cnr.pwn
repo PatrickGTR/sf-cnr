@@ -3894,11 +3894,11 @@ public OnServerUpdate( )
 				iRandom = random( 3 );
 
 			if ( iRandom == 2 )
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" The Visage Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", number_format( g_casinoPoolData[ 2 ] [ E_POOL ] ) );
+				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" The Visage Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 2 ] [ E_POOL ] ) );
 			else if ( iRandom == 1 )
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" 4 Dragons Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", number_format( g_casinoPoolData[ 1 ] [ E_POOL ] ) );
+				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" 4 Dragons Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 1 ] [ E_POOL ] ) );
 			else
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Caligulas Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", number_format( g_casinoPoolData[ 0 ] [ E_POOL ] ) );
+				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Caligulas Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 0 ] [ E_POOL ] ) );
 		}
 		else
 		{
@@ -4215,7 +4215,7 @@ public OnServerUpdate( )
 							    case 2:
 							    {
 							    	GivePlayerCash( playerid, ( iMoney = RandomEx( 600000, 1500000 ) ) );
-							    	format( szPrize, sizeof( szPrize ), "%s", number_format( iMoney ) );
+							    	format( szPrize, sizeof( szPrize ), "%s", cash_format( iMoney ) );
 							    }
 							    case 3:
 							    {
@@ -4621,7 +4621,7 @@ public ZoneTimer( )
 
 		    	if ( profit > 0 ) {
 		    		SaveGangData( g );
-		    		SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", number_format( profit ) );
+		    		SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", cash_format( profit ) );
 		    	}
     		}
     	}
@@ -4725,7 +4725,7 @@ public ZoneTimer( )
 
 					// Alert gang
 					if ( earned_money ) {
-						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s and earned "COL_GOLD"%s"COL_WHITE"!", szLocation, szCity, number_format( earned_money ) );
+						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s and earned "COL_GOLD"%s"COL_WHITE"!", szLocation, szCity, cash_format( earned_money ) );
 					} else {
 						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s!", szLocation, szCity );
 					}
@@ -6382,7 +6382,7 @@ thread OnTaxEconomy( starting )
 			new player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * tax_rate * tax_discount );
 
 			if ( player_tax > 0 ) {
-				ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~%s~w~ in tax", number_format( player_tax ) ) );
+				ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~%s~w~ in tax", cash_format( player_tax ) ) );
 				GivePlayerCash( playerid, -player_tax );
 			}
 		}
@@ -6625,9 +6625,9 @@ public OnPlayerDeath( playerid, killerid, reason )
 					        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
 					        GivePlayerCash( killerid, cashEarned );
 					        GivePlayerScore( killerid, 2 );
-					        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), number_format( cashEarned ) ); // 8hska7082bmahu
+					        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), cash_format( cashEarned ) ); // 8hska7082bmahu
 					       	if ( p_WantedLevel[ playerid ] > 64 ) SendGlobalMessage( -1, ""COL_GOLD"[POLICE KILL]{FFFFFF} %s(%d) has %s %s(%d) who had a wanted level of %d!", ReturnPlayerName( killerid ), killerid, killedWords[ random( sizeof( killedWords ) ) ], ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ] );
-					    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], number_format( cashEarned ) );
+					    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], cash_format( cashEarned ) );
 					    }
 					    else
 					    {
@@ -6677,7 +6677,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 			else if ( iContractAmount >= 1000 )
 			{
-			    SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has completed the contract on %s(%d), he has earned "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( killerid ), killerid, ReturnPlayerName( playerid ), playerid, number_format( iContractAmount ) );
+			    SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has completed the contract on %s(%d), he has earned "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( killerid ), killerid, ReturnPlayerName( playerid ), playerid, cash_format( iContractAmount ) );
 				GivePlayerCash( killerid, iContractAmount );
 				p_ContractedAmount[ playerid ] = 0;
 			   	switch( ++p_HitsComplete[ killerid ] )
@@ -6746,18 +6746,18 @@ public OnVehicleDeath( vehicleid, killerid )
 				GivePlayerScore( attackerid, 2 );
 				GivePlayerCash( attackerid, payout );
 				if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 );
-				SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, number_format( payout ) );
+				SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, cash_format( payout ) );
 			}
 			else
 			{
 				if ( IsPlayerConnected( killerid ) ) {
-					if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, number_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+					if ( IsBusinessAssociate( killerid, businessid ) ) SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d)'s business vehicle with "COL_GOLD"%s"COL_WHITE" in inventory got destroyed!", ReturnPlayerName( killerid ), killerid, cash_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 					else
 					{
 						GivePlayerScore( killerid, 2 );
 						GivePlayerCash( killerid, payout );
 						if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 );
-						SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, number_format( payout ) );
+						SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, cash_format( payout ) );
 					}
 				}
 			}
@@ -7413,13 +7413,13 @@ public OnProgressCompleted( playerid, progressid, params )
 							    GetZoneFromCoordinates( szLocation, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] );
 							    if ( !strmatch( szCity, "San Fierro" ) && !strmatch( szCity, "Las Venturas" ) && !strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] /= 2; // Halve Profit outside SF, LV & LS
 								//if ( strmatch( szCity, "Las Venturas" ) || strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = floatround( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] * 0.75 ); // Remove 25%
-								SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
+								SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
 						    }
 						    else if ( p_InBusiness[ playerid ] != -1 )
 						    {
 							    Get2DCity( szCity, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
 							    GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
-								SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s"COL_WHITE" near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
+								SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s"COL_WHITE" near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
 						    }
 						    else
 						    {
@@ -7434,7 +7434,7 @@ public OnProgressCompleted( playerid, progressid, params )
 						    Get2DCity( szCity, X, Y, Z );
 						    if ( !strmatch( szCity, "San Fierro" ) && !strmatch( szCity, "Las Venturas" ) && !strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] /= 2; // Halve Profit outside SF, LV & LS
 							//if ( strmatch( szCity, "Las Venturas" ) || strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = floatround( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] * 0.75 ); // Remove 25%
-							SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szCity );
+							SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szCity );
 						}
 
 						GivePlayerScore( playerid, 2 );
@@ -7609,7 +7609,7 @@ public OnProgressCompleted( playerid, progressid, params )
 						Achievement::HandlePlayerRobbery( playerid );
 					    SplitPlayerCashForGang( playerid, float( g_secureTruckData[ E_LOOT ] ) );
 
-						SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a Security Truck near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( g_secureTruckData[ E_LOOT ] ), szLocation, szCity );
+						SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a Security Truck near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_secureTruckData[ E_LOOT ] ), szLocation, szCity );
 					} else {
 						CreateCrimeReport( playerid );
 		    			SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing a security truck near %s, suspect is armed and dangerous.", ReturnPlayerName( playerid ), szLocation );
@@ -7849,7 +7849,7 @@ CMD:business( playerid, params[ ] )
 			format( szBigString, sizeof( szBigString ), "%s%s\t%s\t"COL_GOLD"%s\n",
 				szBigString, g_businessData[ businessid ] [ E_NAME ],
 				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 ? (secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) ) : ( ""COL_GREEN"Production Finished!" ),
-				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product!" ) : ( number_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
+				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product!" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
 			), has = true;
 		}
 
@@ -7883,7 +7883,7 @@ CMD:business( playerid, params[ ] )
 					UpdateBusinessData( b );
 					UpdateBusinessTitle( b );
 					GivePlayerCash( playerid, -( g_businessData[ b ] [ E_COST ] ), .force_save = true );
-					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" You have bought this business for "COL_GOLD"%s"COL_WHITE".", number_format( g_businessData[ b ] [ E_COST ] ) );
+					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" You have bought this business for "COL_GOLD"%s"COL_WHITE".", cash_format( g_businessData[ b ] [ E_COST ] ) );
 					return 1;
 				}
 			    else return SendError( playerid, "This business isn't for sale." );
@@ -7911,7 +7911,7 @@ CMD:business( playerid, params[ ] )
 			GivePlayerCash( playerid, iCashMoney );
 
 			SetPlayerPosEx( playerid, g_businessData[ iBusiness ] [ E_X ], g_businessData[ iBusiness ] [ E_Y ], g_businessData[ iBusiness ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
-			SendServerMessage( playerid, "You have successfully sold your business for "COL_GOLD"%s"COL_WHITE".", number_format( iCashMoney ) );
+			SendServerMessage( playerid, "You have successfully sold your business for "COL_GOLD"%s"COL_WHITE".", cash_format( iCashMoney ) );
 		}
 		return 1;
 	}
@@ -8022,7 +8022,7 @@ CMD:race( playerid, params[ ] )
 			return SendError( playerid, "You cannot invite players once you start the race." );
 
 		p_raceInvited[ inviteid ] [ raceid ] = true;
-		SendClientMessageFormatted( inviteid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race for %s, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid,  g_raceData[ raceid ] [ E_ENTRY_FEE ] <= 0 ? ( "free" ) : ( number_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] ) ), raceid );
+		SendClientMessageFormatted( inviteid, COLOR_GREY, "[RACE]{FFFFFF} %s(%d) has invited you to their race for %s, to join type \"/race join %d\"", ReturnPlayerName( playerid ), playerid,  g_raceData[ raceid ] [ E_ENTRY_FEE ] <= 0 ? ( "free" ) : ( cash_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] ) ), raceid );
 	    SendClientMessageFormatted( playerid, COLOR_GREY, "[RACE]{FFFFFF} You have invited %s(%d) to join your race.", ReturnPlayerName( inviteid ), inviteid );
 		return 1;
 	}
@@ -8036,7 +8036,7 @@ CMD:race( playerid, params[ ] )
 		else if ( ! p_raceInvited[ playerid ] [ raceid ] ) return SendError( playerid, "You have not been invited to this race lobby." );
 		else if( GetDistanceBetweenPlayers( playerid, g_raceData[ raceid ] [ E_LOBBY_HOST ] ) > 50.0 ) return SendError( playerid, "This player must be within 50 meters to you." );
 		else if ( g_raceData[ raceid ] [ E_STARTED ] ) return SendError( playerid, "The race has already started." );
-		else if ( g_raceData[ raceid ] [ E_ENTRY_FEE ] > GetPlayerCash( playerid ) ) return SendError( playerid, "You need at least %s to join the race.", number_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] - GetPlayerCash( playerid ) ) );
+		else if ( g_raceData[ raceid ] [ E_ENTRY_FEE ] > GetPlayerCash( playerid ) ) return SendError( playerid, "You need at least %s to join the race.", cash_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] - GetPlayerCash( playerid ) ) );
 		else
 		{
 			// enter race lobby
@@ -8202,7 +8202,7 @@ CMD:race( playerid, params[ ] )
 		{
 			GivePlayerCash( playerid, -amount );
 			g_raceData[ raceid ] [ E_POOL ] += amount;
-			SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has contributed %s to the prize pool (total %s).", ReturnPlayerName( playerid ), playerid, number_format( amount ), number_format( g_raceData[ raceid ] [ E_POOL ] ) );
+			SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has contributed %s to the prize pool (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), cash_format( g_raceData[ raceid ] [ E_POOL ] ) );
 			return 1;
 		}
 	}
@@ -8348,7 +8348,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 
 	if ( isnull( params ) )
 	{
-		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ], .prefix = '\0' ) );
+		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ] ) );
 	}
 	else if ( strmatch( params, "market" ) )
 	{
@@ -8378,8 +8378,8 @@ CMD:irresistiblecoins( playerid, params[ ] )
 	    	p_IrresistibleCoins[ senttoid ] += coins;
 	    	p_IrresistibleCoins[ playerid ] -= coins;
 
-	    	SendServerMessage( playerid, "You have sent "COL_GOLD"%s"COL_WHITE" Irresistible Coins to %s(%d)!", number_format( coins, .prefix = '\0', .decimals = 2 ), ReturnPlayerName( senttoid ), senttoid );
-	    	SendServerMessage( senttoid, "You have received "COL_GOLD"%s"COL_WHITE" Irresistible Coins from %s(%d)!", number_format( coins, .prefix = '\0', .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
+	    	SendServerMessage( playerid, "You have sent "COL_GOLD"%s"COL_WHITE" Irresistible Coins to %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( senttoid ), senttoid );
+	    	SendServerMessage( senttoid, "You have received "COL_GOLD"%s"COL_WHITE" Irresistible Coins from %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
 		}
 		return 1;
 	}
@@ -8458,7 +8458,7 @@ CMD:garage( playerid, params[ ] )
 					UpdateGarageData( g );
 					UpdateGarageTitle( g );
 					GivePlayerCash( playerid, -( g_garageData[ g ] [ E_PRICE ] ), .force_save = true );
-					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GARAGE]"COL_WHITE" You have bought this garage for "COL_GOLD"%s"COL_WHITE".", number_format( g_garageData[ g ] [ E_PRICE ] ) );
+					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GARAGE]"COL_WHITE" You have bought this garage for "COL_GOLD"%s"COL_WHITE".", cash_format( g_garageData[ g ] [ E_PRICE ] ) );
 					return 1;
 				}
 			    else return SendError( playerid, "This garage isn't for sale." );
@@ -8558,7 +8558,7 @@ CMD:garage( playerid, params[ ] )
 			GivePlayerCash( playerid, iCashMoney );
 
 			SetPlayerPosEx( playerid, g_garageData[ iGarage ] [ E_X ], g_garageData[ iGarage ] [ E_Y ], g_garageData[ iGarage ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
-			SendServerMessage( playerid, "You have successfully sold your garage for "COL_GOLD"%s"COL_WHITE".", number_format( iCashMoney ) );
+			SendServerMessage( playerid, "You have successfully sold your garage for "COL_GOLD"%s"COL_WHITE".", cash_format( iCashMoney ) );
 
 			// Destroy garage, prevent resale
 			DestroyGarage( iGarage );
@@ -8778,7 +8778,7 @@ CMD:eventbank( playerid, params[ ] )
 	    	GivePlayerCash( playerid, -iAmount );
 			p_AntiSpammyTS[ playerid ] = g_iTime + 15;
 			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + iAmount, 0.0, "", GLOBAL_VARTYPE_INT );
-			SendGlobalMessage( playerid, ""COL_GOLD"[EVENT BANK]"COL_WHITE" Thanks for donating %s to the event bank, %s!", number_format( iAmount ), ReturnPlayerName( playerid ) );
+			SendGlobalMessage( playerid, ""COL_GOLD"[EVENT BANK]"COL_WHITE" Thanks for donating %s to the event bank, %s!", cash_format( iAmount ), ReturnPlayerName( playerid ) );
 	    }
 	}
 	else if ( !strcmp( params, "withdraw", false, 8 ) )
@@ -8791,12 +8791,12 @@ CMD:eventbank( playerid, params[ ] )
 	    {
 	    	GivePlayerCash( playerid, iAmount );
 			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) - iAmount, 0.0, "", GLOBAL_VARTYPE_INT );
-			SendGlobalMessage( -1, ""COL_GOLD"[EVENT BANK]"COL_WHITE" %s(%d) has withdrawn %s from the event bank!", ReturnPlayerName( playerid ), playerid, number_format( iAmount ) );
+			SendGlobalMessage( -1, ""COL_GOLD"[EVENT BANK]"COL_WHITE" %s(%d) has withdrawn %s from the event bank!", ReturnPlayerName( playerid ), playerid, cash_format( iAmount ) );
 	    }
 	}
 	else if ( strmatch( params, "balance" ) )
 	{
-		SendServerMessage( playerid, "The event bank balance is "COL_GOLD"%s"COL_WHITE". To donate, type "COL_GREY"/eventbank donate"COL_WHITE".", number_format( GetGVarInt( "eventbank" ) ) );
+		SendServerMessage( playerid, "The event bank balance is "COL_GOLD"%s"COL_WHITE". To donate, type "COL_GREY"/eventbank donate"COL_WHITE".", cash_format( GetGVarInt( "eventbank" ) ) );
 	}
 	else if ( strmatch( params, "host" ) )
 	{
@@ -9082,7 +9082,7 @@ CMD:meth( playerid, params[ ] )
 			cashEarned = p_Methamphetamine{ playerid } * ( 5000 + random( 1000 ) );
 
 		GivePlayerCash( playerid, cashEarned );
-		SendServerMessage( playerid, "You have exported %d bags of meth, earning you "COL_GOLD"%s"COL_WHITE".", p_Methamphetamine{ playerid }, number_format( cashEarned ) );
+		SendServerMessage( playerid, "You have exported %d bags of meth, earning you "COL_GOLD"%s"COL_WHITE".", p_Methamphetamine{ playerid }, cash_format( cashEarned ) );
 		p_Methamphetamine{ playerid } = 0;
 	}
 	else SendUsage( playerid, "/meth [COOK/EXPORT]" );
@@ -9359,9 +9359,9 @@ CMD:tax( playerid, params[ ] )
 	new player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * ( tax_rate / 100.0 ) );
 	if ( player_tax < 0 ) player_tax = 0;
 	if ( tax_discount != 1.0 ) {
-		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s. "COL_GOLD"(50%s Reduced)", number_format( player_tax ), tax_rate, "%%", secondstotime( GetGVarInt( "taxtime" ) - g_iTime ), "%%" );
+		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s. "COL_GOLD"(50%s Reduced)", cash_format( player_tax ), tax_rate, "%%", secondstotime( GetGVarInt( "taxtime" ) - g_iTime ), "%%" );
 	} else {
-		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s.", number_format( player_tax ), tax_rate, "%%", secondstotime( GetGVarInt( "taxtime" ) - g_iTime ) );
+		SendServerMessage( playerid, "Your tax is "COL_GOLD"%s"COL_WHITE" at %0.2f%s in %s.", cash_format( player_tax ), tax_rate, "%%", secondstotime( GetGVarInt( "taxtime" ) - g_iTime ) );
 	}
 	return 1;
 }
@@ -9387,9 +9387,9 @@ thread gettotalcash( playerid )
 		new total_cash = user_cash + biz_cash + gang_cash;
 
 		format( szLargeString, 512, "Total User Cash\t"COL_GREY"%s\nTotal Gang Cash\t"COL_GREY"%s\nTotal Business Cash\t"COL_GREY"%s\nTotal Server Cash\t"COL_GOLD"%s\nTotal Tax Profit (Day)\t"COL_GOLD"%s",
-				number_format( user_cash ), number_format( gang_cash ), number_format( biz_cash ), number_format( total_cash ), number_format( tax_profit ) );
+				cash_format( user_cash ), cash_format( gang_cash ), cash_format( biz_cash ), cash_format( total_cash ), cash_format( tax_profit ) );
 
-		// SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", number_format( total_cash ), number_format( tax_rate ) );
+		// SendServerMessage( playerid, "Total: "COL_GOLD"%s"COL_WHITE", Tax Rate: "COL_GOLD"%s"COL_WHITE" per 24 mins.", cash_format( total_cash ), cash_format( tax_rate ) );
   		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}SF-CNR Economy", szLargeString, "Close", "" );
 	}
 	else SendError( playerid, "An error has occurred, try again later." );
@@ -9420,8 +9420,8 @@ CMD:ransompay( playerid, params[ ] )
 		p_TiedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 		GivePlayerCash( playerid, -p_RansomAmount[ playerid ] );
 		GivePlayerCash( p_RansomPlacer[ playerid ], p_RansomAmount[ playerid ] );
-		SendClientMessageFormatted( p_RansomPlacer[ playerid ], -1, ""COL_GREEN"[RANSOM PAY]{FFFFFF} %s(%d) has paid his ransom ("COL_GOLD"%s"COL_WHITE").", ReturnPlayerName( playerid ), playerid, number_format( p_RansomAmount[ playerid ] ) );
-		SendClientMessageFormatted( playerid, -1, ""COL_RED"[RANSOM PAY]{FFFFFF} You have paid your ransom ("COL_GOLD"%s"COL_WHITE"), you are now released.", number_format( p_RansomAmount[ playerid ] ) );
+		SendClientMessageFormatted( p_RansomPlacer[ playerid ], -1, ""COL_GREEN"[RANSOM PAY]{FFFFFF} %s(%d) has paid his ransom ("COL_GOLD"%s"COL_WHITE").", ReturnPlayerName( playerid ), playerid, cash_format( p_RansomAmount[ playerid ] ) );
+		SendClientMessageFormatted( playerid, -1, ""COL_RED"[RANSOM PAY]{FFFFFF} You have paid your ransom ("COL_GOLD"%s"COL_WHITE"), you are now released.", cash_format( p_RansomAmount[ playerid ] ) );
 		Beep( p_RansomPlacer[ playerid ] );
 		GivePlayerWantedLevel( p_RansomPlacer[ playerid ], 6 );
 		p_RansomAmount[ playerid ] = 0;
@@ -9456,8 +9456,8 @@ CMD:ransom( playerid, params[ ] )
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command while you're tazed." );
 		if ( IsPlayerInPaintBall( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside an arena." );
 
-		SendClientMessageFormatted( victimid, -1, ""COL_RED"[RANSOM]{FFFFFF} You have been offered a ransom of "COL_GOLD"%s"COL_WHITE" for your release. Use /ransompay to pay the ransom.", number_format( amount ) );
-	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RANSOM]{FFFFFF} You have offered a ransom to %s(%d) of "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( victimid ), victimid, number_format( amount ) );
+		SendClientMessageFormatted( victimid, -1, ""COL_RED"[RANSOM]{FFFFFF} You have been offered a ransom of "COL_GOLD"%s"COL_WHITE" for your release. Use /ransompay to pay the ransom.", cash_format( amount ) );
+	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RANSOM]{FFFFFF} You have offered a ransom to %s(%d) of "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( victimid ), victimid, cash_format( amount ) );
 		p_RansomAmount[ victimid ] = amount;
 		p_RansomPlacer[ victimid ] = playerid;
 		p_RansomTimestamp[ victimid ] = g_iTime + 15;
@@ -9952,7 +9952,7 @@ CMD:mech( playerid, params[ ] )
 			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 2500 : 750;
 
    		if ( GetPlayerCash( playerid ) < cost )
-   			return SendError( playerid, "You need %s to fix this vehicle.", number_format( cost ) );
+   			return SendError( playerid, "You need %s to fix this vehicle.", cash_format( cost ) );
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		p_DamageSpamCount{ playerid } = 0;
@@ -10010,7 +10010,7 @@ CMD:mech( playerid, params[ ] )
 			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 3000 : 1250;
 
    		if ( GetPlayerCash( playerid ) < cost )
-   			return SendError( playerid, "You need %s to fix this vehicle.", number_format( cost ) );
+   			return SendError( playerid, "You need %s to fix this vehicle.", cash_format( cost ) );
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		p_DamageSpamCount{ playerid } = 0;
@@ -10029,7 +10029,7 @@ CMD:mech( playerid, params[ ] )
    			iPrice;
 
    		if ( ( iPrice = calculateVehicleSellPrice( iVehicle ) ) )
-			ShowPlayerHelpDialog( playerid, 3000, "You can export this vehicle at the docks for around ~g~%s~w~~h~.~n~~n~~r~Damaging the vehicle will further decrease the value.", number_format( iPrice ) );
+			ShowPlayerHelpDialog( playerid, 3000, "You can export this vehicle at the docks for around ~g~%s~w~~h~.~n~~n~~r~Damaging the vehicle will further decrease the value.", cash_format( iPrice ) );
    		else
 			ShowPlayerHelpDialog( playerid, 3000, "~r~This vehicle cannot be sold." );
 	}
@@ -10368,8 +10368,8 @@ CMD:weed( playerid, params[ ] )
 			p_WeedTick[ pID ] = GetTickCount( );
 			p_WeedSellingGrams[ pID ] = iAmount;
 			p_SellingWeedTick[ playerid ] = g_iTime + 60;
-			SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) is selling you %d gram(s) of weed for %s. "COL_ORANGE"/weed buy"COL_WHITE" to buy.", ReturnPlayerName( playerid ), playerid, iAmount, number_format( iCost ) );
-			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, number_format( iTaxed ) );
+			SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) is selling you %d gram(s) of weed for %s. "COL_ORANGE"/weed buy"COL_WHITE" to buy.", ReturnPlayerName( playerid ), playerid, iAmount, cash_format( iCost ) );
+			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, cash_format( iTaxed ) );
 	    }
 	    else SendError( playerid, "This player is not nearby." );
 	}
@@ -10386,7 +10386,7 @@ CMD:weed( playerid, params[ ] )
 		    	iTaxed 	 = floatround( iCost * 0.8 )
 		    ;
 
-			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", number_format( iCost ), iGrams );
+			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", cash_format( iCost ), iGrams );
 			else if ( IsPlayerInPaintBall( dealerid ) || IsPlayerDueling( dealerid ) ) return SendError( playerid, "Your dealer cannot deal in an arena." );
 			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
 			else if ( !JobEquals( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
@@ -10400,8 +10400,8 @@ CMD:weed( playerid, params[ ] )
 				GivePlayerCash( playerid, -iCost );
 				GivePlayerCash( dealerid, iTaxed );
 
-				SendClientMessageFormatted( dealerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) has bought %d grams of weed off you for %s.", ReturnPlayerName( playerid ), playerid, iGrams, number_format( iTaxed ) );
-				SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have bought %d grams of weed for %s.", iGrams, number_format( iCost ) );
+				SendClientMessageFormatted( dealerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) has bought %d grams of weed off you for %s.", ReturnPlayerName( playerid ), playerid, iGrams, cash_format( iTaxed ) );
+				SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have bought %d grams of weed for %s.", iGrams, cash_format( iCost ) );
 
 				GivePlayerWantedLevel( dealerid, 6 );
 				GivePlayerWantedLevel( playerid, 6 );
@@ -10980,7 +10980,7 @@ CMD:richlist( playerid, params[ ] )
 	// message
 	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Total Money\n";
 	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_richList[ i ] [ 0 ] ) && g_richList[ i ] [ 1 ] > 50000 ) {
- 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_richList[ i ] [ 0 ] ), g_richList[ i ] [ 0 ], number_format( g_richList[ i ] [ 1 ] ) );
+ 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_richList[ i ] [ 0 ] ), g_richList[ i ] [ 0 ], cash_format( g_richList[ i ] [ 1 ] ) );
 		is_empty = false;
 	}
 
@@ -11039,7 +11039,7 @@ CMD:hitlist( playerid, params[ ] )
 	// message
 	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Total Contract\n";
 	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_contractList[ i ] [ 0 ] ) && g_contractList[ i ] [ 1 ] >= 1000 ) {
- 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_contractList[ i ] [ 0 ] ), g_contractList[ i ] [ 0 ], number_format( g_contractList[ i ] [ 1 ] ) );
+ 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_contractList[ i ] [ 0 ] ), g_contractList[ i ] [ 0 ], cash_format( g_contractList[ i ] [ 1 ] ) );
 		is_empty = false;
 	}
 
@@ -11220,8 +11220,8 @@ CMD:bail( playerid, params[ ] )
 	    p_BailOfferer[ pID ] = playerid;
 	    p_BailTimestamp[ pID ] = g_iTime + 120;
 	    SetPVarInt( pID, "bail_antispam", g_iTime + 1 );
-	    SendServerMessage( playerid, "You have offered %s(%d) bail for "COL_GOLD"%s", ReturnPlayerName( pID ), pID, number_format( equa ) );
-	    SendClientMessageFormatted( pID, -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has offered to bail you out for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"/acceptbail"COL_WHITE" to accept the bail.", ReturnPlayerName( playerid ), playerid, number_format( equa ) );
+	    SendServerMessage( playerid, "You have offered %s(%d) bail for "COL_GOLD"%s", ReturnPlayerName( pID ), pID, cash_format( equa ) );
+	    SendClientMessageFormatted( pID, -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has offered to bail you out for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"/acceptbail"COL_WHITE" to accept the bail.", ReturnPlayerName( playerid ), playerid, cash_format( equa ) );
 	}
 	return 1;
 }
@@ -11246,7 +11246,7 @@ CMD:acceptbail( playerid, params[ ] )
 
 	    GivePlayerCash( playerid, -equa );
 		GivePlayerCash( p_BailOfferer[ playerid ], cashEarned );
-		SendClientMessageFormatted( p_BailOfferer[ playerid ], -1, ""COL_GREEN"[BAIL]"COL_WHITE" %s(%d) has paid bail. You have earned "COL_GOLD"%s"COL_WHITE" from his bail.", ReturnPlayerName( playerid ), playerid, number_format( cashEarned ) );
+		SendClientMessageFormatted( p_BailOfferer[ playerid ], -1, ""COL_GREEN"[BAIL]"COL_WHITE" %s(%d) has paid bail. You have earned "COL_GOLD"%s"COL_WHITE" from his bail.", ReturnPlayerName( playerid ), playerid, cash_format( cashEarned ) );
     	p_BailOfferer[ playerid ] = INVALID_PLAYER_ID;
         SendServerMessage( playerid, "You have paid for your bail. You are now free!" );
 	   	CallLocalFunction( "OnPlayerUnjailed", "dd", playerid, 1 );
@@ -11278,7 +11278,7 @@ CMD:acceptbj( playerid, params[ ] )
 		    iEarned = floatround( iPrice * 0.90 )
 		;
 
-		SendClientMessageFormatted( p_BlowjobOfferer[ playerid ], -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} %s(%d) has accepted your blowjob offer for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( playerid ), playerid, number_format( iPrice ) );
+		SendClientMessageFormatted( p_BlowjobOfferer[ playerid ], -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} %s(%d) has accepted your blowjob offer for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( playerid ), playerid, cash_format( iPrice ) );
 		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} You are now recieving a blowjob." );
 		TogglePlayerControllable( p_BlowjobOfferer[ playerid ], 0 );
 		TogglePlayerControllable( playerid, 0 );
@@ -11320,8 +11320,8 @@ CMD:bj( playerid, params[ ] )
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 4.0 )
 	{
 		if ( IsPlayerJailed( pID ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-	  	SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} %s(%d) wishes to give you a blowjob for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"/acceptbj{FFFFFF} to accept.", ReturnPlayerName( playerid ), playerid, number_format( price ) );
-		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} You have offered a blowjob to %s(%d) for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( pID ), pID, number_format( price ) );
+	  	SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} %s(%d) wishes to give you a blowjob for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"/acceptbj{FFFFFF} to accept.", ReturnPlayerName( playerid ), playerid, cash_format( price ) );
+		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[BLOWJOB]{FFFFFF} You have offered a blowjob to %s(%d) for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( pID ), pID, cash_format( price ) );
 		p_BlowjobOfferer[ pID ] = playerid;
 	    p_BlowjobDealTick[ pID ] = g_iTime + 60;
 	    p_BlowjobPrice[ pID ] = price;
@@ -11537,7 +11537,7 @@ CMD:v( playerid, params[ ] )
 			format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %d | %s\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), v, GetVehicleName( GetVehicleModel( g_vehicleData[ playerid ] [ v ] [ E_VEHICLE_ID ] ) ) );
 		    AddFileLogLine( "log_destroycar.txt", szBigString );
             GivePlayerCash( playerid, ( g_vehicleData[ playerid ] [ v ] [ E_PRICE ] / 2 ) );
-			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" You have sold this vehicle for half the price it was (%s).", number_format( ( g_vehicleData[ playerid ] [ v ] [ E_PRICE ] / 2 ) ) );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" You have sold this vehicle for half the price it was (%s).", cash_format( ( g_vehicleData[ playerid ] [ v ] [ E_PRICE ] / 2 ) ) );
             DestroyBuyableVehicle( playerid, v );
 		}
 	}
@@ -11629,7 +11629,7 @@ CMD:v( playerid, params[ ] )
 			                            ""COL_GREY"Vehicle ID:"COL_WHITE" %d\n"\
 			                            ""COL_GREY"Vehicle Price:"COL_WHITE" %s",
 			                            ReturnPlayerName( ownerid ), GetVehicleName( GetVehicleModel( GetPlayerVehicleID( playerid ) ) ),
-			                            g_vehicleData[ playerid ] [ v ] [ E_SQL_ID ], number_format( g_vehicleData[ playerid ] [ v ] [ E_PRICE ] ) );
+			                            g_vehicleData[ playerid ] [ v ] [ E_SQL_ID ], cash_format( g_vehicleData[ playerid ] [ v ] [ E_PRICE ] ) );
 			ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Vehicle Data", szBigString, "Okay", "" );
 		}
 	}
@@ -11856,7 +11856,7 @@ CMD:sendmoney( playerid, params[ ] )
      	mysql_single_query( szPayment );
 
         if ( amount > 25000 )
-        	printf("[sendmoney] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), number_format( amount ) ); // 8hska7082bmahu
+        	printf("[sendmoney] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), cash_format( amount ) ); // 8hska7082bmahu
 
 		if ( amount > 90000000 ) {
 	   		printf("ISP banned %s for making a 75M transaction", ReturnPlayerName( playerid ));
@@ -11867,8 +11867,8 @@ CMD:sendmoney( playerid, params[ ] )
         GivePlayerCash( pID, amount );
         GivePlayerCash( playerid, -( amount ) );
     	SetPVarInt( playerid, "sm_antispam", iTime + 10 );
-		SendClientMessageFormatted( pID, -1, ""COL_GREEN"[PAYMENT]"COL_WHITE" You have recieved %s from %s(%d).", number_format( amount ), ReturnPlayerName( playerid ), playerid );
-        SendClientMessageFormatted( playerid, -1, ""COL_RED"[PAYMENT]"COL_WHITE" You have sent %s to %s(%d).", number_format( amount ), ReturnPlayerName(pID), pID );
+		SendClientMessageFormatted( pID, -1, ""COL_GREEN"[PAYMENT]"COL_WHITE" You have recieved %s from %s(%d).", cash_format( amount ), ReturnPlayerName( playerid ), playerid );
+        SendClientMessageFormatted( playerid, -1, ""COL_RED"[PAYMENT]"COL_WHITE" You have sent %s to %s(%d).", cash_format( amount ), ReturnPlayerName(pID), pID );
         Beep( pID ), Beep( playerid );
     }
 	return 1;
@@ -12110,8 +12110,8 @@ CMD:placehit( playerid, params[ ] )
 		p_AntiSpammyTS[ playerid  ] = g_iTime + 10;
 
 		// message
-		printf("[placehit] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), number_format( cash ) ); // 8hska7082bmahu
-		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), their bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, number_format( p_ContractedAmount[ pID ] ) );
+		printf("[placehit] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), cash_format( cash ) ); // 8hska7082bmahu
+		SendGlobalMessage( -1, ""COL_ORANGE"[CONTRACT]"COL_WHITE" %s(%d) has put a contract on %s(%d), their bounty is now "COL_GOLD"%s{FFFFFF}.", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, cash_format( p_ContractedAmount[ pID ] ) );
 	}
 	return 1;
 }
@@ -12761,8 +12761,8 @@ CMD:rob( playerid, params[ ] )
 
 			cashRobbed = random( iMoney ) + 10;
 
-			SendClientMessageFormatted( victimid, -1, ""COL_RED"[ROBBED]{FFFFFF} You have been robbed "COL_GOLD"%s{FFFFFF} by %s(%d)!", number_format( cashRobbed ), ReturnPlayerName( playerid ), playerid );
-		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ROBBED]{FFFFFF} You have robbed "COL_GOLD"%s{FFFFFF} off %s(%d)!", number_format( cashRobbed ), ReturnPlayerName( victimid ), victimid );
+			SendClientMessageFormatted( victimid, -1, ""COL_RED"[ROBBED]{FFFFFF} You have been robbed "COL_GOLD"%s{FFFFFF} by %s(%d)!", cash_format( cashRobbed ), ReturnPlayerName( playerid ), playerid );
+		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ROBBED]{FFFFFF} You have robbed "COL_GOLD"%s{FFFFFF} off %s(%d)!", cash_format( cashRobbed ), ReturnPlayerName( victimid ), victimid );
 
 			SplitPlayerCashForGang( playerid, float( cashRobbed ) );
 			GivePlayerWantedLevel( playerid, 4 );
@@ -14097,7 +14097,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 				// message people
 				g_businessData[ businessid ] [ E_EXPORT_STARTED ] = 1;
 				ShowPlayerHelpDialog( playerid, 5000, "Drop the drugs off on the flag blips of your radar." );
-				SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, number_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+				SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, cash_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 			}
 		}
 	}
@@ -14107,7 +14107,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 		if ( g_LastExportModel[ playerid ] == model )
 			ShowPlayerHelpDialog( playerid, 4000, "You have already exported this vehicle recently and cannot export it again at the docks." );
 		else
-			ShowPlayerHelpDialog( playerid, 6000, "You can export this vehicle at the docks for around ~g~%s~w~~h~.~n~~n~~r~Damaging the vehicle will further decrease the value.", number_format( iVehiclePrice ) );
+			ShowPlayerHelpDialog( playerid, 6000, "You can export this vehicle at the docks for around ~g~%s~w~~h~.~n~~n~~r~Damaging the vehicle will further decrease the value.", cash_format( iVehiclePrice ) );
 	}
 
 	if ( IsPlayerInPoliceCar( playerid ) && p_Class[ playerid ] != CLASS_POLICE && p_LastDrovenPoliceVeh[ playerid ] != vehicleid && GetPVarInt( playerid, "entercopcar_ts" ) < time && !g_buyableVehicle{ vehicleid } ) {
@@ -14149,7 +14149,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 
 			Beep( playerid );
 			GameTextForPlayer( playerid, "Go to the truck blip on your radar for money!", 3000, 1 );
-			SendServerMessage( playerid, "You have %d ores that you can export for "COL_GOLD"%s"COL_WHITE"!", num_ores, number_format( cash_value ) );
+			SendServerMessage( playerid, "You have %d ores that you can export for "COL_GOLD"%s"COL_WHITE"!", num_ores, cash_format( cash_value ) );
 
 			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
@@ -14199,7 +14199,7 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
 			SetVehicleParamsEx( vehicleid, VEHICLE_PARAMS_ON, lights, VEHICLE_PARAMS_OFF, doors, bonnet, boot, objective );
 			return 1;
 		}
-		//if ( strmatch( g_vehicleData[ ownerid ] [ slotid ] [ E_OWNER ], "No-one" ) ) SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" This vehicle is for sale (%s)", number_format( g_vehicleData[ ownerid ] [ slotid ] [ E_PRICE ] ) );
+		//if ( strmatch( g_vehicleData[ ownerid ] [ slotid ] [ E_OWNER ], "No-one" ) ) SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" This vehicle is for sale (%s)", cash_format( g_vehicleData[ ownerid ] [ slotid ] [ E_PRICE ] ) );
 		else SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" This vehicle is owned by %s.", ReturnPlayerName( ownerid ) );
 	}
 	if ( p_AdminLevel[ playerid ] < 3 )
@@ -14358,7 +14358,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 			new earned_money = floatround( float( g_orePrices[ g_miningData[ ore ] [ E_ORE ] ] ) * 0.5 );
 
 			GivePlayerCash( playerid, earned_money );
-			SendServerMessage( playerid, "You have crushed a "COL_GREY"%s"COL_WHITE" Ore and earned "COL_GOLD"%s"COL_WHITE".", getOreName( g_miningData[ ore ] [ E_ORE ] ), number_format( earned_money ) );
+			SendServerMessage( playerid, "You have crushed a "COL_GREY"%s"COL_WHITE" Ore and earned "COL_GOLD"%s"COL_WHITE".", getOreName( g_miningData[ ore ] [ E_ORE ] ), cash_format( earned_money ) );
 			RemoveEquippedOre( playerid );
 		}
 		return 1;
@@ -14485,12 +14485,12 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 	    	if ( iDetained )
 	    	{
 				if ( iCashEarned > 30000 )
-					printf("[police dropoff] %s -> %d people - %s", ReturnPlayerName( playerid ), iDetained, number_format( iCashEarned ) ); // 8hska7082bmahu
+					printf("[police dropoff] %s -> %d people - %s", ReturnPlayerName( playerid ), iDetained, cash_format( iCashEarned ) ); // 8hska7082bmahu
 
 				GivePlayerCash( playerid, iCashEarned );
 				GivePlayerScore( playerid, iDetained * 2 );
 				CallLocalFunction( "OnPlayerArrested", "dddd", playerid, INVALID_PLAYER_ID, p_Arrests[ playerid ], iDetained );
-	    		return SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} and %d score for dropping off %d criminal(s) to prison.", number_format( iCashEarned ), iDetained * 2, iDetained );
+	    		return SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} and %d score for dropping off %d criminal(s) to prison.", cash_format( iCashEarned ), iDetained * 2, iDetained );
 	    	}
 	    	else return SendError( playerid, "There are no detained criminals in your vehicle that can be jailed." );
 	    }
@@ -14715,7 +14715,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 						GivePlayerScore( playerid, 2 );
 						Achievement::HandleCarJacked( playerid );
 						SetTimerEx( "ExportVehicle", 3000, false, "dd", iVehicle, i );
-						SendServerMessage( playerid, "You have exported your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetVehicleName( GetVehicleModel( iVehicle ) ), number_format( iCash ) );
+						SendServerMessage( playerid, "You have exported your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetVehicleName( GetVehicleModel( iVehicle ) ), cash_format( iCash ) );
 						break;
 					}
 				}
@@ -14882,7 +14882,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			//SetTimerEx( "RespawnVehicle", 3500, false, "d", GetVehicleTrailer( iVehicle ) );
 			DetachTrailerFromVehicle( iVehicle );
 
-			ShowPlayerHelpDialog( playerid, 7500, "You have earned ~y~~h~%s~w~~h~ for exporting %s!", number_format( iCashEarned ), g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
+			ShowPlayerHelpDialog( playerid, 7500, "You have earned ~y~~h~%s~w~~h~ for exporting %s!", cash_format( iCashEarned ), g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
         	return ( p_TruckingRoute[ playerid ] { 1 } = INVALID_TRUCKING_ROUTE ), 1;
 		}
 		return 1;
@@ -14917,7 +14917,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			p_PawnStoreExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );
 			GivePlayerWantedLevel( playerid, items * 2 );
-			SendServerMessage( playerid, "You have sold %d furniture item(s) to the Pawn Store, earning you "COL_GOLD"%s"COL_WHITE".", GetGVarInt( szItems ), number_format( cashEarned ) );
+			SendServerMessage( playerid, "You have sold %d furniture item(s) to the Pawn Store, earning you "COL_GOLD"%s"COL_WHITE".", GetGVarInt( szItems ), cash_format( cashEarned ) );
 			DeleteGVar( szItems );
 		}
 		return 1;
@@ -14944,7 +14944,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			p_MiningExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );
 			GivePlayerScore( playerid, floatround( oresExported / 2 ) ); // 16 score is a bit too much for ore... so half that = 8
-			SendServerMessage( playerid, "You have exported %d rock ore(s) to an industry, earning you "COL_GOLD"%s"COL_WHITE".", oresExported, number_format( cashEarned ) );
+			SendServerMessage( playerid, "You have exported %d rock ore(s) to an industry, earning you "COL_GOLD"%s"COL_WHITE".", oresExported, cash_format( cashEarned ) );
 		}
 		return 1;
 	}
@@ -14967,7 +14967,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 	    new cash = floatround( fDistance ) + 5000;
         DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
         p_LumberjackDeliver[ playerid ] = 0xFFFF;
-		ShowPlayerHelpDialog( playerid, 7500, "Great job! You've earned ~y~%s~w~~h~!~n~~n~Navigate to the import location to pack your truck with logs.~n~~n~~y~~h~Info: The truck blip has been updated, navigate to it.", number_format( cash ) );
+		ShowPlayerHelpDialog( playerid, 7500, "Great job! You've earned ~y~%s~w~~h~!~n~~n~Navigate to the import location to pack your truck with logs.~n~~n~~y~~h~Info: The truck blip has been updated, navigate to it.", cash_format( cash ) );
         //SendServerMessage( playerid, "You've made "COL_GOLD"%s"COL_WHITE" from exporting. Go and pick another box up!"  );
 	    GivePlayerCash( playerid, cash );
 	    GivePlayerScore( playerid, 5 );
@@ -15184,9 +15184,9 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 
 		// alert user
 		if ( iNetWin > g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] ) {
-   			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, number_format( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] >= 25000 ? ( "Visage" ) : ( "Caligulas" ) ) );
+   			SendGlobalMessage( -1, ""COL_GREY"[CASINO]{FFFFFF} %s(%d) has won "COL_GOLD"%s"COL_WHITE" from the %s casino slots!", ReturnPlayerName( playerid ), playerid, cash_format( iNetWin ), g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] == 10000 ? ( "Four Dragons" ) : ( g_slotmachineData[ slotid ] [ E_ENTRY_FEE ] >= 25000 ? ( "Visage" ) : ( "Caligulas" ) ) );
    		} else {
-   			SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", number_format( iNetWin ) );
+   			SendServerMessage( playerid, "Congratulations, you've won "COL_GOLD"%s"COL_WHITE"!", cash_format( iNetWin ) );
    		}
 
 		// give the cash
@@ -15287,8 +15287,8 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 			    Get2DCity				( szCity, X, Y, Z );
 			    GetZoneFromCoordinates	( szLocation, X, Y, Z );
 
-				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from an ATM near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( iLoot ), szLocation, szCity );
-				return SendServerMessage( playerid, "You have successfully taken "COL_GOLD"%s"COL_WHITE" dispensed from the ATM.", number_format( iLoot ) );
+				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from an ATM near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( iLoot ), szLocation, szCity );
+				return SendServerMessage( playerid, "You have successfully taken "COL_GOLD"%s"COL_WHITE" dispensed from the ATM.", cash_format( iLoot ) );
 			}
 		}
 
@@ -15869,7 +15869,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						TextDrawSetString( g_SlotMachineThreeTD[ id ], g_slotmachineColors[ floatround( floatfract( g_slotmachineData[ id ] [ E_SPIN_ROTATE ] [ 2 ] / 360 ) * 18 ) ] );
 						TextDrawShowForPlayer( playerid, g_SlotMachineThreeTD[ id ] );
 
-						TextDrawSetString( p_SlotMachineFigureTD[ id ], sprintf( "~y~~h~%s", number_format( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ) );
+						TextDrawSetString( p_SlotMachineFigureTD[ id ], sprintf( "~y~~h~%s", cash_format( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ) );
 						TextDrawShowForPlayer( playerid, p_SlotMachineFigureTD[ id ] );
 
 						TextDrawShowForPlayer( playerid, g_SlotMachineBoxTD[ 0 ] );
@@ -17100,7 +17100,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if ( p_C4Amount[ playerid ] + 5 > MAX_C4 )
 				{
 				    new amount = MAX_C4 - p_C4Amount[ playerid ];
-					SendServerMessage( playerid, "You have bought %d C4(s) for "COL_GOLD"%s"COL_WHITE" as adding five would exceed the C4 limit.", MAX_C4 - p_C4Amount[ playerid ], number_format( amount * 495 ) );
+					SendServerMessage( playerid, "You have bought %d C4(s) for "COL_GOLD"%s"COL_WHITE" as adding five would exceed the C4 limit.", MAX_C4 - p_C4Amount[ playerid ], cash_format( amount * 495 ) );
 					p_C4Amount[ playerid ] += amount;
 				    GivePlayerCash( playerid, -( amount * 495 ) );
 				    return 1;
@@ -17140,32 +17140,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
             case 0:
             {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
             }
             case 1:
             {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
             }
             case 2:
             {
-                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( p_BankMoney[ playerid ] ), number_format( GetPlayerCash( playerid ) ) );
+                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back");
             }
             case 3:
             {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
             }
            	case 4:
             {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
             }
             case 5:
             {
-                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
+                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog(playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back");
             }
         }
@@ -17177,27 +17177,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
             if (!strlen(inputtext))
 			{
-			    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+			    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
             }
             else if (!IsNumeric(inputtext)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
             }
             else if ( strval( inputtext ) > 99999999 || strval( inputtext ) < 0 )
             {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
             }
             else if (strval(inputtext) > p_BankMoney[ playerid ]) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
             }
             else {
             	new iWithdraw = strval( inputtext );
                 p_BankMoney[ playerid ] -= iWithdraw;
                 GivePlayerCash( playerid, iWithdraw );
-                format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iWithdraw ), number_format( p_BankMoney[ playerid ] ), number_format( GetPlayerCash( playerid ) ) );
+                format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iWithdraw ), cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog( playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back" );
             }
         }
@@ -17208,27 +17208,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
         if (response) {
             if (!strlen(inputtext)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
             }
             else if (!IsNumeric(inputtext)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
             }
             else if (strval(inputtext) > GetPlayerCash( playerid )) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
             }
             else if ( strval( inputtext ) > 99999999 || strval( inputtext ) < 0 )
             {
-            	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( p_BankMoney[ playerid ] ) );
+            	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog( playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back" );
             }
             else {
             	new iDeposit = strval( inputtext );
                 p_BankMoney[ playerid ] += iDeposit;
                 GivePlayerCash( playerid, -iDeposit );
-                format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iDeposit ), number_format( p_BankMoney[ playerid ] ), number_format( GetPlayerCash( playerid ) ) );
+                format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iDeposit ), cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
                 ShowPlayerDialog( playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back" );
             }
         }
@@ -17262,17 +17262,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 	    if ( sscanf( inputtext, "d", iWithdraw ) )
 	    {
-		    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+		    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
 	    }
         else if ( iWithdraw > 99999999 || iWithdraw < 0 )
         {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
         }
         else if ( iWithdraw > g_gangData[ gangid ] [ E_BANK ] )
         {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
         }
         else
@@ -17286,8 +17286,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	     	mysql_single_query( szNormalString );
 
 	     	// withdraw
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s from the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iWithdraw ), "%%" );
-            format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iWithdraw ), number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
+            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s from the gang bank account.", ReturnPlayerName( playerid ), playerid, cash_format( iWithdraw ), "%%" );
+            format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iWithdraw ), cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
         return 1;
@@ -17313,17 +17313,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
         if ( sscanf( inputtext, "d", iDeposit ) )
         {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
         }
         else if ( iDeposit > 99999999 || iDeposit < 1 )
         {
-        	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+        	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back" );
         }
         else if ( iDeposit > GetPlayerCash( playerid ) )
         {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_gangData[ gangid ] [ E_BANK ] ) );
+            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
             ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
         }
         else
@@ -17337,8 +17337,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	     	mysql_single_query( szNormalString );
 
 	     	// deposit
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has deposited %s into the gang bank account.", ReturnPlayerName( playerid ), playerid, number_format( iDeposit ) );
-            format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", number_format( iDeposit ), number_format( g_gangData[ gangid ] [ E_BANK ] ), number_format( GetPlayerCash( playerid ) ) );
+            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has deposited %s into the gang bank account.", ReturnPlayerName( playerid ), playerid, cash_format( iDeposit ) );
+            format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iDeposit ), cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
             ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
         }
         return 1;
@@ -17691,7 +17691,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new iPlayers = GetOnlineGangMembers( g );
 				SetPVarInt( playerid, "gang_members_id", g );
 				format( szLargeString, 350, ""COL_GREY"Gang ID:"COL_WHITE" %d\n"COL_GREY"Online Members:"COL_WHITE" %d\n"COL_GREY"Score:"COL_WHITE" %d\n"COL_GREY"Kills:"COL_WHITE" %d\n"COL_GREY"Deaths:"COL_WHITE" %d\n"COL_GREY"K/D Ratio:"COL_WHITE" %0.2f\n", g_gangData[ g ] [ E_SQL_ID ], iPlayers, g_gangData[ g ] [ E_SCORE ], g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ], floatdiv( g_gangData[ g ] [ E_KILLS ], g_gangData[ g ] [ E_DEATHS ] ) );
-				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d", szLargeString, number_format( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ) );
+				format( szLargeString, 350, "%s"COL_GREY"Bank:"COL_WHITE" %s\n"COL_GREY"Zones Captured:"COL_WHITE" %d", szLargeString, cash_format( g_gangData[ g ] [ E_BANK ] ), GetGangCapturedTurfs( g ) );
 				ShowPlayerDialog( playerid, DIALOG_GANG_LIST_RESPONSE, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Statistics", szLargeString, "Close", "Back" );
 			}
 
@@ -17977,7 +17977,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         		}
         	}
 			GivePlayerCash( playerid, -( g_shopItemData[ listitem ] [ E_PRICE ] ) );
-			SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_shopItemData[ listitem ] [ E_NAME ], number_format( g_shopItemData[ listitem ] [ E_PRICE ] ) );
+			SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_shopItemData[ listitem ] [ E_NAME ], cash_format( g_shopItemData[ listitem ] [ E_PRICE ] ) );
         }
         else
        	{
@@ -18019,7 +18019,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     		else {
     			SetShopItemVariable( playerid, i, iCurrentQuantity + iAmount );
     			GivePlayerCash( playerid, -( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], number_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
+				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
     		}
 
     		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
@@ -18036,8 +18036,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 		GivePlayerXP( playerid, -( strval( inputtext ) ) );
 		GivePlayerCash( playerid, strval( inputtext ) * EXCHANGE_XPCASH );
-		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), number_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
-		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), number_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
+		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
+		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
 	}
 	if ( ( dialogid == DIALOG_GPS ) && response )
 	{
@@ -18273,7 +18273,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
 				    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
 					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-		      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], number_format( g_ToyData[ id ] [ E_PRICE ] ) );
+		      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], cash_format( g_ToyData[ id ] [ E_PRICE ] ) );
 		      		break;
 		   		}
 		      	x ++;
@@ -18704,7 +18704,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 											""COL_GREY"Kills:{FFFFFF} %d\n"\
 											""COL_GREY"Deaths:{FFFFFF} %d\n"\
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
-											GetPlayerScore( pID ), p_XP[ pID ], number_format( GetPlayerCash( pID ) ), number_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
+											GetPlayerScore( pID ), p_XP[ pID ], cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
 				format( szLargeString, 720,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\
@@ -18854,7 +18854,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetVehicleParamsEx( g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective );
 				PutPlayerInVehicle( playerid, g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], 0 );
 
-				SendServerMessage( playerid, "You have bought an "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE"!", g_BuyableVehicleData[ data_id ] [ E_NAME ], number_format( g_BuyableVehicleData[ data_id ] [ E_PRICE ] )  );
+				SendServerMessage( playerid, "You have bought an "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE"!", g_BuyableVehicleData[ data_id ] [ E_NAME ], cash_format( g_BuyableVehicleData[ data_id ] [ E_PRICE ] )  );
 				ShowPlayerDialog( playerid, DIALOG_BOUGHT_VEH, DIALOG_STYLE_MSGBOX, "{FFFFFF}You've purchased a vehicle!", "{FFFFFF}Glad to see you've purchased a vehicle. Please ensure you read:\n\n* Vehicles are kept until you sell them or go two months inactive. This is not refundable.\n* Do not mispark your vehicle or it can be removed/impounded.\n* Check out /v for vehicle commands.\n* Find an acceptable place to park your new vehicle such as your house or a parking lot.", "Okay", "" );
 				SetPVarInt( playerid, "bought_veh_ts", g_iTime + 30 );
 			}
@@ -19133,9 +19133,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							return 1;
 						}
 						GivePlayerCash( weapondealerid, floatround( price * 0.75 ) );
-		                SendClientMessageFormatted( weapondealerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} %s(%d) has purchased a %s for "COL_GOLD"%s"COL_WHITE" (tax applied).", ReturnPlayerName( playerid ), playerid, g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
+		                SendClientMessageFormatted( weapondealerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} %s(%d) has purchased a %s for "COL_GOLD"%s"COL_WHITE" (tax applied).", ReturnPlayerName( playerid ), playerid, g_AmmunationWeapons[ i ] [ E_NAME ], cash_format( price ) );
 						SetPVarInt( playerid, "purchased_weapon", GetPVarInt( playerid, "purchased_weapon" ) + 1 );
-						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], number_format( price ) );
+						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], cash_format( price ) );
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, 100.0 );
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] * ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 35 ? 1 : 5 ) );
 						SetPlayerArmedWeapon( playerid, 0 );
@@ -19194,7 +19194,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
 
 								RedirectAmmunation( playerid, p_WeaponLockerMenu{ playerid }, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
-								SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s (inc. fees).", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ) );
+								SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s (inc. fees).", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], cash_format( iCostPrice ) );
 								break;
 				            }
 				            x ++;
@@ -19244,7 +19244,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
 
-						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], number_format( iCostPrice ), bDealer ? ( " (inc. discount)" ) : ( "" ) );
+						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], cash_format( iCostPrice ), bDealer ? ( " (inc. discount)" ) : ( "" ) );
 		                break;
 		            }
 		            x ++;
@@ -19836,7 +19836,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					if ( g_garageInteriorData[ intid ] [ E_PRICE ] > GetPlayerCash( playerid ) )
 					{
 						ShowPlayerDialog( playerid, DIALOG_GARAGE_INT_CONFIRM, DIALOG_STYLE_LIST, "{FFFFFF}Garage Interiors", "Purchase Garage Interior\nPreview Garage Interior", "Select", "Back" );
-						SendError( playerid, "This interior costs "COL_GOLD"%s"COL_WHITE". You don't have this amount.", number_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
+						SendError( playerid, "This interior costs "COL_GOLD"%s"COL_WHITE". You don't have this amount.", cash_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
 					}
 					else if ( ArePlayersInGarage( playerid, p_InGarage[ playerid ] ) )
 					{
@@ -19854,7 +19854,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					    GivePlayerCash( playerid, -( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
 
 					    if ( intid != 0 )
-							SendServerMessage( playerid, "You have purchased a %s for "COL_GOLD"%s"COL_WHITE" your garage.", g_garageInteriorData[ intid ] [ E_NAME ], number_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
+							SendServerMessage( playerid, "You have purchased a %s for "COL_GOLD"%s"COL_WHITE" your garage.", g_garageInteriorData[ intid ] [ E_NAME ], cash_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
 						else
 						    SendServerMessage( playerid, "You have successfully reset your interior to the default interior." );
 
@@ -19886,7 +19886,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					InterpolateCameraPos( playerid, g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 0 ], g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 1 ], g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 2 ] + 1.5, g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 0 ], g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 1 ], g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 2 ], 15000, CAMERA_MOVE );
 					InterpolateCameraLookAt( playerid, g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 0 ], g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 1 ], g_garageInteriorData[ intid ] [ E_PREVIEW_LOOKAT ] [ 2 ], g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 0 ], g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 1 ], g_garageInteriorData[ intid ] [ E_PREVIEW_POS ] [ 2 ] + 1.5, 15000, CAMERA_MOVE );
 
-					SendServerMessage( playerid, "You are now previewing "COL_GREY"%s "COL_GOLD"%s"COL_WHITE". Press your enter key to stop.", g_garageInteriorData[ intid ] [ E_NAME ], number_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
+					SendServerMessage( playerid, "You are now previewing "COL_GREY"%s "COL_GOLD"%s"COL_WHITE". Press your enter key to stop.", g_garageInteriorData[ intid ] [ E_NAME ], cash_format( g_garageInteriorData[ intid ] [ E_PRICE ] ) );
 					SetPVarInt( playerid, "viewing_garageints", 1 );
 				}
 			}
@@ -19924,7 +19924,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    	return SendError( playerid, "You need to be in a vehicle to use this command." );
 
 					if ( GetPlayerCash( playerid ) < g_vehicleComponentsData[ i ] [ E_PRICE ] )
-						return SendError( playerid, "You need %s to purchase this vehicle component.", number_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
+						return SendError( playerid, "You need %s to purchase this vehicle component.", cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
 
 				    if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER )
 				    	return SendError( playerid, "You need to be a driver to use this command." );
@@ -19986,7 +19986,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ] = CreateDynamicObject( g_vehicleComponentsData[ i ] [ E_MODEL_ID ], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = GetVehicleVirtualWorld( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ]) );
 					AttachDynamicObjectToVehicle( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ], g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
-					return SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ i ] [ E_NAME ], number_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
+					return SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ i ] [ E_NAME ], cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
 				}
 			}
 		}
@@ -20110,7 +20110,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ i ] = false;
 
 				mysql_single_query( sprintf( "DELETE FROM `COMPONENTS` WHERE `ID`=%d", g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_SQL_ID ] [ i ] ) );
-				SendServerMessage( playerid, "You have sold your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ pimpid ] [ E_NAME ], number_format( sellPrice ) );
+				SendServerMessage( playerid, "You have sold your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ pimpid ] [ E_NAME ], cash_format( sellPrice ) );
 			}
 		}
 	}
@@ -20323,7 +20323,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 
 		g_raceData[ raceid ] [ E_ENTRY_FEE ] = fee;
-		SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" The entry fee for the race has been set to %s.", number_format( fee ) );
+		SendClientMessageToRace( raceid, COLOR_GREY, "[RACE]"COL_WHITE" The entry fee for the race has been set to %s.", cash_format( fee ) );
 		return ShowRaceConfiguration( playerid, raceid );
 	}
 	if ( dialogid == DIALOG_RACE_POS )
@@ -20374,7 +20374,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			case 0: ShowPlayerDialog( playerid, DIALOG_BUSINESS_NAME, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"The current business name is %s\n\n"COL_WHITE"Enter below the new name for it", g_businessData[ businessid ] [ E_NAME ] ), "Update", "Back" );
 
 			// bank account
-			case 1: ShowPlayerDialog( playerid, DIALOG_BUSINESS_WITHDRAW, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Enter the amount that you are willing to withdraw from your business bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_businessData[ businessid ] [ E_BANK ] ) ), "Withdraw", "Back" );
+			case 1: ShowPlayerDialog( playerid, DIALOG_BUSINESS_WITHDRAW, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Enter the amount that you are willing to withdraw from your business bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_businessData[ businessid ] [ E_BANK ] ) ), "Withdraw", "Back" );
 
 			// add members
 			case 2: ShowBusinessMembers( playerid, businessid );
@@ -20388,13 +20388,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				format( szBigString, sizeof( szBigString ),
 					""COL_WHITE"Your business has %d product\t \nSell Product Locally\t%s%s\nSell Product Nationally\t%s%s",
 					g_businessData[ businessid ] [ E_PRODUCT ], prod > g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ? ( COL_GREEN ) : ( COL_RED ),
-					number_format( prod ), prod_hardened > g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ? ( COL_GREEN ) : ( COL_RED ), number_format( prod_hardened )
+					cash_format( prod ), prod_hardened > g_businessInteriorData[ business_type ] [ E_COST_PRICE ] ? ( COL_GREEN ) : ( COL_RED ), cash_format( prod_hardened )
 				);
 				ShowPlayerDialog( playerid, DIALOG_BUSINESS_SELL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", szBigString, "Select", "Back" );
 			}
 
 			// buy stock
-			case 4: ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], number_format( GetResupplyPrice( business_type ) ) ), "Select", "Back" );
+			case 4: ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( GetResupplyPrice( business_type ) ) ), "Select", "Back" );
 
 			// upgrade
 			case 5: ShowBusinessUpgrades( playerid, businessid );
@@ -20415,7 +20415,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		new business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
 		new security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ listitem ] [ E_COST_MULTIPLIER ] );
 
-		if ( GetPlayerCash( playerid ) < security_cost ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", number_format( security_cost ) );
+		if ( GetPlayerCash( playerid ) < security_cost ) SendError( playerid, "You do not have enough money for this business upgrade (%s).", cash_format( security_cost ) );
 		else if ( listitem < g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You cannot downgrade your security level." );
 		else if ( listitem == g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ) SendError( playerid, "You have already upgraded your business to this security level." );
 		else
@@ -20423,7 +20423,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			g_businessData[ businessid ] [ E_SECURITY_LEVEL ] = listitem;
 			UpdateBusinessData( businessid );
 			GivePlayerCash( playerid, -security_cost );
-			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurity( listitem ), number_format( security_cost ) );
+			SendServerMessage( playerid, "You have upgraded your business security to %s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetBusinessSecurity( listitem ), cash_format( security_cost ) );
 			return 1;
 		}
 		return ShowBusinessSecurityUpgrades( playerid, businessid );
@@ -20455,7 +20455,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				for ( new i = 0; i < sizeof( g_businessCarModelData ); i ++ )
 				{
 					new vehicle_model_index = g_businessCarModelData[ i ] [ E_ID ], bool: is_unlocked = ( 0 <= vehicle_model_index < MAX_BIZ_VEH_MODELS ) ? ( g_businessVehicleUnlocked[ businessid ] { vehicle_model_index } ) : false;
-					format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, is_unlocked ? ( COL_LGREEN ) : ( "" ), g_businessCarModelData[ i ] [ E_NAME ], number_format( g_businessCarModelData[ i ] [ E_COST ] ) );
+					format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, is_unlocked ? ( COL_LGREEN ) : ( "" ), g_businessCarModelData[ i ] [ E_NAME ], cash_format( g_businessCarModelData[ i ] [ E_COST ] ) );
 				}
 
 				return ShowPlayerDialog( playerid, DIALOG_BUSINESS_CAR, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", szLargeString, "Purchase", "Back" );
@@ -20468,7 +20468,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				for ( new i = 0; i < sizeof( g_businessAirModelData ); i ++ ) {
 					new vehicle_model_index = g_businessAirModelData[ i ] [ E_ID ], bool: is_unlocked = ( 0 <= vehicle_model_index < MAX_BIZ_VEH_MODELS ) ? ( g_businessVehicleUnlocked[ businessid ] { vehicle_model_index } ) : false;
-					format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, is_unlocked ? ( COL_LGREEN ) : ( "" ), g_businessAirModelData[ i ] [ E_NAME ], number_format( g_businessAirModelData[ i ] [ E_COST ] ) );
+					format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, is_unlocked ? ( COL_LGREEN ) : ( "" ), g_businessAirModelData[ i ] [ E_NAME ], cash_format( g_businessAirModelData[ i ] [ E_COST ] ) );
 				}
 
 				return ShowPlayerDialog( playerid, DIALOG_BUSINESS_HELI, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", szLargeString, "Purchase", "Back" );
@@ -20481,13 +20481,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					return ShowBusinessUpgrades( playerid, businessid ), SendError( playerid, "Your business production has been already upgraded." );
 
 				if ( GetPlayerCash( playerid ) < g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] )
-					return ShowBusinessUpgrades( playerid, businessid ), SendError( playerid, "You don't have enough money to upgrade this business (%s).", number_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) );
+					return ShowBusinessUpgrades( playerid, businessid ), SendError( playerid, "You don't have enough money to upgrade this business (%s).", cash_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) );
 
 				CreateBusinessActors( businessid );
 				g_businessData[ businessid ] [ E_UPGRADES ] = 1;
 				GivePlayerCash( playerid, - g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] );
 				mysql_single_query( sprintf( "UPDATE `BUSINESSES` SET `UPGRADES`=1 WHERE `ID`=%d", businessid ) );
-				return ShowBusinessUpgrades( playerid, businessid ), SendServerMessage( playerid, "You have upgraded business production for "COL_GOLD"%s"COL_WHITE".", number_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) );
+				return ShowBusinessUpgrades( playerid, businessid ), SendServerMessage( playerid, "You have upgraded business production for "COL_GOLD"%s"COL_WHITE".", cash_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) );
 			}
 
 			// upgrade slots
@@ -20632,9 +20632,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             GivePlayerCash( playerid, iWithdraw );
             UpdateBusinessData( businessid );
             UpdateBusinessProductionLabel( businessid );
-            SendServerMessage( playerid, "You have withdrawn %s from your business account.", number_format( iWithdraw ) );
+            SendServerMessage( playerid, "You have withdrawn %s from your business account.", cash_format( iWithdraw ) );
         }
-		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_WITHDRAW, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Enter the amount that you are willing to withdraw from your business bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", number_format( g_businessData[ businessid ] [ E_BANK ] ) ), "Withdraw", "Back" );
+		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_WITHDRAW, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Enter the amount that you are willing to withdraw from your business bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_businessData[ businessid ] [ E_BANK ] ) ), "Withdraw", "Back" );
 	}
 	if ( dialogid == DIALOG_BUSINESS_MEMBERS )
 	{
@@ -20843,7 +20843,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				g_businessData[ businessid ] [ E_SUPPLIES ] ++;
 
 				// alert and redirect
-				SendServerMessage( playerid, "You have bought business supplies for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"(%d/%d)", number_format( price ), g_businessData[ businessid ] [ E_SUPPLIES ],  g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+				SendServerMessage( playerid, "You have bought business supplies for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"(%d/%d)", cash_format( price ), g_businessData[ businessid ] [ E_SUPPLIES ],  g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
 
 				// start prod if viable
 				StartBusinessDrugProduction( businessid );
@@ -20854,7 +20854,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SendError( playerid, "This feature is currently under construction." );
 			}
 		}
-		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], number_format( GetResupplyPrice( business_type ) ) ), "Select", "Back" ), 1;
+		return ShowPlayerDialog( playerid, DIALOG_BUSINESS_BUY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", sprintf( ""COL_WHITE"Your business has %d supplies\t \nBuy Supply\t%s\nSteal Supplies\t"COL_YELLOW"FREE", g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( GetResupplyPrice( business_type ) ) ), "Select", "Back" ), 1;
 	}
 	if ( dialogid == DIALOG_AIRPORT && response )
 	{
@@ -25235,7 +25235,7 @@ stock ShowBuyableVehiclesTypeDialog( playerid, type_id )
 	for( new i; i < sizeof( g_BuyableVehicleData ); i++ )
 	{
 		if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id )
-			format( szBuyableVehicles, sizeof( szBuyableVehicles ), "%s"COL_GOLD"%s%s%s\t%s\n", szBuyableVehicles, number_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ), g_BuyableVehicleData[ i ] [ E_VIP ] ? ( "" ) : ( #COL_WHITE ), g_BuyableVehicleData[ i ] [ E_PRICE ] < 100000 ? ( "\t" ) : ( "" ), g_BuyableVehicleData[ i ] [ E_NAME ] );
+			format( szBuyableVehicles, sizeof( szBuyableVehicles ), "%s"COL_GOLD"%s%s%s\t%s\n", szBuyableVehicles, cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ), g_BuyableVehicleData[ i ] [ E_VIP ] ? ( "" ) : ( #COL_WHITE ), g_BuyableVehicleData[ i ] [ E_PRICE ] < 100000 ? ( "\t" ) : ( "" ), g_BuyableVehicleData[ i ] [ E_NAME ] );
 	}
 
 	ShowPlayerDialog( playerid, DIALOG_VEHDEALER_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szBuyableVehicles, "Options", "Cancel" );
@@ -25973,7 +25973,7 @@ stock ShowPlayerShopMenu( playerid )
 	{
 		strcat( szString, " \t"COL_GREY"Grey options do not save!\t \n" );
 		for( new i; i < sizeof( g_shopItemData ); i++ ) {
-	 		format( szString, sizeof( szString ), "%s%s%s\t"COL_ORANGE"%s\t"COL_GOLD"%s\n", szString, g_shopItemData[ i ] [ E_SAVABLE ] ? ( COL_WHITE ) : ( COL_GREY ), g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], number_format( g_shopItemData[ i ] [ E_PRICE ] ) );
+	 		format( szString, sizeof( szString ), "%s%s%s\t"COL_ORANGE"%s\t"COL_GOLD"%s\n", szString, g_shopItemData[ i ] [ E_SAVABLE ] ? ( COL_WHITE ) : ( COL_GREY ), g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], cash_format( g_shopItemData[ i ] [ E_PRICE ] ) );
 		}
 	}
 	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
@@ -26472,7 +26472,7 @@ thread readmoneylog( playerid, searchid )
 			cache_get_field_content( i, "DATE", szTime );
 			iCashMoney = cache_get_field_content_int( i, "CASH", dbHandle );
 
-			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t%s\n", szLargeString, szName, number_format( iCashMoney ), szTime );
+			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t%s\n", szLargeString, szName, cash_format( iCashMoney ), szTime );
 		}
 
 		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}Transactions sent by %s(%d)", ReturnPlayerName( searchid ), searchid ), szLargeString, "Okay", "" );
@@ -26778,7 +26778,7 @@ stock showToyCategoryItems( playerid, category, bool: pawnshop = false )
 		if ( g_ToyData[ i ] [ E_CATEGORY ] == category )
 		{
 			if ( pawnshop ) {
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, p_ToyUnlocked[ playerid ] { g_ToyData[ i ] [ E_ID ] } ? ( #COL_LGREEN ) : ( #COL_WHITE ), g_ToyData[ i ] [ E_NAME ], number_format( g_ToyData[ i ] [ E_PRICE ] ) );
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, p_ToyUnlocked[ playerid ] { g_ToyData[ i ] [ E_ID ] } ? ( #COL_LGREEN ) : ( #COL_WHITE ), g_ToyData[ i ] [ E_NAME ], cash_format( g_ToyData[ i ] [ E_PRICE ] ) );
 			} else {
 				format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, g_ToyData[ i ] [ E_ID ] != -1 ? ( !p_ToyUnlocked[ playerid ] { g_ToyData[ i ] [ E_ID ] } ? ( "{3D3D3D}" ) : ( "{FFFFFF}" ) ) : ( COL_GOLD ), g_ToyData[ i ] [ E_NAME ] );
 			}
@@ -27015,7 +27015,7 @@ stock CreateGarage( iAccountID, iPrice, iInterior, Float: fX, Float: fY, Float: 
 		g_garageData[ iGarage ] [ E_ANGLE ] = fAngle;
 
 		g_garageData[ iGarage ] [ E_CHECKPOINT ] = CreateDynamicCP( fX, fY, fZ, 3.0, -1, 0, -1, 100.0 );
-	    g_garageData[ iGarage ] [ E_LABEL ] 	 = CreateDynamic3DTextLabel( sprintf( "Garage(%d)\nOwner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", iGarage, number_format( g_garageData[ iGarage ] [ E_PRICE ] ) ), COLOR_GOLD, fX, fY, fZ, 20.0 );
+	    g_garageData[ iGarage ] [ E_LABEL ] 	 = CreateDynamic3DTextLabel( sprintf( "Garage(%d)\nOwner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", iGarage, cash_format( g_garageData[ iGarage ] [ E_PRICE ] ) ), COLOR_GOLD, fX, fY, fZ, 20.0 );
 
 		if ( iExistingID != ITER_NONE && iAccountID ) UpdateGarageTitle( iGarage );
 		else if ( iExistingID == ITER_NONE )
@@ -27070,7 +27070,7 @@ thread OnUpdateGarageTitle( slot )
 	if ( rows )
 		cache_get_field_content( 0, "NAME", szOwner );
 
-	UpdateDynamic3DTextLabelText( g_garageData[ slot ] [ E_LABEL ], COLOR_GOLD, sprintf( "Garage(%d)\nOwner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", slot, szOwner, number_format( g_garageData[ slot ] [ E_PRICE ] ) ) );
+	UpdateDynamic3DTextLabelText( g_garageData[ slot ] [ E_LABEL ], COLOR_GOLD, sprintf( "Garage(%d)\nOwner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", slot, szOwner, cash_format( g_garageData[ slot ] [ E_PRICE ] ) ) );
 	return 1;
 }
 
@@ -27464,11 +27464,11 @@ stock SplitPlayerCashForGang( playerid, Float: cashRobbed )
 		new
 			iRoundedBanked = floatround( cashBanked, floatround_floor );
 
-		SendServerMessage( playerid, "You've split %s (%d%s) towards your gang's bank balance.", number_format( iRoundedBanked ), p_GangSplitProfits[ playerid ], "%%" );
+		SendServerMessage( playerid, "You've split %s (%d%s) towards your gang's bank balance.", cash_format( iRoundedBanked ), p_GangSplitProfits[ playerid ], "%%" );
 
 		/*if ( -1 < iRoundedBanked > 50000 )
 		{
-			printf( "[EXPLOIT] [0xC1] %s has tried to store %s to gang %d", ReturnPlayerName( playerid ), number_format( iRoundedBanked ), p_GangID[ playerid ] );
+			printf( "[EXPLOIT] [0xC1] %s has tried to store %s to gang %d", ReturnPlayerName( playerid ), cash_format( iRoundedBanked ), p_GangID[ playerid ] );
 			return SendError( playerid, "An exploit (0xC2) had occured, therefore this robbery was denied. Please report this to Lorenc!" );
 		}*/
 
@@ -27482,7 +27482,7 @@ stock SplitPlayerCashForGang( playerid, Float: cashRobbed )
 	{
 		/*if ( -1 < iRoundedRobbed > 50000 )
 		{
-			printf( "[EXPLOIT] [0xC1] %s has robbed %s", ReturnPlayerName( playerid ), number_format( iRoundedRobbed ) );
+			printf( "[EXPLOIT] [0xC1] %s has robbed %s", ReturnPlayerName( playerid ), cash_format( iRoundedRobbed ) );
 			return SendError( playerid, "An exploit (0xC1) had occured, therefore this robbery was denied. Please report this to Lorenc!" );
 		}*/
 
@@ -27792,10 +27792,10 @@ stock UpdateCasinoPoolLabels( poolid )
 	for( new i = 0; i < POOL_ENTITIES; i ++ )
 	{
 		if ( IsValidDynamicObject( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ] ) )
-			SetDynamicObjectMaterialText( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ], 0, sprintf( "%s PRIZE", number_format( g_casinoPoolData[ poolid ] [ E_POOL ] ) ), 130, "Arial", 20, 1, 0xFF00FF00, 0, 1 );
+			SetDynamicObjectMaterialText( g_casinoPoolData[ poolid ] [ E_OBJECT ] [ i ], 0, sprintf( "%s PRIZE", cash_format( g_casinoPoolData[ poolid ] [ E_POOL ] ) ), 130, "Arial", 20, 1, 0xFF00FF00, 0, 1 );
 
 		if ( IsValidDynamic3DTextLabel( g_casinoPoolData[ poolid ] [ E_LABEL ] [ i ] ) )
-			UpdateDynamic3DTextLabelText( g_casinoPoolData[ poolid ] [ E_LABEL ] [ i ], 0x00FF00FF, sprintf( "%s Prize Pool", number_format( g_casinoPoolData[ poolid ] [ E_POOL ] ) ) );
+			UpdateDynamic3DTextLabelText( g_casinoPoolData[ poolid ] [ E_LABEL ] [ i ], 0x00FF00FF, sprintf( "%s Prize Pool", cash_format( g_casinoPoolData[ poolid ] [ E_POOL ] ) ) );
 	}
 	return 1;
 }
@@ -27866,7 +27866,7 @@ thread OnSlotMachinesLoad( )
 				// 3d Text
 				fOffsetX = 1.0 * floatsin( -rZ, degrees );
 				fOffsetY = 1.0 * floatcos( -rZ, degrees );
-				CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play\n"COL_WHITE"%s Minimum", number_format( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ), COLOR_GREY, X + fOffsetX, Y + fOffsetY, Z - 0.1, 5.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 1 );
+				CreateDynamic3DTextLabel( sprintf( "Press ENTER To Play\n"COL_WHITE"%s Minimum", cash_format( g_slotmachineData[ id ] [ E_ENTRY_FEE ] ) ), COLOR_GREY, X + fOffsetX, Y + fOffsetY, Z - 0.1, 5.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 1 );
 
 				// Misc variables
 				g_slotmachineData[ id ] [ E_TIMER ] = -1;
@@ -28140,7 +28140,7 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
 	 	// double check if valid coin requirement
 	 	if ( iCoinRequirement ) {
 			GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
-			SendServerMessage( playerid, "You have changed your name to for %s Irresistible Coins!", number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			SendServerMessage( playerid, "You have changed your name to for %s Irresistible Coins!", number_format( iCoinRequirement, .decimals = 0 ) );
 	 	}
 
     	// Update houses (furniture also?)
@@ -28148,7 +28148,7 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
 
     	foreach ( new i : houses ) if ( IsPlayerHomeOwner( playerid, i ) ) {
 			format( g_houseData[ i ] [ E_OWNER ], 24, "%s", newName );
-			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ i ] [ E_HOUSE_NAME ], i, g_houseData[ i ] [ E_OWNER ], number_format( g_houseData[ i ] [ E_COST ] ) );
+			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ i ] [ E_HOUSE_NAME ], i, g_houseData[ i ] [ E_OWNER ], cash_format( g_houseData[ i ] [ E_COST ] ) );
 			UpdateDynamic3DTextLabelText( g_houseData[ i ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
     	}
 
@@ -28316,7 +28316,7 @@ stock ShowPlayerVehicleComponents( playerid, categoryid ) {
 	erase( szLargeString );
 
 	for( new i = 0; i < sizeof( g_vehicleComponentsData ); i++ ) if ( g_vehicleComponentsData[ i ] [ E_CATEGORY ] == categoryid ) {
-		format( szLargeString, sizeof( szLargeString ), "%s%s\t"COL_GOLD"%s\n", szLargeString, g_vehicleComponentsData[ i ] [ E_NAME ], number_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
+		format( szLargeString, sizeof( szLargeString ), "%s%s\t"COL_GOLD"%s\n", szLargeString, g_vehicleComponentsData[ i ] [ E_NAME ], cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
 	}
 	return ShowPlayerDialog( playerid, DIALOG_COMPONENTS, DIALOG_STYLE_TABLIST, sprintf( "Pimp My Ride - %s", g_vehicleComponentsCategories[ categoryid ] ), szLargeString, "Purchase", "Back" );
 }
@@ -28386,7 +28386,7 @@ stock ShowPlayerVehicleComponentMenu( playerid, ownerid, vehicleid, i )
 		sellPrice = floatround( g_vehicleComponentsData[ pimpid ] [ E_PRICE ] * 0.5 );
 
 	SetPVarInt( playerid, "components_editing", i );
-	return ShowPlayerDialog( playerid, DIALOG_COMPONENT_EDIT, DIALOG_STYLE_TABLIST, "Vehicle Components", sprintf( "%s Component\t\nEdit Component\t\nSell Component\t"COL_GOLD"%s", g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_DISABLED ] [ i ] ? ( "Enable" ) : ( "Disable" ), number_format( sellPrice ) ), "Select", "Cancel" );
+	return ShowPlayerDialog( playerid, DIALOG_COMPONENT_EDIT, DIALOG_STYLE_TABLIST, "Vehicle Components", sprintf( "%s Component\t\nEdit Component\t\nSell Component\t"COL_GOLD"%s", g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_DISABLED ] [ i ] ? ( "Enable" ) : ( "Disable" ), cash_format( sellPrice ) ), "Select", "Cancel" );
 }
 #endif
 
@@ -29009,18 +29009,18 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 			robbedNpc = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
 
 			if ( GetPlayerLocation( playerid, szCity, szLocation ) ) {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s near %s in %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
+				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
 			} else {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s!", ReturnPlayerName( playerid ), playerid, number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s!", ReturnPlayerName( playerid ), playerid, cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 			}
 
 			/*new Float: safeDistance = 99999.99;
 			new robberyid = getClosestRobberySafe( playerid, safeDistance );
 			if ( robberyid != INVALID_OBJECT_ID && safeDistance < 100.0 && !g_robberyData[ robberyid ] [ E_STATE ] ) {
 				//g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.1;
-				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
+				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
 			} else {
-				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", number_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
+				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 			}*/
 
 			PlayerPlaySound( playerid, 5201, 0.0, 0.0, 0.0 );
@@ -29033,7 +29033,7 @@ public OnPlayerHoldupStore( playerid, clerkid, step )
 
 		GivePlayerCash( playerid, amount );
 		SetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ), robbedNpc );
-		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", number_format( robbedNpc ) ) );
+		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", cash_format( robbedNpc ) ) );
 	}
 
 	FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
@@ -29775,7 +29775,7 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 		new poolContribute = floatround( float( entryFee ) * ( 1.0 - g_slotOddsPayout[ oddid ] [ E_TAX ] ) );
 
 		if ( GetPlayerCash( playerid ) < entryFee )
-			return SendError( playerid, "You must have at least %s to use this slot machine.", number_format( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
+			return SendError( playerid, "You must have at least %s to use this slot machine.", cash_format( entryFee ) ), ( p_AutoSpin{ playerid } = false ), 1;
 
 		// Update casino pool
 		GivePlayerCasinoRewardsPoints( playerid, g_slotmachineData[ machineid ] [ E_ENTRY_FEE ], .house_edge = g_slotOddsPayout[ oddid ] [ E_TAX ] * 100.0 );
@@ -29874,7 +29874,7 @@ stock ShowRaceConfiguration( playerid, raceid )
 
 	format( szLargeString, sizeof( szLargeString ), ""COL_WHITE"The current prize pool is %s\t \n"COL_GREY"Race Mode\t%s\n"COL_GREY"Entry Fee\t%s\n"COL_GREY"Prize Distribution\t%0.0f-%0.0f-%0.0f\n",
 
-								number_format( g_raceData[ raceid ] [ E_POOL ] ), g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ), number_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] ),
+								cash_format( g_raceData[ raceid ] [ E_POOL ] ), g_raceData[ raceid ] [ E_MODE ] == RACE_STREET_RACE ? ( "Streetrace" ) : ( "Outrun" ), cash_format( g_raceData[ raceid ] [ E_ENTRY_FEE ] ),
 
 								100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 0 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 1 ], 100.0 * g_raceData[ raceid ] [ E_POSITION_PRIZE ] [ 2 ]
 							);
@@ -30004,7 +30004,7 @@ stock GivePlayerRaceWin( playerid, position, raceid )
 	foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
 		PlayerPlaySound( i, 1149, 0.0, 0.0, 0.0 );
 		GameTextForPlayer( i, sprintf( "~y~~h~%d%s~w~ %s", position, positionToString( position ), ReturnPlayerName( playerid ) ), 2000, 3 );
-		SendClientMessageFormatted( i, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", ReturnPlayerName( playerid ), playerid, position, positionToString( position ), number_format( prizeMoney ) );
+		SendClientMessageFormatted( i, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has finished the race in %d%s position (prize %s).", ReturnPlayerName( playerid ), playerid, position, positionToString( position ), cash_format( prizeMoney ) );
 	}
 
 	// remove from race
@@ -30292,7 +30292,7 @@ stock CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Fl
 		g_businessData[ iBusiness ] [ E_ENTER_CP ] = CreateDynamicCP( fX, fY, fZ, 1.0, -1, 0, -1, 100.0 );
 		g_businessData[ iBusiness ] [ E_EXIT_CP ] = CreateDynamicCP( g_businessInteriorData[ iType ] [ E_X ], g_businessInteriorData[ iType ] [ E_Y ], g_businessInteriorData[ iType ] [ E_Z ], 1.0, g_businessData[ iBusiness ] [ E_WORLD ], g_businessData[ iBusiness ] [ E_INTERIOR_TYPE ] + 20, -1, 100.0 );
 
-		format( szBigString, sizeof( szBigString ), ""COL_GOLD"%s Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" 0", g_businessInteriorData[ iType ] [ E_NAME ], szBusiness, iBusiness, number_format( g_businessData[ iBusiness ] [ E_COST ] ) );
+		format( szBigString, sizeof( szBigString ), ""COL_GOLD"%s Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" 0", g_businessInteriorData[ iType ] [ E_NAME ], szBusiness, iBusiness, cash_format( g_businessData[ iBusiness ] [ E_COST ] ) );
 	    g_businessData[ iBusiness ] [ E_ENTER_LABEL ] = CreateDynamic3DTextLabel( szBigString, COLOR_GOLD, fX, fY, fZ, 20.0 );
 		g_businessData[ iBusiness ] [ E_EXIT_LABEL ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_businessInteriorData[ iType ] [ E_X ], g_businessInteriorData[ iType ] [ E_Y ], g_businessInteriorData[ iType ] [ E_Z ], 20.0 );
 
@@ -30376,7 +30376,7 @@ thread OnUpdateBusinessTitle( businessid )
 	}
 
 	// update business title
-	format( szBigString, sizeof( szBigString ), ""COL_GOLD"%s Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" %d", g_businessInteriorData[ biz_type ] [ E_NAME ], g_businessData[ businessid ] [ E_NAME ], businessid, szOwner, number_format( g_businessData[ businessid ] [ E_COST ] ), associates );
+	format( szBigString, sizeof( szBigString ), ""COL_GOLD"%s Business:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s\n"COL_GOLD"Members:"COL_WHITE" %d", g_businessInteriorData[ biz_type ] [ E_NAME ], g_businessData[ businessid ] [ E_NAME ], businessid, szOwner, cash_format( g_businessData[ businessid ] [ E_COST ] ), associates );
 	UpdateDynamic3DTextLabelText( g_businessData[ businessid ] [ E_ENTER_LABEL ], COLOR_GOLD, szBigString );
 	return 1;
 }
@@ -30388,9 +30388,9 @@ stock UpdateBusinessProductionLabel( businessid )
 
 	// check if its processing
 	if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 && g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] > g_iTime ) {
-		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_ORANGE"%s until production finishes", number_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], number_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], number_format( supply_price ), secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) );
+		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_ORANGE"%s until production finishes", cash_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], cash_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( supply_price ), secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) );
 	} else {
-		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_GREEN"Production finished", number_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], number_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], number_format( supply_price ) );
+		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_GREEN"Production finished", cash_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], cash_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( supply_price ) );
 	}
 
 	// update label
@@ -30497,7 +30497,7 @@ stock ShowBusinessTerminal( playerid )
 
 	format( szBigString, sizeof( szBigString ), "Rename Business\t"COL_GREY"%s\nWithdraw Bank Money\t"COL_GREY"%s\nManage Members\t"COL_GREY"%d %s\nSell Inventory\t"COL_GREY"%d product\nResupply Business\t"COL_GREY"%d %s\nBusiness Upgrades\t ",
 			g_businessData[ businessid ] [ E_NAME ],
-			number_format( g_businessData[ businessid ] [ E_BANK ] ),
+			cash_format( g_businessData[ businessid ] [ E_BANK ] ),
 			members, members == 1 ? ( "member" ) : ( "members" ),
 			g_businessData[ businessid ] [ E_PRODUCT ],
 			g_businessData[ businessid ] [ E_SUPPLIES ], g_businessData[ businessid ] [ E_SUPPLIES ] == 1 ? ( "supply" ) : ( "supplies" )
@@ -30514,7 +30514,7 @@ stock ShowBusinessUpgrades( playerid, businessid )
 		GetBusinessSecurity( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ), GetVehicleName( g_businessData[ businessid ] [ E_CAR_MODEL_ID ] ), GetVehicleName( g_businessData[ businessid ] [ E_HELI_MODEL_ID ] ) );
 
 	format( szBigString, sizeof( szBigString ), "%sUpgrade Production\t"COL_GREEN"%s\nAdd Member Slot\t"COL_GREEN"%s\n", szBigString,
-		g_businessData[ businessid ] [ E_UPGRADES ] >= 1 ? ( "MAXED" ) : ( number_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) ), g_businessData[ businessid ] [ E_EXTRA_MEMBERS ] >= 4 ? ( "MAXED" ) : ( "$500,000" ) );
+		g_businessData[ businessid ] [ E_UPGRADES ] >= 1 ? ( "MAXED" ) : ( cash_format( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) ), g_businessData[ businessid ] [ E_EXTRA_MEMBERS ] >= 4 ? ( "MAXED" ) : ( "$500,000" ) );
 
 	format( szBigString, sizeof( szBigString ), "%sAdd Nitrous To Car\t"COL_GREEN"%s\nAdd Gold Rims\t"COL_GREEN"%s\n", szBigString,
 		g_businessData[ businessid ] [ E_CAR_NOS ] ? ( "ADDED" ) : ( "$250,000" ), g_businessData[ businessid ] [ E_CAR_RIMS ] ? ( "ADDED" ) : ( "$250,000" ) );
@@ -30660,7 +30660,7 @@ stock SetRandomDropoffLocation( playerid, businessid, bool: heli = false )
 
 		// alert player
 		ShowPlayerHelpDialog( playerid, 5000, "Exit the facility and enter the business vehicle marked outside." );
-		SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, number_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
+		SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has begun transporting "COL_GOLD"%s"COL_WHITE" of business product!", ReturnPlayerName( playerid ), playerid, cash_format( g_businessData[ businessid ] [ E_EXPORT_VALUE ] * ( MAX_DROPS - g_businessData[ businessid ] [ E_EXPORTED_AMOUNT ] ) ) );
 	}
 	else
 	{
@@ -30776,7 +30776,7 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 
 	GivePlayerScore( playerid, 2 );
 	GivePlayerWantedLevel( playerid, 6 );
-	SendServerMessage( playerid, "You have successfully exported "COL_GOLD"%s"COL_WHITE" worth of product. "COL_ORANGE"(%d/%d)", number_format( product_amount ), drugsSold, MAX_DROPS );
+	SendServerMessage( playerid, "You have successfully exported "COL_GOLD"%s"COL_WHITE" worth of product. "COL_ORANGE"(%d/%d)", cash_format( product_amount ), drugsSold, MAX_DROPS );
 
 	// calculate if it was the last batch
 	if ( drugsSold == MAX_DROPS )
@@ -30787,14 +30787,14 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 		;
 
 		// P&L
-		SendServerMessage( playerid, "You have completed selling all business product. Total profit %s%s"COL_WHITE".", profit > 0 ? ( COL_GREEN ) : ( COL_RED ), number_format( profit ) );
+		SendServerMessage( playerid, "You have completed selling all business product. Total profit %s%s"COL_WHITE".", profit > 0 ? ( COL_GREEN ) : ( COL_RED ), cash_format( profit ) );
 
 		// Destroy checkpoint and vehicle
 		StopBusinessExportMission( businessid );
 	}
 
 	// just send alerts fuck it
-	SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has dropped off their %d%s batch of drugs for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, drugsSold, positionToString( drugsSold ), number_format( product_amount ) );
+	SendGlobalMessage( COLOR_GREY, "[BUSINESS]"COL_WHITE" %s(%d) has dropped off their %d%s batch of drugs for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, drugsSold, positionToString( drugsSold ), cash_format( product_amount ) );
 }
 
 stock ShowBusinessMembers( playerid, businessid )
@@ -30959,13 +30959,13 @@ stock ShowBusinessSecurityUpgrades( playerid, businessid )
 	format( security, sizeof( security ), "%s"COL_RED"NONE\t25%s Safe Security + 50%s chance of breaking in\t"COL_GOLD"$0\n", security, "%", "%" );
 
 	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 1 ] [ E_COST_MULTIPLIER ] );
-	format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t50%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
+	format( security, sizeof( security ), "%s"COL_ORANGE"LOW\t50%s Safe Security + 25%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", cash_format( security_cost ) );
 
 	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 2 ] [ E_COST_MULTIPLIER ] );
-	format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t75%s Safe Security + 10.0%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
+	format( security, sizeof( security ), "%s"COL_YELLOW"MEDIUM\t75%s Safe Security + 10.0%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", cash_format( security_cost ) );
 
 	security_cost = floatround( float( g_businessInteriorData[ business_type ] [ E_UPGRADE_COST ] ) * g_businessSecurityData[ 3 ] [ E_COST_MULTIPLIER ] );
-	format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t100%s Safe Security + 0.0%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", number_format( security_cost ) );
+	format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t100%s Safe Security + 0.0%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", cash_format( security_cost ) );
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }
 
@@ -31030,7 +31030,7 @@ stock PlayerPlaceRandomHits( )
 
 				hits_placed_amount += contract_amount;
 				p_ContractedAmount[ playerid ] += contract_amount;
-				ShowPlayerHelpDialog( playerid, 4000, "Somebody has placed a hit on you!~n~~n~~r~Your bounty is now %s!", number_format( p_ContractedAmount[ playerid ] ) );
+				ShowPlayerHelpDialog( playerid, 4000, "Somebody has placed a hit on you!~n~~n~~r~Your bounty is now %s!", cash_format( p_ContractedAmount[ playerid ] ) );
 			}
 		}
 
@@ -31038,7 +31038,7 @@ stock PlayerPlaceRandomHits( )
 		UpdateServerVariable( "hitman_budget", hitman_budget - hits_placed_amount, 0.0, "", GLOBAL_VARTYPE_INT );
 
 		// print anyway
-		printf("[AUTO HITMAN] Placed %s worth of hits (hourly rate %s, budget %s)!", number_format( hits_to_iterate * hourly_budget ), number_format( hourly_budget ), number_format( GetGVarInt( "hitman_budget" ) ) );
+		printf("[AUTO HITMAN] Placed %s worth of hits (hourly rate %s, budget %s)!", cash_format( hits_to_iterate * hourly_budget ), cash_format( hourly_budget ), cash_format( GetGVarInt( "hitman_budget" ) ) );
 	}
 }
 
@@ -31129,8 +31129,8 @@ stock ArrestPlayer( victimid, playerid )
 		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
 		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
 		GivePlayerCash( playerid, totalCash );
-		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), number_format( totalCash ) ); // 8hska7082bmahu
-		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", number_format( totalCash ), ReturnPlayerName( victimid ), victimid );
+		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
+		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", cash_format( totalCash ), ReturnPlayerName( victimid ), victimid );
 		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 		CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
 		Untaze( victimid );

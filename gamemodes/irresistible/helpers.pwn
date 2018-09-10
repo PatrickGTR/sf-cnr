@@ -250,7 +250,7 @@ stock Player_GetUnusedAttachIndex( playerid )
 }
 
 // purpose: convert integer into dollar string (large credit to Slice - i just added a prefix parameter)
-stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '$', decimals = -1, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) )
+stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }: variable, prefix = '\0', decimals = -1, thousand_seperator = ',', decimal_point = '.', tag = tagof( variable ) )
 {
     static
         s_szReturn[ 32 ],
@@ -305,7 +305,7 @@ stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }:
 
         while ( --s_iChar > 0 )
         {
-            if ( ++s_iSepPos == 3 )
+            if ( ++s_iSepPos == 3 && s_szReturn[ s_iChar - 1 ] != '-' )
             {
                 strins( s_szReturn, s_szThousandSeparator, s_iChar );
 
@@ -316,10 +316,13 @@ stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }:
 
     if ( prefix != '\0' ) {
         // new minus = strfind( s_szReturn, "-" );
-        strins( s_szReturn, "$", variable < 0 ); // no point finding -
+        strins( s_szReturn, "$", s_szReturn[ 0 ] == '-' ); // no point finding -
     }
     return s_szReturn;
 }
+
+#define cash_format(%0) \
+    (number_format(%0, .prefix = '$'))
 
 // purpose: find a random element in sample space, excluding [a, b, c, ...]
 stock randomExcept( except[ ], len = sizeof( except ), available_element_value = -1 ) {
