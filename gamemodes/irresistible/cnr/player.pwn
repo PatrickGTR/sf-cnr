@@ -54,7 +54,6 @@ new
 	bool: p_Spectating            	[ MAX_PLAYERS char ],
 	bool: p_Muted                   [ MAX_PLAYERS char ],
 	bool: p_InfectedHIV             [ MAX_PLAYERS char ],
-	p_InHouse                       [ MAX_PLAYERS ],
 	p_ExperienceHideTimer           [ MAX_PLAYERS ],
 	p_AntiTextSpam                  [ MAX_PLAYERS ],
 	bool: p_BlockedPM            	[ MAX_PLAYERS ] [ MAX_PLAYERS ],
@@ -238,8 +237,6 @@ new
 	p_Fireworks 					[ MAX_PLAYERS ],
 	p_ExplosiveBullets 				[ MAX_PLAYERS ],
 	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
-	p_SpawningKey 					[ MAX_PLAYERS ] [ 4 ],
-	p_SpawningIndex 				[ MAX_PLAYERS ],
 	p_TazingImmunity 				[ MAX_PLAYERS ],
 	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
 	p_PlayerAltBindTick 			[ MAX_PLAYERS ]

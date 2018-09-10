@@ -1,18 +1,221 @@
 /*
- * Irresistible Gaming 2018
+ * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module: static_cnr\furniture.inc
- * Purpose: removals of static furniture objects in buildings or player interiors
+ * Module:
+ * Purpose:
  */
 
-/* ** Hooks ** */
-hook OnPlayerConnect( playerid ) {
-	initializePlayerInteriors( playerid );
-	return 1;
-}
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
 
-/* ** Functions ** */
-static stock initializePlayerInteriors( playerid )
+/* ** Definitions ** */
+#define MAX_FURNITURE 				( 50 )
+
+// Furniture Categories
+#define FC_DOORS        0
+#define FC_TABLECHAIR   1
+#define FC_FITNESS      2
+#define FC_KITCHENBATH  3
+#define FC_ELECTRONIC   4
+#define FC_BEDROOM      5
+#define FC_LOUNGE       6
+#define FC_FLOWERS      7
+#define FC_MISC         8
+#define FC_WEAPONS		9
+#define FC_HOLIDAYS 	10
+#define FC_FOODRINK 	11
+
+/* ** Variables ** */
+enum E_FURINTURE_DATA
+{
+	E_CATEGORY,			E_NAME[ 21 ],       E_MODEL,
+	E_COST
+};
+
+new
+  	g_furnitureCategory[ ] [ ] =
+	{
+	    { "Doors" }, { "Tables and Chairs" }, { "Fitness" }, { "Kitchen and Bathroom" }, { "Electronics" }, { "Bedroom" },
+	    { "Lounge" }, { "Flowers and Plants" }, { "Miscellaneous" }, { "Weapons" }, { "Holiday" }, { "Food/Drink" }
+	},
+	g_houseFurniture[ ] [ E_FURINTURE_DATA ] =
+	{
+		// Doors
+	    { FC_DOORS, 		"Red Door", 			1504, 175 },
+	    { FC_DOORS, 		"Blue Door", 			1505, 175 },
+	    { FC_DOORS, 		"White Door", 			1506, 175 },
+	    { FC_DOORS, 		"Yellow Door", 			1507, 175 },
+	    // Tables and Chairs
+  	  	{ FC_TABLECHAIR, 	"Wooden Open Table", 	1817, 50 },
+	    { FC_TABLECHAIR,    "Dining Chair",         2079, 60 },
+	    { FC_TABLECHAIR,    "Office Chair",         1806, 62 },
+	    { FC_TABLECHAIR, 	"Wooden Circle Table", 	1815, 75 },
+		{ FC_TABLECHAIR, 	"Cluckin' Table Sml",	2763, 80 },
+		{ FC_TABLECHAIR, 	"Cluckin' Table", 		2762, 125 },
+		{ FC_TABLECHAIR,    "Dining Table",         2115, 135 },
+		{ FC_TABLECHAIR,    "Circle Dining Chair",  2125, 135 },
+		{ FC_TABLECHAIR,    "Circle Dining Table",  2030, 150 },
+		{ FC_TABLECHAIR,    "Swivel Chair",      	1663, 180 },
+		{ FC_TABLECHAIR, 	"Rocking Chair", 		11734, 200 },
+		{ FC_TABLECHAIR, 	"Gamer Chair", 			19999, 320 },
+		{ FC_TABLECHAIR, 	"Poker Table", 			19474, 500 },
+		{ FC_TABLECHAIR, 	"Lab Table",			3383, 900 },
+		// Fitness
+	    { FC_FITNESS, 		"Mattress #1", 			2815, 50 },
+	    { FC_FITNESS, 		"Mattress #2", 			2817, 50 },
+	    { FC_FITNESS, 		"Mattress #3", 			2833, 50 },
+	    { FC_FITNESS, 		"Mattress #4", 			2836, 50 },
+	    { FC_FITNESS, 		"Mattress #5", 			2847, 50 },
+	    { FC_FITNESS, 		"Cycle", 				2630, 950 },
+	    { FC_FITNESS, 		"Treadmill", 			2627, 1250 },
+	    { FC_FITNESS, 		"Weight Lifting", 		2628, 1550 },
+	    // Kitchen and Bathroom
+		{ FC_KITCHENBATH, 	"Soap", 				19874, 15 },
+		{ FC_KITCHENBATH, 	"Toilet Paper", 		19873, 20 },
+		{ FC_KITCHENBATH, 	"Towel holder", 		11707, 300 },
+	    { FC_KITCHENBATH,	"Double Metal Cabin", 	2007, 400 },
+	    { FC_KITCHENBATH,	"Metal Shelf x4", 		2063, 400 },
+	    { FC_KITCHENBATH,	"Metal Table", 			941, 500 },
+	    { FC_KITCHENBATH,	"Metal Counter", 		937, 600 },
+	    { FC_KITCHENBATH,	"Metal Bench-top", 		936, 685 },
+	    { FC_KITCHENBATH,	"Toilet",  				2514, 700 },
+	    { FC_KITCHENBATH,	"Bathroom Sink", 		2523, 900 },
+	    { FC_KITCHENBATH,   "Wooden Double Draw", 	2139, 910 },
+	    { FC_KITCHENBATH,   "Wooden Low-unit",      2138, 925 },
+	    { FC_KITCHENBATH,	"Washing Machine", 		1208, 925 },
+	    { FC_KITCHENBATH,   "Laundry Unit",         2303, 980 },
+	    { FC_KITCHENBATH,	"White Bath Tub",		2519, 1000 },
+	    { FC_KITCHENBATH,   "Corner Wooden Bench",	2305, 1100 },
+	    { FC_KITCHENBATH,   "Wooden Bench w/ Sink", 2136, 1185 },
+	    { FC_KITCHENBATH,   "Stable Counter",       2339, 1200 },
+	    { FC_KITCHENBATH,	"Bath Tub", 			2526, 1200 },
+	    { FC_KITCHENBATH,	"Shower System",		14481, 1290 },
+	    { FC_KITCHENBATH,   "Stable Shelf",       	2141, 1300 },
+	    { FC_KITCHENBATH,   "Stable Sink",          2132, 1500 },
+		{ FC_KITCHENBATH, 	"Love Spa", 			11732, 2000 },
+	    { FC_KITCHENBATH,   "Cooker and Oven",      2135, 2200 },
+	    { FC_KITCHENBATH,	"Deep Fryer", 			2413, 2300 },
+		// Electronics
+		{ FC_ELECTRONIC, 	"Blender", 				19830, 120 },
+	    { FC_ELECTRONIC,	"Mini Stereo Speaker", 	2233, 450 },
+		{ FC_ELECTRONIC, 	"Coffee Machine", 		11743, 500 },
+	    { FC_ELECTRONIC,	"Red Guitar",          	19317, 650 },
+	    { FC_ELECTRONIC,	"White Guitar",        	19318, 675 },
+	    { FC_ELECTRONIC,	"Bass speaker", 		2229, 675 },
+	    { FC_ELECTRONIC,	"Black Guitar",       	19319, 700 },
+	    { FC_ELECTRONIC,	"8 Bit TV", 			1748, 700 },
+	    { FC_ELECTRONIC,	"VCR Player", 			1719, 900 },
+	    { FC_ELECTRONIC, 	"Gaming Console",		2028, 1000 },
+	    { FC_ELECTRONIC, 	"Small TV with VCR",	2595, 1100 },
+		{ FC_ELECTRONIC, 	"Laptop", 				19893, 1250 },
+	    { FC_ELECTRONIC,	"TV Small", 			1518, 1575 },
+	    { FC_ELECTRONIC, 	"Swank TV",				1792, 1600 },
+	    { FC_ELECTRONIC,	"TV with Wall Hook", 	2596, 1790 },
+	    { FC_ELECTRONIC,    "TV With Stance",       1717, 2000 },
+	    { FC_ELECTRONIC, 	"Doozy TV with Stance",	2224, 2050 },
+	    { FC_ELECTRONIC,	"Stereo System", 		2100, 2175 },
+	    { FC_ELECTRONIC,	"Wide-screen TV", 		1786, 2500 },
+		{ FC_ELECTRONIC, 	"Huge LCD", 			19786, 3000 },
+	    { FC_ELECTRONIC,	"Small TV Unit", 		2297, 3700 },
+	    { FC_ELECTRONIC,    "TV Unit",              2296, 4000 },
+	    { FC_ELECTRONIC,    "PC with Desk",     	2181, 4200 },
+		// Bedroom
+	    { FC_BEDROOM,		"Wooden Stance", 		1743, 650 },
+	    { FC_BEDROOM,		"Wooden Counter", 		1416, 750 },
+	    { FC_BEDROOM,		"Wooden Drawer", 		1417, 800 },
+	    { FC_BEDROOM,		"Hobo bed", 			1745, 800 },
+	    { FC_BEDROOM,		"Luxurious bed", 		2298, 1300 },
+	    { FC_BEDROOM,		"Super Luxurious bed", 	2563, 1750 },
+		{ FC_BEDROOM, 		"Lavish Red Bed", 		11720, 2000 },
+		{ FC_BEDROOM, 		"Love Bed", 			11731, 4200 },
+		// Lounge
+	    { FC_LOUNGE,		"Wooden Couch", 		1755, 275 },
+	    { FC_LOUNGE,		"Couch", 				1754, 350 },
+	    { FC_LOUNGE,		"Leather Couch",		1702, 500 },
+	    { FC_LOUNGE,		"Single Couch", 		1704, 850 },
+	    { FC_LOUNGE, 		"Luxury Mattress", 		1828, 900 },
+	    { FC_LOUNGE,		"Bookshelf", 			1742, 1000 },
+	    { FC_LOUNGE,		"Leather Couch",		1723, 1650 },
+	    { FC_LOUNGE,		"TV Stand",				2313, 1700 },
+		{ FC_LOUNGE, 		"Fireplace", 			11724, 4800 },
+		{ FC_LOUNGE, 		"Chandelier",			19806, 5200 },
+		// Flowers and plants
+	    { FC_FLOWERS,		"Flower Plant 3", 		2001, 30 },
+	    { FC_FLOWERS,		"Flower Plant 4", 		2253, 35 },
+	    { FC_FLOWERS, 		"Clear Flower Vase",	2247, 35 },
+	    { FC_FLOWERS,		"Painted Flower Vase", 	2251, 40 },
+	    { FC_FLOWERS,		"Plant Vase", 			2245, 50 },
+	    { FC_FLOWERS,		"Flower Wall-Mount", 	3810, 120 },
+	    { FC_FLOWERS,		"Weed Plant", 			19473, 2250 },
+		// Miscellaneous
+		{ FC_MISC, 			"Chainsaw Dildo", 		19086, 69 },
+		{ FC_MISC,			"Massive Die",			1851, 80 },
+	    { FC_MISC,			"Deer Head Mount",   	1736, 120 },
+	    { FC_MISC,			"Striped Surfboard",   	2404, 140 },
+	    { FC_MISC,			"Beach Surfboard",     	2406, 150 },
+	    { FC_MISC,			"Flamed Torch",       	3461, 175 },
+		{ FC_MISC, 			"Rocking Unicorn", 		11733, 180 },
+		{ FC_MISC, 			"Do Not Cross Tape",	19834, 250 },
+		{ FC_MISC, 			"Grill",				19831, 300 },
+	    { FC_MISC,			"Boxing Bag",         	1985, 300 },
+		{ FC_MISC, 			"Car Engine", 			19917, 500 },
+		{ FC_MISC, 			"Drum Kit",				19609, 800 },
+		{ FC_MISC, 			"Mechanic Computer", 	19903, 1000 },
+	    { FC_MISC,			"Pool Table",         	2964, 1250 },
+		{ FC_MISC, 			"Cow",					19833, 1337 },
+	    { FC_MISC,			"Deer", 				19315, 1337 },
+	    { FC_MISC,			"Money Safe", 			2332, 2000 },
+		{ FC_MISC, 			"Mechanic Shelves",		19899, 2000 },
+	    { FC_MISC,			"Dance Floor", 			19128, 3250 },
+	    { FC_MISC,			"Craps Table", 			1824, 4000 },
+	    { FC_MISC, 			"Boxing Arena",			14781, 15000 },
+	    // Weapons
+		{ FC_WEAPONS, 		"Brass Knuckles", 		331, 25 },
+		{ FC_WEAPONS,		"Pool Cue",				338, 40 },
+		{ FC_WEAPONS, 		"Parachute", 			371, 60 },
+		{ FC_WEAPONS, 		"Purple Dildo", 		321, 69 },
+		{ FC_WEAPONS, 		"Sledge Hammer", 		19631, 90 },
+		{ FC_WEAPONS, 		"Landmine", 			19602, 100 },
+		{ FC_WEAPONS, 		"Ammo Box", 			19832, 120 },
+		{ FC_WEAPONS, 		"Antique Sword", 		19590, 250 },
+		{ FC_WEAPONS, 		"Mac 10", 				352, 250 },
+		{ FC_WEAPONS, 		"Tec 9", 				372, 290 },
+		{ FC_WEAPONS, 		"Rifle", 				357, 300 },
+		{ FC_WEAPONS, 		"Desert Eagle", 		348, 500 },
+		{ FC_WEAPONS, 		"Shotgun", 				349, 600 },
+		{ FC_WEAPONS, 		"Sawn-off Shotgun", 	350, 800 },
+		{ FC_WEAPONS, 		"Sniper", 				358, 800 },
+		{ FC_WEAPONS, 		"Spas 12", 				351, 900 },
+		{ FC_WEAPONS, 		"M4", 					356, 900 },
+		{ FC_WEAPONS, 		"Minigun", 				362, 1337 },
+		{ FC_WEAPONS, 		"Heatseeker", 			360, 1337 },
+		{ FC_WEAPONS, 		"RPG", 					359, 1337 },
+		// Holiday
+		{ FC_HOLIDAYS, 		"Xmas Box 1", 			19054, 100 },
+		{ FC_HOLIDAYS, 		"Xmas Box 2", 			19055, 100 },
+		{ FC_HOLIDAYS, 		"Xmas Box 3", 			19056, 100 },
+		{ FC_HOLIDAYS, 		"Xmas Box 4", 			19057, 100 },
+		{ FC_HOLIDAYS, 		"Xmas Box 5", 			19058, 100 },
+		{ FC_HOLIDAYS, 		"Witch Pot",			19527, 200 },
+		{ FC_HOLIDAYS, 		"Devil Face",			11704, 666 },
+		{ FC_HOLIDAYS, 		"Xmas Tree", 			19076, 777 },
+		// Food/Drink
+		{ FC_FOODRINK, 		"Pizza Box", 			19571, 10 },
+		{ FC_FOODRINK, 		"Coffee Mug", 			19835, 15 },
+		{ FC_FOODRINK, 		"Pizza", 				19580, 30 },
+		{ FC_FOODRINK, 		"Ordinary Brandy", 		19821, 45 },
+		{ FC_FOODRINK, 		"Fine Scotch", 			19823, 90 },
+		{ FC_FOODRINK, 		"Beer Keg", 			19812, 150 },
+		{ FC_FOODRINK, 		"Vintage Whiskey", 		19824, 155 },
+		{ FC_FOODRINK, 		"Premium Brandy", 		19820, 190 },
+		{ FC_FOODRINK, 		"Premium Wine", 		19822, 220 }
+	},
+	g_houseFurnitureData 			[ MAX_HOUSES ] [ MAX_FURNITURE ],
+	Iterator: housefurniture 		[ MAX_HOUSES ] < MAX_FURNITURE >
+;
+
+/* ** Hooks ** */
+hook OnPlayerConnect( playerid )
 {
 	//Katie - 271.884979,306.631988,999.148437 - DEFAULT - 2
 	RemoveBuildingForPlayer( playerid, 2251, 266.4531, 303.3672, 998.9844, 0.25 );
@@ -492,3 +695,5 @@ static stock initializePlayerInteriors( playerid )
 	RemoveBuildingForPlayer( playerid, 1742, -2160.3906, 647.3906, 1056.5859, 0.25 );
 	RemoveBuildingForPlayer( playerid, 1738, -2158.3906, 647.0859, 1057.2344, 0.25 );
 }
+
+/* ** Functions ** */
