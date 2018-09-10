@@ -41,7 +41,6 @@ enum
 };
 
 static stock
-	bool: bIsDetectionEnabled		[ AC_MAX_DETECTIONS ] = { true, ... },
     bool: p_acSpawned  				[ MAX_PLAYERS char ],
     p_acUpdateTime 					[ MAX_PLAYERS ]
 ;
@@ -156,6 +155,7 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 }
 
 /* ** Modules (remove to disable) ** */
+#include 							"irresistible\anticheat\money.pwn"
 #include 							"irresistible\anticheat\hitpoints.pwn"
 #include 							"irresistible\anticheat\weapon.pwn"
 #include 							"irresistible\anticheat\airbrake.pwn"

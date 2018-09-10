@@ -76,7 +76,7 @@ new bool: False = false;
 #define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
-#define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + p_Cash[%0]) // Bank Money and Money
+#define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + GetPlayerCash(%0)) // Bank Money and Money
 #define GetPlayerMethLabVehicle(%0)	(GetPlayerVirtualWorld(%0)-VW_METH)
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0]==1)
 #define Achievement:: 				ach_
@@ -257,14 +257,6 @@ new stock
 	DCC_Role: discordRoleLead,
 	DCC_Role: discordRoleVIP,
 	DCC_Role: discordRoleVoice
-;
-
-/* ** Random Messages ** */
-stock const
-	killedWords[ ] [ ] =
-	{
-		{ "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" }
-	}
 ;
 
 /* ** Bribe Data ** */
@@ -1757,22 +1749,6 @@ new
 	// Iterator
 	Iterator:garages<MAX_GARAGES>
 ;
-
-/* ** Anti RDM Zones *
-#define MAX_RDM_ZONES 				( 18 )
-#define MAX_RDM_GANGZONES 			( 14 )
-
-enum E_RDM_ZONE
-{
-	E_CIRCLE,					E_GANGZONES[ MAX_RDM_GANGZONES ],
-};
-
-new
-	g_antiDeathmatchZoneData 		[ MAX_RDM_ZONES ] [ E_RDM_ZONE ],
-
-	// Iterator
-	Iterator:rdmzone<MAX_RDM_ZONES>
-;*/
 
 /* ** Sprunk ** */
 enum E_VENDING_MACHINE
@@ -6336,6 +6312,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 					{
 					    if ( p_WantedLevel[ playerid ] > 5 )
 						{
+							static const killedWords[ ] [ ] = { { "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" } };
 					        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
 					        GivePlayerCash( killerid, cashEarned );
 					        GivePlayerScore( killerid, 2 );
@@ -7596,7 +7573,8 @@ CMD:business( playerid, params[ ] )
 					g_businessData[ b ] [ E_OWNER_ID ] = p_AccountID[ playerid ];
 					UpdateBusinessData( b );
 					UpdateBusinessTitle( b );
-					GivePlayerCash( playerid, -( g_businessData[ b ] [ E_COST ] ), .force_save = true );
+					GivePlayerCash( playerid, -( g_businessData[ b ] [ E_COST ] ) );
+					autosaveStart( playerid, true );
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" You have bought this business for "COL_GOLD"%s"COL_WHITE".", cash_format( g_businessData[ b ] [ E_COST ] ) );
 					return 1;
 				}
@@ -8171,7 +8149,8 @@ CMD:garage( playerid, params[ ] )
 					g_garageData[ g ] [ E_OWNER_ID ] = p_AccountID[ playerid ];
 					UpdateGarageData( g );
 					UpdateGarageTitle( g );
-					GivePlayerCash( playerid, -( g_garageData[ g ] [ E_PRICE ] ), .force_save = true );
+					GivePlayerCash( playerid, -( g_garageData[ g ] [ E_PRICE ] ) );
+					autosaveStart( playerid, true ); // auto-save
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GARAGE]"COL_WHITE" You have bought this garage for "COL_GOLD"%s"COL_WHITE".", cash_format( g_garageData[ g ] [ E_PRICE ] ) );
 					return 1;
 				}
@@ -9143,7 +9122,7 @@ CMD:ransom( playerid, params[ ] )
 	else if ( p_PlayerSettings[ victimid ] { SETTING_RANSOMS } ) return SendError( playerid, "This player has disabled ransom offers." );
 	else if ( amount < 50 || amount > 20000 ) return SendError( playerid, "You may place a ransom from $50 to $20,000." );
 	else if ( amount > 99999999 || amount < 0 ) return SendError( playerid, "You may place a ransom from $50 to $20,000."); // Making cash go over billions...
-	else if ( amount > p_Cash[ victimid ] ) return SendError( playerid, "This person doesn't have enough money to pay this amount." );
+	else if ( amount > GetPlayerCash( victimid ) ) return SendError( playerid, "This person doesn't have enough money to pay this amount." );
 	else if ( p_RansomTimestamp[ victimid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before offering a ransom to this person.", p_RansomTimestamp[ victimid ] - g_iTime );
  	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
  	{
@@ -15706,7 +15685,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			if ( GetPlayerCash( playerid ) <= 0 || fHealth >= 100.0 )
 				bFailed = true;
 
-			for( new i = 0; i < sizeof( g_VendingMachines ); i++ )
+			for ( new i = 0; i < sizeof( g_VendingMachines ); i++ )
 			{
 				if ( IsPlayerInRangeOfPoint( playerid, 1.0, g_VendingMachines[ i ] [ E_FX ], g_VendingMachines[ i ] [ E_FY ], g_VendingMachines[ i ] [ E_Z ] ) )
 				{
@@ -18415,7 +18394,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			   	new bID = CreateBuyableVehicle( playerid, model, random( 126 ), random( 126 ), X, Y, Z, fA, g_BuyableVehicleData[ data_id ] [ E_PRICE ] );
 				if ( bID == -1 ) return SendClientMessage( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" Unable to create a vehicle due to a unexpected error." );
-				GivePlayerCash( playerid, -g_BuyableVehicleData[ data_id ] [ E_PRICE ], .force_save = true );
+				GivePlayerCash( playerid, -g_BuyableVehicleData[ data_id ] [ E_PRICE ] );
+				autosaveStart( playerid, true ); // auto-save
 
 		        GetVehicleParamsEx( g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], engine, lights, alarm, doors, bonnet, boot, objective );
 				SetVehicleParamsEx( g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective );
@@ -18853,7 +18833,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	    if ( GetPlayerCash( playerid ) < 5000000 )
 	        return SendError( playerid, "You don't have enough money for this ($5,000,000)." );
 
-		GivePlayerCash( playerid, -5000000, .force_save = true );
+		GivePlayerCash( playerid, -5000000 );
+		autosaveStart( playerid, true ); // auto-save
 
 		new aID = p_ApartmentEnter{ playerid };
 		g_apartmentData[ aID ] [ E_CREATED ] = true;
@@ -21657,30 +21638,6 @@ stock ClearPlayerWantedLevel( playerid )
     p_WantedLevel[ playerid ] = 0;
 	SetPlayerWantedLevel( playerid, 0 );
 	SetPlayerColorToTeam( playerid );
-}
-
-stock GetPlayerCash( playerid ) return p_Cash[ playerid ];
-
-stock GivePlayerCash( playerid, money, bool: force_save = false )
-{
-    p_Cash[ playerid ] += money;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
-	autosaveStart( playerid, force_save ); // auto-save
-}
-
-stock SetPlayerCash( playerid, money )
-{
-    p_Cash[ playerid ] = money;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
-}
-
-stock ResetPlayerCash( playerid )
-{
-    p_Cash[ playerid ] = 0;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
 }
 
 stock IsWeaponBanned( weaponid ) {
@@ -25036,7 +24993,7 @@ stock autosaveStart( playerid, bool: force_save = false )
 	new
 		iTime = g_iTime;
 
-    if (  p_PlayerSettings[ playerid ] { SETTING_AUTOSAVE } && force_save == false )
+    if ( p_PlayerSettings[ playerid ] { SETTING_AUTOSAVE } && force_save == false )
 		return;
 
     if ( GetPVarInt( playerid, "last_transaction" ) > iTime && force_save == false )
