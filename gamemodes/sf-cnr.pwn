@@ -103,8 +103,6 @@ new bool: False = false;
 
 /* Beast Functions */
 
-#define SendClientMessageToRCON(%1,%2,%3) \
-	do{foreach(new fI : Player){if (IsPlayerAdmin(fI))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToCops(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_POLICE)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToFireman(%1,%2,%3) \
