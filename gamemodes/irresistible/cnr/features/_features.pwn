@@ -8,10 +8,13 @@
 /* ** Includes ** */
 
 // core
+#include "irresistible\cnr\features\vip.pwn"
+#include "irresistible\cnr\features\irresistibleguard.pwn"
+
+// other
 #include "irresistible\cnr\features\fps.pwn"
 #include "irresistible\cnr\features\radio.pwn"
 #include "irresistible\cnr\features\cash_cards.pwn"
-#include "irresistible\cnr\features\furniture.pwn"
 #include "irresistible\cnr\features\weapon_drop.pwn"
 #include "irresistible\cnr\features\ammunation.pwn"
 #include "irresistible\cnr\features\duel.pwn"
