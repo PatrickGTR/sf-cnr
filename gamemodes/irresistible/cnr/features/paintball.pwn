@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Steven Howard
- * Module: paintball.pwn
+ * Module: cnr/features/paintball.pwn
  * Purpose: paintball related features
  */
 
@@ -24,7 +24,7 @@ enum E_PAINTBALL_DATA
 	E_LIMIT,			E_WEAPONS[ 3 ],			E_PLAYERS,
 	E_ARENA, 			Float: E_ARMOUR, 		Float: E_HEALTH,
 	bool: E_ACTIVE,		bool: E_PASSWORDED, 	bool: E_REFILLER,
-	E_CD_TIMER,			E_HEADSHOT
+	E_CD_TIMER,			bool: E_HEADSHOT
 };
 
 enum E_PAINTBALL_ARENAS
@@ -167,6 +167,13 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 				case 6: 		ShowPlayerPaintballArenas( playerid );
 				case 7 .. 9: 	ShowPlayerDialog( playerid, DIALOG_PAINTBALL_WEP, DIALOG_STYLE_LIST, "{FFFFFF}Paintball - Edit", ""COL_RED"Remove Weapon On This Slot\n9mm Pistol\nSilenced Pistol\nDesert Eagle\nShotgun\nSawn-off Shotgun\nSpas 12\nMac 10\nMP5\nAK-47\nM4\nTec 9\nRifle\nSniper", "Select", "Cancel");
+				case 10:
+				{
+					new iLobby = p_PaintBallArena{ playerid };
+					g_paintballData[ iLobby ] [ E_HEADSHOT ] = !g_paintballData[ iLobby ] [ E_HEADSHOT ];
+					SendClientMessageToPaintball( iLobby, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" Headshot mode has been %s.", g_paintballData[ iLobby ] [ E_HEADSHOT ] == false ? ( "un-toggled" ) : ( "toggled" ) );
+					showPaintBallLobbyData( playerid, iLobby );
+				}
 			}
 		}
 		else
@@ -406,9 +413,10 @@ stock listPaintBallLobbies( playerid )
 
 stock showPaintBallLobbyData( playerid, id, second_button[ ] = "Join Game" )
 {
-	format( szLargeString, sizeof( szLargeString ), "Lobby Name\t\t"COL_GREY"%s"COL_WHITE"\nLobby Password\t%s"COL_WHITE"\nPlayer Capacity\t\t"COL_GREY"%d"COL_WHITE"\nHealth\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nArmour\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nRefill Health/Armour\t%s"COL_WHITE"\nArena\t\t\t"COL_GREY"%s"COL_WHITE"\nPrimary Weapon\t"COL_GREY"%s"COL_WHITE"\nSecondary Weapon\t"COL_GREY"%s"COL_WHITE"\nTertiary Weapon\t"COL_GREY"%s",
+	format( szLargeString, sizeof( szLargeString ), "Lobby Name\t\t"COL_GREY"%s"COL_WHITE"\nLobby Password\t%s"COL_WHITE"\nPlayer Capacity\t\t"COL_GREY"%d"COL_WHITE"\nHealth\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nArmour\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nRefill Health/Armour\t%s"COL_WHITE"\nArena\t\t\t"COL_GREY"%s"COL_WHITE"\nPrimary Weapon\t"COL_GREY"%s"COL_WHITE"\nSecondary Weapon\t"COL_GREY"%s"COL_WHITE"\nTertiary Weapon\t"COL_GREY"%s"COL_WHITE"\nHeadshot Mode\t"COL_GREY"%s",
 		g_paintballData[ id ] [ E_NAME ], g_paintballData[ id ] [ E_PASSWORDED ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ), g_paintballData[ id ] [ E_LIMIT ], g_paintballData[ id ] [ E_HEALTH ], g_paintballData[ id ] [ E_ARMOUR ], g_paintballData[ id ] [ E_REFILLER ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ), g_paintballArenaData[ g_paintballData[ id ] [ E_ARENA ] ] [ E_NAME ],
-		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 0 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 1 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 2 ] )
+		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 0 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 1 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 2 ] ),
+		g_paintballData[ id ] [ E_HEADSHOT ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" )
 	);
 	ShowPlayerDialog( playerid, DIALOG_PAINTBALL_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Paintball - Lobby Settings", szLargeString, "Change", second_button );
 }
@@ -603,5 +611,24 @@ CMD:paintball( playerid, params[ ] )
 		}
 	}
 	else SendUsage( playerid, "/paintball [EDIT/KICK/COUNTDOWN/LEADER]" );
+	return 1;
+}
+
+CMD:p( playerid, params[ ] )
+{
+	if ( !IsPlayerInPaintBall( playerid ) )
+		return SendError( playerid, "You're not in any paintball lobby." );
+
+	new
+	    id = p_PaintBallArena{ playerid },
+	    msg[ 90 ]
+	;
+
+	if ( sscanf( params, "s[90]", msg ) ) return SendUsage( playerid, "/p [MESSAGE]" );
+	else if ( textContainsIP( msg ) ) return SendServerMessage( playerid, "Please do not advertise." );
+    else
+	{
+		SendClientMessageToPaintball( id, -1, ""COL_GREY"<Paintball Chat> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
+	}
 	return 1;
 }
