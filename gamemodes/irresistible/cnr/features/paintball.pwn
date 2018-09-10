@@ -12,7 +12,7 @@
 
 #define MAX_PAINTBALL_ARENAS 		( 6 )
 
-/* Beast Functions */
+/* ** Macros ** */
 #define SendClientMessageToPaintball(%0,%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_inPaintBall{fI}&&p_PaintBallArena{fI}==(%0))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 
@@ -24,7 +24,7 @@ enum E_PAINTBALL_DATA
 	E_LIMIT,			E_WEAPONS[ 3 ],			E_PLAYERS,
 	E_ARENA, 			Float: E_ARMOUR, 		Float: E_HEALTH,
 	bool: E_ACTIVE,		bool: E_PASSWORDED, 	bool: E_REFILLER,
-	E_CD_TIMER
+	E_CD_TIMER,			E_HEADSHOT
 };
 
 enum E_PAINTBALL_ARENAS
