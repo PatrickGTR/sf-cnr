@@ -22,7 +22,6 @@ new
 	g_LogsInStock 					= 0,
 	g_PingLimit                     = 1024,
 	g_circleall_CD                  = false,
-	g_randomMessageTick 			= 0,
 	log__Text						[ 6 ][ 90 ],
 	szReportsLog 					[ 8 ][ 128 ],
 	szQuestionsLog 					[ 8 ][ 128 ],

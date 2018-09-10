@@ -13,3 +13,4 @@
 #include "irresistible\cnr\features\visage\casino.pwn"
 #include "irresistible\cnr\features\visage\apartments.pwn"
 #include "irresistible\cnr\features\visage\boxing.pwn"
+#include "irresistible\cnr\features\visage\slot_machines.pwn"

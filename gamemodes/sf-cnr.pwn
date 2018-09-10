@@ -262,65 +262,6 @@ new stock
 
 /* ** Random Messages ** */
 stock const
-	g_randomMessages[ ] [ 137 ] =
-	{
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy ropes at Supa Save or a 24/7 store to tie people up!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Save us on your favourites so you don't miss out on the action!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" You can catch updates on our website - "#SERVER_WEBSITE"!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Interested in getting V.I.P? Type "COL_GREY"/vip"COL_WHITE" for more details!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Consider helping the community by donating! You will receive Irresistible Coins to redeem V.I.P!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Just donated? Check your e-mail for a transaction ID and redeem your coins easily with /donated!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Do not share your password with anyone, or even use it in a friends server!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Trouble getting to places? Use "COL_GREY"/gps{FFFFFF} inside a vehicle!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Donors receive a Irresistible Coins in return of their generous donation, used to redeem V.I.P!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Rob stores and earn score, the more XP you have, the more benefits you gain!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Houses are buyable, you can buy one and set your spawning location inside that house!" },
-        { "{8ADE47}Stephanie:"COL_WHITE" Remember to check the "COL_GREY"/rules{FFFFFF}! Disobeying the rules can lead to punishment!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Seen a cheater? Use "COL_GREY"/report {FFFFFF}to tell an admin." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" To change your class, type "COL_GREY"/changeclass{FFFFFF}." },
-		// { "{8ADE47}Stephanie:"COL_WHITE" Detaining a suspect as a cop pays more than arresting by itself, and killing." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Being annoyed by some member via PM? "COL_GREY"/dnd{FFFFFF} to block them!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" See "COL_GREY"/animlist {FFFFFF}for animations." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Type "COL_GREY"/help {FFFFFF}for information on the server!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Need a set of commands to view? Use "COL_GREY"/cmds{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" To give money to a player, use "COL_GREY"/sendmoney{FFFFFF} or "COL_GREY"/sm{FFFFFF} for short." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Get V.I.P with Irresistible Coins! Consider donating by visiting our site to get more!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" To explode the bank vault, or the jail cells; plant C4 by the two cells then explode!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Tired of a player? You can place a contract on their head with "COL_GREY"/placehit{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Need a label on your head with an informative message? You can use "COL_GREY"/label{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" The golden bar at the bottom right of your screen is the amount of XP you have!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Follow us on twitter! "COL_GREY"@IrresistibleDev{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Holding "COL_GREY"LEFT ALT{FFFFFF} and "COL_GREY"SPACE{FFFFFF} stops the current radio you're playing." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can change your current job at the "COL_GREY"City Hall{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can change your spawning city at the "COL_GREY"City Hall{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy fancy toys at a "COL_GREY"Pawnshop{FFFFFF}!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Never share your password, not even with the server owner!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can access our Discord server at {7289da}sfcnr.com/discord" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Locate ChuffSec's security truck with "COL_GREY"/chuffloc{FFFFFF} and rob his security truck for cash!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a "COL_GREY"Money Case{FFFFFF} to increase your robbery loot from Supa Save or a 24/7 store! " },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Grab a truck, connect it to a trailer then begin to "COL_GREY"/work{FFFFFF}! It's rewarding!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Looking for something to do? Work on your "COL_GREY"/achievements"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Check your global SF-CNR rank with "COL_GREY"/rank"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Consider mining some ores near Jizzy's or at the Quarry! It's some fine pay!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" See how many Irresistible Coins you generated with "COL_GREY"/irresistiblecoins"COL_WHITE"." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Split your robbing profits with your gang members using "COL_GREY"/gang splitprofit"COL_WHITE"." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Toggle your total coins generated bar with "COL_GREY"/cp"COL_WHITE"." },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Be assigned to a rank by playing the game frequently, making use of all features!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" View the current robbing, arresting and killing streak that you are on with "COL_GREY"/streaks"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Check out what your favourite weapon is with "COL_GREY"/weaponstats"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" The secret monthly top donor can claim a prize at the end of the month!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Got any feedback for the server? Use "COL_GREY"/feedback"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Attach an email to your account using "COL_GREY"/email"COL_WHITE" for security features and free 3 days of VIP!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Want to form a criminal enterprise? Create a gang and invite your friends with "COL_GREY"/gang create"COL_WHITE"!" },
-		{ "SLOT_MACHINES" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Play roulette at a casino and win up to 35x on the money you place on a single number!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Play blackjack at a casino and double your money very quickly!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Play Poker with your friends at any casino! Beat your way to riches!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Get casino rewards points by gambling at any casino! Use "COL_GREY"/casino rewards"COL_WHITE" to spend them!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Race your friends in a street race or outrun race by using "COL_GREY"/race"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Want 3 days of free V.I.P? Add an "COL_GREY"/email"COL_WHITE" to your account!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" Contribute to our feature "COL_GREY"/crowdfunds"COL_WHITE"! Early supporters get benefits!" }
-	},
 	killedWords[ ] [ ] =
 	{
 		{ "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" }
@@ -1924,61 +1865,6 @@ stock const
 		{ 62.5, 	"Silver I", 	19783, COLOR_GREY },
 		{ 0.0, 		"unranked",		19300, COLOR_GREY }
 	}
-;
-
-/* ** Gambling ** */
-#define MAX_SLOT_POOLS				( 3 )
-#define POOL_ENTITIES				( 5 )
-
-enum E_SLOT_MACHINE_DATA
-{
-	E_SPIN[ 3 ], 				E_ACTIVE,
-	Float: E_X, 				Float: E_Y, 					Float: E_Z,
-	Float: E_A, 				Float: E_SPIN_ROTATE[ 3 ], 		Float: E_RANDOM_ROTATE[ 3 ],
-	E_TIMER, 					bool: E_ROLLING,				E_POOL_ID,
-	E_ENTRY_FEE
-};
-
-enum E_CASINO_POOL_DATA
-{
-	E_SQL_ID,					E_TOTAL_WINNINGS,				E_TOTAL_GAMBLED,
-	E_POOL,						E_OBJECT[ POOL_ENTITIES ],		Text3D: E_LABEL[ POOL_ENTITIES ]
-};
-
-enum E_SLOT_ODD_DATA
-{
-	E_ENTRY_FEE,				E_SAMPLE_SIZE,					Float: E_TAX,
-	E_DOUBLE_BRICK,				E_SINGLE_BRICK[ 2 ], 			E_GOLD_BELLS[ 2 ],
-	E_CHERRY[ 2 ], 				E_GRAPES[ 2 ], 					E_69[ 2 ],
-	E_PAYOUTS[ 5 ]
-};
-
-static const
-	g_slotOddsPayout[ ] [ E_SLOT_ODD_DATA ] =
-	{
-		// Entry Fee 	Probability		Tax 	{Double Brick}	{Single Brick}	{Gold Bells}	{Cherry}			{Grapes}				{69}				Payouts (Single brick, gold bells, etc...)
-		{ 50000,        50000,          0.2,    48032,          { 1, 400 },     { 401, 1199},   { 1200, 2797 },     { 2798, 10787 },     	{ 10788, 26767 },   { 1000000, 500000, 250000, 50000, 25000 } },
-		{ 25000,		100000,			0.2,	98742,			{ 1, 799 },	    { 800, 2397 },	{ 2398, 6392 },	    { 6393, 22372 },		{ 22373, 54332 },	{ 500000, 250000, 100000, 25000, 12500 } },
-		{ 10000,		62500,			0.2,	62488,			{ 1, 994 },	    { 995, 2982 },	{ 2983, 6957 },	    { 6958, 16895 },		{ 16896, 36770 },	{ 100000, 50000, 25000, 10000, 5000 } },
-		{ 5000, 		40000,			0.25,	27390,			{ 1, 596 },		{ 597, 1788 },	{ 1789, 4768 },		{ 4769, 10728 },		{ 10729, 22648 },	{ 50000, 25000, 10000, 5000, 2500 } }
-	}
-;
-
-new
-	g_slotmachineData				[ MAX_MACHINES ] [ E_SLOT_MACHINE_DATA ],
-	g_slotmachineColors				[ ] [ ] = {
-		{ "ld_slot:bar2_o" }, { "ld_slot:r_69" }, { "ld_slot:bar1_o" }, { "ld_slot:bell" }, { "ld_slot:cherry" }, { "ld_slot:grapes" }, { "ld_slot:cherry" }, { "ld_slot:grapes" }, { "ld_slot:bell" }, { "ld_slot:r_69" },
-		{ "ld_slot:bell" }, { "ld_slot:bar1_o" }, { "ld_slot:cherry" }, { "ld_slot:grapes" }, { "ld_slot:r_69" }, { "ld_slot:grapes" }, { "ld_slot:bell" }, { "ld_slot:cherry" }, { "ld_slot:bar2_o" }
-	},
-	g_slotmachineTypes				[ sizeof( g_slotmachineColors ) ] = { 0, 5, 1, 2, 3, 4, 3, 4, 2, 5, 2, 1, 3, 4, 5, 4, 2, 3, 0 },
-	p_usingSlotMachine				[ MAX_PLAYERS ] = { -1, ... },
-
-	// Casino pools
-	g_casinoPoolData 				[ MAX_SLOT_POOLS ] [ E_CASINO_POOL_DATA ],
-
-	// Iterator
-	Iterator:SlotMachines<MAX_MACHINES>,
-	Iterator:CasinoPool<MAX_SLOT_POOLS>
 ;
 
 /* ** Hitmarker ** */
@@ -3800,32 +3686,7 @@ public OnServerUpdate( )
 		Float: fX, Float: fY, Float: fZ, Float: fLastRate
 	;
 
-	// Random messages
-	if ( ( g_iTime = gettime( ) ) > g_randomMessageTick )
-	{
-		new
-			iRandomMessage = random( sizeof( g_randomMessages ) );
-
-		if ( strmatch( g_randomMessages[ iRandomMessage ], "SLOT_MACHINES" ) )
-		{
-			new
-				iRandom = random( 3 );
-
-			if ( iRandom == 2 )
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" The Visage Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 2 ] [ E_POOL ] ) );
-			else if ( iRandom == 1 )
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" 4 Dragons Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 1 ] [ E_POOL ] ) );
-			else
-				SendClientMessageToAllFormatted( -1, "{8ADE47}Stephanie:"COL_WHITE" Caligulas Casino has a prize pool of "COL_GREY"%s"COL_WHITE", use a slot machine to try win!", cash_format( g_casinoPoolData[ 0 ] [ E_POOL ] ) );
-		}
-		else
-		{
-	 		SendClientMessageToAll( -1, g_randomMessages[ iRandomMessage ] );
-		}
-
-		// throttle
-		g_randomMessageTick = g_iTime + 30;
-	}
+	g_iTime = gettime( );
 
 	// Time For Tax?
 	if ( g_iTime >= GetGVarInt( "taxtime" ) ) {
