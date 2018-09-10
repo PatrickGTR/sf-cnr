@@ -72,7 +72,7 @@ CMD:createentrance( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, sscanf_u # "fffdddds[32]", ownerid, toX, toY, toZ, interior, world, customInterior, vipOnly, label ) ) return SendUsage( playerid, "/createhouse [OWNER] [TO_X] [TO_Y] [TO_Z] [INTERIOR] [WORLD] [CUSTOM_INTERIOR] [VIP_ONLY] [LABEL]" );
+	else if ( sscanf( params, "ufffdddds[32]", ownerid, toX, toY, toZ, interior, world, customInterior, vipOnly, label ) ) return SendUsage( playerid, "/createhouse [OWNER] [TO_X] [TO_Y] [TO_Z] [INTERIOR] [WORLD] [CUSTOM_INTERIOR] [VIP_ONLY] [LABEL]" );
 	else if ( !IsPlayerConnected( ownerid ) || IsPlayerNPC( ownerid ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -131,7 +131,7 @@ CMD:setgangleader( playerid, params[ ] )
 	    sqlid, pID;
 
 	if ( p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, "d" #sscanf_u, sqlid, pID ) ) return SendUsage( playerid, "/setgangleader [GANG_ID] [PLAYER_ID]" );
+	else if ( sscanf( params, "du", sqlid, pID ) ) return SendUsage( playerid, "/setgangleader [GANG_ID] [PLAYER_ID]" );
 	//else if ( !Iter_Contains( gangs, gID ) ) return SendError( playerid, "Invalid Gang ID." );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	// else if ( p_GangID[ pID ] != gID ) return SendError( playerid, "This player isn't in this gang." );
@@ -231,7 +231,7 @@ CMD:seteventhost( playerid, params[ ] )
 	    pID;
 
 	if ( p_AdminLevel[ playerid ] < 5 && p_AccountID[ playerid ] != GetGVarInt( "eventhost" ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/seteventhost [PLAYER_ID]");
+	else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/seteventhost [PLAYER_ID]");
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_AdminLevel[ pID ] < 4 ) return SendError( playerid, "The user you specify must have an administration level 4 or above." );
 	else
@@ -260,7 +260,7 @@ CMD:setlevel( playerid, params[ ] )
 	    iLevel
 	;
 	if ( !IsPlayerAdmin( playerid ) && p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"d", pID, iLevel ) ) SendUsage( playerid, "/setlevel [PLAYER_ID] [LEVEL]");
+	else if ( sscanf( params, "d", pID, iLevel ) ) SendUsage( playerid, "/setlevel [PLAYER_ID] [LEVEL]");
 	else if ( iLevel < 0 || iLevel > 6 ) return SendError( playerid, "Please specify an administration level between 0 and 6." );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
@@ -339,7 +339,7 @@ CMD:playaction( playerid, params[ ] )
 	new
 		pID, action;
 
-	if ( sscanf(params, ""#sscanf_u"d", pID, action ) )
+	if ( sscanf(params, "ud", pID, action ) )
 		return SendUsage( playerid, "/playaction [PLAYER_ID] [SPECIAL_ACTION]");
 
 	SetPlayerSpecialAction( pID, action );
@@ -355,7 +355,7 @@ CMD:playanimation( playerid, params[ ] )
 	new szAnimation[ 2 ][ 64 ];
 	new loop, lockx, locky, freeze, time, force_sync;
 
-	if ( sscanf(params, ""#sscanf_u"s[64]s[64]D(0)D(0)D(0)D(0)D(0)D(0)", pID, szAnimation[ 0 ], szAnimation[ 1 ], loop, lockx, locky, freeze, time, force_sync ) )
+	if ( sscanf(params, "us[64]s[64]D(0)D(0)D(0)D(0)D(0)D(0)", pID, szAnimation[ 0 ], szAnimation[ 1 ], loop, lockx, locky, freeze, time, force_sync ) )
 		return SendUsage( playerid, "/playanimation [PLAYER_ID] [LIBRARY] [ANIM_NAME] [LOOP (0)] [LOCK_X (0)] [LOCK_Y (0)] [FREEZE (0)] [TIME (0)] [FORCE_SYNC (0)]" );
 
 	ApplyAnimation( pID, szAnimation[0], szAnimation[1], 4.1, loop, lockx, locky, freeze, time, force_sync );

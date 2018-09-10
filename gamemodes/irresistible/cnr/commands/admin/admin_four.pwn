@@ -36,7 +36,7 @@ CMD:setworld( playerid, params[ ] )
 {
 	new pID, worldid;
  	if ( p_AdminLevel[ playerid ] < 4 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
- 	else if ( sscanf( params, ""#sscanf_u"d", pID, worldid ) ) return SendUsage( playerid, "/setworld [PLAYER_ID] [WORLD_ID]" );
+ 	else if ( sscanf( params, "ud", pID, worldid ) ) return SendUsage( playerid, "/setworld [PLAYER_ID] [WORLD_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
  	else
  	{
@@ -61,7 +61,7 @@ CMD:setinterior( playerid, params[ ] )
 {
 	new pID, worldid;
  	if ( p_AdminLevel[ playerid ] < 4 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
- 	else if ( sscanf( params, ""#sscanf_u"d", pID, worldid ) ) return SendUsage( playerid, "/setinterior [PLAYER_ID] [INTERIOR_ID]" );
+ 	else if ( sscanf( params, "ud", pID, worldid ) ) return SendUsage( playerid, "/setinterior [PLAYER_ID] [INTERIOR_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
  	else
  	{
@@ -88,7 +88,7 @@ CMD:uncopban( playerid, params [ ] )
 	    pID
 	;
 	if ( p_AdminLevel[ playerid ] < 4 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage( playerid, "/uncopban [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/uncopban [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_CopBanned{ pID } == 0 ) return SendError( playerid, "This player is not cop-banned." );
     else
@@ -107,7 +107,7 @@ CMD:unarmyban( playerid, params [ ] )
 	    pID
 	;
 	if ( p_AdminLevel[ playerid ] < 4 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage( playerid, "/unarmyban [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/unarmyban [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_ArmyBanned{ pID } == 0 ) return SendError( playerid, "This player is not army-banned." );
     else
@@ -324,7 +324,7 @@ CMD:addnote( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 4 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"s[72]", pID, note ) ) return SendUsage( playerid, "/addnote [PLAYER_ID] [NOTE]" );
+	else if ( sscanf( params, "us[72]", pID, note ) ) return SendUsage( playerid, "/addnote [PLAYER_ID] [NOTE]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( strlen( note ) < 3 ) return SendError( playerid, "Keep your note's character count within the range of 3 - 72." );
 	else

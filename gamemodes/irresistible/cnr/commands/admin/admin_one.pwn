@@ -59,7 +59,7 @@ CMD:aka( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, #sscanf_u, pID ) ) return SendUsage( playerid, "/aka [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/aka [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -75,7 +75,7 @@ CMD:pinfo( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 && !IsPlayerUnderCover( playerid ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/pinfo [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/pinfo [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -187,7 +187,7 @@ CMD:frules( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/frules [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/frules [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
@@ -205,7 +205,7 @@ CMD:fpc( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/fpc [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/fpc [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
@@ -223,7 +223,7 @@ CMD:freeze( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/freeze [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/freeze [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
@@ -243,7 +243,7 @@ CMD:unfreeze( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/unfreeze [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/unfreeze [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
@@ -263,7 +263,7 @@ CMD:awep( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/awep [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/awep [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
@@ -313,7 +313,7 @@ CMD:stpfa( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage(playerid, "/stpfa [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stpfa [PLAYER_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "This player has a higher administration level than you." );
@@ -333,7 +333,7 @@ CMD:ans( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"s[90]", pID, msg ) ) return SendUsage( playerid, "/ans [PLAYER_ID] [ANSWER]" );
+    else if ( sscanf( params, "us[90]", pID, msg ) ) return SendUsage( playerid, "/ans [PLAYER_ID] [ANSWER]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot answer yourself." );
     else if ( iTime < p_AnswerDelay[ pID ] ) return SendError( playerid, "Please wait another %d seconds to answer this person.", p_AnswerDelay[ pID ] - iTime );
@@ -354,7 +354,7 @@ CMD:respond( playerid, params[ ] )
 		pID;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/respond [PLAYER_ID]" );
+    else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/respond [PLAYER_ID]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot respond to yourself." );
     else if ( g_iTime < p_RespondDelay[ pID ] ) return SendError( playerid, "Please wait another %d seconds to respond to this person.", p_RespondDelay[ pID ] - g_iTime );
@@ -396,7 +396,7 @@ CMD:warn( playerid, params[ ] )
 	    reason[ 32 ]
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[32]", pID, reason ) ) return SendUsage( playerid, "/warn [PLAYER_ID] [REASON]" );
+	else if ( sscanf( params, "uS(No Reason)[32]", pID, reason ) ) return SendUsage( playerid, "/warn [PLAYER_ID] [REASON]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You can't warn your self." );
 	else if ( p_AdminLevel[ playerid ] < p_AdminLevel[ pID ] ) return SendError( playerid, "This player has a higher administration level than you." );
@@ -429,7 +429,7 @@ CMD:setskin( playerid, params[ ] )
 		skin
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"d", pID, skin ) ) SendUsage(playerid, "/setskin [PLAYER_ID] [SKIN_ID]");
+    else if ( sscanf( params, "ud", pID, skin ) ) SendUsage(playerid, "/setskin [PLAYER_ID] [SKIN_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "This player has a higher administration level than you." );
 	else if ( !IsValidSkin( skin ) ) return SendError( playerid, "Invalid Skin ID." );
@@ -457,7 +457,7 @@ CMD:stpfr( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage(playerid, "/stpfr [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stpfr [PLAYER_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "This player has a higher administration level than you." );
@@ -477,7 +477,7 @@ CMD:getstats( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 && !IsPlayerUnderCover( playerid ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage(playerid, "/getstats [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/getstats [PLAYER_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
 	else if ( !p_PlayerLogged{ pID } ) return SendError( playerid, "This player is not logged in." );
 	else
@@ -525,7 +525,7 @@ CMD:slap( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"F(10.0)", pID, offset ) ) return SendUsage(playerid, "/slap [PLAYER_ID] [OFFSET (= 10.0)]");
+    else if ( sscanf( params, "uF(10.0)", pID, offset ) ) return SendUsage(playerid, "/slap [PLAYER_ID] [OFFSET (= 10.0)]");
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError(playerid, "You cannot use this command on admins higher than your level.");
     else
@@ -546,7 +546,7 @@ CMD:jail( playerid, params [ ] )
 		reason[ 50 ]
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"dS(No Reason)[50]", pID, Seconds, reason ) ) return SendUsage( playerid, "/jail [PLAYER_ID] [SECONDS] [REASON]");
+	else if ( sscanf( params, "udS(No Reason)[50]", pID, Seconds, reason ) ) return SendUsage( playerid, "/jail [PLAYER_ID] [SECONDS] [REASON]");
 	else if ( Seconds > 20000 || Seconds < 1 ) return SendError( playerid, "You're misleading the seconds limit ( 0 - 20000 )");
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
@@ -569,7 +569,7 @@ CMD:unjail( playerid, params [ ] )
 	    pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/unjail [PLAYER_ID]");
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/unjail [PLAYER_ID]");
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsPlayerJailed( pID ) ) return SendError( playerid, "This player is not jailed." );
 	else
@@ -588,7 +588,7 @@ CMD:spec( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 && !IsPlayerUnderCover( playerid ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) SendUsage(playerid, "/spec [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/spec [PLAYER_ID]");
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot spectate yourself.");
     else
@@ -659,7 +659,7 @@ CMD:goto( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
+    else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
     else if ( ! IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot go to yourself.");
     else

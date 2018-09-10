@@ -27,7 +27,7 @@ CMD:check( playerid, params[ ] )
 	;
 
     if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, #sscanf_u, pID ) ) return SendUsage( playerid, "/check [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/check [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -187,7 +187,7 @@ CMD:creategate( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"dffs[8]", pID, model, speed, range, password ) ) return SendUsage( playerid, "/creategate [PLAYER_ID] [MODEL_ID] [SPEED] [RANGE] [PASSWORD]" );
+	else if ( sscanf( params, "udffs[8]", pID, model, speed, range, password ) ) return SendUsage( playerid, "/creategate [PLAYER_ID] [MODEL_ID] [SPEED] [RANGE] [PASSWORD]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( model < 0 || model > 20000 ) return SendError( playerid, "Invalid Object Model." );
 	else if ( speed < 1.0 || speed > 100.0 ) return SendError( playerid, "Please specify a speed between 1.0 and 100.0." );
@@ -321,7 +321,7 @@ function autoVehicleSpawn( )
 		reason[ 50 ]
 	;
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"S(No Reason)[50]", pID, reason ) ) SendUsage( playerid, "/megaban [PLAYER_ID] [REASON]" );
+	else if ( sscanf( params, "uS(No Reason)[50]", pID, reason ) ) SendUsage( playerid, "/megaban [PLAYER_ID] [REASON]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	//else if ( pID == playerid ) return SendError( playerid, "You cannot ban yourself." );
     //else if ( p_AdminLevel[ playerid ] < p_AdminLevel[ pID ] ) return SendError( playerid, "This player has a higher administration level than you." );
@@ -343,7 +343,7 @@ CMD:achangename( playerid, params[ ] )
 	    szQuery[ 100 ]
 	;
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"s[24]", pID, nName ) ) return SendUsage( playerid, "/achangename [PLAYER_ID] [NEW_NAME]" );
+	else if ( sscanf( params, "us[24]", pID, nName ) ) return SendUsage( playerid, "/achangename [PLAYER_ID] [NEW_NAME]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( !isValidPlayerName( nName ) ) return SendError( playerid, "Invalid Name Character." );
 	else if ( p_OwnedHouses[ pID ] > 0 || GetPlayerOwnedApartments( pID ) > 0 ) return SendError( playerid, "This player has a house and/or apartment." ), SendError( pID, ""COL_ORANGE"In order to change your name, you must sell your houses and/or apartment.");
@@ -571,7 +571,7 @@ CMD:createcar( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"s[24]", pID, vName ) ) return SendUsage( playerid, "/createcar [PLAYER_ID] [VEHICLE_NAME]" );
+	else if ( sscanf( params, "us[24]", pID, vName ) ) return SendUsage( playerid, "/createcar [PLAYER_ID] [VEHICLE_NAME]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( p_OwnedVehicles[ pID ] >= GetPlayerVehicleSlots( pID ) ) return SendError( playerid, "This player has too many vehicles." );
 	else
@@ -723,7 +723,7 @@ CMD:forceac( playerid, params[ ] )
         pID;
 
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, #sscanf_u, pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
+    else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );

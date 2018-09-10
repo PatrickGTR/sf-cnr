@@ -12,7 +12,7 @@ CMD:slay( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/slay [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/slay [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
 	else
@@ -32,7 +32,7 @@ CMD:viewnotes( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, #sscanf_u, pID ) ) return SendUsage( playerid, "/viewnotes [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/viewnotes [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
@@ -50,7 +50,7 @@ CMD:suspend( playerid, params [ ] )
 		hours, days
 	;
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"ddS(No Reason)[50]", pID, hours, days, reason ) ) SendUsage( playerid, "/suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
+	else if ( sscanf( params, "uddS(No Reason)[50]", pID, hours, days, reason ) ) SendUsage( playerid, "/suspend [PLAYER_ID] [HOURS] [DAYS] [REASON]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( hours < 0 || hours > 24 ) return SendError( playerid, "Please specify an hour between 0 and 24." );
 	else if ( days < 0 || days > 60 ) return SendError( playerid, "Please specifiy the amount of days between 0 and 60." );
@@ -80,7 +80,7 @@ CMD:explode( playerid, params[ ] )
 {
     new pID, Float: offset;
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if (sscanf( params, ""#sscanf_u"F(0.0)", pID, offset)) SendUsage(playerid, "/explode [PLAYER_ID] [VEHICLE OFFSET (= 0.0)]");
+    else if (sscanf( params, "uF(0.0)", pID, offset)) SendUsage(playerid, "/explode [PLAYER_ID] [VEHICLE OFFSET (= 0.0)]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError(playerid, "You cannot use this command on admins higher than your level.");
     else {
@@ -171,7 +171,7 @@ CMD:mute( playerid, params[ ] )
     new pID, seconds, reason[ 32 ];
 
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"dS(No Reason)[32]", pID, seconds, reason ) ) return SendUsage(playerid, "/mute [PLAYER_ID] [SECONDS] [REASON]");
+    else if ( sscanf( params, "udS(No Reason)[32]", pID, seconds, reason ) ) return SendUsage(playerid, "/mute [PLAYER_ID] [SECONDS] [REASON]");
     else if ( !IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError(playerid, "You cannot mute yourself.");
    	else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError(playerid, "You cannot use this command on admins higher than your level.");
@@ -196,7 +196,7 @@ CMD:unmute( playerid, params[ ] )
     new pID;
 
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"", pID )) SendUsage(playerid, "/mute [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID )) SendUsage(playerid, "/mute [PLAYER_ID]");
     else if ( !IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError( playerid, "You cannot un-mute yourself." );
     else if ( !p_Muted{ pID } ) return SendError( playerid, "This player isn't muted" );
@@ -219,7 +219,7 @@ CMD:kick( playerid, params[ ] )
 	;
 
 	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, ""#sscanf_u"S(No reason)[70]", pID, reason ) ) SendUsage( playerid, "/kick [PLAYER_ID] [REASON]" );
+    else if ( sscanf( params, "uS(No reason)[70]", pID, reason ) ) SendUsage( playerid, "/kick [PLAYER_ID] [REASON]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
