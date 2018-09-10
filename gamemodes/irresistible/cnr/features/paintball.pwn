@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard
+ * Developed by Lorenc Pekaj, Steven Howard
  * Module: cnr/features/paintball.pwn
  * Purpose: paintball related features
  */
@@ -60,12 +60,12 @@ new
 /* ** Hooks ** */
 
 #if defined AC_INCLUDED
-hook OnPlayerDeathEx(playerid, killerid, reason, Float: damage, bodypart)
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
-hook OnPlayerDeath(playerid, killerid, reason)
+hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	if ( p_inPaintBall{ killerid } == true )
+	if ( IsPlayerConnected( killerid ) && p_inPaintBall{ killerid } == true )
 	{
 		new
 			a = p_PaintBallArena{ killerid };
@@ -75,9 +75,8 @@ hook OnPlayerDeath(playerid, killerid, reason)
 			SetPlayerHealth( killerid, g_paintballData[ a ] [ E_HEALTH ] );
 			SetPlayerArmour( killerid, g_paintballData[ a ] [ E_ARMOUR ] );
 		}
-		return 1;
+		return Y_HOOKS_BREAK_RETURN_1;
 	}
-
 	return 1;
 }
 
