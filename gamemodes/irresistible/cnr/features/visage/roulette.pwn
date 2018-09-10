@@ -124,8 +124,34 @@ public OnSpinRouletteTable( rouletteid, elapsed, steps );
 public OnRouletteMarkerUpdate( playerid );
 
 /* ** Hooks ** */
-hook OnGameModeInit( )
+hook OnScriptInit( )
 {
+	// initialize textdraws
+	for ( new handle = 0; handle < MAX_ROULETTE_TABLES; handle ++ )
+	{
+		g_rouletteNumberBG[ handle ] = TextDrawCreate(285.000000, 23.000000, "ld_roul:roulbla");
+		TextDrawBackgroundColor(g_rouletteNumberBG[ handle ], 255);
+		TextDrawFont(g_rouletteNumberBG[ handle ], 4);
+		TextDrawLetterSize(g_rouletteNumberBG[ handle ], 0.500000, 1.000000);
+		TextDrawColor(g_rouletteNumberBG[ handle ], -1);
+		TextDrawSetOutline(g_rouletteNumberBG[ handle ], 0);
+		TextDrawSetProportional(g_rouletteNumberBG[ handle ], 1);
+		TextDrawSetShadow(g_rouletteNumberBG[ handle ], 1);
+		TextDrawUseBox(g_rouletteNumberBG[ handle ], 1);
+		TextDrawBoxColor(g_rouletteNumberBG[ handle ], 255);
+		TextDrawTextSize(g_rouletteNumberBG[ handle ], 60.000000, 60.000000);
+
+		g_rouletteNumberTD[ handle ] = TextDrawCreate(314.000000, 25.000000, "35");
+		TextDrawAlignment(g_rouletteNumberTD[ handle ], 2);
+		TextDrawBackgroundColor(g_rouletteNumberTD[ handle ], 255);
+		TextDrawFont(g_rouletteNumberTD[ handle ], 1);
+		TextDrawLetterSize(g_rouletteNumberTD[ handle ], 0.800000, 4.000000);
+		TextDrawColor(g_rouletteNumberTD[ handle ], -1);
+		TextDrawSetOutline(g_rouletteNumberTD[ handle ], 0);
+		TextDrawSetProportional(g_rouletteNumberTD[ handle ], 1);
+		TextDrawSetShadow(g_rouletteNumberTD[ handle ], 1);
+	}
+
 	// server variables
 	AddServerVariable( "roulette_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "roulette_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
@@ -421,35 +447,6 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				}
 			}
 		}
-	}
-	return 1;
-}
-
-hook InitializeTextDraws( )
-{
-	for ( new handle = 0; handle < MAX_ROULETTE_TABLES; handle ++ )
-	{
-		g_rouletteNumberBG[ handle ] = TextDrawCreate(285.000000, 23.000000, "ld_roul:roulbla");
-		TextDrawBackgroundColor(g_rouletteNumberBG[ handle ], 255);
-		TextDrawFont(g_rouletteNumberBG[ handle ], 4);
-		TextDrawLetterSize(g_rouletteNumberBG[ handle ], 0.500000, 1.000000);
-		TextDrawColor(g_rouletteNumberBG[ handle ], -1);
-		TextDrawSetOutline(g_rouletteNumberBG[ handle ], 0);
-		TextDrawSetProportional(g_rouletteNumberBG[ handle ], 1);
-		TextDrawSetShadow(g_rouletteNumberBG[ handle ], 1);
-		TextDrawUseBox(g_rouletteNumberBG[ handle ], 1);
-		TextDrawBoxColor(g_rouletteNumberBG[ handle ], 255);
-		TextDrawTextSize(g_rouletteNumberBG[ handle ], 60.000000, 60.000000);
-
-		g_rouletteNumberTD[ handle ] = TextDrawCreate(314.000000, 25.000000, "35");
-		TextDrawAlignment(g_rouletteNumberTD[ handle ], 2);
-		TextDrawBackgroundColor(g_rouletteNumberTD[ handle ], 255);
-		TextDrawFont(g_rouletteNumberTD[ handle ], 1);
-		TextDrawLetterSize(g_rouletteNumberTD[ handle ], 0.800000, 4.000000);
-		TextDrawColor(g_rouletteNumberTD[ handle ], -1);
-		TextDrawSetOutline(g_rouletteNumberTD[ handle ], 0);
-		TextDrawSetProportional(g_rouletteNumberTD[ handle ], 1);
-		TextDrawSetShadow(g_rouletteNumberTD[ handle ], 1);
 	}
 	return 1;
 }
