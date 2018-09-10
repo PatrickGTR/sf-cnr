@@ -1,5 +1,1 @@
-(+) You can now contribute to community crowdfunds using /crowdfunds.
-(+) Added a command to reset gang respect without restarting the server.
-(+) Adds /viewdeathmsg for level 1 admins to oversee any insulting messages.
-(*) There can only be one boxing match at a time at the visage.
-(/) Decreased amount of tax money put into random hits by 5%.
+(+) Adds "/b production" to see what the status of your business production is.

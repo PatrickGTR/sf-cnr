@@ -7863,31 +7863,29 @@ CMD:business( playerid, params[ ] )
 	new
 		iBusiness = p_InBusiness[ playerid ];
 
-	if (strmatch(params, "production"))
+	if ( strmatch( params, "production" ) )
 	{
-		new 
+		new
 			bool: has = false;
 
 		szBigString = ""COL_WHITE"Name\t"COL_WHITE"Production Time\t"COL_WHITE"Product\n";
 
-		foreach (new businessid : business) if (g_businessData[businessid][E_OWNER_ID] == p_AccountID[playerid])
+		foreach ( new businessid : business ) if ( g_businessData[ businessid ] [ E_OWNER_ID ] == p_AccountID[ playerid ] )
 		{
-			format(szBigString, sizeof(szBigString), "%s%s\t%s\t"COL_GOLD"%s\n",
-				szBigString,
-				g_businessData[businessid][E_NAME],
-				g_businessData[businessid][E_PROD_TIMESTAMP] != 0 ? (secondstotime(g_businessData[businessid][E_PROD_TIMESTAMP] - g_iTime, ", ", 5, 0)) : (""COL_GREEN"Production Finished!"),
-				g_businessData[businessid][E_PRODUCT] == 0 ? (""COL_RED"No Product!") : (number_format(g_businessData[businessid][E_PRODUCT] * GetProductPrice(businessid)))
-				), has = true;
+			format( szBigString, sizeof( szBigString ), "%s%s\t%s\t"COL_GOLD"%s\n",
+				szBigString, g_businessData[ businessid ] [ E_NAME ],
+				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 ? (secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) ) : ( ""COL_GREEN"Production Finished!" ),
+				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product!" ) : ( number_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
+			), has = true;
 		}
 
-		if (!has)
-			return SendError(playerid, "You cannot use this command since you don't own any businesses.");
-
-		ShowPlayerDialog(playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Business Production", szBigString, "Close", "");
-		return 1;
+		if ( ! has ) {
+			return SendError( playerid, "You cannot use this command since you don't own any businesses." );
+		} else {
+			return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Business Production", szBigString, "Close", "" );
+		}
 	}
-
-	if ( strmatch( params, "spawn" ))
+	else if ( strmatch( params, "spawn" ))
 	{
 		SendServerMessage( playerid, "We have changed the command to simply "COL_GREY"/spawn"COL_WHITE"." );
 		return ShowPlayerSpawnMenu( playerid );
