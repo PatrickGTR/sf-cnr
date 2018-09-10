@@ -122,7 +122,7 @@ hook OnPlayerConnect( playerid )
 
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
-	if ( ( ( ( newkeys & KEY_SECONDARY_ATTACK ) == KEY_SECONDARY_ATTACK ) && ( ( oldkeys & KEY_SECONDARY_ATTACK ) != KEY_SECONDARY_ATTACK ) ) ) // pressed ENTER
+	if ( 0 <= playerid < MAX_PLAYERS && ( ( ( newkeys & KEY_SECONDARY_ATTACK ) == KEY_SECONDARY_ATTACK ) && ( ( oldkeys & KEY_SECONDARY_ATTACK ) != KEY_SECONDARY_ATTACK ) ) ) // pressed ENTER
 	{
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_ONFOOT && p_VendingUseTimer[ playerid ] == -1 && GetPlayerAnimationIndex( playerid ) != 1660 )
 		{
@@ -221,7 +221,7 @@ public VendingMachineUsed( playerid, Float: fHealthGiven )
 /* ** Functions ** */
 stock ResetPlayerVendingMachineData( playerid )
 {
-	if ( p_VendingUseTimer[ playerid ] != -1 )
+	if ( 0 <= playerid < MAX_PLAYERS && p_VendingUseTimer[ playerid ] != -1 )
 	{
 		KillTimer( p_VendingUseTimer[ playerid ] );
 		p_VendingUseTimer[ playerid ] = -1;
