@@ -375,7 +375,7 @@ CMD:aspawn( playerid, params[ ] )
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, ""#sscanf_u"", pID ) ) return SendUsage( playerid, "/aspawn [PLAYER_ID]" );
+	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/aspawn [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
 	else
