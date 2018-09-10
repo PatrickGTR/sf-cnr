@@ -12,9 +12,8 @@
 #include "irresistible\cnr\global.pwn"
 #include "irresistible\cnr\classes.pwn"
 #include "irresistible\cnr\textdraws.pwn"
-#include "irresistible\cnr\cities.pwn"
+#include "irresistible\cnr\spawn.pwn"
 #include "irresistible\cnr\dialog_ids.pwn"
-#include "irresistible\cnr\vip.pwn"
 
 // static cnr features
 #include "irresistible\cnr\static\_cnr_static.pwn"
