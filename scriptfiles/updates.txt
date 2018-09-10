@@ -1,1 +1,2 @@
+(+) Adds "/p" to be able to chat inside the paintball lobby
 (+) Adds "/b production" to see what the status of your business production is.
