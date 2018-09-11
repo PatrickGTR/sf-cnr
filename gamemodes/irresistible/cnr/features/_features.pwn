@@ -35,3 +35,5 @@
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"
 
+// pool
+#include "irresistible\cnr\features\pool.pwn"
