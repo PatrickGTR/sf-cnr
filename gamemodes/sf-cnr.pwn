@@ -4939,9 +4939,6 @@ public OnPlayerSpawn( playerid )
 	new
 		iTick = GetTickCount( );
 
-	if ( IsPlayerSecurityDriver( playerid ) )
-		return 1;
-
 	UpdatePlayerTime( playerid );
 	DeletePVar( playerid, "attached_mugshot" );
 
@@ -7903,9 +7900,12 @@ CMD:cnr( playerid, params[ ] )
 	new
 		Float: iClass[ 2 ];
 
-	for( new i = 0; i < MAX_PLAYERS; i++ )
-		if ( IsPlayerConnected( i ) && i != g_secureTruckDriver )
-			iClass[ ( p_Class[ i ] == CLASS_POLICE ? CLASS_POLICE : CLASS_CIVILIAN ) ] ++;
+	for( new i = 0; i < MAX_PLAYERS; i++ ) if ( IsPlayerConnected( i ) ) {
+		#if defined __cnr__chuffsec
+			if ( i == g_secureTruckDriver ) continue;
+		#endif
+		iClass[ ( p_Class[ i ] == CLASS_POLICE ? CLASS_POLICE : CLASS_CIVILIAN ) ] ++;
+	}
 
 	new
 		Float: iCivilians  	= ( iClass[ CLASS_CIVILIAN ] / ( iClass[ CLASS_CIVILIAN ] + iClass[ CLASS_POLICE ] ) ) * 100.0,
@@ -11969,10 +11969,17 @@ CMD:c4( playerid, params[ ] )
 				g_C4Data[ playerid ] [ ID ] [ E_INTERIOR ] = GetPlayerInterior( playerid );
 				g_C4Data[ playerid ] [ ID ] [ E_SET ] = true;
 
-				if ( !iVehicle )
+				if ( ! iVehicle ) {
 					iVehicle = GetPlayerSurfingVehicleID( playerid );
+				}
 
-				if ( IsValidVehicle( iVehicle ) && iVehicle != g_secureTruckVehicle )
+			#if defined __cnr__chuffsec
+				if ( iVehicle == g_secureTruckVehicle ) {
+					iVehicle = INVALID_VEHICLE_ID;
+				}
+			#endif
+
+				if ( IsValidVehicle( iVehicle ) )
 				{
 					GetVehiclePos( iVehicle, X, Y, Z );
 
@@ -13999,9 +14006,6 @@ public OnRconCommand(cmd[])
 
 public OnPlayerRequestSpawn( playerid )
 {
-	if ( IsPlayerSecurityDriver( playerid ) )
-		return SetPlayerSkin( playerid, 71 );
-
 	// army limit
 	/*if ( IsPlayerArmy( playerid ) )
 	{
@@ -15118,9 +15122,6 @@ function unpause_Player( playerid )
 
 public OnPlayerUpdate( playerid )
 {
-	if ( IsPlayerSecurityDriver( playerid ) )
-		return 1;
-
 	if ( !p_PlayerLogged{ playerid } )
 		return 0;
 
@@ -20651,8 +20652,10 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 	if ( !IsPlayerConnected( playerid ) )
 	    return 0;
 
+#if defined __cnr__chuffsec
 	if ( IsPlayerSecurityDriver( playerid ) )
 		return SetPlayerColor( playerid, COLOR_SECURITY );
+#endif
 
 	if ( IsPlayerJailed( playerid ) )
 	{
@@ -20896,7 +20899,10 @@ stock GetPlayerIDFromAccountID( iAccountID )
 
 stock SetPlayerColorToTeam( playerid )
 {
+#if defined __cnr__chuffsec
 	if ( IsPlayerSecurityDriver( playerid ) ) return SetPlayerColor( playerid, COLOR_SECURITY );
+#endif
+
 	if ( p_AdminOnDuty{ playerid } ) return SetPlayerColor( playerid, COLOR_PINK );
 
 	switch( p_Class[ playerid ] )
@@ -22326,8 +22332,10 @@ stock isValidPlayerName( szName[ ] )
 	//strreplacechar( szName, '.', '-' );
 	strreplacechar( szName, '/', '-' );
 
+#if defined __cnr__chuffsec
 	if ( strmatch( szName, SECURE_TRUCK_DRIVER_NAME ) )
 		return false;
+#endif
 
 	if( !( 2 < strlen( szName ) < MAX_PLAYER_NAME ) )
 		return false;

@@ -118,7 +118,9 @@ CMD:vrespawn( playerid, params[ ] )
 		return SendUsage( playerid, "/vrespawn [VEHICLE_ID]" );
 	}
 	else if ( !IsValidVehicle( vID ) ) return SendError( playerid, "Invalid Vehicle ID" );
+#if defined __cnr__chuffsec
 	else if ( IsVehicleSecurityVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
+#endif
 	else
 	{
 	    SetVehicleToRespawn( vID );
@@ -145,7 +147,9 @@ CMD:vdestroy( playerid, params[ ] )
 		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You're not in any vehicle." );
 		vID = GetPlayerVehicleID( playerid );
 		if ( IsBuyableVehicle( vID ) ) return SendError( playerid, "You cannot use this command to destroy buyable vehicles." );
+	#if defined __cnr__chuffsec
 		if ( IsVehicleSecurityVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
+	#endif
 		if ( g_TrolleyVehicles[ 0 ] == vID || g_TrolleyVehicles[ 1 ] == vID || g_TrolleyVehicles[ 2 ] == vID || g_TrolleyVehicles[ 3 ] == vID || g_TrolleyVehicles[ 4 ] == vID ) return SendError( playerid, "This vehicle is prohibited." );
 	    DestroyVehicle( vID );
 	    if ( g_adminSpawnedCar{ vID } ) g_adminSpawnedCar{ vID } = false;
@@ -154,7 +158,9 @@ CMD:vdestroy( playerid, params[ ] )
 	}
 	else if ( !IsValidVehicle( vID ) ) return SendError( playerid, "Invalid Vehicle ID" );
 	else if ( IsBuyableVehicle( vID ) ) return SendError( playerid, "You cannot use this command to destroy buyable vehicles." );
+#if defined __cnr__chuffsec
 	else if ( IsVehicleSecurityVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
+#endif
 	else if ( g_TrolleyVehicles[ 0 ] == vID || g_TrolleyVehicles[ 1 ] == vID || g_TrolleyVehicles[ 2 ] == vID || g_TrolleyVehicles[ 3 ] == vID || g_TrolleyVehicles[ 4 ] == vID ) return SendError( playerid, "This vehicle is prohibited." );
 	else
 	{

@@ -186,6 +186,32 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	return 1;
 }
 
+hook OnPlayerRequestSpawn( playerid )
+{
+	if ( IsPlayerSecurityDriver( playerid ) )
+	{
+		SetPlayerSkin( playerid, 71 );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	return 1;
+}
+
+hook OnPlayerUpdate( playerid )
+{
+	if ( IsPlayerSecurityDriver( playerid ) ) { // prevent unneccessary updating
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
+hook OnPlayerSpawn( playerid )
+{
+	if ( IsPlayerSecurityDriver( playerid ) ) {
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
 /* ** Commands ** */
 
 CMD:chuffloc( playerid, params[ ] )
