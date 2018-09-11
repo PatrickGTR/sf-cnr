@@ -1,5 +1,5 @@
 /*
- * Irresistible Gaming 2018
+ * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
  * Module: fps.inc
  * Purpose: fps counter in-game
@@ -21,7 +21,7 @@ CMD:fps( playerid, params[ ] )
 {
 	if( ( p_FPSCounter{ playerid } = !p_FPSCounter{ playerid } ) == true )
 	{
-		formatFPSCounter( playerid );
+		TextDrawSetString( p_FPSCounterTD[ playerid ], "_" );
 		TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	    SendClientMessage( playerid, 0x84aa63ff, "-> FPS counter enabled" );
 	}
@@ -72,30 +72,56 @@ hook OnScriptInit( )
 	return 1;
 }
 
-/* ** Functions ** */
-stock formatFPSCounter( playerid )
+hook OnPlayerUpdate( playerid )
 {
-	if( !p_FPSCounter{ playerid } ) {
-		return;
-	}
+    new
+    	iDrunkLevel = GetPlayerDrunkLevel( playerid );
 
-	static
-		iFPS,
-		szColor[ 10 ],
-		szFPS[ sizeof( szColor ) + 4 ]
-	;
+    // Calculate FPS
+    if ( iDrunkLevel < 100 ) SetPlayerDrunkLevel( playerid, 2000 );
+   	else
+   	{
+        if ( p_FPS_DrunkLevel[ playerid ] != iDrunkLevel ) {
+            new iFPS = p_FPS_DrunkLevel[ playerid ] - iDrunkLevel;
 
-	switch( ( iFPS = p_FPS[ playerid ] ) ) {
-		case 32 .. 120: szColor = "~g~~h~~h~";
-		case 18 .. 31: 	szColor = "~y~~h~";
-		case 0 .. 17: 	szColor = "~r~~h~~h~";
-		default: 		szColor = "~g~~h~~h~";
-	}
+            if ( ( iFPS > 0 ) && ( iFPS < 200 ) )
+                p_FPS[ playerid ] = iFPS;
 
-	format( szFPS, sizeof( szFPS ), "%s%d", szColor, iFPS );
-	TextDrawSetString( p_FPSCounterTD[ playerid ], szFPS );
+            p_FPS_DrunkLevel[ playerid ] = iDrunkLevel;
+        }
+    }
+
+    // format textdraw
+    if ( p_FPSCounter{ playerid } )
+    {
+		static
+			szFPS[ 14 ];
+
+		switch( p_FPS[ playerid ] )
+		{
+			case 32 .. 120: {
+				format( szFPS, sizeof( szFPS ), "~g~~h~~h~%d", p_FPS[ playerid ] );
+			}
+
+			case 18 .. 31: {
+				format( szFPS, sizeof( szFPS ), "~y~~h~%d", p_FPS[ playerid ] );
+			}
+
+			case 0 .. 17: {
+				format( szFPS, sizeof( szFPS ), "~r~~h~~h~%d", p_FPS[ playerid ] );
+			}
+
+			default: {
+				format( szFPS, sizeof( szFPS ), "~g~~h~~h~%d", p_FPS[ playerid ] );
+			}
+		}
+
+		TextDrawSetString( p_FPSCounterTD[ playerid ], szFPS );
+    }
+	return 1;
 }
 
+/* ** Functions ** */
 stock GetPlayerFPS( playerid ) {
 	return p_FPS[ playerid ];
 }

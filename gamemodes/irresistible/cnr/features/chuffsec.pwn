@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\chuffsec.pwn
+ * Purpose: robbable npc security truck implementation
  */
 
 /* ** Error checking ** */

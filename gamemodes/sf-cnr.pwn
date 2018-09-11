@@ -15128,7 +15128,7 @@ public OnPlayerUpdate( playerid )
 		Float: X, 	Float: Y, 	Float: Z,
 		Float: vX, 	Float: vY, 	Float: vZ,
 
-		iDrunkLevel, iKeys, iLeftRight, iState
+		iKeys, iLeftRight, iState
 	;
 
 	if ( g_iTime < p_DesyncTime[ playerid ] )
@@ -15151,23 +15151,6 @@ public OnPlayerUpdate( playerid )
 		//SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 	}
-
-    // FPS Counter
-    iDrunkLevel = GetPlayerDrunkLevel( playerid );
-    if ( iDrunkLevel < 100 ) SetPlayerDrunkLevel( playerid, 2000 );
-   	else
-   	{
-        if ( p_FPS_DrunkLevel[ playerid ] != iDrunkLevel ) {
-            new iFPS = p_FPS_DrunkLevel[ playerid ] - iDrunkLevel;
-
-            if ( ( iFPS > 0 ) && ( iFPS < 200 ) )
-                p_FPS[ playerid ] = iFPS;
-
-            p_FPS_DrunkLevel[ playerid ] = iDrunkLevel;
-        }
-    }
-
-    formatFPSCounter( playerid );
 
     // Fugga.cs
 	GetPlayerVelocity( playerid, vX, vY, vZ );
