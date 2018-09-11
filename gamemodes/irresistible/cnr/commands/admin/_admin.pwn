@@ -28,7 +28,7 @@ CMD:acmds( playerid, params[ ] )
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /createhouse, /destroyhouse, /respawnallv, /achangename, /toggleviewpm, /unban(ip)" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /createcar, /destroycar, /stripcarmods, /createbribe, /destroybribe, /doublexp, /(h/v)adminsell" );
     SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /autovehrespawn, /megaban, /acunban, /creategate, /editgate, /connectsong, /discordurl" );
-    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /creategarage, /destroygarage, /check" );
+    SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 5: /creategarage, /destroygarage, /check, /reconnectchuff" );
 
     if ( p_AdminLevel[ playerid ] > 5 ) {
 		SendClientMessage( playerid, COLOR_WHITE, "    LEVEL 6: /setirc, /seteventhost, /setlevel, /setleveloffline, /svrstats, /playaction, /playanimation" );

@@ -5,7 +5,15 @@
 
 	This framework allows you to easily collaborate on Irresistible Gaming servers.
 
-	Internal Server Hooks:
+	Internal Server Callbacks (Hookable):
 		- SetPlayerRandomSpawn( )
 			* When a player is attempting to spawn somewhere randomly
+
+		- OnServerUpdate( )
+
+		- OnPlayerUpdateEx( )
+
+		- OnNpcConnect( npcid )
+
+		- OnPlayerDriveVehicle( playerid, vehicleid )
  */

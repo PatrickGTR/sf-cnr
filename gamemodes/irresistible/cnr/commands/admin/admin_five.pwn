@@ -511,7 +511,7 @@ CMD:respawnallv( playerid, params[ ] )
 	else
 	{
 	    for( new i; i < MAX_VEHICLES; i++ ) if ( IsValidVehicle( i ) ) {
-	    	#if ENABLED_SECURE_TRUCK
+	    	#if defined __cnr__chuffsec
 	    	if ( g_secureTruckVehicle == i ) continue;
 	    	#endif
 			SetVehicleToRespawn( i );
@@ -521,6 +521,19 @@ CMD:respawnallv( playerid, params[ ] )
 	}
 	return 1;
 }
+
+#if defined __cnr__chuffsec
+CMD:reconnectchuff( playerid, params[ ] )
+{
+ 	if ( p_AdminLevel[ playerid ] < 5 )
+ 		return SendError( playerid, ADMIN_COMMAND_REJECT );
+
+	ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
+	AddAdminLogLineFormatted( "%s(%d) has attempted to reconnect %s", ReturnPlayerName( playerid ), playerid, SECURE_TRUCK_DRIVER_NAME );
+	SendServerMessage( playerid, "You are now attempting to reconnect %s.", SECURE_TRUCK_DRIVER_NAME );
+	return 1;
+}
+#endif
 
 CMD:createbribe( playerid, params[ ] )
 {

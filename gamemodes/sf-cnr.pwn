@@ -151,7 +151,6 @@ enum E_DONATION_DATA
 
 /* ** Progress Bars ** */
 #define PROGRESS_CRACKING 			0
-#define PROGRESS_ROBTRUCK 			2
 #define PROGRESS_MINING				3
 #define PROGRESS_ROBBING			4
 #define PROGRESS_SAFEPICK 			5
@@ -1360,39 +1359,6 @@ new
 	Text3D: p_RewardsLabel_Visage		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
 	p_HighrollersBarrier 				[ MAX_PLAYERS ] [ 2 ]
 ;
-
-/* ** Secure Truck Mod ** */
-#define ENABLED_SECURE_TRUCK		true
-#define SECURE_TRUCK_DRIVER_NAME 	( "ChuffSec" )
-#define SECURE_TRUCK_DISTANCE 		( 6.0 )
-#define SECURE_TRUCK_RADIUS 		( 4.0 )
-#define COLOR_SECURITY 				0xFF440500
-
-#if ENABLED_SECURE_TRUCK == true
-	enum E_SECURE_OFFSET {
-		Float: E_X, 			Float: E_Y, 			Float: E_Z,
-		bool: E_LEFT, 			bool: E_ENABLED, 		Float: E_HP
-	};
-
-	enum E_SECURE_VEHICLE {
-		E_LOOT, 				bool: E_ROBBED,			bool: E_OPEN,
-		bool: E_BEING_ROBBED,	E_MAP_ICON
-	};
-
-	new
-		Float: g_secureTruckOffsets[ ] [ E_SECURE_OFFSET ] =
-		{
-			{ 0.6641840, -3.134811, -0.072469, false, true, 100.0 },
-			{ 0.6666250, -3.096450, 1.2469670, false, true, 100.0 },
-			{ -0.641235, -3.098449, 1.2477970, true , true, 100.0 },
-			{ -0.637695, -3.136108, -0.079330, true , true, 100.0 }
-		},
-		g_secureTruckData 					[ E_SECURE_VEHICLE ],
-		g_secureTruckDriver					= INVALID_PLAYER_ID,
-		g_secureTruckVehicle 				= INVALID_VEHICLE_ID,
-		Text3D: g_secureTruckVehicleLabel	[ sizeof( g_secureTruckOffsets ) ] = { Text3D: INVALID_3DTEXT_ID, ... }
-	;
-#endif
 
 /* ** Admin Ban Codes ** */
 enum E_BAN_CODE
@@ -2796,17 +2762,6 @@ public OnGameModeInit()
 	CreateWeedPlant( 2454.947, -1718.407, 13.5094, 0.0, 0.0, -21.49 );
 	#endif
 
-	/* ** Secure Truck Mod ** */
-#if ENABLED_SECURE_TRUCK == true
-	g_secureTruckVehicle 	= AddStaticVehicle( 428, 2000.0, 2000.0, 2000.0, 180.0, -1, -1 );
-
-	for( new i = 0; i < sizeof( g_secureTruckOffsets ); i++ ) {
-  		g_secureTruckVehicleLabel[ i ] = CreateDynamic3DTextLabel( "100%", setAlpha( COLOR_GREY, 0x90 ), g_secureTruckOffsets[ i ] [ E_X ], g_secureTruckOffsets[ i ] [ E_Y ], g_secureTruckOffsets[ i ] [ E_Z ], 25.0, INVALID_PLAYER_ID, g_secureTruckVehicle );
-	}
-
-	ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
-#endif
-
 	/* ** Custom Vehicles ** */
 	g_TrolleyVehicles[ 0 ] = AddStaticVehicle( 457, -2511.7935, 760.5610, 34.8990, 90.6223, 123, 1 ); // trolley
 	g_TrolleyVehicles[ 1 ] = AddStaticVehicle( 457, -2511.5742, 766.5329, 34.8990, 91.5108, 112, 1 ); // trolley
@@ -3790,27 +3745,6 @@ public OnServerUpdateTimer( )
 		        }
 		    }
 
-		#if ENABLED_SECURE_TRUCK == true
-			if ( IsPlayerConnected( g_secureTruckDriver ) )
-		    {
-				if ( IsSecurityDriverAFK( ) )
-				{
-					if ( g_secureTruckData[ E_MAP_ICON ] != 0xFFFF ) {
-						SetVehicleParamsCarDoors( g_secureTruckVehicle, 0, 0, 0, 0 );
-						DestroyDynamicMapIcon( g_secureTruckData[ E_MAP_ICON ] );
-						g_secureTruckData[ E_MAP_ICON ] = 0xFFFF;
-					}
-				}
-				else
-				{
-			    	if ( GetPlayerPos( g_secureTruckDriver, fX, fY, fZ ) ) {
-						DestroyDynamicMapIcon( g_secureTruckData[ E_MAP_ICON ] ); // Should not look sketchy
-						g_secureTruckData[ E_MAP_ICON ] = CreateDynamicMapIcon( fX, fY, fZ, 52, 0, -1, -1, -1, 300.0 );
-			    	}
-				}
-		    }
-		#endif
-
 			if ( IsPlayerInAnyVehicle( playerid ) )
 			{
 			    if ( iState == PLAYER_STATE_PASSENGER )
@@ -4536,27 +4470,16 @@ thread OnPlayerDuplicateAccountCheck( playerid )
 public OnNpcConnect( npcid )
 {
 	static
-		npc_name[ MAX_PLAYER_NAME ], npc_ip[ 16 ];
+		npc_ip[ 16 ];
 
     GetPlayerIp( npcid, npc_ip, sizeof( npc_ip ) );
-    GetPlayerName( npcid, npc_name, sizeof( npc_name ) );
 
-	#if ENABLED_SECURE_TRUCK == true
-		if ( strmatch( npc_name, SECURE_TRUCK_DRIVER_NAME ) ) {
-			g_secureTruckDriver = npcid;
-			g_secureTruckData[ E_MAP_ICON ] = 0xFFFF;
-			SetPlayerColor( npcid, COLOR_SECURITY );
-			PutPlayerInVehicle( npcid, g_secureTruckVehicle, 0 );
-			return 1;
-		}
-	#endif
 	#if ENABLED_NPC_ROBBERIES == true
 		if ( strmatch( npc_ip, "127.0.0.1" ) ) {
 			SetPlayerColor( npcid, 0xFFFFFF20 );
 			return 1;
 		}
 	#endif
-	print( "Kicked" );
 	return Kick( npcid ), 1;
 }
 
@@ -4785,16 +4708,6 @@ thread OnPlayerBanCheck( playerid )
 }*/
 public OnNpcDisconnect( npcid, reason )
 {
-	#if ENABLED_SECURE_TRUCK == true
-		if ( g_secureTruckDriver == npcid )
-		{
-			restartSecurityGuardProcess( .inform_npc = false );
-			g_secureTruckDriver = INVALID_PLAYER_ID;
-			print( "Driver Crashed, Restablishing." );
-			ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
-			return 1;
-		}
-	#endif
 	return 1;
 }
 
@@ -5402,7 +5315,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 
 			Damage = GetWeaponDamageFromDistance( weaponid, GetVehicleDistanceFromPoint( hitid, X, Y, Z ) );
 
-			#if ENABLED_SECURE_TRUCK == true
+			#if defined __cnr__chuffsec
 				// Secured Truck!
 				if ( g_secureTruckVehicle == hitid && GetPlayerSurfingVehicleID( playerid ) != g_secureTruckVehicle && IsPlayerConnected( g_secureTruckDriver ) && p_Class[ playerid ] != CLASS_POLICE )
 				{
@@ -6320,16 +6233,6 @@ public OnPlayerText( playerid, text[ ] )
 	new
 		time = g_iTime;
 
-#if ENABLED_SECURE_TRUCK == true
-	if ( IsPlayerSecurityDriver( playerid ) ) {
-		if ( strmatch( text, "End Security Guard" ) ) {
-			restartSecurityGuardProcess( );
-			return 0;
-		}
-		return 1;
-	}
-#endif
-
 	if ( GetPlayerScore( playerid ) < 10 )
 		return SendServerMessage( playerid, "You need at least 10 score to talk. "COL_GREY"Use /ask or /report to talk to an admin in the meanwhile." ), 0;
 
@@ -6676,7 +6579,7 @@ public OnPlayerProgressUpdate( playerid, progressid, params )
 		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) || !IsPlayerInMethlab( playerid ) || canceled )
 			return DeletePVar( playerid, "pouring_chemical" ), StopProgressBar( playerid ), 1;
 	}
-#if ENABLED_SECURE_TRUCK == true
+#if defined __cnr__chuffsec
 	else if ( progressid == PROGRESS_ROBTRUCK )
 	{
 		static Float: Angle;
@@ -7010,7 +6913,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				SendServerMessage( playerid, "You've yielded a pound of meth. Take your bags over to "COL_GREY"Cluckin' Bell"COL_WHITE" for exportation." );
 			}
 		}
-	#if ENABLED_SECURE_TRUCK == true
+	#if defined __cnr__chuffsec
 		case PROGRESS_ROBTRUCK:
 		{
 			static Float: Angle;
@@ -8088,31 +7991,6 @@ CMD:packetloss( playerid, params[ ] ) return cmd_pl( playerid, params );
 CMD:pl( playerid, params[ ] )
 {
 	SendServerMessage( playerid, "Your packet loss is %0.2f%s.", NetStats_PacketLossPercent( playerid ), "%%" );
-	return 1;
-}
-
-CMD:chuffloc( playerid, params[ ] )
-{
-#if ENABLED_SECURE_TRUCK == true
-	static
-		Float: X, Float: Y, Float: Z,
-		szCity[ MAX_ZONE_NAME ], szLocation[ MAX_ZONE_NAME ]
-	;
-
-	if ( IsSecurityDriverAFK( ) ) SendServerMessage( playerid, "ChuffSec is currently immobile and not making any deliveries at present." );
-	else
-	{
-		if ( GetPlayerPos( g_secureTruckDriver, X, Y, Z ) )
-		{
-		  	Get2DCity( szCity, X, Y, Z );
-		    GetZoneFromCoordinates( szLocation, X, Y, Z );
-			SendServerMessage( playerid, "ChuffSec schedules show that the security truck is located near %s in %s.", szLocation, szCity );
-		}
-		else SendServerMessage( playerid, "ChuffSec is currently immobile and not making any deliveries at present." );
-	}
-#else
-	SendServerMessage( playerid, "This feature is currently disabled." );
-#endif
 	return 1;
 }
 
@@ -12044,7 +11922,7 @@ CMD:c4( playerid, params[ ] )
 		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an arena." );
 		if ( p_C4Amount[ playerid ] < 1 ) return SendError( playerid, "You don't have any C4's" );
 
-		#if ENABLED_SECURE_TRUCK == true
+		#if defined __cnr__chuffsec
 			if ( IsPlayerInVehicle( playerid, g_secureTruckVehicle ) ) return SendError( playerid, "You cannot be in this vehicle while planting C4." );
 		#endif
 
@@ -13151,7 +13029,7 @@ stock getVehicleSlotFromID( vID, &playerid=0, &slot=0 )
 	return -1;
 }
 
-public OnPlayerDriveVehicle(playerid, vehicleid)
+public OnPlayerDriveVehicle( playerid, vehicleid )
 {
 	new
 	    model = GetVehicleModel( vehicleid ),
@@ -13166,14 +13044,6 @@ public OnPlayerDriveVehicle(playerid, vehicleid)
         RemovePlayerFromVehicle( playerid );
         return 1;
 	}
-
-	#if ENABLED_SECURE_TRUCK == true
-		if ( IsPlayerConnected( g_secureTruckDriver ) && vehicleid == g_secureTruckVehicle ) {
-			SendError( playerid, "This vehicle cannot be accessed." );
-			SyncObject( playerid, 1 ); // Just sets the players position where the vehicle is.
-			return 1;
-		}
-	#endif
 
 	if ( ! g_Driveby ) {
 		SetPlayerArmedWeapon( playerid, 0 );
@@ -15111,33 +14981,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	    {
 	        p_CheckpointEnterTick[ playerid ] = g_iTime + 2;
 
-	    	#if ENABLED_SECURE_TRUCK == true
-				// Secured Truck!
-	        	new Float: fX, Float: fY;
-	    		GetVehiclePos( g_secureTruckVehicle, X, Y, Z );
-	    		GetVehicleZAngle( g_secureTruckVehicle, Angle );
-			    fX = X + ( SECURE_TRUCK_DISTANCE * floatsin( -Angle + 180, degrees ) );
-			    fY = Y + ( SECURE_TRUCK_DISTANCE * floatcos( -Angle + 180, degrees ) );
-
-				if ( IsPlayerInRangeOfPoint( playerid, SECURE_TRUCK_RADIUS, fX, fY, Z ) && p_Class[ playerid ] != CLASS_POLICE )
-				{
-					new
-						every_thing_shot = allSecurityOffsetsShot( );
-
-					if ( every_thing_shot && g_secureTruckData[ E_OPEN ] == true  ) {
-						if ( IsSecurityDriverAFK( ) ) return 1;
-						if ( g_secureTruckData[ E_BEING_ROBBED ] ) return SendError( playerid, "This truck is currently being robbed." );
-						if ( g_secureTruckData[ E_ROBBED ] ) return SendError( playerid, "This truck has been robbed." );
-						SetPlayerFacePoint( playerid, X, Y );
-						//SetPlayerPos( playerid, fX, fY, Z );
-						g_secureTruckData[ E_BEING_ROBBED ] = true;
-						ApplyAnimation( playerid, "CARRY", "liftup105", 4.0, 1, 0, 0, 1, 0 );
-						ShowProgressBar( playerid, "Robbing Truck", PROGRESS_ROBTRUCK, 4000, COLOR_GOLD );
-					}
-					return 1;
-				}
-			#endif
-
 	       	return handlePlayerRobbery( playerid, newkeys, oldkeys );
 		}
 	}
@@ -15308,16 +15151,6 @@ public OnPlayerUpdate( playerid )
 		//SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 	}
-
-	// Don't teleport with the car!
-#if ENABLED_SECURE_TRUCK == true
-	if ( GetPlayerSurfingVehicleID( playerid ) == g_secureTruckVehicle || IsPlayerInVehicle( playerid, g_secureTruckVehicle ) ) {
-		if ( IsSecurityDriverAFK( ) ) {
-			CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
-			SendServerMessage( playerid, "You seemed to fly away with the security guard. You've been teleported to a spawn." );
-		}
-	}
-#endif
 
     // FPS Counter
     iDrunkLevel = GetPlayerDrunkLevel( playerid );
@@ -24701,60 +24534,6 @@ stock ShowPlayerShopMenu( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
 }
 
-stock IsPlayerSecurityDriver( playerid ) {
-	#if ENABLED_SECURE_TRUCK == true
-		new
-			npc_id = IsPlayerNPC( playerid );
-
-		if ( strmatch( ReturnPlayerName( playerid ), SECURE_TRUCK_DRIVER_NAME ) && !npc_id ) {
-			return 0;
-		}
-
-		return ( npc_id && playerid == g_secureTruckDriver );
-	#else
-		#pragma unused playerid
-		return 0;
-	#endif
-}
-
-stock IsVehicleSecurityVehicle( vehicleid )
-{
-	#if ENABLED_SECURE_TRUCK == true
-		return vehicleid == g_secureTruckVehicle;
-	#else
-		#pragma unused vehicleid
-		return 0;
-	#endif
-}
-
-#if ENABLED_SECURE_TRUCK == true
-	stock restartSecurityGuardProcess( bool: inform_npc = true ) {
-		g_secureTruckData[ E_LOOT ] 		= 0;
-		g_secureTruckData[ E_ROBBED ] 		= false;
-		g_secureTruckData[ E_BEING_ROBBED ] = false;
-		g_secureTruckData[ E_OPEN ] 		= false;
-
-		DestroyDynamicMapIcon( g_secureTruckData[ E_MAP_ICON ] );
-		g_secureTruckData[ E_MAP_ICON ]  	= 0xFFFF;
-
-		for( new i = 0; i < sizeof( g_secureTruckOffsets ); i++ ) {
-			g_secureTruckOffsets[ i ] [ E_LEFT ] 	= false;
-			g_secureTruckOffsets[ i ] [ E_ENABLED ] = true;
-			g_secureTruckOffsets[ i ] [ E_HP ] 		= 100.0;
-			UpdateDynamic3DTextLabelText( g_secureTruckVehicleLabel[ i ], setAlpha( COLOR_GREY, 0x90 ), "100%" );
-		}
-
-		if ( inform_npc ) SendClientMessage( g_secureTruckDriver, 0x112233FF, "[0x03] 300 SECOND START." );
-	}
-
-	stock allSecurityOffsetsShot( ) {
-		for( new i = 0; i < sizeof( g_secureTruckOffsets ); i++ )
-			if ( g_secureTruckOffsets[ i ] [ E_ENABLED ] )
-				return 0;
-		return 1;
-	}
-#endif
-
 stock KillEveryoneInShamal( vehicleid )
 {
 	static
@@ -25626,17 +25405,6 @@ stock GetVehicleDriver( vehicleid )
 			return i;
 
 	return INVALID_PLAYER_ID;
-}
-
-stock IsSecurityDriverAFK( ) { // Damn thing bugged with range of point
-	new
-		Float: Z;
-
-#if ENABLED_SECURE_TRUCK == true
-	return ( GetPlayerPos( g_secureTruckDriver, Z, Z, Z ) && Z > 1000.0 );
-#else
-	return 1;
-#endif
 }
 
 /*stock CreateNoDeathmatchZone( const Float: fRadius, const Float: fX, const Float: fY, const fSize = 15 ) // Warning: do not change size!

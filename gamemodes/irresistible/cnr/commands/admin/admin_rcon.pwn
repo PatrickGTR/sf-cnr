@@ -259,16 +259,6 @@ thread OnQueryServerViaRCON( playerid )
 	return 1;
 }
 
-#if ENABLED_SECURE_TRUCK == true
-	CMD:connectnpc( playerid, params[ ] )
-	{
-		if ( !IsPlayerAdmin( playerid ) ) return 0;
-		ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
-		SendServerMessage( playerid, "Connecting NPC now." );
-		return 1;
-	}
-#endif
-
 CMD:addcomponent( playerid, params[ ] )
 {
 	new
