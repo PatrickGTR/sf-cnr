@@ -10,6 +10,8 @@
 #include 							< physics >
 #include 							< progress2 >
 
+#define POOL_DEBUG
+
 /* ** Marcos ** */
 #define IsPlayerPlayingPool(%0) 	(p_isPlayingPool{%0})
 
@@ -22,8 +24,14 @@
 #define MAX_TABLES 					100
 #define COL_POOL 					"{C0C0C0}"
 
-/* ** Variables ** */
+/* ** Constants ** */
+new Float: g_poolPotOffsetData[ ] [ ] = {
+	{ 0.955, 0.510 }, { 0.955, -0.49 },
+	{ 0.005, 0.550 }, { 0.007, -0.535 },
+	{ -0.945, 0.513 }, { -0.945, -0.490 }
+};
 
+/* ** Variables ** */
 enum E_POOL_BALL_DATA
 {
 	E_BALL_OBJECT[ 16 ],			bool: E_EXISTS[ 16 ], 			bool: E_MOVING[ 16 ]
@@ -77,7 +85,6 @@ hook OnScriptInit( )
 	//stock CreatePoolTable(Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0)
 
 	CreatePoolTable(2048.5801, 1330.8917, 10.6719, 0, 0);
-
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -282,22 +289,29 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 /* ** Functions ** */
 
-stock getNearestPoolTable(playerid)
+stock getNearestPoolTable( playerid )
 {
-	for (new i = 0; i != MAX_TABLES; i ++) if ( IsPlayerInRangeOfPoint( playerid, 2.5, g_poolTableData[ i] [ E_X ], g_poolTableData[ i] [ E_Y ], g_poolTableData[ i] [ E_Z ]) ) {
+	for ( new i = 0; i != MAX_TABLES; i ++ ) if ( IsPlayerInRangeOfPoint( playerid, 2.5, g_poolTableData[ i] [ E_X ], g_poolTableData[ i] [ E_Y ], g_poolTableData[ i] [ E_Z ]) ) {
 		return i;
 	}
 	return -1;
 }
 
-stock CreatePoolTable(Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0)
+stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0 )
 {
+	if ( A != 0 && A != 90.0 && A != 180.0 && A != 270.0 && A != 360.0 ) {
+		return print( "[POOL] [ERROR] Pool tables must be positioned at either 0, 90, 180, 270 and 360 degrees." ), 1;
+	}
+
 	new
-		gID = Iter_Free(pooltables), Float: x_vertex[4], Float: y_vertex[4];
+		gID = Iter_Free( pooltables );
 
 	if ( gID != ITER_NONE )
 	{
-		Iter_Add(pooltables, gID);
+		new
+			Float: x_vertex[ 4 ], Float: y_vertex[ 4 ];
+
+		Iter_Add( pooltables, gID );
 
 		g_poolTableData[ gID ] [ E_X ] = X;
 		g_poolTableData[ gID ] [ E_Y ] = Y;
@@ -307,20 +321,50 @@ stock CreatePoolTable(Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0
 		g_poolTableData[ gID ] [ E_INTERIOR ] = interior;
 		g_poolTableData[ gID ] [ E_WORLD ] = world;
 
-		g_poolTableData[ gID] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, 0.0, world, interior );
+		g_poolTableData[ gID] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, A, world, interior );
 		g_poolTableData[ gID] [ E_LABEL ] = CreateDynamic3DTextLabel( DEFAULT_POOL_STRING, COLOR_GOLD, X, Y, (Z - 0.5), 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, world, interior );
 
-		RotateXY( -0.96, -0.515, 0.0, x_vertex[0], y_vertex[0] );
-		RotateXY( -0.96, 0.515, 0.0, x_vertex[1], y_vertex[1] );
-		RotateXY( 0.96, -0.515, 0.0, x_vertex[2], y_vertex[2] );
-		RotateXY( 0.96, 0.515, 0.0, x_vertex[3], y_vertex[3] );
+		RotateXY( -0.964, -0.51, A, x_vertex[ 0 ], y_vertex[ 0 ] );
+		RotateXY( -0.964, 0.533, A, x_vertex[ 1 ], y_vertex[ 1 ] );
+		RotateXY( 0.976, -0.51, A, x_vertex[ 2 ], y_vertex[ 2 ] );
+		RotateXY( 0.976, 0.533, A, x_vertex[ 3 ], y_vertex[ 3 ] );
+
+
 
 		PHY_CreateWall( x_vertex[0] + X, y_vertex[0] + Y, x_vertex[1] + X, y_vertex[1] + Y);
 		PHY_CreateWall( x_vertex[1] + X, y_vertex[1] + Y, x_vertex[3] + X, y_vertex[3] + Y);
 		PHY_CreateWall( x_vertex[2] + X, y_vertex[2] + Y, x_vertex[3] + X, y_vertex[3] + Y);
 		PHY_CreateWall( x_vertex[0] + X, y_vertex[0] + Y, x_vertex[2] + X, y_vertex[2] + Y);
-	}
 
+
+	#if defined POOL_DEBUG
+		ReloadPotTestLabel( 0, gID );
+		/*new Float: middle_x;
+		new Float: middle_y;
+		CreateDynamicObject( 18643, x_vertex[0] + X, y_vertex[0] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[1] + X, y_vertex[1] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		middle_x = ((x_vertex[0] + X) + (x_vertex[1] + X)) / (2.0);
+		middle_y = ((y_vertex[0] + Y) + (y_vertex[1] + Y)) / (2.0);
+		CreateDynamicObject( 18643, middle_x, middle_y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[1] + X, y_vertex[1] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[3] + X, y_vertex[3] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		middle_x = ((x_vertex[1] + X) + (x_vertex[3] + X)) / (2.0);
+		middle_y = ((y_vertex[1] + Y) + (y_vertex[3] + Y)) / (2.0);
+		CreateDynamicObject( 18643, middle_x, middle_y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, ((x_vertex[1] + X) + middle_x) / 2.0, ((y_vertex[1] + Y) + middle_y) / 2.0, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[2] + X, y_vertex[2] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[3] + X, y_vertex[3] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		middle_x = ((x_vertex[2] + X) + (x_vertex[3] + X)) / (2.0);
+		middle_y = ((y_vertex[2] + Y) + (y_vertex[3] + Y)) / (2.0);
+		CreateDynamicObject( 18643, middle_x, middle_y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[0] + X, y_vertex[0] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, x_vertex[2] + X, y_vertex[2] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
+		middle_x = ((x_vertex[0] + X) + (x_vertex[2] + X)) / (2.0);
+		middle_y = ((y_vertex[0] + Y) + (y_vertex[2] + Y)) / (2.0);
+		CreateDynamicObject( 18643, middle_x, middle_y, Z - 1.0, 0.0, -90.0, 0.0 );
+		CreateDynamicObject( 18643, ((x_vertex[0] + X) + middle_x) / 2.0, ((y_vertex[2] + Y) + middle_y) / 2.0, Z - 1.0, 0.0, -90.0, 0.0 );*/
+	#endif
+	}
 	return gID;
 }
 
@@ -502,13 +546,20 @@ stock GetPoolBallsCount(poolid)
 
 stock IsBallInHole( poolid, objectid )
 {
-	if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + 0.955, g_poolTableData[ poolid ] [ E_Y ] + 0.510, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-	else if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + 0.955, g_poolTableData[ poolid ] [ E_Y ] - 0.510, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-	else if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + 0.000, g_poolTableData[ poolid ] [ E_Y ] + 0.550, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-	else if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + 0.000, g_poolTableData[ poolid ] [ E_Y ] - 0.550, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-	else if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] - 0.955, g_poolTableData[ poolid ] [ E_Y ] + 0.510, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-	else if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] - 0.955, g_poolTableData[ poolid ] [ E_Y ] - 0.510, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) return 1;
-    return 0;
+	new
+		Float: hole_x, Float: hole_y;
+
+	for ( new i = 0; i < sizeof( g_poolPotOffsetData ); i ++ )
+	{
+		// rotate offsets according to table
+		RotateXY( g_poolPotOffsetData[ i ] [ 0 ], g_poolPotOffsetData[ i ] [ 1 ], g_poolTableData[ poolid ] [ E_ANGLE ], hole_x, hole_y );
+
+		// check if it is at the pocket
+		if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + hole_x , g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) {
+			return i;
+		}
+	}
+    return -1;
 }
 
 stock respawnCueBall(poolid)
@@ -792,17 +843,14 @@ public PHY_OnObjectCollideWithObject(object1, object2)
 	return 1;
 }
 
-public PHY_OnObjectCollideWithWall(objectid, wallid)
+public PHY_OnObjectCollideWithWall( objectid, wallid )
 {
-	for (new id = 0; id < MAX_TABLES; id ++) if (g_poolTableData[ id ] [ E_STARTED ])
+	for ( new id = 0; id < MAX_TABLES; id ++ ) if ( g_poolTableData[ id ] [ E_STARTED ] )
 	{
-		for (new i = 0; i < 16; i++)
+		for ( new i = 0; i < 16; i ++ ) if ( objectid == g_poolBallData[ id ] [ E_BALL_OBJECT ] [ i ] )
 		{
-		    if (objectid == g_poolBallData[id] [E_BALL_OBJECT] [i])
-		    {
-		        PlayPoolSound(id, 31808);
-		        return 1;
-		    }
+	        PlayPoolSound(id, 31808);
+	        return 1;
 		}
 	}
 	return 1;
@@ -820,10 +868,13 @@ public PHY_OnObjectUpdate(objectid)
 
     	for (new j = 0; j < 16; j ++)
     	{
-    		if ( IsBallInHole( poolid, objectid ) )
+    		if ( objectid == g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ] && PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ]) && !g_poolBallData[ poolid ] [ E_MOVING ] [ j ] )
     		{
-	    		if ( objectid == g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ] && PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ]) && !g_poolBallData[ poolid ] [ E_MOVING ] [ j ] )
-	    		{
+    			new
+    				holeid = IsBallInHole( poolid, objectid );
+
+				if ( holeid != -1 )
+				{
 	    			new pool_player = g_poolTableData[ poolid ] [ E_LAST_SHOOTER ],
 						modelid = GetObjectModel( objectid );
 
@@ -856,12 +907,13 @@ public PHY_OnObjectUpdate(objectid)
 						UpdateDynamic3DTextLabelText(g_poolTableData[ poolid ] [ E_LABEL ], -1, szNormalString);
 	    			}
 
-	    			new Float: vx,
-	    				Float: vy,
-	    				Float: vz;
+					new Float: hole_x, Float: hole_y;
 
-	    			GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ], vx, vy, vz);
-	    			MoveObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ], vx, vy, vz - 1.25, 1);
+					// rotate hole offsets according to table
+					RotateXY( g_poolPotOffsetData[ holeid ] [ 0 ], g_poolPotOffsetData[ holeid ] [ 1 ], g_poolTableData[ poolid ] [ E_ANGLE ], hole_x, hole_y );
+
+					// move object into the pocket
+	    			MoveObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ], g_poolTableData[ poolid ] [ E_X ] + hole_x, g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ] - 0.5, 1.0);
 
 	    			g_poolBallData[ poolid ] [ E_MOVING ] [ j ] = true;
 
@@ -1076,7 +1128,7 @@ CMD:play(playerid)
 
 /* ** Commands ** */
 
-CMD:addpool(playerid)
+CMD:addpool(playerid, params[])
 {
 	if ( p_AdminLevel[ playerid ] < 6 )
 		return SendError( playerid, ADMIN_COMMAND_REJECT );
@@ -1086,8 +1138,77 @@ CMD:addpool(playerid)
 
 	if ( GetPlayerPos( playerid, x, y, z ) )
 	{
-		CreatePoolTable( x + 1.0, y + 1.0, z, 0.0, GetPlayerInterior( playerid ), GetPlayerVirtualWorld( playerid ) );
+		CreatePoolTable( x + 1.0, y + 1.0, z, floatstr(params), GetPlayerInterior( playerid ), GetPlayerVirtualWorld( playerid ) );
 		SendClientMessage(playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You have created a pool table.");
 	}
 	return 1;
 }
+
+/* ** Debug Mode ** */
+#if defined POOL_DEBUG
+	new potlabels_x[MAX_TABLES][sizeof(g_poolPotOffsetData)];
+	new potlabels[MAX_TABLES][sizeof(g_poolPotOffsetData)][36];
+
+	CMD:camtest( playerid, params[ ] )
+	{
+		new
+			iPool = getNearestPoolTable( playerid );
+
+		if ( iPool == -1 )
+			return SendError( playerid, "You are not near a pool table." );
+
+		new
+			index = strval( params );
+
+		new Float: pot_x = g_poolTableData[ iPool ] [ E_X ] + g_poolPotOffsetData[ index ] [ 0 ];
+		new Float: pot_y = g_poolTableData[ iPool ] [ E_Y ] + g_poolPotOffsetData[ index ] [ 1 ];
+		new Float: pot_z = g_poolTableData[ iPool ] [ E_Z ];
+
+		SetPlayerCameraPos(playerid, pot_x, pot_y, pot_z + 2.5);
+		SetPlayerCameraLookAt(playerid, pot_x, pot_y, pot_z);
+		return 1;
+	}
+
+	CMD:setoffset( playerid, params[ ] )
+	{
+		new iPool = getNearestPoolTable( playerid );
+		new offset;
+		new Float: x, Float: y;
+
+		if ( ! sscanf( params, "dff", offset, x, y ) )
+		{
+			g_poolPotOffsetData[ offset ] [ 0 ] = x;
+			g_poolPotOffsetData[ offset ] [ 1 ] = y;
+			printf("[%d] -> { %f, %f }", offset, x, y);
+			ReloadPotTestLabel( playerid, iPool );
+		}
+		return 1;
+	}
+
+	stock ReloadPotTestLabel( playerid, gID )
+	{
+		for ( new i = 0; i < sizeof( g_poolPotOffsetData ); i ++ )
+		{
+			new Float: pot_x = g_poolTableData[ gID ] [ E_X ] + g_poolPotOffsetData[ i ] [ 0 ];
+			new Float: pot_y = g_poolTableData[ gID ] [ E_Y ] + g_poolPotOffsetData[ i ] [ 1 ];
+			new Float: pot_z = g_poolTableData[ gID ] [ E_Z ];
+
+			//DestroyDynamic3DTextLabel( potlabels_x[ gID ] [ i ] );
+			//potlabels_x[ gID ] [ i ] = CreateDynamic3DTextLabel( "+", COLOR_GOLD, pot_x, pot_y, pot_z, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0 );
+			DestroyDynamicObject( potlabels_x[ gID ] [ i ] );
+			potlabels_x[ gID ] [ i ] = CreateDynamicObject( 18643, pot_x, pot_y, pot_z - 1.0, 0.0, -90.0, 0.0 );
+
+			for ( new Float: angle = 0.0, c = 0; angle < 360.0; angle += 10.0, c ++ )
+			{
+			    new Float: rad_x = pot_x + ( POCKET_RADIUS * floatsin( -angle, degrees ) );
+			    new Float: rad_y = pot_y + ( POCKET_RADIUS * floatcos( -angle, degrees ) );
+
+				//DestroyDynamic3DTextLabel( potlabels[ gID ] [ i ] [ c ] );
+				//potlabels[ gID ] [ i ] [ c ] = CreateDynamic3DTextLabel( ".", COLOR_WHITE, rad_x, rad_y, pot_z, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0 );
+				DestroyDynamicObject( potlabels[ gID ] [ i ] [ c ] );
+				potlabels[ gID ] [ i ] [ c ] = CreateDynamicObject( 18643, rad_x, rad_y, pot_z - 1.0, 0.0, -90.0, 0.0 );
+			}
+		}
+		return Streamer_Update( playerid ), 1;
+	}
+#endif
