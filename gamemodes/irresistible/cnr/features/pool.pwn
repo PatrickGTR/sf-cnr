@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Steven Howard
- * Module: cnr/features/minigames/pool.pwn
+ * Module: cnr/features/pool.pwn
  * Purpose: pool minigame
  */
 
