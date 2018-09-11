@@ -10,8 +10,6 @@
 #include 							< physics >
 #include 							< progress2 >
 
-#define POOL_DEBUG
-
 /* ** Marcos ** */
 #define IsPlayerPlayingPool(%0) 	(p_isPlayingPool{%0})
 
@@ -24,12 +22,27 @@
 #define MAX_TABLES 					100
 #define COL_POOL 					"{C0C0C0}"
 
-/* ** Constants ** */
-new Float: g_poolPotOffsetData[ ] [ ] = {
-	{ 0.955, 0.510 }, { 0.955, -0.49 },
-	{ 0.005, 0.550 }, { 0.007, -0.535 },
-	{ -0.945, 0.513 }, { -0.945, -0.490 }
+/* ** Constants (do not modify) ** */
+enum E_POOL_BALL_OFFSET_DATA
+{
+	E_MODEL_ID, 					Float: E_OFFSET_X, 				Float: E_OFFSET_Y
 };
+
+static const
+	g_poolBallOffsetData[ ] [ E_POOL_BALL_OFFSET_DATA ] =
+	{
+		{ 3003, 0.5, 0.0 }, { 3002, -0.3, 0.0 }, { 3100, -0.525, -0.040 }, { 3101, -0.375, 0.044 },
+		{ 3102, -0.600, 0.079 }, { 3103, -0.525, 0.118 }, { 3104, -0.600, -0.157 }, { 3105, -0.450, -0.079 },
+		{ 3106, -0.450, 0.0 }, { 2995, -0.375, -0.044 }, { 2996, -0.450, 0.079 }, { 2997, -0.525, -0.118 },
+		{ 2998, -0.600, -0.079 }, { 2999, -0.600, 0.0 }, { 3000, -0.600, 0.157 }, { 3001, -0.525, 0.040 }
+	},
+	Float: g_poolPotOffsetData[ ] [ ] =
+	{
+		{ 0.955, 0.510 }, { 0.955, -0.49 },
+		{ 0.005, 0.550 }, { 0.007, -0.535 },
+		{ -0.945, 0.513 }, { -0.945, -0.490 }
+	}
+;
 
 /* ** Variables ** */
 enum E_POOL_BALL_DATA
@@ -430,20 +443,6 @@ stock RotateXY( Float: xi, Float: yi, Float: angle, &Float: xf, &Float: yf )
 
 stock CreateBalls( poolid )
 {
-	enum E_POOL_BALL_OFFSET_DATA {
-		E_MODEL_ID, Float: E_OFFSET_X, Float: E_OFFSET_Y
-	};
-
-	static const
-		g_poolBallOffsetData[ ] [ E_POOL_BALL_OFFSET_DATA ] =
-		{
-			{ 3003, 0.5, 0.0 }, { 3002, -0.3, 0.0 }, { 3100, -0.525, -0.040 }, { 3101, -0.375, 0.044 },
-			{ 3102, -0.600, 0.079 }, { 3103, -0.525, 0.118 }, { 3104, -0.600, -0.157 }, { 3105, -0.450, -0.079 },
-			{ 3106, -0.450, 0.0 }, { 2995, -0.375, -0.044 }, { 2996, -0.450, 0.079 }, { 2997, -0.525, -0.118 },
-			{ 2998, -0.600, -0.079 }, { 2999, -0.600, 0.0 }, { 3000, -0.600, 0.157 }, { 3001, -0.525, 0.040 }
-		}
-	;
-
 	new
 		Float: offset_x,
 		Float: offset_y;
