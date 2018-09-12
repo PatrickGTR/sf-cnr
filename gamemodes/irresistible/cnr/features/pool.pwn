@@ -23,18 +23,38 @@
 #define COL_POOL 					"{C0C0C0}"
 
 /* ** Constants (do not modify) ** */
+enum E_POOL_BALL_TYPE {
+	E_STRIPED,
+	E_SOLID,
+	E_CUE,
+	E_8BALL
+};
+
 enum E_POOL_BALL_OFFSET_DATA
 {
-	E_MODEL_ID, 					Float: E_OFFSET_X, 				Float: E_OFFSET_Y
+	E_MODEL_ID, 					E_BALL_NAME[ 9 ],				E_POOL_BALL_TYPE: E_BALL_TYPE,
+	Float: E_OFFSET_X, 				Float: E_OFFSET_Y
 };
 
 static const
 	g_poolBallOffsetData[ ] [ E_POOL_BALL_OFFSET_DATA ] =
 	{
-		{ 3003, 0.5, 0.0 }, { 3002, -0.3, 0.0 }, { 3100, -0.525, -0.040 }, { 3101, -0.375, 0.044 },
-		{ 3102, -0.600, 0.079 }, { 3103, -0.525, 0.118 }, { 3104, -0.600, -0.157 }, { 3105, -0.450, -0.079 },
-		{ 3106, -0.450, 0.0 }, { 2995, -0.375, -0.044 }, { 2996, -0.450, 0.079 }, { 2997, -0.525, -0.118 },
-		{ 2998, -0.600, -0.079 }, { 2999, -0.600, 0.0 }, { 3000, -0.600, 0.157 }, { 3001, -0.525, 0.040 }
+		{ 3003, "Cueball", 	E_CUE, 		0.5000, 0.0000 },
+		{ 3002, "One",		E_SOLID,	-0.300, 0.0000 },
+		{ 3100, "Two",		E_SOLID, 	-0.525, -0.040 },
+		{ 3101, "Three",	E_SOLID,	-0.375, 0.0440 },
+		{ 3102, "Four",		E_SOLID,	-0.600, 0.0790 },
+		{ 3103,	"Five",		E_SOLID,	-0.525, 0.1180 },
+		{ 3104,	"Six",		E_SOLID,	-0.600, -0.157 },
+		{ 3105, "Seven",	E_SOLID,	-0.450, -0.079 },
+		{ 3106,	"Eight",	E_8BALL,	-0.450, 0.0000 },
+		{ 2995, "Nine",		E_STRIPED,	-0.375, -0.044 },
+		{ 2996, "Ten",		E_STRIPED,	-0.450, 0.0790 },
+		{ 2997, "Eleven",	E_STRIPED,	-0.525, -0.118 },
+		{ 2998, "Twelve",	E_STRIPED,	-0.600, -0.079 },
+		{ 2999, "Thirteen",	E_STRIPED,	-0.600, 0.0000 },
+		{ 3000, "Fourteen",	E_STRIPED,	-0.600, 0.1570 },
+		{ 3001, "Fiftteen",	E_STRIPED,	-0.525, 0.0400 }
 	},
 	Float: g_poolPotOffsetData[ ] [ ] =
 	{
@@ -55,10 +75,13 @@ enum E_POOL_TABLE_DATA
 	Float: E_X,						Float: E_Y, 					Float: E_Z,
 	Float: E_ANGLE, 				E_WORLD, 						E_INTERIOR,
 
-	E_TIMER, 						E_COUNTDOWN,					E_PLAYER[ 2 ],
+	E_TIMER, 						E_PLAYER[ 2 ],					E_POOL_BALL_TYPE: E_PLAYER_BALL_TYPE[ 2 ],
 	bool: E_STARTED, 				E_AIMER, 						E_AIMER_OBJECT,
-	E_LAST_SHOOTER, 				E_LAST_SCORE,					Float: E_POWER,
-	E_DIRECTION,
+	E_LAST_SHOOTER,
+
+	E_BALLS_SCORED,
+
+	Float: E_POWER,					E_DIRECTION,
 
 	E_TABLE,						Text3D: E_LABEL,
 }
@@ -222,10 +245,14 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 									Float:x, Float:y;
 
 								GetPlayerPos(playerid, X, Y, Z);
-								GetObjectPos(g_poolBallData[id] [E_BALL_OBJECT] [0], Xa, Ya, Za);
+								GetObjectPos( g_poolBallData[ id ] [ E_BALL_OBJECT ] [ 0 ], Xa, Ya, Za );
 
-								if (GetDistanceFromPointToPoint(X, Y, Xa, Ya) < 1.5 && Z < 999.5)
+								new Float: distance_to_ball = GetDistanceFromPointToPoint( X, Y, Xa, Ya );
+
+								if ( distance_to_ball < 1.5 && Z < 999.5 )
 								{
+									printf( "Distance To Ball %f", distance_to_ball );
+
 									TogglePlayerControllable(playerid, false);
 									GetAngleToXY(Xa, Ya, X, Y, poolrot);
 	                            	SetPlayerFacingAngle(playerid, poolrot);
@@ -289,7 +316,6 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 						GivePlayerWeapon(playerid, 7, 1);
 
 						g_poolTableData[ id ] [ E_LAST_SHOOTER ] = playerid;
-						g_poolTableData[ id ] [ E_LAST_SCORE ] = 0;
 					}
 					else ClearAnimations(playerid);
 				}
@@ -304,7 +330,7 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 stock getNearestPoolTable( playerid )
 {
-	for ( new i = 0; i != MAX_TABLES; i ++ ) if ( IsPlayerInRangeOfPoint( playerid, 2.5, g_poolTableData[ i] [ E_X ], g_poolTableData[ i] [ E_Y ], g_poolTableData[ i] [ E_Z ]) ) {
+	foreach ( new i : pooltables ) if ( IsPlayerInRangeOfPoint( playerid, 2.5, g_poolTableData[ i ] [ E_X ], g_poolTableData[ i ] [ E_Y ], g_poolTableData[ i ] [ E_Z ]) ) {
 		return i;
 	}
 	return -1;
@@ -381,20 +407,9 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 	return gID;
 }
 
-stock RespawnPoolBalls(poolid, mode = 0)
+stock RespawnPoolBalls( poolid )
 {
-	for (new i = 0; i < 16; i ++)
-	{
-		DestroyObject(g_poolBallData[poolid] [E_BALL_OBJECT] [i]);
-
-		if (g_poolBallData[i] [E_EXISTS] [i])
-		{
-			PHY_DeleteObject(g_poolBallData[poolid] [E_BALL_OBJECT] [i]);
-			g_poolBallData[poolid] [E_EXISTS] [i] = false;
-		}
-	}
-
-	if (g_poolTableData[ poolid ] [ E_AIMER ] != -1)
+	if ( g_poolTableData[ poolid ] [ E_AIMER ] != -1 )
 	{
 		TogglePlayerControllable(g_poolTableData[ poolid ] [ E_AIMER ], 1);
 		//ClearAnimations(g_poolTableData[ poolid ] [ E_AIMER ]);
@@ -408,18 +423,38 @@ stock RespawnPoolBalls(poolid, mode = 0)
 		g_poolTableData[ poolid ] [ E_AIMER ] = -1;
 	}
 
-	CreateBalls(poolid);
+	new
+		Float: offset_x,
+		Float: offset_y;
 
-	if (mode)
+	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ )
 	{
-		KillTimer(g_poolTableData[ poolid ] [ E_TIMER ]);
-		g_poolTableData[ poolid ] [ E_TIMER ] = SetTimerEx("OnPoolUpdate", POOL_TIMER_SPEED, true, "d", poolid);
+		// get offset according to angle of table
+		RotateXY( g_poolBallOffsetData[ i ] [ E_OFFSET_X ], g_poolBallOffsetData[ i ] [ E_OFFSET_Y ], g_poolTableData[ poolid ] [ E_ANGLE ], offset_x, offset_y );
 
-		for (new i = 0; i < 16; i ++)
-		{
-			InitBalls(poolid, i);
+		// reset balls
+		if ( g_poolBallData[ i ] [ E_EXISTS ] [ i ] ) {
+			PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+			g_poolBallData[ poolid ] [ E_EXISTS ] [ i ] = false;
 		}
+		DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+
+		// create pool balls on table
+		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] = CreateObject(
+			g_poolBallOffsetData[ i ] [ E_MODEL_ID ],
+			g_poolTableData[ poolid ] [ E_X ] + offset_x,
+			g_poolTableData[ poolid ] [ E_Y ] + offset_y,
+			g_poolTableData[ poolid ] [ E_Z ] - 0.045,
+			0.0, 0.0, 0.0
+		);
+
+		// initialize physics on each ball
+		InitBalls( poolid, i );
 	}
+
+	KillTimer( g_poolTableData[ poolid ] [ E_TIMER ] );
+	g_poolTableData[ poolid ] [ E_TIMER ] = SetTimerEx( "OnPoolUpdate", POOL_TIMER_SPEED, true, "d", poolid );
+	g_poolTableData[ poolid ] [ E_BALLS_SCORED ] = 0;
 }
 
 stock InitBalls(poolid, ballid)
@@ -441,27 +476,6 @@ stock RotateXY( Float: xi, Float: yi, Float: angle, &Float: xf, &Float: yf )
     return 1;
 }
 
-stock CreateBalls( poolid )
-{
-	new
-		Float: offset_x,
-		Float: offset_y;
-
-	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ )
-	{
-		// get offset according to angle of table
-		RotateXY( g_poolBallOffsetData[ i ] [ E_OFFSET_X ], g_poolBallOffsetData[ i ] [ E_OFFSET_Y ], g_poolTableData[ poolid ] [ E_ANGLE ], offset_x, offset_y );
-
-		// create pool balls on table
-		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] = CreateObject(
-			g_poolBallOffsetData[ i ] [ E_MODEL_ID ],
-			g_poolTableData[ poolid ] [ E_X ] + offset_x,
-			g_poolTableData[ poolid ] [ E_Y ] + offset_y,
-			g_poolTableData[ poolid ] [ E_Z ] - 0.045,
-			0.0, 0.0, 0.0
-		);
-	}
-}
 
 stock IsKeyJustUp(key, newkeys, oldkeys) {
     return !(newkeys & key) && (oldkeys & key);
@@ -824,11 +838,17 @@ public RestoreWeapon(playerid)
 	return 1;
 }
 
-/** * Public Functions * **/
+stock GetPoolBallIndexFromModel( modelid ) {
+	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ ) if ( g_poolBallOffsetData[ i ] [ E_MODEL_ID ] == modelid ) {
+		return i;
+	}
+	return -1;
+}
 
+/** * Physics Callbacks * **/
 public PHY_OnObjectCollideWithObject(object1, object2)
 {
-	for (new id = 0; id < MAX_TABLES; id ++) if (g_poolTableData[ id ] [ E_STARTED ])
+	foreach ( new id : pooltables ) if ( g_poolTableData[ id ] [ E_STARTED ] )
 	{
 		for (new i = 0; i < 16; i++)
 		{
@@ -844,7 +864,7 @@ public PHY_OnObjectCollideWithObject(object1, object2)
 
 public PHY_OnObjectCollideWithWall( objectid, wallid )
 {
-	for ( new id = 0; id < MAX_TABLES; id ++ ) if ( g_poolTableData[ id ] [ E_STARTED ] )
+	foreach ( new id : pooltables ) if ( g_poolTableData[ id ] [ E_STARTED ] )
 	{
 		for ( new i = 0; i < 16; i ++ ) if ( objectid == g_poolBallData[ id ] [ E_BALL_OBJECT ] [ i ] )
 		{
@@ -874,36 +894,68 @@ public PHY_OnObjectUpdate(objectid)
 
 				if ( holeid != -1 )
 				{
-	    			new pool_player = g_poolTableData[ poolid ] [ E_LAST_SHOOTER ],
-						modelid = GetObjectModel( objectid );
+	    			new pool_player = g_poolTableData[ poolid ] [ E_LAST_SHOOTER ];
+	    			new pool_player_index = g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ] == pool_player ? 0 : 1; // use foreach for players
 
-					if (modelid == 3003)
+					new poolball_index = GetPoolBallIndexFromModel( GetObjectModel( objectid ) );
+
+					// check if first ball was potted to figure winner
+					if ( ++ g_poolTableData[ poolid ] [ E_BALLS_SCORED ] == 1 && g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED || g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_SOLID )
+					{
+						g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ pool_player_index ] = g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ];
+						// assign player 2 a ball
+
+	    				foreach ( new playerid : Player ) if ( p_PoolID[ playerid ] == poolid ) {
+	    					SendClientMessageFormatted( playerid, COLOR_YELLOW, "* %s(%d) is now playing as %s", ReturnPlayerName( playerid ), playerid, g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ pool_player_index ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
+	    				}
+					}
+
+					if ( g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_CUE )
 	    			{
-	    				GameTextForPlayer(pool_player, "~n~~n~~n~~r~~h~You have pocketed the cue ball!", 10000, 4);
-
+	    				GameTextForPlayer( pool_player, "~n~~n~~n~~r~~h~You have pocketed the cue ball!", 10000, 4 );
 	    				respawnCueBall( poolid );
+	    			}
+	    			else if ( g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_8BALL )
+	    			{
+	    				// gamemode
+	    				GameTextForPlayer( pool_player, "~n~~n~~n~~r~~h~Gameover! 8ball in", 10000, 4 );
 	    			}
 	    			else
 	    			{
-	    				p_PoolScore[ pool_player ] += 1;
-	    				GameTextForPlayer( pool_player, "~n~~n~~n~~w~Score: +1", 3000, 4);
-
-						PlayerTextDrawSetString( pool_player, g_PoolTextdraw[ pool_player ], sprintf("Power:~n~~n~Score: %d", p_PoolScore[ pool_player ]));
-						PlayerTextDrawHide( pool_player, g_PoolTextdraw[ pool_player ] );
-						PlayerTextDrawShow( pool_player, g_PoolTextdraw[ pool_player ] );
-
-	    				//ShowPlayerHelpDialog( pool_player, 10000, "~w~You have pocketed another ball!~n~~n~Score: %d", p_PoolScore[pool_player]);
-
-						if (pool_player == g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ])
+	    				// check if player potted their own ball type or btfo
+	    				if ( g_poolTableData[ poolid ] [ E_BALLS_SCORED ] > 1 && g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ pool_player_index ] != g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] )
 						{
-							format(szNormalString, sizeof(szNormalString), "{FFDC2E}%s [%d] - [%d] %s", ReturnPlayerName(pool_player), p_PoolScore[ pool_player ], p_PoolScore[ g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ] ], ReturnPlayerName(g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ]));
-						}
-						else if (pool_player == g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ])
-						{
-							format(szNormalString, sizeof(szNormalString), "{FFDC2E}%s [%d] - [%d] %s", ReturnPlayerName(g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ]), p_PoolScore[ g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ] ], p_PoolScore[ pool_player ], ReturnPlayerName(pool_player));
-						}
+		    				//p_PoolScore[ pool_player ] -= 1;
+		    				GameTextForPlayer( pool_player, "~n~~n~~n~~w~Score: -1", 3000, 4);
 
-						UpdateDynamic3DTextLabelText(g_poolTableData[ poolid ] [ E_LABEL ], -1, szNormalString);
+		    				foreach ( new playerid : Player ) if ( p_PoolID[ playerid ] == poolid ) {
+		    					SendClientMessageFormatted( playerid, COLOR_RED, "* %s(%d) has hit %s, instead of %s", ReturnPlayerName( playerid ), playerid, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ pool_player_index ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
+		    				}
+						}
+	    				else
+	    				{
+		    				p_PoolScore[ pool_player ] += 1;
+		    				GameTextForPlayer( pool_player, "~n~~n~~n~~w~Score: +1", 3000, 4);
+
+							PlayerTextDrawSetString( pool_player, g_PoolTextdraw[ pool_player ], sprintf("Power:~n~~n~Score: %d", p_PoolScore[ pool_player ]));
+							PlayerTextDrawHide( pool_player, g_PoolTextdraw[ pool_player ] );
+							PlayerTextDrawShow( pool_player, g_PoolTextdraw[ pool_player ] );
+
+		    				foreach ( new playerid : Player ) if ( p_PoolID[ playerid ] == poolid ) {
+		    					SendClientMessageFormatted( playerid, COLOR_YELLOW, "%s(%d) has potted a %s %s!", ReturnPlayerName( playerid ), playerid, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ] );
+		    				}
+
+							if (pool_player == g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ])
+							{
+								format(szNormalString, sizeof(szNormalString), "{FFDC2E}%s [%d] - [%d] %s", ReturnPlayerName(pool_player), p_PoolScore[ pool_player ], p_PoolScore[ g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ] ], ReturnPlayerName(g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ]));
+							}
+							else if (pool_player == g_poolTableData[ poolid ] [ E_PLAYER ] [ 1 ])
+							{
+								format(szNormalString, sizeof(szNormalString), "{FFDC2E}%s [%d] - [%d] %s", ReturnPlayerName(g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ]), p_PoolScore[ g_poolTableData[ poolid ] [ E_PLAYER ] [ 0 ] ], p_PoolScore[ pool_player ], ReturnPlayerName(pool_player));
+							}
+
+							UpdateDynamic3DTextLabelText(g_poolTableData[ poolid ] [ E_LABEL ], -1, szNormalString);
+	    				}
 	    			}
 
 					new Float: hole_x, Float: hole_y;
@@ -945,7 +997,7 @@ public PHY_OnObjectUpdate(objectid)
 	    			else if (AreAllBallsStopped(poolid))
 	    			{
 	    				SetTimerEx("RestoreCamera", 800, 0, "dd", g_poolTableData[ poolid ] [ E_LAST_SHOOTER ], poolid);
-	    				g_poolTableData[ i] [ E_LAST_SHOOTER ] = -1;
+	    				g_poolTableData[ i ] [ E_LAST_SHOOTER ] = -1;
 	    			}
 	    		}
     		}
@@ -1008,7 +1060,7 @@ CMD:pool(playerid, params[])
 		if (!g_poolTableData[ poolid ] [ E_STARTED ])
 		{
 			g_poolTableData[ poolid ] [ E_STARTED ] = true;
-			RespawnPoolBalls(poolid, 1);
+			RespawnPoolBalls( poolid );
 		}
 		return 1;
 	}
@@ -1114,7 +1166,7 @@ CMD:play(playerid)
 
 			UpdateDynamic3DTextLabelText(g_poolTableData[ iPool ] [ E_LABEL ], -1, sprintf( "{FFDC2E}%s is currently playing a test game.", ReturnPlayerName( playerid )) );
 
-			RespawnPoolBalls(iPool, 1);
+			RespawnPoolBalls( iPool );
 		}
 	}
 	else
