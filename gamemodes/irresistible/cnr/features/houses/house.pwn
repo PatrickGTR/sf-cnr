@@ -338,6 +338,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			if ( !IsPlayerInRangeOfPoint( playerid, 3.0, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] ) ) return SendError( playerid, "You are not near the house entrance!" );
 			SendServerMessage( playerid, "Password correct. Access has been granted." );
 			p_InHouse[ playerid ] = i;
+			UpdatePlayerEntranceExitTick( playerid );
 			SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
 		  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
 			SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
