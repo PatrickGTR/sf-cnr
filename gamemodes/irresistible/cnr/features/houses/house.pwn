@@ -238,7 +238,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					if ( g_houseInteriors[ intid ] [ E_COST ] > GetPlayerCash( playerid ) )
 					{
 						ShowPlayerDialog( playerid, DIALOG_HOUSE_INT_CONFIRM, DIALOG_STYLE_LIST, "{FFFFFF}House Interiors", "Purchase House Interior\nPreview House Interior", "Select", "Back" );
-						SendError( playerid, "This interior costs "COL_GOLD"%s"COL_WHITE". You don't have this amount.", number_format( g_houseInteriors[ intid ] [ E_COST ] ) );
+						SendError( playerid, "This interior costs "COL_GOLD"%s"COL_WHITE". You don't have this amount.", cash_format( g_houseInteriors[ intid ] [ E_COST ] ) );
 					}
 					else if ( g_houseInteriors[ intid ] [ E_VIP ] && !p_VIPLevel[ playerid ] )
 					{
@@ -259,7 +259,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					    GivePlayerCash( playerid, -( g_houseInteriors[ intid ] [ E_COST ] ) );
 
 					    if ( intid != 0 )
-							SendServerMessage( playerid, "You have purchased a %s for "COL_GOLD"%s"COL_WHITE". This has been applied to the House ID %d.", g_houseInteriors[ intid ] [ E_NAME ], number_format( g_houseInteriors[ intid ] [ E_COST ] ), houseid );
+							SendServerMessage( playerid, "You have purchased a %s for "COL_GOLD"%s"COL_WHITE". This has been applied to the House ID %d.", g_houseInteriors[ intid ] [ E_NAME ], cash_format( g_houseInteriors[ intid ] [ E_COST ] ), houseid );
 						else
 						    SendServerMessage( playerid, "You have successfully reset your interior to the default interior." );
 
@@ -295,7 +295,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				    SetPlayerInterior( playerid, g_houseInteriors[ intid ] [ E_INTERIOR_ID ] );
 					InterpolateCameraPos( playerid, g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 0 ], g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 1 ], g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 2 ] + 1.5, g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 0 ], g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 1 ], g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 2 ], 15000, CAMERA_MOVE );
 					InterpolateCameraLookAt( playerid, g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 0 ], g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 1 ], g_houseInteriors[ intid ] [ E_PREVIEW_LOOKAT ] [ 2 ], g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 0 ], g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 1 ], g_houseInteriors[ intid ] [ E_PREVIEW_POS ] [ 2 ] + 1.5, 15000, CAMERA_MOVE );
-					SendServerMessage( playerid, "You are now previewing "COL_GREY"%s "COL_GOLD"%s"COL_WHITE". Press your enter key to stop.", g_houseInteriors[ intid ] [ E_NAME ], number_format( g_houseInteriors[ intid ] [ E_COST ] ) );
+					SendServerMessage( playerid, "You are now previewing "COL_GREY"%s "COL_GOLD"%s"COL_WHITE". Press your enter key to stop.", g_houseInteriors[ intid ] [ E_NAME ], cash_format( g_houseInteriors[ intid ] [ E_COST ] ) );
 					SetPVarInt( playerid, "viewing_houseints", 1 );
 				}
 			}
@@ -322,7 +322,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			format( g_houseData[ houseid ] [ E_HOUSE_NAME ], 30, "%s", inputtext);
 			mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE `HOUSES` SET `NAME`='%s' WHERE `ID`=%d", g_houseData[ houseid ] [ E_HOUSE_NAME ], p_InHouse[ playerid ] );
 			mysql_single_query( szNormalString );
-			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ houseid ] [ E_HOUSE_NAME ], houseid, g_houseData[ houseid ] [ E_OWNER ], number_format( g_houseData[ houseid ] [ E_COST ] ) );
+			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ houseid ] [ E_HOUSE_NAME ], houseid, g_houseData[ houseid ] [ E_OWNER ], cash_format( g_houseData[ houseid ] [ E_COST ] ) );
  			UpdateDynamic3DTextLabelText( g_houseData[ houseid ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
  			SendServerMessage( playerid, "You have successfully changed the name of your house." );
  			cmd_h( playerid, "config" );
@@ -433,7 +433,7 @@ CMD:h( playerid, params[ ] )
 
 					GivePlayerCash( playerid, -( g_houseData[ i ] [ E_COST ] ) );
 					autosaveStart( playerid, true ); // force_save
-					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", number_format( g_houseData[ i ] [ E_COST ] ) );
+					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", cash_format( g_houseData[ i ] [ E_COST ] ) );
                     SetHouseOwner( i, ReturnPlayerName( playerid ) );
 
 					p_OwnedHouses[ playerid ] ++;
@@ -467,7 +467,7 @@ CMD:h( playerid, params[ ] )
 			g_houseData[ ID ] [ E_INTERIOR_ID ] = 2;
 			format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='No-one',PASSWORD='N/A',NAME='Home',TX=%f,TY=%f,TZ=%f,INTERIOR=%d WHERE ID=%d", g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], g_houseData[ ID ] [ E_INTERIOR_ID ], ID );
 		    mysql_single_query( query );
-			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, number_format( g_houseData[ ID ] [ E_COST ] ) );
+			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, cash_format( g_houseData[ ID ] [ E_COST ] ) );
 			UpdateDynamic3DTextLabelText( g_houseData[ ID ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
 			DestroyDynamic3DTextLabel( g_houseData[ ID ] [ E_LABEL ] [ 1 ] );
 			g_houseData[ ID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ ID ] [ E_WORLD ] );
@@ -477,7 +477,7 @@ CMD:h( playerid, params[ ] )
 			DestroyDynamicMapIcon( g_houseData[ ID ] [ E_MAP_ICON ] );
 			SetPlayerInterior( playerid, 0 );
 			SetPlayerVirtualWorld( playerid, 0 );
-			SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", number_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
+			SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
 		}
 		return 1;
 	}
@@ -513,12 +513,12 @@ CMD:h( playerid, params[ ] )
 
 		if ( !IsPlayerConnected( sellerid ) ) SendError( playerid, "The person who offered you a house is no longer online." );
 		else if ( p_HouseOfferTicks[ playerid ] < g_iTime ) SendError( playerid, "This house offer has expired %d seconds ago.", g_iTime - p_HouseOfferTicks[ playerid ] );
-		else if ( GetPlayerCash( playerid ) < p_HouseSellingPrice[ playerid ] ) SendError( playerid, "You do not have enough money to accept this offer (%s).", number_format( p_HouseSellingPrice[ playerid ] ) );
+		else if ( GetPlayerCash( playerid ) < p_HouseSellingPrice[ playerid ] ) SendError( playerid, "You do not have enough money to accept this offer (%s).", cash_format( p_HouseSellingPrice[ playerid ] ) );
 		else if ( g_houseData[ houseid ] [ E_COST ] <= 1337 && !p_VIPLevel[ playerid ] ) SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 		else if ( p_OwnedHouses[ playerid ] >= GetPlayerHouseSlots( playerid ) ) SendError( playerid, "You cannot purchase any more houses, you've reached the limit." );
 		else
 		{
-			format( szBigString, sizeof( szBigString ), "[SELL TO] [%s] %s | %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), ReturnPlayerName( sellerid ), number_format( sellingprice ), houseid );
+			format( szBigString, sizeof( szBigString ), "[SELL TO] [%s] %s | %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), ReturnPlayerName( sellerid ), cash_format( sellingprice ), houseid );
 		    AddFileLogLine( "log_houses.txt", szBigString );
 
 			p_OwnedHouses[ sellerid ] --;
@@ -531,8 +531,8 @@ CMD:h( playerid, params[ ] )
 			GivePlayerCash( playerid, -sellingprice );
 			GivePlayerCash( sellerid, sellingprice );
 
-			SendServerMessage( sellerid, "You have successfully sold your house for "COL_GOLD"%s"COL_WHITE" to %s(%d)!", number_format( p_HouseSellingPrice[ playerid ] ), ReturnPlayerName( playerid ), playerid );
-			SendServerMessage( playerid, "You have successfully bought %s(%d)'s home for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( sellerid ), sellerid, number_format( p_HouseSellingPrice[ playerid ] ) );
+			SendServerMessage( sellerid, "You have successfully sold your house for "COL_GOLD"%s"COL_WHITE" to %s(%d)!", cash_format( p_HouseSellingPrice[ playerid ] ), ReturnPlayerName( playerid ), playerid );
+			SendServerMessage( playerid, "You have successfully bought %s(%d)'s home for "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( sellerid ), sellerid, cash_format( p_HouseSellingPrice[ playerid ] ) );
 		}
 		return ( p_HouseOfferer[ playerid ] = INVALID_PLAYER_ID ), ( p_HouseOfferTicks[ playerid ] = 0 ), 1;
 	}
@@ -558,8 +558,8 @@ CMD:h( playerid, params[ ] )
 			p_HouseOfferTicks[ offerid ] = g_iTime + 15;
 			p_HouseSellingID[ offerid ] = ID;
 			p_HouseSellingPrice[ offerid ] = price;
-			SendServerMessage( offerid, "%s(%d) wishes to offer his house (id %d) for %s to you. Use "COL_GREY"/h offer take"COL_WHITE" to take the offer.", ReturnPlayerName( playerid ), playerid, ID, number_format( price ) );
-			SendServerMessage( playerid, "You have offered %s(%d) %s for your house (id %d), cancel the offer with "COL_GREY"/h offer cancel"COL_WHITE".", ReturnPlayerName( offerid ), offerid, number_format( price ), ID );
+			SendServerMessage( offerid, "%s(%d) wishes to offer his house (id %d) for %s to you. Use "COL_GREY"/h offer take"COL_WHITE" to take the offer.", ReturnPlayerName( playerid ), playerid, ID, cash_format( price ) );
+			SendServerMessage( playerid, "You have offered %s(%d) %s for your house (id %d), cancel the offer with "COL_GREY"/h offer cancel"COL_WHITE".", ReturnPlayerName( offerid ), offerid, cash_format( price ), ID );
 	    }
 	    return 1;
 	}
@@ -664,7 +664,7 @@ stock CreateHouse( house_name[ 30 ], cost, Float: eX, Float: eY, Float: eZ, Floa
 		g_houseData[ hID ] [ E_CHECKPOINT ] [ 0 ] = CreateDynamicCP( eX, eY, eZ, 1.0, -1, 0, -1, 100.0 );
 		g_houseData[ hID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( tX, tY, tZ, 1.0, g_houseData[ hID ] [ E_WORLD ], g_houseData[ hID ] [ E_INTERIOR_ID ], -1, 100.0 );
 
-		format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ hID ] [ E_HOUSE_NAME ], hID, g_houseData[ hID ] [ E_OWNER ], number_format( cost ) );
+		format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ hID ] [ E_HOUSE_NAME ], hID, g_houseData[ hID ] [ E_OWNER ], cash_format( cost ) );
 
 	    g_houseData[ hID ] [ E_LABEL ] [ 0 ] = CreateDynamic3DTextLabel( szBigString, COLOR_WHITE, eX, eY, eZ, 20.0 );
 		g_houseData[ hID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, tX, tY, tZ, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ hID ] [ E_WORLD ] );
@@ -738,7 +738,7 @@ stock SetHouseForAuction( ID )
 	FillHomeWithFurniture( ID, 0 );
 	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='No-one',PASSWORD='N/A',NAME='Home',TX=%f,TY=%f,TZ=%f,INTERIOR=%d WHERE ID=%d", g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], g_houseData[ ID ] [ E_INTERIOR_ID ], ID );
     mysql_single_query( query );
-	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, number_format( g_houseData[ ID ] [ E_COST ] ) );
+	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, cash_format( g_houseData[ ID ] [ E_COST ] ) );
 	UpdateDynamic3DTextLabelText( g_houseData[ ID ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString);
 	DestroyDynamic3DTextLabel( g_houseData[ ID ] [ E_LABEL ] [ 1 ] );
 	g_houseData[ ID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ ID ] [ E_WORLD ] );
@@ -763,7 +763,7 @@ stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ] )
 	mysql_single_query( query );
 
 	DestroyDynamicMapIcon( g_houseData[ houseid ] [ E_MAP_ICON ] );
-	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", houseid, g_houseData[ houseid ] [ E_OWNER ], number_format( g_houseData[ houseid ] [ E_COST ] ) );
+	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", houseid, g_houseData[ houseid ] [ E_OWNER ], cash_format( g_houseData[ houseid ] [ E_COST ] ) );
  	UpdateDynamic3DTextLabelText( g_houseData[ houseid ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString);
 	return 1;
 }
@@ -775,7 +775,7 @@ stock SwitchHouseOwners( ID, playerid, buyerid )
 		p_OwnedHouses[ playerid ] --;
 		SetPlayerInterior( playerid, 0 );
 		SetPlayerVirtualWorld( playerid, 0 );
-		SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", number_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
+		SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
 		SetPlayerPos( playerid, g_houseData[ ID ] [ E_EX ], g_houseData[ ID ] [ E_EY ], g_houseData[ ID ] [ E_EZ ] );
 	}
 
@@ -786,7 +786,7 @@ stock SwitchHouseOwners( ID, playerid, buyerid )
 	format( szBigString, sizeof( szBigString ), "UPDATE HOUSES SET OWNER='%s',PASSWORD='N/A',NAME='Home' WHERE ID=%d", mysql_escape( ReturnPlayerName( buyerid ) ) , ID );
     mysql_single_query( szBigString );
 
-	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, number_format( g_houseData[ ID ] [ E_COST ] ) );
+	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, cash_format( g_houseData[ ID ] [ E_COST ] ) );
 	UpdateDynamic3DTextLabelText( g_houseData[ ID ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
 
 	DestroyDynamic3DTextLabel( g_houseData[ ID ] [ E_LABEL ] [ 1 ] );
