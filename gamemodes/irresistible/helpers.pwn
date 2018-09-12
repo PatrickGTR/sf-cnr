@@ -13,6 +13,7 @@
 #define RandomEx(%0,%1)                     (random((%1) - (%0)) + (%0))
 #define HOLDING(%0)                         ((newkeys & (%0)) == (%0))
 #define PRESSED(%0)                         (((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
+#define RELEASED(%0)                        (((newkeys & (%0)) != (%0)) && ((oldkeys & (%0)) == (%0)))
 #define SendUsage(%0,%1)                    (SendClientMessageFormatted(%0,-1,"{FFAF00}[USAGE]{FFFFFF} " # %1))
 #define SendError(%0,%1) 			        (SendClientMessageFormatted(%0,-1,"{F81414}[ERROR]{FFFFFF} " # %1))
 #define SendServerMessage(%0,%1)            (SendClientMessageFormatted(%0,-1,"{C0C0C0}[SERVER]{FFFFFF} " # %1))
@@ -86,6 +87,15 @@ stock trimString( strSrc[ ] )
         strPos++;
 
     strdel( strSrc, 0, strPos );
+}
+
+// purpose: clear chat for player
+stock Player_Clearchat( playerid )
+{
+    for ( new j = 0; j < 30; j ++ ) {
+        SendClientMessage( playerid, -1, " " );
+    }
+    return 1;
 }
 
 // purpose: get distance between players

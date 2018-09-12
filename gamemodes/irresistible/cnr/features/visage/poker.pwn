@@ -1147,13 +1147,6 @@ stock UpdateInfoTextdrawsForPlayer(playerid)
 	return 1;
 }
 
-stock Player_Clearchat(playerid)
-{
-	for(new j = 0; j < 30; j++)
-		SendClientMessage(playerid, -1, " ");
-	return 1;
-}
-
 public Poker_StartGame(handle, dealer)
 {
 	TableData[handle][E_TABLE_STING_NEW_GAME] = false;
