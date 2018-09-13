@@ -338,6 +338,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			if ( !IsPlayerInRangeOfPoint( playerid, 3.0, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] ) ) return SendError( playerid, "You are not near the house entrance!" );
 			SendServerMessage( playerid, "Password correct. Access has been granted." );
 			p_InHouse[ playerid ] = i;
+			UpdatePlayerEntranceExitTick( playerid );
 			SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
 		  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
 			SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
@@ -410,7 +411,15 @@ CMD:h( playerid, params[ ] )
 		else if ( !strmatch( g_houseData[ ID ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
 		else
 		{
-		    ShowPlayerDialog( playerid, DIALOG_HOUSE_CONFIG, DIALOG_STYLE_LIST, "{FFFFFF}House Configuration", "Set House Title\nUpgrade Interior\nSet House Password\nWeapon Storage\nFurniture", "Select", "Cancel" );
+			szBigString = ""COL_WHITE"Option\t"COL_WHITE"Current Value\n";
+
+			format(szBigString, sizeof( szBigString ), "%sSet House Title\t%s\nUpgrade Interior\t\nSet House Password\t"COL_GREY"%s\nWeapon Storage\t\nFurniture\t\n", 
+				szBigString, 
+				g_houseData[ ID ] [ E_HOUSE_NAME ],
+				g_houseData[ ID ] [ E_PASSWORD ] );
+
+		    ShowPlayerDialog( playerid, DIALOG_HOUSE_CONFIG, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}House Configuration", szBigString, "Select", "Cancel" );
+		    //ShowPlayerDialog( playerid, DIALOG_HOUSE_CONFIG, DIALOG_STYLE_LIST, "{FFFFFF}House Configuration", "Set House Title\nUpgrade Interior\nSet House Password\nWeapon Storage\nFurniture", "Select", "Cancel" );
 		}
 		return 1;
 	}
