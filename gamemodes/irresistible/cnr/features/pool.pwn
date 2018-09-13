@@ -118,7 +118,7 @@ new
 /* ** Forwards ** */
 forward deleteBall 					( poolid, ballid );
 forward RestoreWeapon 				( playerid );
-forward RestoreCamera 				( playerid, poolid );
+forward RestoreCamera 				( playerid );
 forward OnPoolUpdate 				( poolid );
 forward PlayPoolSound 				( poolid, soundid );
 
@@ -200,7 +200,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			{
 				if ( RELEASED( KEY_JUMP ) )
 				{
-					if (g_poolTableData[ poolid ] [ E_AIMER ] == playerid)
+					if ( g_poolTableData[ poolid ] [ E_AIMER ] == playerid )
 					{
 
 						new Float:poolrot = p_PoolAngle[ playerid ] [ 0 ],
@@ -233,7 +233,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						if ( g_poolTableData[ poolid ] [ E_AIMER ] != playerid )
 						{
 							if ( g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] != playerid ) {
-								return SendError( playerid, "It is not your turn. Please wait." );
+								return SendPoolMessage( playerid, "It is not your turn. Please wait." );
 							}
 
 							if ( ! p_PoolChalking{ playerid } && g_poolTableData[ poolid ] [ E_AIMER ] == -1 )
@@ -331,7 +331,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			if ( PRESSED( KEY_SECONDARY_ATTACK ) )
 			{
 				if ( IsPlayerPlayingPool( playerid ) ) {
-					Pool_SendTableMessage( poolid, COLOR_GREY, "*** %s(%d) has left the table", ReturnPlayerName( playerid ), playerid );
+					Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has left the table", ReturnPlayerName( playerid ), playerid );
 					return Pool_RemovePlayer( playerid );
 				}
 
@@ -357,7 +357,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					    new
 					    	random_cuer = Iter_Random( poolplayers< poolid > );
 
-						Pool_SendTableMessage( poolid, COLOR_GREY, "*** %s(%d) has joined the table (2/2)", ReturnPlayerName( playerid ), playerid );
+						Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has joined the table (2/2)", ReturnPlayerName( playerid ), playerid );
 					    Pool_QueueNextPlayer( poolid, random_cuer );
 
 					    foreach ( new i : poolplayers< poolid > ) {
@@ -373,7 +373,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					else
 					{
 						UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)", ReturnPlayerName( playerid ), playerid ) );
-						Pool_SendTableMessage( poolid, COLOR_GREY, "*** %s(%d) has joined the table (1/2)", ReturnPlayerName( playerid ), playerid );
+						Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has joined the table (1/2)", ReturnPlayerName( playerid ), playerid );
 					}
 					return 1;
 				}
@@ -642,16 +642,6 @@ stock IsBallInHole( poolid, objectid )
     return -1;
 }
 
-stock removePlayerWeapon(playerid, weaponid)
-{
-	SetPlayerArmedWeapon(playerid, weaponid);
-
-	if (GetPlayerWeapon(playerid) != 0)
-		GivePlayerWeapon(playerid, weaponid, 0);
-
-	return 1;
-}
-
 stock Pool_UpdateScoreboard( poolid, close = 0 )
 {
 	new first_player = Iter_First( poolplayers< poolid > );
@@ -697,7 +687,7 @@ stock Pool_EndGame( poolid )
 		p_isPlayingPool{ i } = false;
 		p_PoolScore[ i ] = -1;
 		p_PoolID[ i ] = -1;
-		removePlayerWeapon( i, 7 );
+		RestoreCamera( i );
 	}
 
 	Iter_Clear( poolplayers< poolid > );
@@ -835,16 +825,13 @@ public OnPoolUpdate(poolid)
 	if ( ( ! g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] || g_poolTableData[ poolid ] [ E_FOULS ] || g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] ) && AreAllBallsStopped( poolid ) )
 	{
 		Pool_QueueNextPlayer( poolid, current_player );
-    	SetTimerEx( "RestoreCamera", 800, 0, "dd", current_player, poolid );
+    	SetTimerEx( "RestoreCamera", 800, 0, "d", current_player );
 	}
 	return 1;
 }
 
-public RestoreCamera(playerid, poolid)
+public RestoreCamera( playerid )
 {
-	if ( g_poolTableData[ poolid ] [ E_AIMER ] == playerid )
-		return 0;
-
 	TextDrawHideForPlayer(playerid, g_PoolTextdraw);
 	HidePlayerProgressBar(playerid, g_PoolPowerBar[playerid]);
 
@@ -951,8 +938,8 @@ public PHY_OnObjectUpdate( objectid )
 						// alert players in table
 						foreach ( new playerid : poolplayers< poolid > ) {
 							Player_Clearchat( playerid );
-	    					SendClientMessageFormatted( playerid, COLOR_YELLOW, "* %s(%d) is now playing as %s", ReturnPlayerName( first_player ), first_player, g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ first_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
-	    					SendClientMessageFormatted( playerid, COLOR_YELLOW, "* %s(%d) is playing as %s", ReturnPlayerName( second_player ), second_player, g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ second_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
+	    					SendClientMessageFormatted( playerid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) is now playing as %s", ReturnPlayerName( first_player ), first_player, g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ first_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
+	    					SendClientMessageFormatted( playerid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) is playing as %s", ReturnPlayerName( second_player ), second_player, g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ second_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
 	    				}
 	    			}
 				}
@@ -977,18 +964,20 @@ public PHY_OnObjectUpdate( objectid )
 					g_poolTableData[ poolid ] [ E_BALLS_SCORED ] ++;
 
 					// restore player camera
-					RestoreCamera( current_player, poolid );
+					RestoreCamera( current_player );
 
 					// check if valid shot
 					if ( p_PoolScore[ current_player ] < 7 )
 					{
 						p_PoolScore[ opposite_player ] ++;
-						Pool_SendTableMessage( poolid, COLOR_YELLOW, "%s(%d) has accidentally pocketed the 8-Ball ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
+						Pool_SendTableMessage( poolid, -1, "{2DD9A9}  * * %s(%d) has accidentally pocketed the 8-Ball ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
+						Pool_OnPlayerWin( poolid, opposite_player );
 					}
 					else if ( g_poolTableData[ poolid ] [ E_PLAYER_8BALL_TARGET ] [ current_player ] != holeid )
 					{
 						p_PoolScore[ opposite_player ] ++;
-						Pool_SendTableMessage( poolid, COLOR_YELLOW, "%s(%d) has put the 8-Ball in the wrong pocket ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
+						Pool_SendTableMessage( poolid, -1, "{2DD9A9}  * * %s(%d) has put the 8-Ball in the wrong pocket ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
+						Pool_OnPlayerWin( poolid, opposite_player );
 					}
 					else
 					{
@@ -1007,10 +996,7 @@ public PHY_OnObjectUpdate( objectid )
 
 	    				p_PoolScore[ opposite_player ] += 1;
 	    				GameTextForPlayer( current_player, "~n~~n~~n~~r~wrong ball", 3000, 4);
-
-	    				foreach ( new playerid : poolplayers< poolid > ) {
-	    					SendClientMessageFormatted( playerid, COLOR_RED, "* %s(%d) has wrongly pocketed %s %s, instead of %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ], g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
-	    				}
+	    				Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has wrongly pocketed %s %s, instead of %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ], g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
 
 						// penalty for that
 						g_poolTableData[ poolid ] [ E_FOULS ] ++;
@@ -1021,10 +1007,7 @@ public PHY_OnObjectUpdate( objectid )
 					{
 	    				p_PoolScore[ current_player ] ++;
 	    				GameTextForPlayer( current_player, "~n~~n~~n~~w~Score: +1", 3000, 4);
-
-	    				foreach ( new playerid : poolplayers< poolid > ) {
-	    					SendClientMessageFormatted( playerid, COLOR_YELLOW, "%s(%d) has pocketed a %s %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ] );
-	    				}
+	    				Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has pocketed a %s %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ] );
 
 						// extra shot for scoring one's own
 						g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = g_poolTableData[ poolid ] [ E_FOULS ] > 0 ? 0 : 1;
@@ -1066,13 +1049,6 @@ public PHY_OnObjectUpdate( objectid )
 				// update scoreboard
 				Pool_UpdateScoreboard( poolid );
 				PlayerPlaySound( current_player, 31803, 0.0, 0.0, 0.0 );
-
-				// reset cam
-				/*if ( AreAllBallsStopped( poolid ) ) {
-					printf ( "Second %d" , g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] );
-					Pool_QueueNextPlayer( poolid, g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] );
-			    	SetTimerEx( "RestoreCamera", 800, 0, "dd", current_player, poolid );
-				}*/
 			}
 			return 1;
 		}
@@ -1086,12 +1062,13 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 		return 0;
 
 	// restore camera
-	RestoreCamera( winning_player, poolid );
+	RestoreCamera( winning_player );
 
 	// winning player
-	foreach ( new playerid : poolplayers< poolid > ) {
-		SendClientMessageFormatted( playerid, COLOR_RED, "**** %s(%d) has won %s", ReturnPlayerName( winning_player ), winning_player );
-	}
+	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
+	Pool_SendTableMessage( poolid, -1, "{9FCF30}Player {FF8000}%s {9FCF30}has won the game!", ReturnPlayerName( winning_player ) );
+	// Pool_SendTableMessage( poolid, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", number_format(w_chips), T_POT_FEE_RATE * 100.0, "%%");
+	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
 	return 1;
 }
 
@@ -1100,7 +1077,7 @@ stock Pool_QueueNextPlayer( poolid, current_player )
 	if ( g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] && g_poolTableData[ poolid ] [ E_FOULS ] < 1 )
 	{
 		g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
-		Pool_SendTableMessage( poolid, COLOR_RED, "%s(%d) has %d shot remaining!", ReturnPlayerName( current_player ), current_player, g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] );
+		Pool_SendTableMessage( poolid, -1, "{2DD9A9}  * * %s(%d) has an extra shot remaining!", ReturnPlayerName( current_player ), current_player );
 	}
 	else
 	{
@@ -1113,7 +1090,7 @@ stock Pool_QueueNextPlayer( poolid, current_player )
 	    g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] = current_player == first_player ? second_player : first_player;
 
 		// reset ball positions just incase
-		Pool_SendTableMessage( poolid, COLOR_RED, "%s(%d)'s turn to play!", ReturnPlayerName( g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] ), g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] );
+		Pool_SendTableMessage( poolid, -1, "{2DD9A9}  * * %s(%d)'s turn to play!", ReturnPlayerName( g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] ), g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] );
 	}
 
 	// respawn the cue ball if it has been pocketed
