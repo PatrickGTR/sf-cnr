@@ -19,7 +19,9 @@
 #define DEFAULT_AIM 				0.38
 #define DEFAULT_POOL_STRING 		"Pool Table\n{FFFFFF}Press ENTER To Play"
 
-#define MAX_TABLES 					32
+#define MAX_POOL_TABLES 			32
+#define MAX_POOL_BALLS 				16 // do not modify
+
 #define COL_POOL 					"{C0C0C0}"
 
 /* ** Macros ** */
@@ -42,7 +44,7 @@ enum E_POOL_BALL_OFFSET_DATA
 };
 
 static const
-	g_poolBallOffsetData[ 16 ] [ E_POOL_BALL_OFFSET_DATA ] =
+	g_poolBallOffsetData[ MAX_POOL_BALLS ] [ E_POOL_BALL_OFFSET_DATA ] =
 	{
 		{ 3003, "Cueball", 	E_CUE, 		0.5000, 0.0000 },
 		{ 3002, "One",		E_SOLID,	-0.300, 0.0000 },
@@ -94,8 +96,8 @@ enum E_POOL_TABLE_DATA
 }
 
 new
-	g_poolTableData 				[ MAX_TABLES ] [ E_POOL_TABLE_DATA ],
-	g_poolBallData 					[ MAX_TABLES ] [ E_POOL_BALL_DATA ],
+	g_poolTableData 				[ MAX_POOL_TABLES ] [ E_POOL_TABLE_DATA ],
+	g_poolBallData 					[ MAX_POOL_TABLES ] [ E_POOL_BALL_DATA ],
 
 	p_PoolID 						[ MAX_PLAYERS ] = { -1, ... },
 
@@ -109,8 +111,8 @@ new
 	PlayerBar: g_PoolPowerBar 		[ MAX_PLAYERS ],
 	Text: g_PoolTextdraw			= Text: INVALID_TEXT_DRAW,
 
-	Iterator: pooltables 			< MAX_TABLES >,
-	Iterator: poolplayers 			< MAX_TABLES, MAX_PLAYERS >
+	Iterator: pooltables 			< MAX_POOL_TABLES >,
+	Iterator: poolplayers 			< MAX_POOL_TABLES, MAX_PLAYERS >
 ;
 
 /* ** Forwards ** */
@@ -1152,12 +1154,12 @@ stock Pool_SendTableMessage( poolid, colour, format[ ], va_args<> ) // Conversio
 	return 1;
 }
 
-stock Pool_ResetBallPositions( poolid )
+stock Pool_ResetBallPositions( poolid, begining_ball = 0, last_ball = MAX_POOL_BALLS )
 {
 	static Float: last_x, Float: last_y, Float: last_z;
 	static Float: last_rx, Float: last_ry, Float: last_rz;
 
-	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ ) if ( ! g_poolBallData[ poolid ] [ E_POCKETED ] [ i ] )
+	for ( new i = begining_ball; i < last_ball; i ++ ) if ( ! g_poolBallData[ poolid ] [ E_POCKETED ] [ i ] )
 	{
 		if ( ! IsValidObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) )
 			continue;
@@ -1185,9 +1187,18 @@ stock Pool_ResetBallPositions( poolid )
 
 hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ )
 {
-	if ( hittype == BULLET_HIT_TYPE_OBJECT )
-	{
+	// check if a player shot a pool ball and restore it
+	if ( hittype == BULLET_HIT_TYPE_OBJECT ) {
+		new
+			poolball_index = GetPoolBallIndexFromModel( GetObjectModel( hitid ) );
 
+		if ( poolball_index != -1 ) {
+			foreach ( new poolid : pooltables ) if ( g_poolTableData[ poolid ] [ E_STARTED ] ) {
+				Pool_ResetBallPositions( poolid, poolball_index, poolball_index + 1 );
+				break;
+			}
+			return 0; // desync the shot
+		}
 	}
     return 1;
 }
@@ -1267,8 +1278,8 @@ CMD:addpool(playerid, params[])
 
 /* ** Debug Mode ** */
 #if defined POOL_DEBUG
-	new potlabels_x[MAX_TABLES][sizeof(g_poolPotOffsetData)];
-	new potlabels[MAX_TABLES][sizeof(g_poolPotOffsetData)][36];
+	new potlabels_x[MAX_POOL_TABLES][sizeof(g_poolPotOffsetData)];
+	new potlabels[MAX_POOL_TABLES][sizeof(g_poolPotOffsetData)][36];
 
 	CMD:camtest( playerid, params[ ] )
 	{
