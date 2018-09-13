@@ -42,7 +42,7 @@ enum E_POOL_BALL_OFFSET_DATA
 };
 
 static const
-	g_poolBallOffsetData[ ] [ E_POOL_BALL_OFFSET_DATA ] =
+	g_poolBallOffsetData[ 16 ] [ E_POOL_BALL_OFFSET_DATA ] =
 	{
 		{ 3003, "Cueball", 	E_CUE, 		0.5000, 0.0000 },
 		{ 3002, "One",		E_SOLID,	-0.300, 0.0000 },
@@ -73,7 +73,7 @@ static const
 /* ** Variables ** */
 enum E_POOL_BALL_DATA
 {
-	E_BALL_OBJECT[ 16 ],			bool: E_EXISTS[ 16 ], 			bool: E_MOVING[ 16 ]
+	E_BALL_OBJECT[ 16 ],			bool: E_POCKETED[ 16 ]
 };
 
 enum E_POOL_TABLE_DATA
@@ -86,6 +86,7 @@ enum E_POOL_TABLE_DATA
 	E_NEXT_SHOOTER,
 
 	E_SHOTS_LEFT,					E_FOULS,						E_PLAYER_8BALL_TARGET[ MAX_PLAYERS ],
+	bool: E_EXTRA_SHOT,
 
 	Float: E_POWER,					E_DIRECTION,
 
@@ -100,7 +101,7 @@ new
 
 	bool: p_isPlayingPool			[ MAX_PLAYERS char ],
 	bool: p_PoolChalking			[ MAX_PLAYERS char ],
-	p_PoolCamera 					[ MAX_PLAYERS ],
+	bool: p_PoolCameraBirdsEye		[ MAX_PLAYERS char ],
 	p_PoolScore 					[ MAX_PLAYERS ],
 	p_PoolHoleGuide 				[ MAX_PLAYERS ] = { -1, ... },
 	Float: p_PoolAngle 				[ MAX_PLAYERS ] [ 2 ],
@@ -113,7 +114,6 @@ new
 ;
 
 /* ** Forwards ** */
-
 forward deleteBall 					( poolid, ballid );
 forward RestoreWeapon 				( playerid );
 forward RestoreCamera 				( playerid, poolid );
@@ -121,7 +121,6 @@ forward OnPoolUpdate 				( poolid );
 forward PlayPoolSound 				( poolid, soundid );
 
 /* ** Hooks ** */
-
 hook OnScriptInit( )
 {
 	// textdraws
@@ -201,8 +200,6 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				{
 					if (g_poolTableData[ poolid ] [ E_AIMER ] == playerid)
 					{
-						if (p_PoolCamera[ playerid ] < 2) p_PoolCamera[ playerid ] ++;
-						else p_PoolCamera[ playerid ] = 0;
 
 						new Float:poolrot = p_PoolAngle[ playerid ] [ 0 ],
 							Float:Xa,
@@ -213,19 +210,16 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 						GetObjectPos(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], Xa, Ya, Za);
 
-						switch (p_PoolCamera[ playerid ])
+						if ( ( p_PoolCameraBirdsEye{ playerid } = ! p_PoolCameraBirdsEye{ playerid } ) == false )
 						{
-							case 0:
-							{
-								GetXYBehindObjectInAngle(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], poolrot, x, y, 0.675);
-								SetPlayerCameraPos(playerid, x, y, g_poolTableData[ poolid ] [ E_Z ] + DEFAULT_AIM);
-								SetPlayerCameraLookAt(playerid, Xa, Ya, Za + 0.170);
-							}
-							case 1 .. 2:
-							{
-								SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
-								SetPlayerCameraLookAt(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ]);
-							}
+							GetXYBehindObjectInAngle(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], poolrot, x, y, 0.675);
+							SetPlayerCameraPos(playerid, x, y, g_poolTableData[ poolid ] [ E_Z ] + DEFAULT_AIM);
+							SetPlayerCameraLookAt(playerid, Xa, Ya, Za + 0.170);
+						}
+						else
+						{
+							SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
+							SetPlayerCameraLookAt(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ]);
 						}
 					}
 				}
@@ -250,7 +244,8 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 								GetPlayerPos( playerid, X, Y, Z );
 								GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], Xa, Ya, Za );
 
-								new Float: distance_to_ball = GetDistanceFromPointToPoint( X, Y, Xa, Ya );
+								new
+									Float: distance_to_ball = GetDistanceFromPointToPoint( X, Y, Xa, Ya );
 
 								if ( distance_to_ball < 1.5 && Z < 999.5 )
 								{
@@ -264,12 +259,12 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	                            	p_PoolAngle[ playerid ] [ 1 ] = poolrot;
 
 									SetPlayerArmedWeapon(playerid, 0);
-									GetXYInFrontOfPos(Xa, Ya, poolrot + 180, x, y, 0.085);
-									g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = CreateObject(3004, x, y, Za, 7.0, 0, poolrot + 180);
+									GetXYInFrontOfPos( Xa, Ya, poolrot + 180, x, y, 0.085 );
+									g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = CreateObject( 3004, x, y, Za, 7.0, 0, poolrot + 180 );
 
 									SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
 
-									ApplyAnimation(playerid, "POOL", "POOL_Med_Start", 50.0, 0, 0, 0, 1, 1, 1);
+									ApplyAnimation( playerid, "POOL", "POOL_Med_Start", 4.1, 0, 1, 1, 0, 0, 1 );
 
 									g_poolTableData[ poolid ] [ E_AIMER ] = playerid;
 									g_poolTableData[ poolid ] [ E_POWER ] = 1.0;
@@ -287,11 +282,12 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 							TogglePlayerControllable(playerid, true);
 							GivePlayerWeapon(playerid, 7, 1);
 
-							ApplyAnimation(playerid, "CARRY", "crry_prtial", 1.0, 0, 0, 0, 0, 0, 1);
-	            			SetCameraBehindPlayer(playerid);
+							ClearAnimations( playerid );
+	            			SetCameraBehindPlayer( playerid );
 
 	            			g_poolTableData[ poolid ] [ E_AIMER ] = -1;
-	            			DestroyObject(g_poolTableData[ poolid ] [ E_AIMER_OBJECT ]);
+	            			DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
+	            			g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = -1;
 						}
 					}
 				}
@@ -300,15 +296,18 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				{
 					if ( g_poolTableData[ poolid ] [ E_AIMER ] == playerid )
 					{
-						new
-							Float: speed;
+						new Float: ball_x, Float: ball_y, Float: ball_z;
+						new Float: speed;
 
 						g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] --;
 
 						Pool_UpdateScoreboard( poolid );
-						ApplyAnimation( playerid, "POOL", "POOL_Med_Shot", 3.0, 0, 0, 0, 0, 0, 1 );
 
-						speed = 0.4 + (g_poolTableData[ poolid ] [ E_POWER ] * 2.0) / 100.0;
+						GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], ball_x, ball_y, ball_z );
+
+						ApplyAnimation( playerid, "POOL", "POOL_Med_Shot", 4.1, 0, 1, 1, 0, 0, 1);
+
+						speed = 0.4 + ( g_poolTableData[ poolid ] [ E_POWER ] * 2.0 ) / 100.0;
 						PHY_SetObjectVelocity(g_poolBallData[poolid] [E_BALL_OBJECT] [0], speed * floatsin(-p_PoolAngle[ playerid ] [ 0 ], degrees), speed * floatcos(-p_PoolAngle[ playerid ] [ 0 ], degrees));
 
 						SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
@@ -317,6 +316,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						PlayPoolSound(poolid, 31810);
 						g_poolTableData[ poolid ] [ E_AIMER ] = -1;
 						DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
+						g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = -1;
 
 						GivePlayerWeapon( playerid, 7, 1 );
 					}
@@ -512,8 +512,9 @@ stock RespawnPoolBalls( poolid )
 		//ClearAnimations(g_poolTableData[ poolid ] [ E_AIMER ]);
 
 		//ApplyAnimation(g_poolTableData[ poolid ] [ E_AIMER ], "CARRY", "crry_prtial", 1.0, 0, 0, 0, 0, 0);
-        SetCameraBehindPlayer(g_poolTableData[ poolid ] [ E_AIMER ]);
-        DestroyObject(g_poolTableData[ poolid ] [ E_AIMER_OBJECT ]);
+        SetCameraBehindPlayer( g_poolTableData[ poolid ] [ E_AIMER ] );
+        DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
+        g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = -1;
 
         //TextDrawHideForPlayer(g_poolTableData[ poolid ] [ E_AIMER ], gPoolTD);
         //HidePlayerProgressBar(g_poolTableData[ poolid ] [ E_AIMER ], g_PoolPowerBar[g_poolTableData[ poolid ] [ E_AIMER ]]);
@@ -530,11 +531,10 @@ stock RespawnPoolBalls( poolid )
 		RotateXY( g_poolBallOffsetData[ i ] [ E_OFFSET_X ], g_poolBallOffsetData[ i ] [ E_OFFSET_Y ], g_poolTableData[ poolid ] [ E_ANGLE ], offset_x, offset_y );
 
 		// reset balls
-		if ( g_poolBallData[ poolid ] [ E_EXISTS ] [ i ] ) {
+		if ( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] != -1 ) {
 			PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
-			g_poolBallData[ poolid ] [ E_EXISTS ] [ i ] = false;
+			DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
 		}
-		DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
 
 		// create pool balls on table
 		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] = CreateObject(
@@ -563,7 +563,7 @@ stock InitBalls(poolid, ballid)
 	PHY_SetObjectAirResistance(g_poolBallData[poolid] [E_BALL_OBJECT] [ballid], 0.2);
 	PHY_RollObject(g_poolBallData[poolid] [E_BALL_OBJECT] [ballid]);
 
-	g_poolBallData[ poolid ] [ E_EXISTS ] [ ballid ] = true;
+	g_poolBallData[ poolid ] [ E_POCKETED ] [ ballid ] = false;
 }
 
 stock RotateXY( Float: xi, Float: yi, Float: angle, &Float: xf, &Float: yf )
@@ -585,16 +585,22 @@ stock GetXYBehindObjectInAngle(objectid, Float:a, &Float:x2, &Float:y2, Float:di
 stock AreAllBallsStopped( poolid )
 {
 	new
-		Float: x, Float: y, Float: z;
+		balls_not_moving = 0;
 
-	for ( new i = 0; i < 16; i ++ ) if ( g_poolBallData[ poolid ] [ E_EXISTS ] [ i ] )
-	{
-		PHY_GetObjectVelocity( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ], x, y, z );
+	new bool: checklist[ 16];
 
-		if ( x != 0.0 || y != 0.0 )
-			return 0;
+	for ( new i = 0; i < 16; i ++ ) if ( g_poolBallData[ poolid ] [ E_POCKETED ] [ i ] || ! PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) ) {
+		balls_not_moving ++;
+		checklist[i] = true;
 	}
-	return 1;
+
+	szBigString = "";
+	for ( new i = 0; i < 16; i++ ) {
+		if ( checklist[i] == false ) format( szBigString, sizeof(szBigString), "%s%s(%d), ", szBigString, g_poolBallOffsetData[i][E_BALL_NAME], i);
+	}
+	printf("not stopped: %s", szBigString);
+
+	return balls_not_moving >= 16;
 }
 
 stock GetAngleToXY(Float:X, Float:Y, Float:CurrX, Float:CurrY, &Float:angle)
@@ -695,20 +701,17 @@ stock Pool_EndGame( poolid )
 	Iter_Clear( poolplayers< poolid > );
 
 	g_poolTableData[ poolid ] [ E_STARTED ] = false;
-	g_poolTableData[ poolid ] [ E_AIMER ]   = -1;
+	g_poolTableData[ poolid ] [ E_AIMER ] = -1;
 	g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 0;
 	g_poolTableData[ poolid ] [ E_FOULS ] = 0;
+	g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
 
 	KillTimer(g_poolTableData[ poolid ] [ E_TIMER ]);
-	for (new i = 0; i < 16; i ++)
-	{
-		DestroyObject(g_poolBallData[poolid] [E_BALL_OBJECT] [i]);
 
-		if (g_poolBallData[poolid] [E_EXISTS] [i])
-		{
-			PHY_DeleteObject(g_poolBallData[poolid] [E_BALL_OBJECT] [i]);
-			g_poolBallData[poolid] [E_EXISTS] [i] = false;
-		}
+	for ( new i = 0; i < 16; i ++ ) if ( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] != -1 ) {
+		PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+		DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] = -1;
 	}
 
 	UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], COLOR_GREY, DEFAULT_POOL_STRING );
@@ -742,10 +745,10 @@ public PlayPoolSound( poolid, soundid ) {
 
 public OnPoolUpdate(poolid)
 {
-	if (!g_poolTableData[ poolid ] [ E_STARTED ])
+	if ( ! g_poolTableData[ poolid ] [ E_STARTED ] )
 		return 0;
 
-	if (g_poolTableData[ poolid ] [ E_AIMER ] != -1)
+	if ( g_poolTableData[ poolid ] [ E_AIMER ] != -1 )
 	{
 		new playerid = g_poolTableData[ poolid ] [ E_AIMER ], keys, ud, lr;
 
@@ -762,23 +765,25 @@ public OnPoolUpdate(poolid)
 				newrot = p_PoolAngle[ playerid ] [ 0 ] + (lr > 0 ? 0.9 : -0.9);
 				dist = GetDistanceBetweenPoints( X, Y, 0.0, Xa, Ya, 0.0 );
 
+				printf("%f", dist);
+				if ( dist < 0.85 ) {
+					dist = 0.85;
+				}
+
 				if (AngleInRangeOfAngle(p_PoolAngle[ playerid ] [ 1 ], newrot, 30.0))
 	            {
 	                p_PoolAngle[ playerid ] [ 0 ] = newrot;
-					switch (p_PoolCamera[ playerid ])
-					{
-						case 0:
-						{
-							GetXYBehindObjectInAngle(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], newrot, x, y, 0.675);
 
-							SetPlayerCameraPos(playerid, x, y, g_poolTableData[ poolid ] [ E_Z ] + DEFAULT_AIM);
-							SetPlayerCameraLookAt(playerid, Xa, Ya, Za + 0.170);
-						}
-						case 1, 2:
-						{
-							SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
-							SetPlayerCameraLookAt(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ]);
-						}
+	                if ( ! p_PoolCameraBirdsEye{ playerid } )
+	                {
+						GetXYBehindObjectInAngle(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], newrot, x, y, 0.675);
+						SetPlayerCameraPos(playerid, x, y, g_poolTableData[ poolid ] [ E_Z ] + DEFAULT_AIM);
+						SetPlayerCameraLookAt(playerid, Xa, Ya, Za + 0.170);
+					}
+					else
+					{
+						SetPlayerCameraPos(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0);
+						SetPlayerCameraLookAt(playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ]);
 					}
 
 	                GetXYInFrontOfPos(Xa, Ya, newrot + 180, x, y, 0.085);
@@ -812,9 +817,6 @@ public OnPoolUpdate(poolid)
 			    g_poolTableData[ poolid ] [ E_POWER ] = 100.0;
 			}
 
-			// TextDrawTextSize(g_PoolTextdraw[2], 501.0 + ((67.0 * g_poolTableData[ poolid ] [ E_POWER ])/100.0), 0.0);
-			// TextDrawShowForPlayer(playerid, g_PoolTextdraw[2]);
-
 			// ShowPlayerPoolTextdraw(playerid);
 
 			SetPlayerProgressBarMaxValue(playerid, g_PoolPowerBar[playerid], 67.0);
@@ -828,9 +830,8 @@ public OnPoolUpdate(poolid)
 	new
 		current_player = g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ];
 
-	if ( ! g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] && AreAllBallsStopped( poolid ) )
+	if ( ( ! g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] || g_poolTableData[ poolid ] [ E_FOULS ] || g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] ) && AreAllBallsStopped( poolid ) )
 	{
-		Pool_ResetBallPositions( poolid );
 		Pool_QueueNextPlayer( poolid, current_player );
     	SetTimerEx( "RestoreCamera", 800, 0, "dd", current_player, poolid );
 	}
@@ -839,24 +840,7 @@ public OnPoolUpdate(poolid)
 
 public RestoreCamera(playerid, poolid)
 {
-	if (!g_poolBallData[poolid] [E_EXISTS] [0])
-	{
-        DestroyObject(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ]);
-
-        new Float: x, Float: y, Float: pos[3], Float: angle;
-
-		pos[0] = g_poolTableData[ poolid ] [ E_X ];
-		pos[1] = g_poolTableData[ poolid ] [ E_Y ];
-		pos[2] = g_poolTableData[ poolid ] [ E_Z ];
-		angle =  g_poolTableData[ poolid ] [ E_ANGLE ];
-
-		RotateXY(0.5, 0.0, angle, x, y);
-		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] = CreateObject(3003, x + pos[0], y + pos[1], (pos[2] - 0.045), 0, 0, 0);
-
-        InitBalls(poolid, 0);
-	}
-
-	if (g_poolTableData[ poolid ] [ E_AIMER ] == playerid)
+	if ( g_poolTableData[ poolid ] [ E_AIMER ] == playerid )
 		return 0;
 
 	TextDrawHideForPlayer(playerid, g_PoolTextdraw);
@@ -866,14 +850,13 @@ public RestoreCamera(playerid, poolid)
 	return SetCameraBehindPlayer(playerid);
 }
 
-public deleteBall(poolid, ballid)
+public deleteBall( poolid, ballid )
 {
-	if (g_poolBallData[poolid] [E_MOVING] [ballid])
+	if ( g_poolBallData[ poolid ] [ E_POCKETED ] [ ballid ] && g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ ballid ] != -1 )
 	{
-		g_poolBallData[poolid] [E_EXISTS] [ballid] = false;
-		DestroyObject(g_poolBallData[poolid] [E_BALL_OBJECT] [ballid]);
-		PHY_DeleteObject(g_poolBallData[poolid] [E_BALL_OBJECT] [ballid]);
-		g_poolBallData[poolid] [E_MOVING] [ballid] = false;
+		PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ ballid ] );
+		DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ ballid ] );
+		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ ballid ] = -1;
 	}
 	return 1;
 }
@@ -895,15 +878,15 @@ stock GetPoolBallIndexFromModel( modelid ) {
 }
 
 /** * Physics Callbacks * **/
-public PHY_OnObjectCollideWithObject(object1, object2)
+public PHY_OnObjectCollideWithObject( object1, object2 )
 {
 	foreach ( new id : pooltables ) if ( g_poolTableData[ id ] [ E_STARTED ] )
 	{
-		for (new i = 0; i < 16; i++)
+		for ( new i = 0; i < 16; i ++ )
 		{
-		    if (object1 == g_poolBallData[id] [E_BALL_OBJECT] [i])
+		    if ( object1 == g_poolBallData[ id ] [ E_BALL_OBJECT ] [ i ] )
 		    {
-		        PlayPoolSound(id, 31800 + random(3));
+		        PlayPoolSound( id, 31800 + random( 3 ) );
 		        return 1;
 		    }
 		}
@@ -917,7 +900,7 @@ public PHY_OnObjectCollideWithWall( objectid, wallid )
 	{
 		for ( new i = 0; i < 16; i ++ ) if ( objectid == g_poolBallData[ id ] [ E_BALL_OBJECT ] [ i ] )
 		{
-	        PlayPoolSound(id, 31808);
+	        PlayPoolSound( id, 31808 );
 	        return 1;
 		}
 	}
@@ -926,9 +909,16 @@ public PHY_OnObjectCollideWithWall( objectid, wallid )
 
 public PHY_OnObjectUpdate( objectid )
 {
+	new
+		poolball_index = GetPoolBallIndexFromModel( GetObjectModel( objectid ) );
+
+	if ( poolball_index == -1 ) {
+		return 1;
+	}
+
 	foreach ( new poolid : pooltables ) if ( g_poolTableData[ poolid ] [ E_STARTED ] )
 	{
-		for ( new j = 0; j < 16; j ++ ) if ( objectid == g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ] && ! g_poolBallData[ poolid ] [ E_MOVING ] [ j ] && PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ] ) )
+		if ( objectid == g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ poolball_index ] && ! g_poolBallData[ poolid ] [ E_POCKETED ] [ poolball_index ] && PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ poolball_index ] ) )
 		{
 			new
 				holeid = IsBallInHole( poolid, objectid );
@@ -938,7 +928,6 @@ public PHY_OnObjectUpdate( objectid )
 				new first_player = Iter_First( poolplayers< poolid > );
 				new second_player = Iter_Last( poolplayers< poolid > );
 				new current_player = g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ];
-				new poolball_index = GetPoolBallIndexFromModel( GetObjectModel( objectid ) );
 
 				// printf ("first_player %d, second_player %d, current_player = %d", first_player, second_player, current_player);
 
@@ -973,24 +962,10 @@ public PHY_OnObjectUpdate( objectid )
 				{
 					GameTextForPlayer( current_player, "~n~~n~~n~~r~~h~You have pocketed the cue ball!", 10000, 4 );
 
-					// respawn the cue ball
-				    if ( ! g_poolBallData[ poolid ] [ E_EXISTS ] [ 0 ] )
-					{
-
-				        new
-				        	Float: x, Float: y;
-
-						RotateXY( 0.5, 0.0, g_poolTableData[ poolid ] [ E_ANGLE ], x, y );
-
-				        DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] );
-						g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] = CreateObject( 3003, g_poolTableData[ poolid ] [ E_X ] + x, g_poolTableData[ poolid ] [ E_Y ] + y, g_poolTableData[ poolid ] [ E_Z ], 0.0, 0.0, 0.0 );
-
-				        InitBalls( poolid, 0 );
-					}
-
 					// penalty for that
 					g_poolTableData[ poolid ] [ E_FOULS ] ++;
 					g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 0;
+					g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
 				}
 				else if ( g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_8BALL )
 				{
@@ -1005,15 +980,17 @@ public PHY_OnObjectUpdate( objectid )
 					// check if valid shot
 					if ( p_PoolScore[ current_player ] < 7 )
 					{
+						p_PoolScore[ opposite_player ] ++;
 						Pool_SendTableMessage( poolid, COLOR_YELLOW, "%s(%d) has accidentally pocketed the 8-Ball ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
 					}
 					else if ( g_poolTableData[ poolid ] [ E_PLAYER_8BALL_TARGET ] [ current_player ] != holeid )
 					{
+						p_PoolScore[ opposite_player ] ++;
 						Pool_SendTableMessage( poolid, COLOR_YELLOW, "%s(%d) has put the 8-Ball in the wrong pocket ... %s(%d) wins!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
 					}
 					else
 					{
-						p_PoolScore[ current_player ] ++; // shows on the end result if we do it anyway here
+						p_PoolScore[ current_player ] ++;
 						Pool_OnPlayerWin( poolid, current_player );
 					}
 					return Pool_EndGame( poolid );
@@ -1030,12 +1007,13 @@ public PHY_OnObjectUpdate( objectid )
 	    				GameTextForPlayer( current_player, "~n~~n~~n~~r~wrong ball", 3000, 4);
 
 	    				foreach ( new playerid : poolplayers< poolid > ) {
-	    					SendClientMessageFormatted( playerid, COLOR_RED, "* %s(%d) has wrongly pocketed %s, instead of %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
+	    					SendClientMessageFormatted( playerid, COLOR_RED, "* %s(%d) has wrongly pocketed %s %s, instead of %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ], g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
 	    				}
 
 						// penalty for that
 						g_poolTableData[ poolid ] [ E_FOULS ] ++;
 						g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 0;
+						g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
 					}
 					else
 					{
@@ -1047,9 +1025,8 @@ public PHY_OnObjectUpdate( objectid )
 	    				}
 
 						// extra shot for scoring one's own
-						if ( ! g_poolTableData[ poolid ] [ E_FOULS ] ) {
-							g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 1;
-						}
+						g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = g_poolTableData[ poolid ] [ E_FOULS ] > 0 ? 0 : 1;
+						g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = true;
 					}
 
 					// mark final target hole
@@ -1067,6 +1044,7 @@ public PHY_OnObjectUpdate( objectid )
 							p_PoolHoleGuide[ player_being_marked ] = CreateDynamicObject( 18643, g_poolTableData[ poolid ] [ E_X ] + hole_x, g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ] - 0.5, 0.0, -90.0, 0.0, .playerid = player_being_marked );
 							g_poolTableData[ poolid ] [ E_PLAYER_8BALL_TARGET ] [ player_being_marked ] = opposite_holeid;
 							SendPoolMessage( player_being_marked, "You are now required to put the 8-Ball in the designated pocket." );
+							Streamer_Update( player_being_marked );
 						}
 					}
 				}
@@ -1075,20 +1053,24 @@ public PHY_OnObjectUpdate( objectid )
 				RotateXY( g_poolPotOffsetData[ holeid ] [ 0 ], g_poolPotOffsetData[ holeid ] [ 1 ], g_poolTableData[ poolid ] [ E_ANGLE ], hole_x, hole_y );
 
 				// move object into the pocket
-				MoveObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ j ], g_poolTableData[ poolid ] [ E_X ] + hole_x, g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ] - 0.5, 1.0);
+				new move_speed = MoveObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ poolball_index ], g_poolTableData[ poolid ] [ E_X ] + hole_x, g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ] - 0.5, 1.0);
 
-				g_poolBallData[ poolid ] [ E_MOVING ] [ j ] = true;
+				// mark ball as pocketed
+				g_poolBallData[ poolid ] [ E_POCKETED ] [ poolball_index ] = true;
 
-				SetTimerEx( "deleteBall", 500, false, "dd", poolid, j );
-
-				PlayerPlaySound( current_player, 31803, 0.0, 0.0, 0.0 );
+				// delete it anyway
+				SetTimerEx( "deleteBall", move_speed + 100, false, "dd", poolid, poolball_index );
 
 				// update scoreboard
 				Pool_UpdateScoreboard( poolid );
+				PlayerPlaySound( current_player, 31803, 0.0, 0.0, 0.0 );
 
 				// reset cam
-				Pool_QueueNextPlayer( poolid, current_player );
-		    	SetTimerEx( "RestoreCamera", 800, 0, "dd", current_player, poolid );
+				/*if ( AreAllBallsStopped( poolid ) ) {
+					printf ( "Second %d" , g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] );
+					Pool_QueueNextPlayer( poolid, g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] );
+			    	SetTimerEx( "RestoreCamera", 800, 0, "dd", current_player, poolid );
+				}*/
 			}
 			return 1;
 		}
@@ -1096,14 +1078,11 @@ public PHY_OnObjectUpdate( objectid )
 	return 1;
 }
 
-CMD:fakescore( playerid, params [ ]) {
-	p_PoolScore[ playerid ] = 6;
-	Pool_UpdateScoreboard(GetClosestPoolTable(playerid ));
-	return 1;
-}
-
 stock Pool_OnPlayerWin( poolid, winning_player )
 {
+	if ( ! IsPlayerConnected( winning_player ) )
+		return 0;
+
 	// restore camera
 	RestoreCamera( winning_player, poolid );
 
@@ -1116,9 +1095,10 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 
 stock Pool_QueueNextPlayer( poolid, current_player )
 {
-	if ( g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] > 0 && g_poolTableData[ poolid ] [ E_FOULS ] < 1 )
+	if ( g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] && g_poolTableData[ poolid ] [ E_FOULS ] < 1 )
 	{
-		Pool_SendTableMessage( poolid, COLOR_RED, "%s(%d) has %d shots remaining!", ReturnPlayerName( current_player ), current_player, g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] );
+		g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
+		Pool_SendTableMessage( poolid, COLOR_RED, "%s(%d) has %d shot remaining!", ReturnPlayerName( current_player ), current_player, g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] );
 	}
 	else
 	{
@@ -1127,14 +1107,36 @@ stock Pool_QueueNextPlayer( poolid, current_player )
 
 		g_poolTableData[ poolid ] [ E_FOULS ] = 0;
 		g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 1;
+		g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
 	    g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] = current_player == first_player ? second_player : first_player;
 
 		// reset ball positions just incase
 		Pool_SendTableMessage( poolid, COLOR_RED, "%s(%d)'s turn to play!", ReturnPlayerName( g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] ), g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] );
 	}
 
+	// respawn the cue ball if it has been pocketed
+    if ( g_poolBallData[ poolid ] [ E_POCKETED ] [ 0 ] )
+	{
+		new
+			Float: x, Float: y;
+
+		RotateXY( 0.5, 0.0, g_poolTableData[ poolid ] [ E_ANGLE ], x, y );
+
+		// make sure object dont exist
+		if ( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] != -1 ) {
+			PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] );
+	        DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] );
+		}
+
+        // recreate cueball
+		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] = CreateObject( 3003, g_poolTableData[ poolid ] [ E_X ] + x, g_poolTableData[ poolid ] [ E_Y ] + y, g_poolTableData[ poolid ] [ E_Z ] - 0.045, 0.0, 0.0, 0.0 );
+
+        InitBalls( poolid, 0 );
+	}
+
 	// update turn
 	Pool_UpdateScoreboard( poolid );
+	Pool_ResetBallPositions( poolid );
 }
 
 stock Pool_SendTableMessage( poolid, colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
@@ -1155,11 +1157,10 @@ stock Pool_ResetBallPositions( poolid )
 	static Float: last_x, Float: last_y, Float: last_z;
 	static Float: last_rx, Float: last_ry, Float: last_rz;
 
-	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ ) if ( g_poolBallData[ poolid ] [ E_EXISTS ] [ i ] )
+	for ( new i = 0; i < sizeof( g_poolBallOffsetData ); i ++ ) if ( ! g_poolBallData[ poolid ] [ E_POCKETED ] [ i ] )
 	{
-		if ( ! IsValidObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) ) {
+		if ( ! IsValidObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) )
 			continue;
-		}
 
 		new
 			modelid = GetObjectModel( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
@@ -1169,8 +1170,10 @@ stock Pool_ResetBallPositions( poolid )
 		GetObjectRot( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ], last_rx, last_ry, last_rz );
 
 		// destroy object
-		PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
-		DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+		if ( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] != -1 ) {
+			PHY_DeleteObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+			DestroyObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] );
+		}
 
 		// create pool balls on table
 		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] = CreateObject( modelid, last_x, last_y, last_z, last_rx, last_ry, last_rz );
@@ -1180,14 +1183,14 @@ stock Pool_ResetBallPositions( poolid )
 	}
 }
 
-/*hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ )
+hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ )
 {
 	if ( hittype == BULLET_HIT_TYPE_OBJECT )
 	{
 
 	}
     return 1;
-}*/
+}
 
 /* ** Commands ** */
 CMD:endgame(playerid)
@@ -1224,7 +1227,7 @@ CMD:play(playerid)
 
 		p_PoolScore[ playerid ] = 0;
 
-		if (!g_poolTableData[ iPool ] [ E_STARTED ])
+		if ( ! g_poolTableData[ iPool ] [ E_STARTED ] )
 		{
 			g_poolTableData[ iPool ] [ E_STARTED ] = true;
 
