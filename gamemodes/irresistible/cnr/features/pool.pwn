@@ -88,7 +88,7 @@ enum E_POOL_TABLE_DATA
 	E_NEXT_SHOOTER,
 
 	E_SHOTS_LEFT,					E_FOULS,						E_PLAYER_8BALL_TARGET[ MAX_PLAYERS ],
-	bool: E_EXTRA_SHOT,
+	bool: E_EXTRA_SHOT,				bool: E_CUE_POCKETED,
 
 	E_WAGER,						bool: E_READY,
 
@@ -234,7 +234,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 					SetPlayerArmedWeapon( playerid, 0 );
 					SetPlayerAttachedObject( playerid, 0, 338, 6, 0, 0.07, -0.85, 0, 0, 0 );
-					ApplyAnimation( playerid, "POOL", "POOL_ChalkCue", 3.0, 0, 0, 0, 0, 0, 1 );
+					ApplyAnimation( playerid, "POOL", "POOL_ChalkCue", 3.0, 0, 1, 1, 1, 0, 1 );
 
 					SetTimerEx( "PlayPoolSound", 1400, false, "dd", playerid, 31807 );
 					SetTimerEx( "RestoreWeapon", 3500, false, "d", playerid );
@@ -266,6 +266,10 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						{
 							if ( g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ] != playerid ) {
 								return SendPoolMessage( playerid, "It is not your turn. Please wait." );
+							}
+
+							if ( g_poolTableData[ poolid ] [ E_CUE_POCKETED ] ) {
+								return SendPoolMessage( playerid, "You can aim the cue as soon as you place the cue ball." );
 							}
 
 							if ( ! p_PoolChalking{ playerid } && g_poolTableData[ poolid ] [ E_AIMER ] == -1 )
@@ -446,7 +450,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 						g_poolTableData[ poolid ] [ E_READY ] = false;
 						ShowPlayerDialog( playerid, DIALOG_POOL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Pool Wager", "{FFFFFF}Please specify the minimum entry fee for the table:", "Set", "No Fee" );
 						ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_LOCK_TARGET~ ~w~- Aim Cue~n~~y~~h~~k~~PED_FIREWEAPON~ ~w~- Shoot Cue~n~~y~~h~~k~~PED_JUMPING~ ~w~- Camera Mode~n~~y~~h~~k~~VEHICLE_ENTER_EXIT~ ~w~- Exit Game~n~~n~~r~~h~Waiting for 1 more player..." );
-						UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n"COL_ORANGE"... waiting For %s(%d) ...", ReturnPlayerName( playerid ), playerid ) );
+						UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n"COL_ORANGE"... Waiting For %s(%d) ...", ReturnPlayerName( playerid ), playerid ) );
 						Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has joined the table (1/2)", ReturnPlayerName( playerid ), playerid );
 					}
 					return 1;
@@ -753,6 +757,7 @@ stock Pool_EndGame( poolid )
 	g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
 	g_poolTableData[ poolid ] [ E_READY ] = false;
 	g_poolTableData[ poolid ] [ E_WAGER ] = 0;
+	g_poolTableData[ poolid ] [ E_CUE_POCKETED ] = false;
 
 	KillTimer( g_poolTableData[ poolid ] [ E_TIMER ] );
     DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
@@ -804,17 +809,69 @@ public OnPoolUpdate( poolid )
 		return 1;
 	}
 
-	if ( g_poolTableData[ poolid ] [ E_AIMER ] != -1 )
+	new Float: Xa, Float: Ya, Float: Za;
+	new Float: X, Float: Y, Float: Z;
+	new keys, ud, lr;
+
+	if ( g_poolTableData[ poolid ] [ E_CUE_POCKETED ] )
 	{
-		new playerid = g_poolTableData[ poolid ] [ E_AIMER ], keys, ud, lr;
+		new
+			playerid = g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ];
+
+		GetPlayerKeys( playerid, keys, ud, lr );
+		GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], X, Y, Z );
+
+		if ( ud == KEY_UP ) Y += 0.01;
+		else if ( ud == KEY_DOWN ) Y -= 0.01;
+
+		if ( lr == KEY_LEFT ) X -= 0.01;
+		else if ( lr == KEY_RIGHT ) X += 0.01;
+
+		// boundaries
+		new Float: vertices[ 4 ];
+
+		Pool_RotateXY( g_poolTableData[ poolid ] [ E_X ] + 0.85, g_poolTableData[ poolid ] [ E_Y ] + 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
+		Pool_RotateXY( g_poolTableData[ poolid ] [ E_X ] - 0.85, g_poolTableData[ poolid ] [ E_Y ] - 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
+
+		if ( X > vertices[ 0 ] ) X = vertices[ 0 ];
+		else if ( X < vertices[ 2 ] ) X = vertices[ 2 ];
+
+		if ( Y > vertices[ 1 ] ) Y = vertices[ 1 ];
+		else if ( Y < vertices[ 3 ] ) Y = vertices[ 3 ];
+
+		// set position
+		SetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], X, Y, Z );
+
+		if ( keys & KEY_FIRE )
+		{
+			// check if we are placing the pool ball near another pool ball
+			for ( new i = 1; i < MAX_POOL_BALLS; i ++ ) if ( IsValidObject( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) ) {
+				GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ], Xa, Ya, Za );
+				if ( GetDistanceFromPointToPoint( X, Y, Xa, Ya ) < 0.085 ) {
+					return GameTextForPlayer( playerid, "~n~~n~~n~~r~~h~Ball too close to other!", 500, 3 );
+				}
+			}
+
+			// reset state
+			SetCameraBehindPlayer( playerid );
+			TogglePlayerControllable( playerid, true );
+			g_poolTableData[ poolid ] [ E_CUE_POCKETED ] = false;
+			ApplyAnimation( playerid, "CARRY", "crry_prtial", 4.0, 0, 1, 1, 0, 0 );
+			Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has placed the cueball!", ReturnPlayerName( playerid ), playerid );
+		}
+	}
+	else if ( g_poolTableData[ poolid ] [ E_AIMER ] != -1 )
+	{
+		new
+			playerid = g_poolTableData[ poolid ] [ E_AIMER ];
 
 		GetPlayerKeys( playerid, keys, ud, lr );
 
 		if ( ! ( keys & KEY_FIRE ) )
 		{
-			if (lr)
+			if ( lr )
 			{
-				new Float: X, Float: Y, Float: Z, Float: Xa, Float: Ya, Float: Za, Float: x, Float: y, Float: newrot, Float: dist;
+				new Float: x, Float: y, Float: newrot, Float: dist;
 
 				GetPlayerPos(playerid, X, Y ,Z);
 				GetObjectPos(g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], Xa, Ya, Za);
@@ -869,7 +926,7 @@ public OnPoolUpdate( poolid )
 
 	if ( ( ! g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] || g_poolTableData[ poolid ] [ E_FOULS ] || g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] ) && Pool_AreBallsStopped( poolid ) ) {
 		Pool_QueueNextPlayer( poolid, current_player );
-    	SetTimerEx( "RestoreCamera", 800, 0, "d", current_player );
+		SetTimerEx( "RestoreCamera", 800, 0, "d", current_player );
 	}
 	return 1;
 }
@@ -958,6 +1015,7 @@ public PHY_OnObjectUpdate( objectid )
 				new first_player = Iter_First( poolplayers< poolid > );
 				new second_player = Iter_Last( poolplayers< poolid > );
 				new current_player = g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ];
+				new opposite_player = current_player != first_player ? first_player : second_player;
 
 				// printf ("first_player %d, second_player %d, current_player = %d", first_player, second_player, current_player);
 
@@ -990,19 +1048,17 @@ public PHY_OnObjectUpdate( objectid )
 				// check what was pocketed
 				if ( g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_CUE )
 				{
-					GameTextForPlayer( current_player, "~n~~n~~n~~r~~h~You have pocketed the cue ball!", 10000, 3 );
-					Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has wrongly pocketed the cue ball!", ReturnPlayerName( current_player ), current_player );
+	    			GameTextForPlayer( current_player, "~n~~n~~n~~r~wrong ball", 3000, 3);
+					Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has pocketed the cue ball, %s(%d) will set it!", ReturnPlayerName( current_player ), current_player, ReturnPlayerName( opposite_player ), opposite_player );
 
 					// penalty for that
 					g_poolTableData[ poolid ] [ E_FOULS ] ++;
 					g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 0;
 					g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
+					g_poolTableData[ poolid ] [ E_CUE_POCKETED ] = true;
 				}
 				else if ( g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_8BALL )
 				{
-					new
-						opposite_player = current_player != first_player ? first_player : second_player;
-
 					g_poolTableData[ poolid ] [ E_BALLS_SCORED ] ++;
 
 					// restore player camera
@@ -1033,9 +1089,6 @@ public PHY_OnObjectUpdate( objectid )
 					// check if player pocketed their own ball type or btfo
 					if ( g_poolTableData[ poolid ] [ E_BALLS_SCORED ] > 1 && g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] != g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] )
 					{
-						new
-							opposite_player = current_player == first_player ? second_player : first_player;
-
 	    				p_PoolScore[ opposite_player ] += 1;
 	    				GameTextForPlayer( current_player, "~n~~n~~n~~r~wrong ball", 3000, 3);
 	    				Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has wrongly pocketed %s %s, instead of %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ], g_poolTableData[ poolid ] [ E_PLAYER_BALL_TYPE ] [ current_player ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ) );
@@ -1048,7 +1101,7 @@ public PHY_OnObjectUpdate( objectid )
 					else
 					{
 	    				p_PoolScore[ current_player ] ++;
-	    				GameTextForPlayer( current_player, "~n~~n~~n~~g~+1", 3000, 3);
+	    				GameTextForPlayer( current_player, "~n~~n~~n~~g~+1 score", 3000, 3);
 	    				Pool_SendTableMessage( poolid, -1, "{2DD9A9} * * %s(%d) has pocketed a %s %s!", ReturnPlayerName( current_player ), current_player, g_poolBallOffsetData[ poolball_index ] [ E_BALL_TYPE ] == E_STRIPED ? ( "Striped" ) : ( "Solid" ), g_poolBallOffsetData[ poolball_index ] [ E_BALL_NAME ] );
 
 						// extra shot for scoring one's own
@@ -1155,8 +1208,14 @@ stock Pool_QueueNextPlayer( poolid, current_player )
 
         // recreate cueball
 		g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ] = CreateObject( 3003, g_poolTableData[ poolid ] [ E_X ] + x, g_poolTableData[ poolid ] [ E_Y ] + y, g_poolTableData[ poolid ] [ E_Z ] - 0.045, 0.0, 0.0, 0.0 );
-
         Pool_InitBalls( poolid, 0 );
+
+		// set next player camera
+		new next_shooter = g_poolTableData[ poolid ] [ E_NEXT_SHOOTER ];
+		SetPlayerCameraPos( next_shooter, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0 );
+		SetPlayerCameraLookAt( next_shooter, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] );
+		ApplyAnimation( next_shooter, "POOL", "POOL_Idle_Stance", 3.0, 0, 1, 1, 0, 0, 1 );
+		TogglePlayerControllable( next_shooter, false );
 	}
 
 	// update turn
