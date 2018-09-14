@@ -18,16 +18,16 @@
 #define POOL_TIMER_SPEED 			30
 #define DEFAULT_AIM 				0.38
 #define DEFAULT_POOL_STRING 		"Pool Table\n{FFFFFF}Press ENTER To Play"
+#define POOL_FEE_RATE 				0.02
 
 #define MAX_POOL_TABLES 			32
 #define MAX_POOL_BALLS 				16 // do not modify
 
-#define COL_POOL 					"{C0C0C0}"
+#define DIALOG_POOL_WAGER 			3284
 
 /* ** Macros ** */
 #define SendPoolMessage(%0,%1) \
 	SendClientMessageFormatted(%0, -1, "{4B8774}[POOL] {E5861A}" # %1)
-
 
 /* ** Constants (do not modify) ** */
 enum E_POOL_BALL_TYPE {
@@ -89,6 +89,8 @@ enum E_POOL_TABLE_DATA
 
 	E_SHOTS_LEFT,					E_FOULS,						E_PLAYER_8BALL_TARGET[ MAX_PLAYERS ],
 	bool: E_EXTRA_SHOT,
+
+	E_WAGER,						bool: E_READY,
 
 	Float: E_POWER,					E_DIRECTION,
 
@@ -162,6 +164,44 @@ hook OnPlayerDeath( playerid, killerid, reason )
 hook OnPlayerConnect( playerid )
 {
 	g_PoolPowerBar[ playerid ] = CreatePlayerProgressBar( playerid, 530.000000, 233.000000, 61.000000, 6.199999, -1429936641, 100.0000, 0 );
+	return 1;
+}
+
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	if ( dialogid == DIALOG_POOL_WAGER )
+	{
+		new
+			poolid = p_PoolID[ playerid ];
+
+		if ( poolid == -1 ) {
+			return SendError( playerid, "Unable to identify pool table. Please enter the pool table again." );
+		}
+
+		new
+			wager_amount = strval( inputtext );
+
+		if ( response && wager_amount > 0 )
+		{
+			if ( wager_amount > GetPlayerCash( playerid ) ) {
+				ShowPlayerDialog( playerid, DIALOG_POOL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Pool Wager", "{FFFFFF}Please specify the minimum entry fee for the table:\n\n"COL_RED"You do not have this much money!", "Set", "No" );
+			} else {
+				GivePlayerCash( playerid, -wager_amount );
+				g_poolTableData[ poolid ] [ E_WAGER ] = wager_amount;
+				g_poolTableData[ poolid ] [ E_READY ] = true;
+				Pool_SendTableMessage( poolid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) has set the pool wager to %s!", ReturnPlayerName( playerid ), playerid, cash_format( wager_amount ) );
+				UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)\n"COL_RED"%s Entry", ReturnPlayerName( playerid ), playerid, cash_format( wager_amount ) ) );
+			}
+			return 1;
+		}
+		else
+		{
+			g_poolTableData[ poolid ] [ E_WAGER ] = 0;
+			g_poolTableData[ poolid ] [ E_READY ] = true;
+			Pool_SendTableMessage( poolid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) has set the pool wager to FREE!", ReturnPlayerName( playerid ), playerid );
+			UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)", ReturnPlayerName( playerid ), playerid ) );
+		}
+	}
 	return 1;
 }
 
@@ -341,10 +381,10 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		{
 			if ( PRESSED( KEY_SECONDARY_ATTACK ) )
 			{
-				if ( IsPlayerPlayingPool( playerid ) )
+				if ( IsPlayerPlayingPool( playerid ) && Iter_Contains( poolplayers< poolid >, playerid ) )
 				{
 					HidePlayerHelpDialog( playerid );
-					Pool_SendTableMessage( p_PoolID[ playerid ], COLOR_GREY, "-- "COL_WHITE" %s(%d) has left the table", ReturnPlayerName( playerid ), playerid );
+					Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has left the table", ReturnPlayerName( playerid ), playerid );
 					return Pool_RemovePlayer( playerid );
 				}
 
@@ -358,11 +398,28 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				// ensure this player isn't already joined
 				if ( ! IsPlayerPlayingPool( playerid ) && ! Iter_Contains( poolplayers< poolid >, playerid ) )
 				{
+					if ( pool_player_count == 1 && ! g_poolTableData[ poolid ] [ E_READY ] ) {
+						return SendError( playerid, "This pool table is not ready to play." );
+					}
+
+					new
+						entry_fee = g_poolTableData[ poolid ] [ E_WAGER ];
+
+					if ( GetPlayerCash( playerid ) < entry_fee && g_poolTableData[ poolid ] [ E_READY ] ) {
+						return SendError( playerid, "You need %s to join this pool table.", cash_format( entry_fee ) );
+					}
+
+					// add to table
 					Iter_Add( poolplayers< poolid >, playerid );
 
 					// reset variables
 					p_isPlayingPool{ playerid } = true;
 					p_PoolID[ playerid ] = poolid;
+
+					// deduct cash
+					if ( g_poolTableData[ poolid ] [ E_READY ] ) {
+						GivePlayerCash( playerid, -entry_fee );
+					}
 
 					// start the game if there's two players
 					if ( pool_player_count + 1 >= 2 )
@@ -372,7 +429,6 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 						Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has joined the table (2/2)", ReturnPlayerName( playerid ), playerid );
 					    Pool_QueueNextPlayer( poolid, random_cuer );
-
 
 					    foreach ( new i : poolplayers< poolid > ) {
 							p_PoolScore[ i ] = 0;
@@ -386,8 +442,11 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 					}
 					else
 					{
+						g_poolTableData[ poolid ] [ E_WAGER ] = 0;
+						g_poolTableData[ poolid ] [ E_READY ] = false;
+						ShowPlayerDialog( playerid, DIALOG_POOL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Pool Wager", "{FFFFFF}Please specify the minimum entry fee for the table:", "Set", "No Fee" );
 						ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_LOCK_TARGET~ ~w~- Aim Cue~n~~y~~h~~k~~PED_FIREWEAPON~ ~w~- Shoot Cue~n~~y~~h~~k~~PED_JUMPING~ ~w~- Camera Mode~n~~y~~h~~k~~VEHICLE_ENTER_EXIT~ ~w~- Exit Game~n~~n~~r~~h~Waiting for 1 more player..." );
-						UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)", ReturnPlayerName( playerid ), playerid ) );
+						UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n"COL_ORANGE"... waiting For %s(%d) ...", ReturnPlayerName( playerid ), playerid ) );
 						Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has joined the table (1/2)", ReturnPlayerName( playerid ), playerid );
 					}
 					return 1;
@@ -432,6 +491,13 @@ stock Pool_RemovePlayer( playerid )
 		}
 		else
 		{
+			// no players and is a ready table, then refund
+			if ( ! Iter_Count( poolplayers< poolid > ) && g_poolTableData[ poolid ] [ E_READY ] )
+			{
+				GivePlayerCash( playerid, g_poolTableData[ poolid ] [ E_WAGER ] );
+				g_poolTableData[ poolid ] [ E_READY ] = false;
+				g_poolTableData[ poolid ] [ E_WAGER ] = 0;
+			}
 			UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], COLOR_GREY, DEFAULT_POOL_STRING );
 		}
 	}
@@ -685,6 +751,8 @@ stock Pool_EndGame( poolid )
 	g_poolTableData[ poolid ] [ E_SHOTS_LEFT ] = 0;
 	g_poolTableData[ poolid ] [ E_FOULS ] = 0;
 	g_poolTableData[ poolid ] [ E_EXTRA_SHOT ] = false;
+	g_poolTableData[ poolid ] [ E_READY ] = false;
+	g_poolTableData[ poolid ] [ E_WAGER ] = 0;
 
 	KillTimer( g_poolTableData[ poolid ] [ E_TIMER ] );
     DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
@@ -1035,13 +1103,17 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 	if ( ! IsPlayerConnected( winning_player ) && ! IsPlayerNPC( winning_player ) )
 		return 0;
 
+	new
+		win_amount = floatround( float( g_poolTableData[ poolid ] [ E_WAGER ] ) * POOL_FEE_RATE );
+
 	// restore camera
 	RestoreCamera( winning_player );
+	GivePlayerCash( winning_player, win_amount );
 
 	// winning player
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}Player {FF8000}%s {9FCF30}has won the game!", ReturnPlayerName( winning_player ) );
-	// Pool_SendTableMessage( poolid, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", number_format(w_chips), T_POT_FEE_RATE * 100.0, "%%");
+	Pool_SendTableMessage( poolid, -1, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", number_format( win_amount ), win_amount > 0 ? POOL_FEE_RATE * 100.0 : 0.0, "%%");
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
 	return 1;
 }
