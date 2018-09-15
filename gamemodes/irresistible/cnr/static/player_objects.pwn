@@ -10102,8 +10102,6 @@ stock initializeObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 19454, -1016.496459, 1044.522705, 4.096351, 0.000000, 90.000000, 90.000000 ), 0, 9495, "vict_sfw", "newall10_seamless", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19454, -1021.718627, 1047.973510, 5.768362, 0.000000, 0.000000, 90.000000 ), 0, 9495, "vict_sfw", "newall10_seamless", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19454, -1015.137634, 1047.953491, 5.768362, 0.000000, 0.000000, 90.000000 ), 0, 9495, "vict_sfw", "newall10_seamless", 0 );
-	CreateDynamicObject( 14651, -1015.541442, 1046.419067, 2.917308, 0.000000, 0.000000, 90.000000 );
-	CreateDynamicObject( 14651, -1021.812072, 1046.419067, 2.917308, 0.000000, 0.000000, 90.000000 );
 	CreateDynamicObject( 948, -1007.720397, 1060.881591, 0.792823, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 948, -1007.720397, 1048.316772, 0.792823, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 1827, -1010.351501, 1054.650146, 0.757999, 0.000000, 0.000000, 0.000000 );

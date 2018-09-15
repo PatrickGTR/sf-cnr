@@ -112,13 +112,6 @@ new bool: False = false;
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
-/* ** Configuration ** */
-#define FILE_BUILD                	"v11.36.105"
-#define SERVER_NAME                 "San Fierro Cops And Robbers (0.3.7)"
-#define SERVER_WEBSITE              "www.sfcnr.com"
-#define SERVER_IP                   "192.169.82.202:7777"
-
-
 //#define MAX_WEAPONS                 54
 #define MAX_CLASS_BAN_WARNS			3
 #define MAX_CAR_MODS                15
@@ -14549,7 +14542,7 @@ function OnSafeHelperUpdate( playerid, robberyid )
 		Float: distance = distanceFromSafe( playerid, robberyid )
 	;
 
-	if ( robberyid == INVALID_OBJECT_ID || distance > 100.0 || !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) )
+	if ( robberyid == INVALID_OBJECT_ID || distance > 100.0 || ! IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || IsPlayerInCasino( playerid ) || IsPlayerPlayingPool( playerid ) )
 	{
 		p_SafeHelperTimer[ playerid ] = -1;
 		HidePlayerHelpDialog( playerid );
@@ -28851,7 +28844,6 @@ stock ShowBusinessSecurityUpgrades( playerid, businessid )
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }
 
-
 stock IsPlayerUnderCover( playerid ) { // StefiTV852, Shepard23, JamesComey
 	return ( p_AccountID[ playerid ] == 577142 || p_AccountID[ playerid ] == 536230 || p_AccountID[ playerid ] == 668504 ) && p_PlayerLogged{ playerid };
 }
@@ -28859,7 +28851,6 @@ stock IsPlayerUnderCover( playerid ) { // StefiTV852, Shepard23, JamesComey
 stock ShowPlayerSpawnMenu( playerid ) {
 	return ShowPlayerDialog( playerid, DIALOG_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Location", ""COL_GREY"Reset Back To Default\nHouse\nBusiness\nGang Facility\nVisage Casino", "Select", "Cancel" );
 }
-
 
 stock PlayerPlaceRandomHits( )
 {

@@ -260,7 +260,7 @@ CMD:setlevel( playerid, params[ ] )
 	    iLevel
 	;
 	if ( !IsPlayerAdmin( playerid ) && p_AdminLevel[ playerid ] < 6 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, "d", pID, iLevel ) ) SendUsage( playerid, "/setlevel [PLAYER_ID] [LEVEL]");
+	else if ( sscanf( params, "ud", pID, iLevel ) ) SendUsage( playerid, "/setlevel [PLAYER_ID] [LEVEL]");
 	else if ( iLevel < 0 || iLevel > 6 ) return SendError( playerid, "Please specify an administration level between 0 and 6." );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
