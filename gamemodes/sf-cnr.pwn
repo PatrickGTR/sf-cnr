@@ -5381,7 +5381,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 					return 0;
 
 				// Anti Random Deathmatch
-				if ( IsRandomDeathmatch( playerid, iDriver ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerInEvent( playerid ) && ! IsPlayerDueling( playerid ) )
+				if ( IsRandomDeathmatch( playerid, iDriver ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerInEvent( playerid ) && ! IsPlayerInMinigame( playerid ) )
 					return 0;
 
 				if ( p_WantedLevel[ playerid ] <= 2 && p_Class[ playerid ] != CLASS_POLICE && p_Class[ iDriver ] == CLASS_POLICE && GetPVarInt( playerid, "ShotCopWantedCD" ) < g_iTime )
@@ -5399,7 +5399,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 
 stock CreateExplosiveBullet( playerid ) {
 
-	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
+	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
 		return;
 
 	if ( GetPVarInt( playerid, "explosive_rounds" ) == 1 && p_ExplosiveBullets[ playerid ] > 0 )
@@ -5594,7 +5594,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 0;
 
 	// Anti RDM and gang member damage
-	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
+	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerInMinigame( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) )
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
@@ -8144,7 +8144,7 @@ CMD:robitems( playerid, params[ ] )
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside an arena." );
+		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
@@ -9349,7 +9349,7 @@ CMD:weed( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
 
-	if ( IsPlayerTied( playerid ) || IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) )
+	if ( IsPlayerTied( playerid ) || IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerJailed( playerid ) || IsPlayerInMinigame( playerid ) )
 		return SendError( playerid, "You cannot use this command at the moment." );
 
 	if ( isnull( params ) ) return SendUsage( playerid, "/weed [COLLECT/SELL/BUY/USE]" );
@@ -10351,7 +10351,7 @@ CMD:bj( playerid, params[ ] )
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot offer blowjobs in jail." );
 	else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 	else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-	else if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
+	else if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) ) return SendError( playerid, "You cannot use this command in a minigame." );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 4.0 )
 	{
 		if ( IsPlayerJailed( pID ) ) return SendError( playerid, "This player is jailed. He may be paused." );
@@ -11353,7 +11353,7 @@ CMD:kidnap( playerid, params[ ] )
 		if ( IsPlayerKidnapped( victimid ) ) return SendError( playerid, "This player is already kidnapped!" );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
+		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at the moment." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
 		if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ victimid ] - g_iTime ) );
 		if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
@@ -11419,7 +11419,7 @@ CMD:tie( playerid, params[ ] )
 		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "The person you're trying to tie is cuffed." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
+		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
 		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
@@ -11770,7 +11770,7 @@ CMD:rob( playerid, params[ ] )
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside an arena." );
+		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
@@ -11839,7 +11839,7 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're inside an arena." );
+		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
 		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot rape in jail." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
 		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
@@ -23375,6 +23375,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	else if ( IsPlayerGettingBlowed( playerid ) )return SendError( playerid, "You cannot use this command since you're getting blowed." );
 	else if ( IsPlayerBlowingCock( playerid ) )  	return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 	else if ( IsPlayerPlayingPoker( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing poker." );
+	else if ( IsPlayerPlayingPool( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing pool." );
 	else if ( IsPlayerInWater( playerid ) )      return SendError( playerid, "You cannot use this command since you're in water." );
 	else if ( IsPlayerMining( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're mining." );
 	else if ( IsPlayerBoxing( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're boxing." );
@@ -29126,3 +29127,7 @@ stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
 stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ] && ! p_pausedToLoad{ playerid };
 
 stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
+
+stock IsPlayerInMinigame( playerid ) {
+	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
+}

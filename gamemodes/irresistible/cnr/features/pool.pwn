@@ -214,7 +214,7 @@ hook OnPlayerUpdateEx( playerid )
 	if ( IsPlayerPlayingPool( playerid ) && poolid != -1 )
 	{
 		new
-			Float: distance_to_table = GetPlayerDistanceFromPoint( playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_X ] );
+			Float: distance_to_table = GetPlayerDistanceFromPoint( playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] );
 
 		if ( distance_to_table >= 25.0 )
 		{
