@@ -156,7 +156,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 	  		ShowPlayerHelpDialog( playerid, 5000, "Please wait while your cargo is getting loaded into your vehicle!" );
 
 	  		p_PilotMapIcon		[ playerid ] = CreateDynamicMapIconEx( g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-			p_PilotCheckPoint	[ playerid ] = CreateDynamicRaceCP( 4, g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ] + 50.0, 10.0, 0.0, 0.0, 10.0, -1, -1, playerid );
+			p_PilotCheckPoint	[ playerid ] = CreateDynamicRaceCP( 4, g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ] + 50.0, 15.0, 0.0, 0.0, 10.0, -1, -1, playerid );
 
 			return ( p_PilotRoute[ playerid ] { 0 } = INVALID_PILOT_ROUTE ), 1;		
 		}
@@ -229,7 +229,7 @@ stock StopPlayerPilotWork( playerid )
 	p_PilotCargo 			[ playerid ] = -1;
 	p_PilotVehicle 			[ playerid ] = INVALID_VEHICLE_ID;
 
-	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] ), 1;
+	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
 }
 
 stock IsVehiclePlane ( vehicleid )
