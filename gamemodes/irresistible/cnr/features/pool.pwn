@@ -1308,61 +1308,6 @@ hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: f
     return 1;
 }
 
-/* ** Commands ** */
-CMD:endgame(playerid)
-{
-	if ( ! IsPlayerAdmin( playerid ) )
-		return 0;
-
-	new iPool = Pool_GetClosestTable( playerid );
-
-	if ( iPool == -1 )
-		return SendError( playerid, "You must be near a pool table to use this command." );
-
-	Pool_EndGame( iPool );
-
-	SendClientMessage(playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have force ended the pool game!");
-	return 1;
-}
-
-CMD:play(playerid)
-{
-	new
-		iPool = Pool_GetClosestTable( playerid );
-
-	if ( iPool == -1 )
-		return SendError( playerid, "You are not near a pool table." );
-
-	if ( ! IsPlayerPlayingPool( playerid ))
-	{
-		p_isPlayingPool { playerid } = true;
-		p_PoolID[ playerid ]		 = iPool;
-
-		PlayerPlaySound( playerid, 1085, 0.0, 0.0, 0.0 );
-		GivePlayerWeapon( playerid, 7, 1 );
-
-		p_PoolScore[ playerid ] = 0;
-
-		if ( ! g_poolTableData[ iPool ] [ E_STARTED ] )
-		{
-			g_poolTableData[ iPool ] [ E_STARTED ] = true;
-
-			Iter_Clear( poolplayers< iPool > );
-			Iter_Add( poolplayers< iPool >, playerid );
-			Iter_Add( poolplayers< iPool >, playerid );
-
-			UpdateDynamic3DTextLabelText(g_poolTableData[ iPool ] [ E_LABEL ], -1, sprintf( "{FFDC2E}%s is currently playing a test game.", ReturnPlayerName( playerid )) );
-
-			Pool_RespawnBalls( iPool );
-		}
-	}
-	else
-	{
-		Pool_EndGame( iPool );
-	}
-	return 1;
-}
-
 stock Pool_UpdatePlayerCamera( playerid, poolid )
 {
 	new
@@ -1391,6 +1336,21 @@ stock Pool_UpdatePlayerCamera( playerid, poolid )
 }
 
 /* ** Commands ** */
+CMD:endgame(playerid)
+{
+	if ( ! IsPlayerAdmin( playerid ) )
+		return 0;
+
+	new iPool = Pool_GetClosestTable( playerid );
+
+	if ( iPool == -1 )
+		return SendError( playerid, "You must be near a pool table to use this command." );
+
+	Pool_EndGame( iPool );
+
+	SendClientMessage(playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have force ended the pool game!");
+	return 1;
+}
 
 CMD:addpool(playerid, params[])
 {
@@ -1474,5 +1434,43 @@ CMD:addpool(playerid, params[])
 			}
 		}
 		return Streamer_Update( playerid ), 1;
+	}
+
+	CMD:play(playerid)
+	{
+		new
+			iPool = Pool_GetClosestTable( playerid );
+
+		if ( iPool == -1 )
+			return SendError( playerid, "You are not near a pool table." );
+
+		if ( ! IsPlayerPlayingPool( playerid ))
+		{
+			p_isPlayingPool { playerid } = true;
+			p_PoolID[ playerid ]		 = iPool;
+
+			PlayerPlaySound( playerid, 1085, 0.0, 0.0, 0.0 );
+			GivePlayerWeapon( playerid, 7, 1 );
+
+			p_PoolScore[ playerid ] = 0;
+
+			if ( ! g_poolTableData[ iPool ] [ E_STARTED ] )
+			{
+				g_poolTableData[ iPool ] [ E_STARTED ] = true;
+
+				Iter_Clear( poolplayers< iPool > );
+				Iter_Add( poolplayers< iPool >, playerid );
+				Iter_Add( poolplayers< iPool >, playerid );
+
+				UpdateDynamic3DTextLabelText(g_poolTableData[ iPool ] [ E_LABEL ], -1, sprintf( "{FFDC2E}%s is currently playing a test game.", ReturnPlayerName( playerid )) );
+
+				Pool_RespawnBalls( iPool );
+			}
+		}
+		else
+		{
+			Pool_EndGame( iPool );
+		}
+		return 1;
 	}
 #endif
