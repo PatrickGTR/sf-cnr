@@ -21,7 +21,7 @@
 #define POOL_FEE_RATE 				0.02
 
 #define MAX_POOL_TABLES 			32
-#define MAX_POOL_BALLS 				16 // do not modify
+#define MAX_POOL_BALLS 				(16) // do not modify
 
 #define DIALOG_POOL_WAGER 			3284
 
@@ -90,7 +90,7 @@ enum E_POOL_TABLE_DATA
 	E_SHOTS_LEFT,					E_FOULS,						E_PLAYER_8BALL_TARGET[ MAX_PLAYERS ],
 	bool: E_EXTRA_SHOT,				bool: E_CUE_POCKETED,
 
-	E_WAGER,						bool: E_READY,
+	E_WAGER,						bool: E_READY,					E_CUEBALL_AREA,
 
 	Float: E_POWER,					E_DIRECTION,
 
@@ -138,8 +138,8 @@ hook OnScriptInit( )
 	TextDrawSetSelectable(g_PoolTextdraw, 0);
 
 	// create static pooltables
-	CreatePoolTable( 2048.5801, 1330.8917, 10.6719, 0, 0 );
-	//  CreatePoolTable(Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0)
+	CreatePoolTable( 510.10159, -84.83590, 998.93750, 90.00000, 11, 7 ); // misty's bar
+	CreatePoolTable( 506.48441, -84.83590, 998.93750, 90.00000, 11, 7 ); // misty's bar
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -164,6 +164,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 hook OnPlayerConnect( playerid )
 {
 	g_PoolPowerBar[ playerid ] = CreatePlayerProgressBar( playerid, 530.000000, 233.000000, 61.000000, 6.199999, -1429936641, 100.0000, 0 );
+	RemoveBuildingForPlayer( playerid, 2964, 510.1016, -84.8359, 997.9375, 9999.9 );
 	return 1;
 }
 
@@ -190,7 +191,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				g_poolTableData[ poolid ] [ E_WAGER ] = wager_amount;
 				g_poolTableData[ poolid ] [ E_READY ] = true;
 				Pool_SendTableMessage( poolid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) has set the pool wager to %s!", ReturnPlayerName( playerid ), playerid, cash_format( wager_amount ) );
-				UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)\n"COL_RED"%s Entry", ReturnPlayerName( playerid ), playerid, cash_format( wager_amount ) ) );
+				UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n"COL_GREEN"Press ENTER To Join %s(%d)\n"COL_RED"%s Entry", ReturnPlayerName( playerid ), playerid, cash_format( wager_amount ) ) );
 			}
 			return 1;
 		}
@@ -199,7 +200,26 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			g_poolTableData[ poolid ] [ E_WAGER ] = 0;
 			g_poolTableData[ poolid ] [ E_READY ] = true;
 			Pool_SendTableMessage( poolid, -1, ""COL_GREY"-- "COL_WHITE" %s(%d) has set the pool wager to FREE!", ReturnPlayerName( playerid ), playerid );
-			UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n{FFFFFF}Press ENTER To Join %s(%d)", ReturnPlayerName( playerid ), playerid ) );
+			UpdateDynamic3DTextLabelText( g_poolTableData[ poolid ] [ E_LABEL ], -1, sprintf( "" # COL_GREY "Pool Table\n"COL_GREEN"Press ENTER To Join %s(%d)", ReturnPlayerName( playerid ), playerid ) );
+		}
+	}
+	return 1;
+}
+
+hook OnPlayerUpdateEx( playerid )
+{
+	new
+		poolid = p_PoolID[ playerid ];
+
+	if ( IsPlayerPlayingPool( playerid ) && poolid != -1 )
+	{
+		new
+			Float: distance_to_table = GetPlayerDistanceFromPoint( playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_X ] );
+
+		if ( distance_to_table >= 25.0 )
+		{
+			Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has been kicked from the table [Reason: Out Of Range]", ReturnPlayerName( playerid ), playerid );
+			return Pool_RemovePlayer( playerid ), 1;
 		}
 	}
 	return 1;
@@ -516,38 +536,50 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 	}
 
 	new
-		gID = Iter_Free( pooltables );
+		poolid = Iter_Free( pooltables );
 
-	if ( gID != ITER_NONE )
+	if ( poolid != ITER_NONE )
 	{
 		new
 			Float: x_vertex[ 4 ], Float: y_vertex[ 4 ];
 
-		Iter_Add( pooltables, gID );
+		Iter_Add( pooltables, poolid );
 
-		g_poolTableData[ gID ] [ E_X ] = X;
-		g_poolTableData[ gID ] [ E_Y ] = Y;
-		g_poolTableData[ gID ] [ E_Z ] = Z;
-		g_poolTableData[ gID ] [ E_ANGLE ] = A;
+		g_poolTableData[ poolid ] [ E_X ] = X;
+		g_poolTableData[ poolid ] [ E_Y ] = Y;
+		g_poolTableData[ poolid ] [ E_Z ] = Z;
+		g_poolTableData[ poolid ] [ E_ANGLE ] = A;
 
-		g_poolTableData[ gID ] [ E_INTERIOR ] = interior;
-		g_poolTableData[ gID ] [ E_WORLD ] = world;
+		g_poolTableData[ poolid ] [ E_INTERIOR ] = interior;
+		g_poolTableData[ poolid ] [ E_WORLD ] = world;
 
-		g_poolTableData[ gID] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, A, world, interior );
-		g_poolTableData[ gID] [ E_LABEL ] = CreateDynamic3DTextLabel( DEFAULT_POOL_STRING, COLOR_GREY, X, Y, Z, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, world, interior );
+		g_poolTableData[ poolid ] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, A, .interiorid = interior, .worldid = world );
+		g_poolTableData[ poolid ] [ E_LABEL ] = CreateDynamic3DTextLabel( DEFAULT_POOL_STRING, COLOR_GREY, X, Y, Z, 10.0, .interiorid = interior, .worldid = world );
 
 		Pool_RotateXY( -0.964, -0.51, A, x_vertex[ 0 ], y_vertex[ 0 ] );
 		Pool_RotateXY( -0.964, 0.533, A, x_vertex[ 1 ], y_vertex[ 1 ] );
 		Pool_RotateXY( 0.976, -0.51, A, x_vertex[ 2 ], y_vertex[ 2 ] );
 		Pool_RotateXY( 0.976, 0.533, A, x_vertex[ 3 ], y_vertex[ 3 ] );
 
-		PHY_CreateWall( x_vertex[0] + X, y_vertex[0] + Y, x_vertex[1] + X, y_vertex[1] + Y);
-		PHY_CreateWall( x_vertex[1] + X, y_vertex[1] + Y, x_vertex[3] + X, y_vertex[3] + Y);
-		PHY_CreateWall( x_vertex[2] + X, y_vertex[2] + Y, x_vertex[3] + X, y_vertex[3] + Y);
-		PHY_CreateWall( x_vertex[0] + X, y_vertex[0] + Y, x_vertex[2] + X, y_vertex[2] + Y);
+		PHY_CreateWall( x_vertex[ 0 ] + X, y_vertex[ 0 ] + Y, x_vertex[ 1 ] + X, y_vertex[ 1 ] + Y );
+		PHY_CreateWall( x_vertex[ 1 ] + X, y_vertex[ 1 ] + Y, x_vertex[ 3 ] + X, y_vertex[ 3 ] + Y );
+		PHY_CreateWall( x_vertex[ 2 ] + X, y_vertex[ 2 ] + Y, x_vertex[ 3 ] + X, y_vertex[ 3 ] + Y );
+		PHY_CreateWall( x_vertex[ 0 ] + X, y_vertex[ 0 ] + Y, x_vertex[ 2 ] + X, y_vertex[ 2 ] + Y );
+
+		// create boundary for replacing the cueball
+		new
+			Float: vertices[ 4 ];
+
+		Pool_RotateXY( 0.85, 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
+		Pool_RotateXY( -0.85, -0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
+
+		vertices[ 0 ] += g_poolTableData[ poolid ] [ E_X ], vertices[ 2 ] += g_poolTableData[ poolid ] [ E_X ];
+		vertices[ 1 ] += g_poolTableData[ poolid ] [ E_Y ], vertices[ 3 ] += g_poolTableData[ poolid ] [ E_Y ];
+
+		g_poolTableData[ poolid ] [ E_CUEBALL_AREA ] = CreateDynamicRectangle( vertices[ 2 ], vertices[ 3 ], vertices[ 0 ], vertices[ 1 ], .interiorid = interior, .worldid = world );
 
 	#if defined POOL_DEBUG
-		ReloadPotTestLabel( 0, gID );
+		ReloadPotTestLabel( 0, poolid );
 		/*new Float: middle_x;
 		new Float: middle_y;
 		CreateDynamicObject( 18643, x_vertex[0] + X, y_vertex[0] + Y, Z - 1.0, 0.0, -90.0, 0.0 );
@@ -574,7 +606,7 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 		CreateDynamicObject( 18643, ((x_vertex[0] + X) + middle_x) / 2.0, ((y_vertex[2] + Y) + middle_y) / 2.0, Z - 1.0, 0.0, -90.0, 0.0 );*/
 	#endif
 	}
-	return gID;
+	return poolid;
 }
 
 stock Pool_GetClosestTable( playerid, &Float: dis = 99999.99 )
@@ -827,21 +859,12 @@ public OnPoolUpdate( poolid )
 		if ( lr == KEY_LEFT ) X -= 0.01;
 		else if ( lr == KEY_RIGHT ) X += 0.01;
 
-		// boundaries
-		new Float: vertices[ 4 ];
+		// set position only if it is within boundaries
+		if ( IsPointInDynamicArea( g_poolTableData[ poolid ] [ E_CUEBALL_AREA ], X, Y, 0.0 ) ) {
+			SetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], X, Y, Z );
+		}
 
-		Pool_RotateXY( g_poolTableData[ poolid ] [ E_X ] + 0.85, g_poolTableData[ poolid ] [ E_Y ] + 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
-		Pool_RotateXY( g_poolTableData[ poolid ] [ E_X ] - 0.85, g_poolTableData[ poolid ] [ E_Y ] - 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
-
-		if ( X > vertices[ 0 ] ) X = vertices[ 0 ];
-		else if ( X < vertices[ 2 ] ) X = vertices[ 2 ];
-
-		if ( Y > vertices[ 1 ] ) Y = vertices[ 1 ];
-		else if ( Y < vertices[ 3 ] ) Y = vertices[ 3 ];
-
-		// set position
-		SetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], X, Y, Z );
-
+		// click to set
 		if ( keys & KEY_FIRE )
 		{
 			// check if we are placing the pool ball near another pool ball
@@ -1157,7 +1180,7 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 		return 0;
 
 	new
-		win_amount = floatround( float( g_poolTableData[ poolid ] [ E_WAGER ] ) * POOL_FEE_RATE );
+		win_amount = floatround( float( g_poolTableData[ poolid ] [ E_WAGER ] ) * ( 1 - POOL_FEE_RATE ) );
 
 	// restore camera
 	RestoreCamera( winning_player );
@@ -1166,7 +1189,7 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 	// winning player
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}Player {FF8000}%s {9FCF30}has won the game!", ReturnPlayerName( winning_player ) );
-	Pool_SendTableMessage( poolid, -1, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", number_format( win_amount ), win_amount > 0 ? POOL_FEE_RATE * 100.0 : 0.0, "%%");
+	Pool_SendTableMessage( poolid, -1, "{9FCF30}Prize: {377CC8}%s | -%0.0f%s percent fee", cash_format( win_amount ), win_amount > 0 ? POOL_FEE_RATE * 100.0 : 0.0, "%%");
 	Pool_SendTableMessage( poolid, -1, "{9FCF30}****************************************************************************************");
 	return 1;
 }
