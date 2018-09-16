@@ -73,6 +73,7 @@ new
 	p_PilotCancelTimer 						[ MAX_PLAYERS ] = { 0xFFFF, ... },
 	p_PilotLoadTimer						[ MAX_PLAYERS ] = { 0xFFFF, ... },
 	p_PilotCargo 							[ MAX_PLAYERS ],
+	p_PilotDifficulty 						[ MAX_PLAYERS ],
 	p_PilotVehicle 							[ MAX_PLAYERS ],
 	p_PilotTimeElapsed 						[ MAX_PLAYERS ],
 	Float: p_PilotDistance					[ MAX_PLAYERS ],
@@ -86,11 +87,20 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath( playerid, killerid, reason )
+#endif
+{
+	StopPlayerPilotWork( playerid );
+	return 1;
+}
+
 hook OnPlayerUpdateEx( playerid )
 {
 	new player_vehicle = GetPlayerVehicleID( playerid );
 
-	// check if the player has detached their trailer
 	if ( GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && player_vehicle && p_hasPilotJob{ playerid } && p_PilotVehicle[ playerid ] != player_vehicle && p_PilotCancelTimer[ playerid ] == 0xFFFF ) {
  		cancelPlayerPilotWork( playerid, player_vehicle, .ticks = 60 );
 	}
@@ -101,16 +111,17 @@ hook OnPlayerUpdateEx( playerid )
 hook OnPlayerStateChange( playerid, newstate, oldstate )
 {
 	if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER && p_hasPilotJob{ playerid } ) {
-		cancelPlayerPilotWork( playerid, GetPlayerVehicleID( playerid ), .ticks = 60 );
+		cancelPlayerPilotWork( playerid, GetPlayerVehicleID( playerid ), .ticks = 0 );
     }
 
-    else if ( newstate == PLAYER_STATE_DRIVER && oldstate != PLAYER_STATE_DRIVER &&  p_hasPilotJob{ playerid } ) {
+    else if ( newstate == PLAYER_STATE_DRIVER && oldstate != PLAYER_STATE_DRIVER && p_hasPilotJob{ playerid } ) {
     	KillTimer( p_PilotCancelTimer[ playerid ] );
     	p_PilotCancelTimer[ playerid ] = 0xFFFF;
     }
 
     else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle(playerid) && !p_hasPilotJob{ playerid }) {
-    	if ( IsVehiclePlane( GetPlayerVehicleID( playerid ) ) ) {
+    	if ( IsVehiclePlane( GetPlayerVehicleID( playerid ) ) )
+    	{
     		ShowPlayerHelpDialog( playerid, 3000, "You can begin a pilot job by typing ~g~~h~/pilot" );
     	}
     }
@@ -126,8 +137,6 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 		DestroyDynamicRaceCP ( p_PilotCheckPoint[ playerid ] );
 		KillTimer			 ( p_PilotPositionTimer[ playerid ] );
 
-		GivePlayerWantedLevel( playerid, 6 );
-
 		if ( p_PilotRoute[ playerid ] { 0 } != INVALID_PILOT_ROUTE )
 		{
 			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
@@ -141,10 +150,13 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 
 	  		TogglePlayerControllable(playerid, false);
 
+	  		if ( p_PilotDifficulty[ playerid ] == RISK_FACTOR_HARD)
+	  			GivePlayerWantedLevel( playerid, 6 );
+
 	  		ShowPlayerHelpDialog( playerid, 5000, "Please wait while your cargo is getting loaded into your vehicle!" );
 
 	  		p_PilotMapIcon		[ playerid ] = CreateDynamicMapIconEx( g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-			p_PilotCheckPoint	[ playerid ] = CreateDynamicRaceCP( 4, g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ] + 50.0, 10.0, 0.0, 0.0, 10.0, -1, -1, playerid );
+			p_PilotCheckPoint	[ playerid ] = CreateDynamicRaceCP( 4, g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ] + 50.0, 15.0, 0.0, 0.0, 10.0, -1, -1, playerid );
 
 			return ( p_PilotRoute[ playerid ] { 0 } = INVALID_PILOT_ROUTE ), 1;		
 		}
@@ -152,6 +164,11 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 		else if ( p_PilotRoute[ playerid ] { 1 } != INVALID_PILOT_ROUTE )
 		{
 			new
+				iCashEarned;
+
+			if ( p_PilotDifficulty[ playerid ] == RISK_FACTOR_EASY)
+				iCashEarned = floatround( p_PilotDistance[ playerid ] * 1.0 + PILOT_BONUS );
+			else
 				iCashEarned = floatround( p_PilotDistance[ playerid ] * 2.0 + PILOT_BONUS );
 
 			TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
@@ -161,6 +178,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 
 			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( iCashEarned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
 
+			p_PilotDifficulty 		[ playerid ] = -1;
 			p_PilotDistance			[ playerid ] = 0.0;
 			p_hasPilotJob			[ playerid ] = false;
 			p_PilotCheckPoint		[ playerid ] = 0xFFFF;
@@ -193,15 +211,13 @@ stock getClosestPilotRoute( playerid, &Float: distance = FLOAT_INFINITY )
 
 stock StopPlayerPilotWork( playerid )
 {
-	if ( !p_hasPilotJob { playerid } )
-		return SendError( playerid, "You cannot cancel a pilot job that hasn't started.");
-
 	DestroyDynamicRaceCP	( p_PilotCheckPoint[ playerid ] );
 	DestroyDynamicMapIcon 	( p_PilotMapIcon[ playerid ] );
 
 	KillTimer 				( p_PilotCancelTimer[ playerid ] );
 	KillTimer 				( p_PilotPositionTimer[ playerid ] );
 
+	p_PilotDifficulty 		[ playerid ] = -1;
 	p_PilotDistance			[ playerid ] = 0.0;
 	p_hasPilotJob			{ playerid } = false;
 	p_PilotCheckPoint		[ playerid ] = 0xFFFF;
@@ -214,7 +230,6 @@ stock StopPlayerPilotWork( playerid )
 	p_PilotVehicle 			[ playerid ] = INVALID_VEHICLE_ID;
 
 	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
-	return SendServerMessage( playerid, "Your pilot mission has been stopped." );
 }
 
 stock IsVehiclePlane ( vehicleid )
@@ -254,6 +269,7 @@ function cancelPlayerPilotWork( playerid, vehicleid, ticks )
 	if ( ticks < 1 || !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) )
 	{
 		StopPlayerPilotWork( playerid );
+		return SendServerMessage( playerid, "Your pilot mission has been stopped." );
 	}
 	else
 	{
@@ -282,17 +298,19 @@ function OnPilotLoadCargo( playerid )
 CMD:pilot( playerid, params[ ] )
 {
 	new 
+		szDifficulty[ 7 ],
 		iVehicle = GetPlayerVehicleID( playerid );
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be an ordinary civilian to use this command." );
-	else if ( strmatch( params, "STOP" ))
-	{
-		return StopPlayerPilotWork( playerid ), 1;
-	}
-	else if ( !strmatch( params, "WORK" )) return SendUsage( playerid, "/pilot [WORK/STOP]" );
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You must be a driver of a vehicle to work." );
 	else if ( !iVehicle ) return SendError( playerid, "You are not in any vehicle." );
-	else
+	else if ( sscanf( params, "S(normal)[7]", szDifficulty ) ) return SendUsage( playerid, "/pilot [NORMAL/HARDER/STOP]" );
+	else if ( strmatch( szDifficulty, "stop" ))
+	{
+		StopPlayerPilotWork( playerid );
+		return SendServerMessage( playerid, "Your pilot mission has been stopped." );
+	}
+	else if ( strmatch( szDifficulty, "normal" ) || strmatch( szDifficulty, "harder" ))
 	{
 		if ( IsVehiclePlane( iVehicle ))
 		{
@@ -307,6 +325,7 @@ CMD:pilot( playerid, params[ ] )
 				p_hasPilotJob 			{ playerid } = true;
 				p_WorkCooldown			[ playerid ] = g_iTime + 60;
 				p_PilotVehicle 			[ playerid ] = GetPlayerVehicleID( playerid );
+				p_PilotDifficulty 		[ playerid ] = ( strmatch( szDifficulty, "harder" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
 
 				p_PilotCargo 			[ playerid ] = random( sizeof( g_CargoName ) );
 				p_PilotRoute			[ playerid ] { 0 } = random ( sizeof ( g_AirportLocations ) );	
