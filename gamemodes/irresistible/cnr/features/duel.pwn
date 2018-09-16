@@ -34,12 +34,12 @@ enum E_DUEL_LOCATION_DATA
 	E_NAME [ 19 ],					Float: E_POS_ONE[ 3 ], 				Float: E_POS_TWO[ 3 ]
 };
 
-new 
+new
 	Float: g_DuelCoordinates 		[ 3 ] = 							{ -2226.1938, 251.9206, 35.3203 },
 	g_WeaponList					[ ] = 								{ 0, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 },
 	g_duelData 						[ MAX_PLAYERS ][ E_DUEL_DATA ],
 	g_duelLocationData 				[ ][ E_DUEL_LOCATION_DATA ] =
-	{	
+	{
 		{ "Santa Maria Beach",		{ 369.75770, -1831.576, 7.67190 }, { 369.65890, -1871.215, 7.67190 }},
 		{ "Greenglass College",		{ 1078.0353, 1084.4989, 10.8359 }, { 1095.4019, 1064.7239, 10.8359 }},
 		{ "Baseball Arena",			{ 1393.0995, 2177.4585, 9.75780 }, { 1377.7881, 2195.4214, 9.75780 }},
@@ -130,7 +130,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 	if ( ( dialogid == DIALOG_DUEL ) && response )
 	{
 		erase ( szBigString );
-		
+
 		switch ( listitem )
 		{
 			case 0: ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_GREY"Note: You can enter partially their names.", "Select", "Back");
@@ -141,7 +141,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 			{
 				erase ( szBigString );
 
-				new 
+				new
 					iWeapon = g_duelData [ playerid ] [ E_WEAPON ] [ 0 ];
 
 				for ( new i = 0; i < sizeof( g_WeaponList ); i ++) {
@@ -155,7 +155,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 			{
 				erase ( szBigString );
 
-				new 
+				new
 					iWeapon = g_duelData [ playerid ] [ E_WEAPON ] [ 1 ];
 
 				for ( new i = 0; i < sizeof( g_WeaponList ); i ++ ) {
@@ -167,7 +167,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 			case 5:
 			{
-				new 
+				new
 					iLocationID = g_duelData [ playerid ][ E_LOCATION_ID ];
 
 				for ( new i = 0; i < sizeof( g_duelLocationData ); i ++ ) {
@@ -181,7 +181,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 			case 7:
 			{
-				new 
+				new
 					pID = g_duelData [ playerid ][ E_PLAYER ];
 
 				if ( !IsPlayerConnected( pID ) ) {
@@ -190,9 +190,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 				}
 
 				p_duelInvitation[ playerid ][ pID ] = gettime( ) + 60;
-				ShowPlayerHelpDialog( pID, 10000, "%s wants to duel!~n~~n~~y~Location: ~w~%s~n~~y~Weapon: ~w~%s and %s~n~~y~Wager: ~w~%s", ReturnPlayerName( playerid ), g_duelLocationData [ g_duelData[ playerid ][ E_LOCATION_ID ] ][ E_NAME ], ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 0 ] ), ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 1 ] ), number_format(g_duelData[ playerid ][ E_BET ]));
-				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have sent a duel invitation to %s for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( pID ), number_format( g_duelData[ playerid ][ E_BET ] ) );
-				SendClientMessageFormatted( pID, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You are invited to duel %s for "COL_GOLD"%s"COL_WHITE", use \"/duel accept %d\".", ReturnPlayerName( playerid ), number_format( g_duelData[ playerid ][ E_BET ] ), playerid );
+				ShowPlayerHelpDialog( pID, 10000, "%s wants to duel!~n~~n~~y~Location: ~w~%s~n~~y~Weapon: ~w~%s and %s~n~~y~Wager: ~w~%s", ReturnPlayerName( playerid ), g_duelLocationData [ g_duelData[ playerid ][ E_LOCATION_ID ] ][ E_NAME ], ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 0 ] ), ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 1 ] ), cash_format(g_duelData[ playerid ][ E_BET ]));
+				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have sent a duel invitation to %s for "COL_GOLD"%s"COL_WHITE".", ReturnPlayerName( pID ), cash_format( g_duelData[ playerid ][ E_BET ] ) );
+				SendClientMessageFormatted( pID, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You are invited to duel %s for "COL_GOLD"%s"COL_WHITE", use \"/duel accept %d\".", ReturnPlayerName( playerid ), cash_format( g_duelData[ playerid ][ E_BET ] ), playerid );
 			}
 		}
 		return 1;
@@ -203,7 +203,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		if ( !response )
 			return ShowPlayerDuelMenu( playerid );
 
-		new 
+		new
 			pID
 		;
 
@@ -295,7 +295,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		if ( !response )
 			return ShowPlayerDuelMenu( playerid );
 
-		new 
+		new
 			Float:fHealth;
 
 		if (sscanf(inputtext, "f", fHealth))
@@ -315,7 +315,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		if (!response)
 			return ShowPlayerDuelMenu( playerid );
 
-		new 
+		new
 			Float:fArmour;
 
 		if (sscanf(inputtext, "f", fArmour))
@@ -338,7 +338,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		if (!response)
 			return ShowPlayerDuelMenu( playerid );
 
-		new 
+		new
 			iBet
 		;
 
@@ -349,7 +349,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 			return ShowPlayerDialog( playerid, DIALOG_DUEL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Set A Wager", "{FFFFFF}Please enter the wager for this duel:\n\n{FF0000}Wagers must be between $0 and $10,000,000.", "Select", "Back");
 
 		g_duelData[playerid][ E_BET ] = iBet;
-		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have changed the wager to %s.", number_format(g_duelData[playerid][ E_BET ]));
+		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have changed the wager to %s.", cash_format(g_duelData[playerid][ E_BET ]));
 		ShowPlayerDuelMenu( playerid );
 		return 1;
 	}
@@ -379,20 +379,20 @@ CMD:duel( playerid, params[ ] )
 		if ( GetDistanceBetweenPlayers( playerid, targetid ) > 25.0)
 			return SendError( playerid, "You must be within 25.0 meters of your opponent!");
 
-		new 
+		new
 			waged_amount = g_duelData[ targetid ][ E_BET ];
 
 		if (g_duelData[ targetid ][ E_BET ] != 0)
 		{
 			if ( GetPlayerCash( targetid ) < waged_amount)
 			{
-				SendClientMessageFormatted( targetid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s has accepted but you don't have money to wage (%s).", ReturnPlayerName( playerid ), number_format( waged_amount ) );
+				SendClientMessageFormatted( targetid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s has accepted but you don't have money to wage (%s).", ReturnPlayerName( playerid ), cash_format( waged_amount ) );
 				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have accepted %s's duel invitation but they don't have money.", ReturnPlayerName( targetid ) );
 				return 1;
 			}
 			else if ( GetPlayerCash( playerid ) < waged_amount)
 			{
-				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s requires you to wage %s.", ReturnPlayerName( targetid ), number_format( waged_amount ) );
+				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s requires you to wage %s.", ReturnPlayerName( targetid ), cash_format( waged_amount ) );
 				SendClientMessageFormatted( targetid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s has accepted the duel invitation but they don't have money to wage.", ReturnPlayerName( playerid ) );
 				return 1;
 			}
@@ -415,7 +415,7 @@ CMD:duel( playerid, params[ ] )
 		g_duelData[ playerid ][ E_ROUNDS ] = 1;
 		g_duelData[ targetid ][ E_ROUNDS ] = 1;
 
-		new 
+		new
 			iLocation = g_duelData[ targetid ][ E_LOCATION_ID ];
 
 		ResetPlayerWeapons( targetid );
@@ -504,7 +504,7 @@ stock ShowPlayerDuelMenu(playerid)
 		ReturnWeaponName(g_duelData[ playerid ][ E_WEAPON ][0]),
 		ReturnWeaponName(g_duelData[ playerid ][ E_WEAPON ][1]),
 		g_duelLocationData[ g_duelData[ playerid ][ E_LOCATION_ID ] ][ E_NAME ],
-		number_format(g_duelData[playerid][ E_BET ])
+		cash_format(g_duelData[playerid][ E_BET ])
 	);
 	ShowPlayerDialog(playerid, DIALOG_DUEL, DIALOG_STYLE_TABLIST, ""COL_WHITE"{FFFFFF}Duel Settings", szBigString, "Select", "Cancel");
 	return 1;
@@ -537,10 +537,10 @@ static stock forfeitPlayerDuel(playerid)
 	// check if theres a remaining round
 	if (g_duelData[ playerid ][ E_ROUNDS ] == 0) {
 		if (0 < amount_waged < 10000000) {
-			new 
+			new
 				winning_prize = floatround(float(amount_waged) * 1.95); // We take 2.5% of the total pot
 			GivePlayerCash(winnerid, winning_prize);
-			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid, number_format(winning_prize));
+			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid, cash_format(winning_prize));
 		} else {
 			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d)!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid);
 		}

@@ -154,7 +154,7 @@ function OnPlayerOrbitalCannonUpdate( facilityid, playerid )
 				GivePlayerCash( playerid, -250000 );
 				PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
 	 			GameTextForPlayer( playerid, "~g~FIRED!", 2000, 3 );
-	 			SendServerMessage( playerid, "You have launched an orbital cannon for "COL_GOLD"$250,000"COL_WHITE", you have %s left.", number_format( GetPlayerCash( playerid ) ) );
+	 			SendServerMessage( playerid, "You have launched an orbital cannon for "COL_GOLD"$250,000"COL_WHITE", you have %s left.", cash_format( GetPlayerCash( playerid ) ) );
 				return SetTimerEx( "OnPlayerFireOrbitalCannon", move_speed, false, "ddfff", playerid, rocket, current_pos[ 0 ], current_pos[ 1 ], current_pos[ 2 ] );
 			}
 			else

@@ -267,7 +267,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
 
       					RedirectAmmunation( playerid, gun_category, "{FFFFFF}Gang Facility - Purchase Weapons", DIALOG_FACILITY_AMMU_BUY, gun_discount );
-						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], price > 0.0 ? number_format( price ) : ( "FREE" ) );
+						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], price > 0.0 ? cash_format( price ) : ( "FREE" ) );
 						break;
 		            }
 		            x ++;

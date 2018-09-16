@@ -356,7 +356,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				new iNetProfit = floatround( g_houseFurniture[ i ] [ E_COST ] / 2 );
 
 				GivePlayerCash( playerid, iNetProfit );
-				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[FURNITURE]"COL_WHITE" You have successfully sold your "COL_WHITE"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_houseFurniture[ i ] [ E_NAME ], number_format( iNetProfit ) );
+				SendClientMessageFormatted( playerid, -1, ""COL_GREY"[FURNITURE]"COL_WHITE" You have successfully sold your "COL_WHITE"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_houseFurniture[ i ] [ E_NAME ], cash_format( iNetProfit ) );
         		ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 			}
         }
@@ -1097,7 +1097,7 @@ stock ShowFurnitureList( playerid, category )
 	szLargeString = ""COL_WHITE"Furniture\t"COL_WHITE"Cost\n";
 
     for( new i = 0; i < sizeof( g_houseFurniture ); i++ ) if ( g_houseFurniture[ i ] [ E_CATEGORY ] == category )
-		format( szLargeString, sizeof( szLargeString ), "%s%s\t"COL_GOLD"%s\n", szLargeString, g_houseFurniture[ i ] [ E_NAME ], number_format( g_houseFurniture[ i ] [ E_COST ] ) );
+		format( szLargeString, sizeof( szLargeString ), "%s%s\t"COL_GOLD"%s\n", szLargeString, g_houseFurniture[ i ] [ E_NAME ], cash_format( g_houseFurniture[ i ] [ E_COST ] ) );
 
 	ShowPlayerDialog( playerid, DIALOG_FURNITURE_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Furniture", szLargeString, "Select", "Back" );
 }

@@ -92,7 +92,7 @@ stock RedirectAmmunation( playerid, listitem, custom_title[ ] = "{FFFFFF}Ammu-Na
 
 		// check for free or not
 		if ( custom_multplier > 0.0 ) {
-			format( szString, sizeof( szString ), "%s"COL_GOLD"%s\n", szString, number_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
+			format( szString, sizeof( szString ), "%s"COL_GOLD"%s\n", szString, cash_format( floatround( g_AmmunationWeapons[ i ] [ E_PRICE ] * custom_multplier ) ) );
 		} else {
 			strcat( szString, ""COL_GOLD"FREE\n" );
 		}

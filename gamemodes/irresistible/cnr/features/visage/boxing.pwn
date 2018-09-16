@@ -151,10 +151,10 @@ CMD:boxing( playerid, params[ ] ) {
 
 		} else {
 
-			SendBoxing( playerid, "You have invited %s to a boxing match with a %s wager through %i round(s).", ReturnPlayerName( targetID ), number_format( g_boxingPlayerData[ playerid ] [ E_BET_AMOUNT_SET ] ), g_boxingPlayerData[ playerid ] [ E_ROUNDS_SET ] );
+			SendBoxing( playerid, "You have invited %s to a boxing match with a %s wager through %i round(s).", ReturnPlayerName( targetID ), cash_format( g_boxingPlayerData[ playerid ] [ E_BET_AMOUNT_SET ] ), g_boxingPlayerData[ playerid ] [ E_ROUNDS_SET ] );
 			SendBoxing( playerid, "To cancel your invite, use /boxing [CANCEL]." );
 
-			SendBoxing( targetID, "%s has invited you to a boxing match with a %s wager through %i round(s).", ReturnPlayerName( playerid ), number_format( g_boxingPlayerData[ playerid ] [ E_BET_AMOUNT_SET ] ), g_boxingPlayerData[ playerid ] [ E_ROUNDS_SET ] );
+			SendBoxing( targetID, "%s has invited you to a boxing match with a %s wager through %i round(s).", ReturnPlayerName( playerid ), cash_format( g_boxingPlayerData[ playerid ] [ E_BET_AMOUNT_SET ] ), g_boxingPlayerData[ playerid ] [ E_ROUNDS_SET ] );
 			SendBoxing( targetID, "To accept or decline the invite, use /boxing [ACCEPT/DECLINE]." );
 
 		}
@@ -323,7 +323,7 @@ stock EndMatch( playerid, targetID ) {
 	} else {
 		new winning_prize = floatround( float( g_boxingArenaData[ E_BET ] ) * 1.9 ); // We take 5% of the total pot
 		GivePlayerCash( winnerid, winning_prize );
-		SendBoxingGlobal( "%s has won a boxing match against %s for %s with a final score of %i!", ReturnPlayerName( winnerid ), ReturnPlayerName( loserid ), number_format( g_boxingArenaData[ E_BET ] ), g_boxingPlayerData[ winnerid ] [ E_SCORE ] );
+		SendBoxingGlobal( "%s has won a boxing match against %s for %s with a final score of %i!", ReturnPlayerName( winnerid ), ReturnPlayerName( loserid ), cash_format( g_boxingArenaData[ E_BET ] ), g_boxingPlayerData[ winnerid ] [ E_SCORE ] );
 	}
 
 	boxing_RestorePlayer( playerid );
@@ -362,7 +362,7 @@ stock boxing_ForfeitMatch( playerid, targetID ) {
 		SendBoxingGlobal( "%s has won a boxing match by forfeit against %s.", ReturnPlayerName( targetID ), ReturnPlayerName( playerid ) );
 	} else if ( g_boxingArenaData[ E_BET ] > 0 ) {
 		GivePlayerCash( targetID, g_boxingArenaData[ E_BET ] );
-		SendBoxingGlobal( "%s has won a boxing match by forfeit against %s for %s.", ReturnPlayerName( targetID ), ReturnPlayerName( playerid ), number_format( g_boxingArenaData[ E_BET ] ) );
+		SendBoxingGlobal( "%s has won a boxing match by forfeit against %s for %s.", ReturnPlayerName( targetID ), ReturnPlayerName( playerid ), cash_format( g_boxingArenaData[ E_BET ] ) );
 	}
 
 	boxing_RestorePlayer( playerid );

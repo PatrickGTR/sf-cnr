@@ -81,7 +81,7 @@ thread OnPlayerRedeemCashCard( playerid, card_id, card_value )
 
 	// alert and give cash
 	GivePlayerCash( playerid, card_value );
-	SendClientMessageToAllFormatted( COLOR_GREY, "[SERVER]"COL_WHITE" %s(%d) has redeemed a "COL_GOLD"%s"COL_WHITE" cash card.", ReturnPlayerName( playerid ), playerid, number_format( card_value ) );
+	SendClientMessageToAllFormatted( COLOR_GREY, "[SERVER]"COL_WHITE" %s(%d) has redeemed a "COL_GOLD"%s"COL_WHITE" cash card.", ReturnPlayerName( playerid ), playerid, cash_format( card_value ) );
 
 	// insert into database
 	mysql_single_query( sprintf( "UPDATE `CASH_CARDS` SET `USES` = `USES` + 1 WHERE `ID`=%d", card_id ) );
