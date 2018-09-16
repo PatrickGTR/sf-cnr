@@ -557,6 +557,17 @@ CMD:paintball( playerid, params[ ] )
 	if ( !IsPlayerInPaintBall( playerid ) )
 		return SendError( playerid, "You're not in any paintball lobby." );
 
+	if ( strmatch( params, "leave" ) )
+	{
+		if ( !IsPlayerInPaintBall( playerid ) )
+		    return SendError( playerid, "You're not inside the paintball." );
+
+		LeavePlayerPaintball( playerid );
+	    SetPlayerHealth( playerid, -1 );
+	    SendServerMessage( playerid, "You have left the paintball arena." );
+	    return 1;
+	}
+
 	if ( !hasPaintBallArena( playerid ) )
 		return SendError( playerid, "This command requires you to be the host of a lobby." );
 
@@ -610,16 +621,6 @@ CMD:paintball( playerid, params[ ] )
 		 	KillTimer( g_paintballData[ id ] [ E_CD_TIMER ] );
 			g_paintballData[ id ] [ E_CD_TIMER ] = SetTimerEx( "paintballCountDown", 960, false, "dd", id, iSeconds - 1 );
 		}
-	}
-	else if ( strmatch( params, "leave" ) )
-	{
-		if ( !IsPlayerInPaintBall( playerid ) )
-		    return SendError( playerid, "You're not inside the paintball." );
-
-		LeavePlayerPaintball( playerid );
-	    SetPlayerHealth( playerid, -1 );
-	    SendServerMessage( playerid, "You have left the paintball arena." );
-	    return 1;
 	}
 	else
 	{
