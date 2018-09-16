@@ -37,6 +37,11 @@ enum E_POOL_BALL_TYPE {
 	E_8BALL
 };
 
+enum E_POOL_SKINS {
+	E_SKIN_DEFAULT,
+	E_SKIN_WOOD_PURPLE
+};
+
 enum E_POOL_BALL_OFFSET_DATA
 {
 	E_MODEL_ID, 					E_BALL_NAME[ 9 ],				E_POOL_BALL_TYPE: E_BALL_TYPE,
@@ -138,8 +143,11 @@ hook OnScriptInit( )
 	TextDrawSetSelectable(g_PoolTextdraw, 0);
 
 	// create static pooltables
-	CreatePoolTable( 510.10159, -84.83590, 998.93750, 90.00000, 11, 7 ); // misty's bar
-	CreatePoolTable( 506.48441, -84.83590, 998.93750, 90.00000, 11, 7 ); // misty's bar
+	CreatePoolTable( 510.10159, -84.83590, 998.9375, 90.00000, 11, 7 ); // misty's bar
+	CreatePoolTable( 506.48441, -84.83590, 998.9375, 90.00000, 11, 7 ); // misty's bar
+
+	// custom pool tables
+	CreatePoolTable( -1019.264, 1045.7419, 0.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -532,7 +540,7 @@ stock Pool_RemovePlayer( playerid )
 }
 
 /* ** Functions ** */
-stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0 )
+stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 0, world = 0, E_POOL_SKINS: skin = E_SKIN_DEFAULT )
 {
 	if ( A != 0 && A != 90.0 && A != 180.0 && A != 270.0 && A != 360.0 ) {
 		return print( "[POOL] [ERROR] Pool tables must be positioned at either 0, 90, 180, 270 and 360 degrees." ), 1;
@@ -570,8 +578,7 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 		PHY_CreateWall( x_vertex[ 0 ] + X, y_vertex[ 0 ] + Y, x_vertex[ 2 ] + X, y_vertex[ 2 ] + Y );
 
 		// create boundary for replacing the cueball
-		new
-			Float: vertices[ 4 ];
+		new Float: vertices[ 4 ];
 
 		Pool_RotateXY( 0.85, 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
 		Pool_RotateXY( -0.85, -0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
@@ -580,6 +587,16 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 		vertices[ 1 ] += g_poolTableData[ poolid ] [ E_Y ], vertices[ 3 ] += g_poolTableData[ poolid ] [ E_Y ];
 
 		g_poolTableData[ poolid ] [ E_CUEBALL_AREA ] = CreateDynamicRectangle( vertices[ 2 ], vertices[ 3 ], vertices[ 0 ], vertices[ 1 ], .interiorid = interior, .worldid = world );
+
+		// skins
+		if ( skin == E_SKIN_WOOD_PURPLE ) // Panther
+		{
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 1, 8401, "vgshpground", "dirtywhite", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 2, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 0, 10375, "subshops_sfs", "ws_white_wall1", -10072402 );
+		}
 
 	#if defined POOL_DEBUG
 		ReloadPotTestLabel( 0, poolid );
