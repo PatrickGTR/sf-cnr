@@ -75,6 +75,8 @@ hook OnPlayerDeath( playerid, killerid, reason )
 			SetPlayerHealth( killerid, g_paintballData[ a ] [ E_HEALTH ] );
 			SetPlayerArmour( killerid, g_paintballData[ a ] [ E_ARMOUR ] );
 		}
+
+		SendDeathMessage( killerid, playerid, reason );
 		return Y_HOOKS_BREAK_RETURN_1;
 	}
 	return 1;
@@ -609,7 +611,20 @@ CMD:paintball( playerid, params[ ] )
 			g_paintballData[ id ] [ E_CD_TIMER ] = SetTimerEx( "paintballCountDown", 960, false, "dd", id, iSeconds - 1 );
 		}
 	}
-	else SendUsage( playerid, "/paintball [EDIT/KICK/COUNTDOWN/LEADER]" );
+	else if ( strmatch( params, "leave" ) )
+	{
+		if ( !IsPlayerInPaintBall( playerid ) )
+		    return SendError( playerid, "You're not inside the paintball." );
+
+		LeavePlayerPaintball( playerid );
+	    SetPlayerHealth( playerid, -1 );
+	    SendServerMessage( playerid, "You have left the paintball arena." );
+	    return 1;
+	}
+	else
+	{
+		SendUsage( playerid, "/paintball [LEAVE/EDIT/KICK/COUNTDOWN/LEADER]" );
+	}
 	return 1;
 }
 
@@ -631,3 +646,5 @@ CMD:p( playerid, params[ ] )
 	}
 	return 1;
 }
+
+CMD:pleave( playerid, params[ ] ) return cmd_pb( playerid, "leave" );
