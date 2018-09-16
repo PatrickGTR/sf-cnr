@@ -358,6 +358,9 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	            			SetCameraBehindPlayer( playerid );
 							ApplyAnimation( playerid, "CARRY", "crry_prtial", 4.0, 0, 1, 1, 0, 0 );
 
+							TextDrawHideForPlayer( playerid, g_PoolTextdraw );
+							HidePlayerProgressBar( playerid, g_PoolPowerBar[playerid] );
+
 	            			g_poolTableData[ poolid ] [ E_AIMER ] = -1;
 	            			DestroyObject( g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] );
 	            			g_poolTableData[ poolid ] [ E_AIMER_OBJECT ] = -1;

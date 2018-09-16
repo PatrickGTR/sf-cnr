@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -5381,7 +5381,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 					return 0;
 
 				// Anti Random Deathmatch
-				if ( IsRandomDeathmatch( playerid, iDriver ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerInEvent( playerid ) && ! IsPlayerInMinigame( playerid ) )
+				if ( IsRandomDeathmatch( playerid, iDriver ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerInEvent( playerid ) && ! IsPlayerDueling( playerid ) )
 					return 0;
 
 				if ( p_WantedLevel[ playerid ] <= 2 && p_Class[ playerid ] != CLASS_POLICE && p_Class[ iDriver ] == CLASS_POLICE && GetPVarInt( playerid, "ShotCopWantedCD" ) < g_iTime )
@@ -5594,7 +5594,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 0;
 
 	// Anti RDM and gang member damage
-	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerInMinigame( playerid ) )
+	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) )
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
@@ -7148,7 +7148,7 @@ CMD:business( playerid, params[ ] )
 		}
 		return 1;
 	}
-	return SendUsage( playerid, "/(b)usiness [BUY/SELL/LEAVE]" );
+	return SendUsage( playerid, "/(b)usiness [BUY/PRODUCTION/SELL/LEAVE]" );
 }
 
 CMD:race( playerid, params[ ] )
@@ -9773,17 +9773,6 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 		if ( !irc )
 			SendError( playerid, "Player not found." );
 	}
-	return 1;
-}
-
-CMD:pleave( playerid, params[ ] )
-{
-	if ( !IsPlayerInPaintBall( playerid ) )
-	    return SendError( playerid, "You're not inside the paintball." );
-
-	LeavePlayerPaintball( playerid );
-    SetPlayerHealth( playerid, -1 );
-    SendServerMessage( playerid, "You have left the paintball arena." );
 	return 1;
 }
 
