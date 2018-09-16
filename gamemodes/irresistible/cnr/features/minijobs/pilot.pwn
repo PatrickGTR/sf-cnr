@@ -26,11 +26,6 @@ enum E_AIRPORT_DATA
 	Float: E_X,				Float: E_Y,				Float: E_Z,
 };
 
-enum E_CARGO_DATA
-{
-	E_NAME[ 24 ], 			E_RISK
-};
-
 new
 	g_DropOffLocations[ ] [ E_PILOT_DATA ] =
 	{
@@ -69,27 +64,7 @@ new
 		{ "Abandoned Airstrip",				175.2288, 2504.6611, 16.4844 },
 		{ "Abandoned Airstrip",				266.3593, 2535.8496, 16.8125 }
 	},
-
-	g_CargoData[  ][ E_CARGO_DATA ] =
-	{
-		// HARDER CARGO
-		{ "Weapons", 						RISK_FACTOR_HARD },
-		{ "Weed", 							RISK_FACTOR_HARD },
-		{ "Cocaine", 						RISK_FACTOR_HARD },
-		{ "Methamphetamine", 				RISK_FACTOR_HARD },
-		{ "Gold", 							RISK_FACTOR_HARD },
-		{ "Diamonds", 						RISK_FACTOR_HARD },
-
-		// EASY CARGO
-		{ "Wheat", 							RISK_FACTOR_EASY },
-		{ "Clothes", 						RISK_FACTOR_EASY },
-		{ "Drinks", 						RISK_FACTOR_EASY },
-		{ "Soybeans", 						RISK_FACTOR_EASY },
-		{ "Coffee", 						RISK_FACTOR_EASY },
-		{ "Medical Supplies", 				RISK_FACTOR_EASY }
-	},
-
-	//g_CargoName[  ][ 8 ] = 					{ "Wheat", "Weed", "Meth", "Coke", "Weapons", "Clothes", "Drinks" },
+	g_CargoName[  ][ 8 ] = 					{ "Wheat", "Weed", "Meth", "Coke", "Weapons", "Clothes", "Drinks" },
 
 	bool: p_hasPilotJob 					[ MAX_PLAYERS char ],
 	p_PilotMapIcon 							[ MAX_PLAYERS ] = { 0xFFFF, ... },
@@ -194,7 +169,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			GivePlayerScore( playerid, 1 + floatround( p_PilotDistance[ playerid ] / 1000.0 ) );
 			GivePlayerCash( playerid, iCashEarned );
 
-			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( iCashEarned ), g_CargoData[ p_PilotCargo[ playerid ] ][ E_NAME ] );
+			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( iCashEarned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
 			StopPlayerPilotWork( playerid );
 			return 1;
 		}
@@ -214,24 +189,6 @@ stock getClosestPilotRoute( playerid, &Float: distance = FLOAT_INFINITY )
     		distance = fTmp, iCurrent = i;
 
 	return iCurrent;
-}
-
-stock getRandomCargo( iRisk )
-{
-	new 
-		aRandom[ sizeof( g_CargoData ) ],
-		iRandom = -1
-	;
-
-	for ( new i = 0; i < sizeof ( g_CargoData ); i ++ )
-	{
-		if ( g_CargoData[ i ][ E_RISK ] == iRisk )
-		{
-			aRandom[ ++iRandom ] = i;
-		}
-	}
-
-	return aRandom[ random( iRandom + 1 ) ];
 }
 
 stock StopPlayerPilotWork( playerid )
@@ -316,7 +273,7 @@ function OnPilotLoadCargo( playerid )
 
 	TogglePlayerControllable(playerid, true);
 
-	ShowPlayerHelpDialog( playerid, 7500, "Great! The cargo full of %s has been loaded, deliver it to the drop off location on your radar!", g_CargoData[ p_PilotCargo[ playerid ] ][ E_NAME ]);
+	ShowPlayerHelpDialog( playerid, 7500, "Great! The cargo full of %s has been loaded, deliver it to the drop off location on your radar!", g_CargoName[ p_PilotCargo[ playerid ] ]);
 
 	return KillTimer( p_PilotLoadTimer[ playerid ] ), p_PilotLoadTimer[ playerid ] = 0xFFFF, 1;
 }
@@ -354,7 +311,7 @@ CMD:pilot( playerid, params[ ] )
 				p_PilotVehicle 			[ playerid ] = GetPlayerVehicleID( playerid );
 				p_PilotDifficulty 		[ playerid ] = ( strmatch( szDifficulty, "harder" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
 
-				p_PilotCargo 			[ playerid ] = getRandomCargo( strmatch( szDifficulty, "harder" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
+				p_PilotCargo 			[ playerid ] = random( sizeof( g_CargoName ) );
 				p_PilotRoute			[ playerid ] { 0 } = random ( sizeof ( g_AirportLocations ) );
 				p_PilotRoute			[ playerid ] { 1 } = random ( sizeof( g_DropOffLocations ) );
 
@@ -366,7 +323,7 @@ CMD:pilot( playerid, params[ ] )
 				p_PilotPositionTimer[ playerid ] = SetTimerEx( "OnPilotPositionUpdate", 750, false, "dd", playerid, p_PilotRoute[ playerid ] { 0 } );
 	  			PlayerTextDrawShow( playerid, p_TruckingTD[ playerid ] );
 
-				ShowPlayerHelpDialog( playerid, 7500, "A ~g~~h~truck blip~w~~h~ has been shown on your radar. Go to where the truck blip is to pickup your cargo full of %s.", g_CargoData[ p_PilotCargo[ playerid ] ][ E_NAME ] );
+				ShowPlayerHelpDialog( playerid, 7500, "A ~g~~h~truck blip~w~~h~ has been shown on your radar. Go to where the truck blip is to pickup your cargo full of %s.", g_CargoName[ p_PilotCargo[ playerid ] ] );
 			}
 			else SendError( playerid, "You already have a pilot job started! Cancel it with "COL_GREY"/pilot stop"COL_WHITE"." );
 		}
