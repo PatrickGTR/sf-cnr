@@ -17,6 +17,14 @@
 #define CLASS_FIREMAN               ( 2 )
 #define CLASS_MEDIC              	( 3 )
 
+/* ** Constants ** */
+const
+	Float: default_X 				= -2242.152,
+	Float: default_Y 				= 759.0619,
+	Float: default_Z 				= 30.0,
+	Float: default_Angle 			= 0.0
+;
+
 /* ** Variables ** */
 stock const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA", "Paramedic", "Fireman" };
 stock const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF, 0x4DFF4DFF, 0xA83434FF };

@@ -733,8 +733,6 @@ stock initializeBlackjackTextdraws( id )
             TextDrawUseBox( g_blackjackPlayerCards[ id ] [ c ] [ p ], 1 );
             TextDrawBoxColor( g_blackjackPlayerCards[ id ] [ c ] [ p ], 255 );
             TextDrawTextSize( g_blackjackPlayerCards[ id ] [ c ] [ p ], 22.000000, 37.000000 );
-
-            printf("%d", _:g_blackjackPlayerCards[ id ] [ c ] [ p ]);
         }
     }
 

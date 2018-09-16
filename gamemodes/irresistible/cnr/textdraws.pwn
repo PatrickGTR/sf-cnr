@@ -643,6 +643,7 @@ hook OnPlayerConnect( playerid )
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
+
 /* ** Hooked Functions ** */
 /*stock Text: TD_TextDrawCreate( Float: x, Float: y, text[ ] )
 {

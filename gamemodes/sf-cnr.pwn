@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -79,7 +79,6 @@ new bool: False = false;
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0]==1)
 #define Achievement:: 				ach_
 #define UpdateWoodStockObject()		(format(szNormalString,32,"%d Logs Ready",g_LogsInStock),SetDynamicObjectMaterialText(g_LogCountObject,0,szNormalString,130,"Arial",0,1,-1,0,1))
-#define replacePercentageSymbol(%0)	strreplacechar(szString,'%','#')
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
@@ -123,13 +122,6 @@ new bool: False = false;
 #define EXCHANGE_XPCASH             10 // Per 1 XP for cash.
 
 #define VW_SHAMAL 					220
-
-const
-	Float: default_X 				= -2242.152,
-	Float: default_Y 				= 759.0619,
-	Float: default_Z 				= 30.0,
-	Float: default_Angle 			= 0.0
-;
 
 /* ** Donation System ** */
 #define szRedemptionSalt 			"7resta#ecacakumedeM=yespawr!d@et"

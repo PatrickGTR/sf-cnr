@@ -102,8 +102,8 @@ new
 	g_rouletteTableData			[ MAX_ROULETTE_TABLES ] [ E_ROULETTE_DATA ],
 	Iterator: roulettetables 	< MAX_ROULETTE_TABLES >,
 
-	Text: g_rouletteNumberBG		[ MAX_ROULETTE_TABLES ],
-	Text: g_rouletteNumberTD		[ MAX_ROULETTE_TABLES ],
+	Text: g_rouletteNumberBG	[ MAX_ROULETTE_TABLES ],
+	Text: g_rouletteNumberTD	[ MAX_ROULETTE_TABLES ],
 
 	g_rouletteChipColor			[ MAX_PLAYERS ],
 	g_rouletteChip				[ MAX_PLAYERS ] [ 2 ] [ sizeof( g_rouletteOffsets ) ],
