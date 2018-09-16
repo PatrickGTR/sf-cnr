@@ -329,7 +329,7 @@ CMD:logdialog( playerid, params[ ] )
 {
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
 	g_DialogLogging = !g_DialogLogging;
-	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You are %s dialogs.", g_CommandLogging == true ? ("logging") : ("not logging"));
+	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You are %s dialogs.", g_DialogLogging == true ? ("logging") : ("not logging"));
 	return 1;
 }
 

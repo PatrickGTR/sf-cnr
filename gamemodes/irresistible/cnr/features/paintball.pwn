@@ -569,7 +569,7 @@ CMD:paintball( playerid, params[ ] )
 	}
 	else if ( !strcmp( params, "kick", false, 4 ) )
 	{
-		if ( sscanf( params[ 5 ], #sscanf_u, pID ) ) return SendUsage( playerid, "/paintball kick [PLAYER_ID]" );
+		if ( sscanf( params[ 5 ], "u", pID ) ) return SendUsage( playerid, "/paintball kick [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
 		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );
@@ -583,7 +583,7 @@ CMD:paintball( playerid, params[ ] )
 	}
 	else if ( !strcmp( params, "leader", false, 6 ) )
 	{
-		if ( sscanf( params[ 7 ], #sscanf_u, pID ) ) return SendUsage( playerid, "/paintball paintball [PLAYER_ID]" );
+		if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/paintball paintball [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
 		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );

@@ -413,8 +413,8 @@ CMD:h( playerid, params[ ] )
 		{
 			szBigString = ""COL_WHITE"Option\t"COL_WHITE"Current Value\n";
 
-			format(szBigString, sizeof( szBigString ), "%sSet House Title\t%s\nUpgrade Interior\t\nSet House Password\t"COL_GREY"%s\nWeapon Storage\t\nFurniture\t\n", 
-				szBigString, 
+			format(szBigString, sizeof( szBigString ), "%sSet House Title\t%s\nUpgrade Interior\t\nSet House Password\t"COL_GREY"%s\nWeapon Storage\t\nFurniture\t\n",
+				szBigString,
 				g_houseData[ ID ] [ E_HOUSE_NAME ],
 				g_houseData[ ID ] [ E_PASSWORD ] );
 
@@ -551,7 +551,7 @@ CMD:h( playerid, params[ ] )
 
 	    if ( ID == -1 ) return SendError( playerid, "You're not in any house." );
 		else if ( !strmatch( g_houseData[ ID ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
-	    else if ( sscanf( params[ 6 ],""#sscanf_u"d", offerid, price ) ) return SendUsage( playerid, "/h offer [PLAYER_ID] [PRICE]" );
+	    else if ( sscanf( params[ 6 ], "ud", offerid, price ) ) return SendUsage( playerid, "/h offer [PLAYER_ID] [PRICE]" );
 	    else if ( !IsPlayerConnected( offerid ) ) return SendError( playerid, "This player is not connected." );
 	    else if ( offerid == playerid ) return SendError( playerid, "You cannot make a house offer to yourself." );
 	    else if ( price > 30000000 ) return SendError( playerid, "The maximum amount you can sell a house for is $30,000,000." );
