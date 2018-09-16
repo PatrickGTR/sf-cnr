@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard
+ * Developed by Steven Howard, Lorenc Pekaj
  * Module: cnr/features/pool.pwn
  * Purpose: pool minigame
  */
@@ -39,7 +39,9 @@ enum E_POOL_BALL_TYPE {
 
 enum E_POOL_SKINS {
 	E_SKIN_DEFAULT,
-	E_SKIN_WOOD_PURPLE
+	E_SKIN_WOOD_PURPLE,
+	E_SKIN_WOOD_GREEN,
+	E_SKIN_GOLD_GREEN
 };
 
 enum E_POOL_BALL_OFFSET_DATA
@@ -148,6 +150,8 @@ hook OnScriptInit( )
 
 	// custom pool tables
 	CreatePoolTable( -1019.264, 1045.7419, 1.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
+	CreatePoolTable( 1999.0837, 1888.4924, 84.22465, 0.000000, 11, 0, E_SKIN_GOLD_GREEN ); // banging7grams
+	CreatePoolTable( 2005.2181, 1891.0632, 84.22465, 90.00000, 17, 0, E_SKIN_WOOD_GREEN ); // nibble
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -596,6 +600,22 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 0, 10375, "subshops_sfs", "ws_white_wall1", -10072402 );
+		}
+		else if ( skin == E_SKIN_GOLD_GREEN )
+		{
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 0, 1273, "icons3", "greengrad32", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 1, 946, "bskball_standext", "drkbrownmetal", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 8463, "vgseland", "tiadbuddhagold", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 8463, "vgseland", "tiadbuddhagold", 0 );
+		}
+		else if ( skin == E_SKIN_WOOD_GREEN )
+		{
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 0, 1273, "icons3", "greengrad32", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 1, 8401, "vgshpground", "dirtywhite", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 2, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
 		}
 
 	#if defined POOL_DEBUG
