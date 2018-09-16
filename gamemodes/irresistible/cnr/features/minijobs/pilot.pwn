@@ -120,7 +120,7 @@ hook OnPlayerStateChange( playerid, newstate, oldstate )
     }
 
     else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle(playerid) && !p_hasPilotJob{ playerid }) {
-    	if ( IsVehiclePlane( GetPlayerVehicleID( playerid ) ) )
+    	if ( Pilot_IsPlane( GetPlayerVehicleID( playerid ) ) )
     	{
     		ShowPlayerHelpDialog( playerid, 3000, "You can begin a pilot job by typing ~g~~h~/pilot" );
     	}
@@ -166,25 +166,12 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			new
 				iCashEarned = floatround( p_PilotDistance[ playerid ] * ( p_PilotDifficulty[ playerid ] == RISK_FACTOR_EASY ? 1.0 : 2.0 ) + PILOT_BONUS );
 
-			PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
-
 			GivePlayerScore( playerid, 1 + floatround( p_PilotDistance[ playerid ] / 1000.0 ) );
 			GivePlayerCash( playerid, iCashEarned );
 
 			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( iCashEarned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
-
-			p_PilotDifficulty 		[ playerid ] = -1;
-			p_PilotDistance			[ playerid ] = 0.0;
-			p_hasPilotJob			[ playerid ] = false;
-			p_PilotCheckPoint		[ playerid ] = 0xFFFF;
-			p_PilotMapIcon			[ playerid ] = 0xFFFF;
-			p_PilotCancelTimer		[ playerid ] = 0xFFFF;
-			p_PilotLoadTimer		[ playerid ] = 0xFFFF;
-			p_PilotVehicle 			[ playerid ] = INVALID_VEHICLE_ID;
-			p_PilotRoute 			[ playerid ] { 0 } = INVALID_PILOT_ROUTE;
-			p_PilotRoute 			[ playerid ] { 1 } = INVALID_PILOT_ROUTE;
-
-			return ( p_PilotRoute[ playerid ] { 1 } = INVALID_PILOT_ROUTE ), 1;
+			StopPlayerPilotWork( playerid );
+			return 1;
 		}
 
 		return 1;
@@ -227,11 +214,13 @@ stock StopPlayerPilotWork( playerid )
 	PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 }
 
-stock IsVehiclePlane ( vehicleid )
+stock Pilot_IsPlane( vehicleid )
 {
-	if ( GetVehicleModel( vehicleid ) == 553 || GetVehicleModel( vehicleid ) == 519 || GetVehicleModel( vehicleid ) == 593 )
-		return 1;
-	return 0;
+	new
+		modelid = GetVehicleModel( vehicleid );
+
+	// skimmer, beagle, cropduster, nevada, andromada, dodo, -shamal-
+	return modelid == 460 || modelid == 511 || modelid == 512 || modelid == 553 || modelid == 592 || modelid == 593; // || modelid == 519;
 }
 
 function OnPilotPositionUpdate( playerid, routeid )
@@ -307,9 +296,9 @@ CMD:pilot( playerid, params[ ] )
 	}
 	else if ( strmatch( szDifficulty, "normal" ) || strmatch( szDifficulty, "harder" ))
 	{
-		if ( IsVehiclePlane( iVehicle ))
+		if ( Pilot_IsPlane( iVehicle ))
 		{
-			if ( !p_hasPilotJob{ playerid } )
+			if ( ! p_hasPilotJob{ playerid } )
 			{
 				if ( p_WorkCooldown[ playerid ] > g_iTime )
 					return SendError( playerid, "You must wait %d seconds before working again.", p_WorkCooldown[ playerid ] - g_iTime );
