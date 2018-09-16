@@ -17,8 +17,9 @@
 new const
 	g_szCheatNames         		  [ ] [ ] =
 	{
-		"Aimbot (1)", "Aimbot (2)", "Triggerbot (1)", "Triggerbot (2)", "Nametag wallhack (1)", "ESP wallhack (1)", "Macro keybind (1)",
-		"Fake ping (1)", "Weapon info (1)", "No recoil (1)", "No recoil (2)", "Aimbot (3)", "Aimbot (4)", "CLEO"
+		"Aimbot (1)", "Aimbot (2)", "Triggerbot (1)", "Triggerbot (2)", "Nametag wallhack (1)", "ESP (1)", "Macro keybind (1)",
+		"Fake ping (1)", "Weapon info (1)", "No recoil (1)", "No recoil (2)", "Aimbot (3)", "Aimbot (4)", "CLEO", "Aimbot (5)", "Aimbot (6)",
+		"No recoil (3)", "Untrusted (1)", "Untrusted (2)", "Untrusted (3)", "Untrusted (4)"
 	}
 ;
 

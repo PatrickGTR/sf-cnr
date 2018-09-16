@@ -13576,7 +13576,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 					}
 
 					// alert burglar of any furniture
-					if ( ! is_owner && p_Job[ playerid ] == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
+					if ( ! is_owner && p_Job{ playerid } == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
 						if ( Iter_Count( housefurniture[ i ] ) ) {
 							ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
 						} else {

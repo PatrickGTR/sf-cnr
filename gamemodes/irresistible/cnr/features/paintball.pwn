@@ -65,7 +65,10 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	if ( IsPlayerConnected( killerid ) && p_inPaintBall{ killerid } == true )
+	if ( ! ( 0 <= killerid < MAX_PLAYERS ) ) // ignore invalid id / npc killers
+		return 1;
+
+	if ( p_inPaintBall{ killerid } == true )
 	{
 		new
 			a = p_PaintBallArena{ killerid };

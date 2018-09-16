@@ -147,7 +147,7 @@ hook OnScriptInit( )
 	CreatePoolTable( 506.48441, -84.83590, 998.9375, 90.00000, 11, 7 ); // misty's bar
 
 	// custom pool tables
-	CreatePoolTable( -1019.264, 1045.7419, 0.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
+	CreatePoolTable( -1019.264, 1045.7419, 1.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
