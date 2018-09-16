@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define PILOT_BONUS					( 4000 )
+#define PILOT_BONUS					( 4000.0 )
 #define INVALID_PILOT_ROUTE 		( 0xFF )
 
 /* ** Variables ** */
@@ -80,6 +80,9 @@ new
 	p_PilotRoute			 				[ MAX_PLAYERS ] [ 2 char ]
 ;
 
+/* ** Forwards ** */
+forward Float: Pilot_GetPlaneModelBonus 	( vehicleid );
+
 /* ** Hooks ** */
 hook OnPlayerDisconnect( playerid, reason )
 {
@@ -119,13 +122,11 @@ hook OnPlayerStateChange( playerid, newstate, oldstate )
     	p_PilotCancelTimer[ playerid ] = 0xFFFF;
     }
 
-    else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle(playerid) && !p_hasPilotJob{ playerid }) {
-    	if ( Pilot_IsPlane( GetPlayerVehicleID( playerid ) ) )
-    	{
-    		ShowPlayerHelpDialog( playerid, 3000, "You can begin a pilot job by typing ~g~~h~/pilot" );
+    else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle( playerid ) && !p_hasPilotJob{ playerid }) {
+    	if ( Pilot_IsExportableVehicle( GetPlayerVehicleID( playerid ) ) ) {
+    		ShowPlayerHelpDialog( playerid, 3000, "You can begin a pilot job in this vehicle by typing ~g~~h~/pilot" );
     	}
     }
-
     return 1;
 }
 
@@ -163,13 +164,19 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 
 		else if ( p_PilotRoute[ playerid ] { 1 } != INVALID_PILOT_ROUTE )
 		{
+
 			new
-				iCashEarned = floatround( p_PilotDistance[ playerid ] * ( p_PilotDifficulty[ playerid ] == RISK_FACTOR_EASY ? 1.0 : 2.0 ) + PILOT_BONUS );
+				cash_earned = floatround( ( p_PilotDistance[ playerid ] + PILOT_BONUS ) * Pilot_GetPlaneModelBonus( p_PilotVehicle[ playerid ] ) );
+
+			if ( p_PilotDifficulty[ playerid ] != RISK_FACTOR_EASY ) {
+				cash_earned *= 2;
+				GivePlayerWantedLevel( playerid, 6 );
+			}
 
 			GivePlayerScore( playerid, 1 + floatround( p_PilotDistance[ playerid ] / 1000.0 ) );
-			GivePlayerCash( playerid, iCashEarned );
+			GivePlayerCash( playerid, cash_earned );
 
-			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( iCashEarned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
+			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( cash_earned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
 			StopPlayerPilotWork( playerid );
 			return 1;
 		}
@@ -214,13 +221,37 @@ stock StopPlayerPilotWork( playerid )
 	PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 }
 
-stock Pilot_IsPlane( vehicleid )
+stock Pilot_IsExportableVehicle( vehicleid )
 {
 	new
 		modelid = GetVehicleModel( vehicleid );
 
 	// skimmer, beagle, cropduster, nevada, andromada, dodo, -shamal-
-	return modelid == 460 || modelid == 511 || modelid == 512 || modelid == 553 || modelid == 592 || modelid == 593; // || modelid == 519;
+	return modelid == 460 || modelid == 511 || modelid == 512 || modelid == 553 || modelid == 592 || modelid == 593 || modelid == 519 || modelid == 417 || modelid == 447 || modelid == 469 || modelid == 487 || modelid == 563 || modelid == 548;
+}
+
+stock Float: Pilot_GetPlaneModelBonus( vehicleid )
+{
+	new modelid = GetVehicleModel( vehicleid );
+	new Float: bonus_export = 1.0;
+
+	switch ( modelid )
+	{
+		// helicopter
+		case 417: bonus_export = 2.1;
+		case 447, 469: bonus_export = 1.6;
+		case 487: bonus_export = 1.2;
+		case 563, 548: bonus_export = 1.75;
+
+		// airplanes
+		case 460: bonus_export = 1.25;
+		case 511: bonus_export = 1.35;
+		case 512: bonus_export = 1.1;
+		case 553: bonus_export = 1.8;
+		case 592: bonus_export = 1.4;
+		case 519: bonus_export = 0.8;
+	}
+	return bonus_export;
 }
 
 function OnPilotPositionUpdate( playerid, routeid )
@@ -296,7 +327,7 @@ CMD:pilot( playerid, params[ ] )
 	}
 	else if ( strmatch( szDifficulty, "normal" ) || strmatch( szDifficulty, "harder" ))
 	{
-		if ( Pilot_IsPlane( iVehicle ))
+		if ( Pilot_IsExportableVehicle( iVehicle ) )
 		{
 			if ( ! p_hasPilotJob{ playerid } )
 			{
@@ -319,6 +350,10 @@ CMD:pilot( playerid, params[ ] )
 				p_PilotDistance			[ playerid ] = GetDistanceBetweenPoints( g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_X ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Y ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Z ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_X ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Y ], g_DropOffLocations[ p_PilotRoute[ playerid ] { 1 } ] [ E_Z ] );
 				p_PilotMapIcon			[ playerid ] = CreateDynamicMapIconEx( g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_X ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Y ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
 				p_PilotCheckPoint		[ playerid ] = CreateDynamicRaceCP( 0, g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_X ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Y ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Z ], 0.0, 0.0, 0.0, 10.0, -1, -1, playerid );
+
+				if( p_PilotDifficulty[ playerid ] ) { // give the player 6 wanted for starting
+					GivePlayerWantedLevel( playerid, 6 );
+				}
 
 				p_PilotPositionTimer[ playerid ] = SetTimerEx( "OnPilotPositionUpdate", 750, false, "dd", playerid, p_PilotRoute[ playerid ] { 0 } );
 	  			PlayerTextDrawShow( playerid, p_TruckingTD[ playerid ] );
