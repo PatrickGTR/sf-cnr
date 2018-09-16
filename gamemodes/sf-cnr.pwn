@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-//#pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
 
 #define DEBUG_MODE
@@ -3725,9 +3725,9 @@ public OnServerUpdateTimer( )
 
 		        if ( IsPlayerInRangeOfPoint( playerid, 10.0, g_gpsData[ id ] [ E_X ], g_gpsData[ id ] [ E_Y ], g_gpsData[ id ] [ E_Z ] ) )
 		        {
-	  				TextDrawHideForPlayer	( playerid, p_GPSInformation[ playerid ] );
-					DestroyDynamicObject	( p_GPSObject[ playerid ] );
-					KillTimer				( p_GPSTimer[ playerid ] );
+	  				PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
+					DestroyDynamicObject( p_GPSObject[ playerid ] );
+					KillTimer( p_GPSTimer[ playerid ] );
 
 		           	p_GPSLocation	[ playerid ] = 0;
 					p_GPSToggled	{ playerid } = false;
@@ -4273,7 +4273,7 @@ public OnPlayerRequestClass( playerid, classid )
 	PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 	KillTimer( p_TrackingTimer[ playerid ] );
 	p_TrackingTimer[ playerid ] = -1;
-	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	HidePlayerTogglableTextdraws( playerid );
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
@@ -4281,8 +4281,8 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	KillTimer( p_FireDistanceTimer[ playerid ] );
 	p_FireDistanceTimer[ playerid ] = 0xFF;
-	TextDrawHideForPlayer( playerid, p_FireDistance1[ playerid ] );
-	TextDrawHideForPlayer( playerid, p_FireDistance2[ playerid ] );
+	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
+	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
 	p_MoneyBag{ playerid } = false;
 	RemovePlayerAttachedObject( playerid, 1 );
 
@@ -5841,14 +5841,14 @@ public OnPlayerDeath( playerid, killerid, reason )
 	p_TrackingTimer[ playerid ] = -1;
 	p_GPSLocation	[ playerid ] = 0;
 	p_GPSToggled	{ playerid } = false;
-	TextDrawHideForPlayer( playerid, p_GPSInformation[ playerid ] );
+	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
 	DestroyDynamicObject( p_GPSObject[ playerid ] );
 	KillTimer( p_GPSTimer[ playerid ] );
 	DeletePVar( playerid, "AlcatrazWantedCD" );
 	DeletePVar( playerid, "ShotCopWantedCD" );
 	p_GPSTimer[ playerid ] = 0xFF;
   	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
-	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
@@ -6483,10 +6483,10 @@ function OnPlayerFireDistanceUpdate( playerid )
 			else format( szFire2, sizeof( szFire2 ), "%s~r~FIRE %d:%s~w~ %0.0f m~n~", szFire2, i,i==1?("_"):(""), dis );
 		}
 	}
-	TextDrawSetString( p_FireDistance1[ playerid ], szFire1 );
-	TextDrawSetString( p_FireDistance2[ playerid ], szFire2 );
-	TextDrawShowForPlayer( playerid, p_FireDistance1[ playerid ] );
-	TextDrawShowForPlayer( playerid, p_FireDistance2[ playerid ] );
+	PlayerTextDrawSetString( playerid, p_FireDistance1[ playerid ], szFire1 );
+	PlayerTextDrawSetString( playerid, p_FireDistance2[ playerid ], szFire2 );
+	PlayerTextDrawShow( playerid, p_FireDistance1[ playerid ] );
+	PlayerTextDrawShow( playerid, p_FireDistance2[ playerid ] );
 	return 1;
 }
 
@@ -9605,8 +9605,8 @@ CMD:rfiretracker( playerid, params[ ] )
 {
 	KillTimer( p_FireDistanceTimer[ playerid ] );
 	p_FireDistanceTimer[ playerid ] = 0xFF;
-	TextDrawHideForPlayer( playerid, p_FireDistance1[ playerid ] );
-	TextDrawHideForPlayer( playerid, p_FireDistance2[ playerid ] );
+	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
+	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
 	SendServerMessage( playerid, "You have turned off your fire tracker." );
 	return 1;
 }
@@ -9669,7 +9669,7 @@ CMD:gps( playerid, params[ ] )
 		KillTimer( p_GPSTimer[ playerid ] );
 		p_GPSTimer[ playerid ] = 0xFF;
 	  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
-	  	TextDrawHideForPlayer( playerid, p_GPSInformation[ playerid ] );
+	  	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
 		return SendServerMessage( playerid, "You have de-activated your GPS." ), 1;
 	}
 	else
@@ -11173,7 +11173,7 @@ CMD:hidetracker( playerid, params[ ] )
 	SendServerMessage(playerid, "You have de-activated the tracker.");
 	KillTimer( p_TrackingTimer[ playerid ] );
 	p_TrackingTimer[ playerid ] = -1;
-	TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	return 1;
 }
 
@@ -11194,7 +11194,7 @@ CMD:track( playerid, params[ ] )
 	{
 	    KillTimer( p_TrackingTimer[ playerid ] );
 	    p_TrackingTimer[ playerid ] = SetTimerEx( "TrackPlayer_timer", 1000, true, "dd", playerid, pID );
-	    TextDrawShowForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
+	    PlayerTextDrawShow( playerid, p_TrackPlayerTD[ playerid ] );
 	    SendServerMessage( playerid, "You have activated the tracker, you can hide it with /hidetracker." );
 	}
 	return 1;
@@ -11205,7 +11205,7 @@ function TrackPlayer_timer( playerid, victimid )
 	if ( !IsPlayerConnected( victimid ) || p_AdminOnDuty{ victimid } == true || GetPlayerState( victimid ) == PLAYER_STATE_SPECTATING || !JobEquals( playerid, JOB_HITMAN ) || p_Class[ playerid ] != CLASS_CIVILIAN )
 	{
 		KillTimer( p_TrackingTimer[ playerid ] ), p_TrackingTimer[ playerid ] = -1;
-		TextDrawHideForPlayer( playerid, p_TrackPlayerTD[ playerid ] );
+		PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	}
 	else
 	{
@@ -11236,7 +11236,7 @@ function TrackPlayer_timer( playerid, victimid )
 		if ( !fDistance || fDistance > 9999.9 )
 			fDistance = 9999.9;
 
-		TextDrawSetString( p_TrackPlayerTD[ playerid ], fDistance != 9999.0 ? sprintf( "%s~n~~w~%0.1fm", ReturnPlayerName( victimid ), fDistance ) : sprintf( "%s~n~~w~unknown", ReturnPlayerName( victimid ) ) );
+		PlayerTextDrawSetString( playerid, p_TrackPlayerTD[ playerid ], fDistance != 9999.0 ? sprintf( "%s~n~~w~%0.1fm", ReturnPlayerName( victimid ), fDistance ) : sprintf( "%s~n~~w~unknown", ReturnPlayerName( victimid ) ) );
 	}
 }
 
@@ -16665,7 +16665,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					p_GPSToggled{ playerid } = true;
 
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s. Follow the arrow to reach your destination.", g_gpsData[ i ] [ E_NAME ] );
-					TextDrawShowForPlayer( playerid, p_GPSInformation[ playerid ] );
+					PlayerTextDrawShow( playerid, p_GPSInformation[ playerid ] );
 		      		break;
 				}
 		      	x++;
@@ -19937,7 +19937,7 @@ function gps_Update( playerid )
 		KillTimer( p_GPSTimer[ playerid ] );
 		p_GPSTimer[ playerid ] = 0xFF;
 	  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
-	  	TextDrawHideForPlayer( playerid, p_GPSInformation[ playerid ] );
+	  	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
 	  	SendServerMessage( playerid, "You have de-activated your GPS." );
 	  	return 0;
 	}
@@ -19948,7 +19948,7 @@ function gps_Update( playerid )
 	;
 	pos = GetPlayerDistanceFromPoint( playerid, g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Z ]);
 	format( string, sizeof( string ), "~g~Location:~w~ %s~n~~g~Distance:~w~ %0.2fm", g_gpsData[ p_GPSLocation[ playerid ] ] [ E_NAME ], pos );
-	TextDrawSetString( p_GPSInformation[ playerid ], string );
+	PlayerTextDrawSetString( playerid, p_GPSInformation[ playerid ], string );
 	v = GetPlayerVehicleID( playerid );
 	GetVehiclePos( v, X, Y, Z );
 	GetVehicleZAngle( v, fAZ );
@@ -23174,8 +23174,8 @@ stock ShowAchievement( playerid, achievement[ ], score = -1 )
 	}
 	KillTimer( p_AchievementTimer[ playerid ] );
 	p_AchievementTimer[ playerid ] = 0xFF;
-	TextDrawSetString( p_AchievementTD[ playerid ], achievement );
-	TextDrawShowForPlayer( playerid, p_AchievementTD[ playerid ] );
+	PlayerTextDrawSetString( playerid, p_AchievementTD[ playerid ], achievement );
+	PlayerTextDrawShow( playerid, p_AchievementTD[ playerid ] );
 	TextDrawShowForPlayer( playerid, g_AchievementTD[ 0 ] );
 	TextDrawShowForPlayer( playerid, g_AchievementTD[ 1 ] );
 	TextDrawShowForPlayer( playerid, g_AchievementTD[ 2 ] );
@@ -23185,7 +23185,7 @@ stock ShowAchievement( playerid, achievement[ ], score = -1 )
 }
 
 function Achievement_Hide( playerid ) {
-	TextDrawHideForPlayer( playerid, p_AchievementTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_AchievementTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AchievementTD[ 0 ] );
 	TextDrawHideForPlayer( playerid, g_AchievementTD[ 1 ] );
 	TextDrawHideForPlayer( playerid, g_AchievementTD[ 2 ] );
@@ -24108,8 +24108,8 @@ stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
 
     va_format( out, sizeof( out ), format, va_start<3> );
 
-    TextDrawSetString( p_HelpBoxTD[ playerid ], out );
-    TextDrawShowForPlayer( playerid, p_HelpBoxTD[ playerid ] );
+    PlayerTextDrawSetString( playerid, p_HelpBoxTD[ playerid ], out );
+    PlayerTextDrawShow( playerid, p_HelpBoxTD[ playerid ] );
 
     KillTimer( p_HideHelpDialogTimer[ playerid ] );
 
@@ -24122,7 +24122,7 @@ stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
 function HidePlayerHelpDialog( playerid )
 {
 	p_HideHelpDialogTimer[ playerid ] = 0xFFFF;
-	TextDrawHideForPlayer( playerid, p_HelpBoxTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
 }
 
 stock fix_NightThermalVisionHack( playerid ) // Created by wups

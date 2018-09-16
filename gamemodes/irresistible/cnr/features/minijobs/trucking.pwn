@@ -150,7 +150,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 		{
 			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
 			p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, p_TruckingRoute[ playerid ] { 1 } );
-  			TextDrawShowForPlayer( playerid, p_TruckingTD[ playerid ] );
+  			PlayerTextDrawShow( playerid, p_TruckingTD[ playerid ] );
 
 			ShowPlayerHelpDialog( playerid, 7500, "Your trailer has been loaded with %s. ~g~~h~Follow the truck blip on your radar to meet the destination.", g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
 			p_TruckingMapIcon	[ playerid ] = CreateDynamicMapIconEx( g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
@@ -176,7 +176,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 2.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
 
 			ach_HandleTruckingCouriers( playerid );
-			TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
+			PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 
 			GivePlayerScore( playerid, 1 + floatround( p_TruckingDistance[ playerid ] / 1000.0 ) );
 			GivePlayerCash( playerid, iCashEarned );
@@ -297,7 +297,7 @@ CMD:work( playerid, params[ ] )
 				p_TruckingCheckPoint[ playerid ] = CreateDynamicRaceCP( 0, g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 0 } ] [ E_Z ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_X ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Y ], g_aTruckingLocations[ p_TruckingRoute[ playerid ] { 1 } ] [ E_Z ], 10.0, -1, -1, playerid );
 
 				p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, p_TruckingRoute[ playerid ] { 0 } );
-	  			TextDrawShowForPlayer( playerid, p_TruckingTD[ playerid ] );
+	  			PlayerTextDrawShow( playerid, p_TruckingTD[ playerid ] );
 
 				ShowPlayerHelpDialog( playerid, 7500, "A ~g~~h~truck blip~w~~h~ has been shown on your radar. Go to where the truck blip is load your trailer with %s.", g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_NAME ] );
 			}
@@ -326,7 +326,7 @@ stock StopPlayerTruckingCourier( playerid )
 	p_TruckingRoute 		[ playerid ] { 0 } = INVALID_TRUCKING_ROUTE;
 	p_TruckingRoute 		[ playerid ] { 1 } = INVALID_TRUCKING_ROUTE;
 
-	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 }
 
 stock getRandomTrailerLoad( iModel, iRisk ) {
@@ -359,14 +359,14 @@ stock getClosestTruckingRoute( playerid, &Float: distance = FLOAT_INFINITY ) {
 function OnTruckPositionUpdate( playerid, routeid )
 {
 	if ( !IsPlayerInAnyVehicle( playerid ) && !p_hasTruckingJob{ playerid } && ( p_TruckingRoute[ playerid ] { 0 } == 0 && p_TruckingRoute[ playerid ] { 1 } == 0 ) ) {
-	  	TextDrawHideForPlayer( playerid, p_TruckingTD[ playerid ] );
+	  	PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 		return ( p_TruckingPositionTimer[ playerid ] = 0xFFFF );
 	}
 
 	new
 		Float: fDistance = GetPlayerDistanceFromPoint( playerid, g_aTruckingLocations[ routeid ] [ E_X ], g_aTruckingLocations[ routeid ] [ E_Y ], g_aTruckingLocations[ routeid ] [ E_Z ] );
 
-	TextDrawSetString( p_TruckingTD[ playerid ], sprintf( "~b~Location:~w~ %s~n~~b~Distance:~w~ %0.2fm", g_aTruckingLocations[ routeid ] [ E_NAME ], fDistance ) );
+	PlayerTextDrawSetString( playerid, p_TruckingTD[ playerid ], sprintf( "~b~Location:~w~ %s~n~~b~Distance:~w~ %0.2fm", g_aTruckingLocations[ routeid ] [ E_NAME ], fDistance ) );
 	return ( p_TruckingPositionTimer[ playerid ] = SetTimerEx( "OnTruckPositionUpdate", 750, false, "dd", playerid, routeid ) );
 }
 

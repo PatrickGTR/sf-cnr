@@ -36,16 +36,9 @@ new
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
 
 	// Server Player Textdraws (Needs Converting)
-	Text:  p_TrackPlayerTD     		[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_FireDistance1        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_FireDistance2         	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_AchievementTD          [ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_GPSInformation        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_ProgressBoxOutsideTD	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_ProgressBoxTD        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  p_ProgressTitleTD      	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_HelpBoxTD 				[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_TruckingTD 			[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -60,6 +53,13 @@ new
 	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_JailTimeTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_ZoneOwnerTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_HelpBoxTD 		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_TruckingTD 		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_TrackPlayerTD     [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_GPSInformation	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_AchievementTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_FireDistance1		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_FireDistance2		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
 	PlayerText: p_VehiclePreviewTD 	[ 7 ] = { PlayerText: INVALID_TEXT_DRAW, ... }
 ;
@@ -458,72 +458,6 @@ hook OnScriptInit( )
 		TextDrawColor(p_ProgressTitleTD[ playerid ], -1);
 		TextDrawSetOutline(p_ProgressTitleTD[ playerid ], 1);
 		TextDrawSetProportional(p_ProgressTitleTD[ playerid ], 1);
-
-		p_AchievementTD[ playerid ] = TextDrawCreate(325.000000, 137.000000, "_");
-		TextDrawAlignment(p_AchievementTD[ playerid ], 2);
-		TextDrawBackgroundColor(p_AchievementTD[ playerid ], 80);
-		TextDrawFont(p_AchievementTD[ playerid ], 1);
-		TextDrawLetterSize(p_AchievementTD[ playerid ], 0.209999, 1.000000);
-		TextDrawColor(p_AchievementTD[ playerid ], -1);
-		TextDrawSetOutline(p_AchievementTD[ playerid ], 1);
-		TextDrawSetProportional(p_AchievementTD[ playerid ], 1);
-
-	    p_FireDistance1[ playerid ] = TextDrawCreate(26.000000, 182.000000, "_");
-		TextDrawBackgroundColor(p_FireDistance1[ playerid ], 255);
-		TextDrawFont(p_FireDistance1[ playerid ], 2);
-		TextDrawLetterSize(p_FireDistance1[ playerid ], 0.210000, 1.200000);
-		TextDrawColor(p_FireDistance1[ playerid ], -1);
-		TextDrawSetOutline(p_FireDistance1[ playerid ], 1);
-		TextDrawSetProportional(p_FireDistance1[ playerid ], 1);
-
-		p_FireDistance2[ playerid ] = TextDrawCreate(26.000000, 236.000000, "_");
-		TextDrawBackgroundColor(p_FireDistance2[ playerid ], 255);
-		TextDrawFont(p_FireDistance2[ playerid ], 2);
-		TextDrawLetterSize(p_FireDistance2[ playerid ], 0.209999, 1.200000);
-		TextDrawColor(p_FireDistance2[ playerid ], -1);
-		TextDrawSetOutline(p_FireDistance2[ playerid ], 1);
-		TextDrawSetProportional(p_FireDistance2[ playerid ], 1);
-
-		p_GPSInformation[ playerid ] = TextDrawCreate(26.000000, 200.000000, "~g~Location:~w~ No-where~n~~g~Distance:~w~ 0.0m");
-		TextDrawBackgroundColor(p_GPSInformation[ playerid ], 255);
-		TextDrawFont(p_GPSInformation[ playerid ], 2);
-		TextDrawLetterSize(p_GPSInformation[ playerid ], 0.209999, 1.099999);
-		TextDrawColor(p_GPSInformation[ playerid ], -1);
-		TextDrawSetOutline(p_GPSInformation[ playerid ], 1);
-		TextDrawSetProportional(p_GPSInformation[ playerid ], 1);
-		TextDrawSetSelectable(p_GPSInformation[ playerid ], 0);
-
-		p_TruckingTD[ playerid ] = TextDrawCreate(26.000000, 220.000000, "~b~Location:~w~ No-where~n~~b~Distance:~w~ 0.0m");
-		TextDrawBackgroundColor(p_TruckingTD[ playerid ], 255);
-		TextDrawFont(p_TruckingTD[ playerid ], 2);
-		TextDrawLetterSize(p_TruckingTD[ playerid ], 0.210000, 1.100000);
-		TextDrawColor(p_TruckingTD[ playerid ], -1);
-		TextDrawSetOutline(p_TruckingTD[ playerid ], 1);
-		TextDrawSetProportional(p_TruckingTD[ playerid ], 1);
-		TextDrawSetSelectable(p_TruckingTD[ playerid ], 0);
-
-		p_TrackPlayerTD[ playerid ] = TextDrawCreate(571.000000, 258.000000, "Loading~n~~w~NaN.0m");
-		TextDrawAlignment(p_TrackPlayerTD[ playerid ], 2);
-		TextDrawBackgroundColor(p_TrackPlayerTD[ playerid ], 80);
-		TextDrawFont(p_TrackPlayerTD[ playerid ], 1);
-		TextDrawLetterSize(p_TrackPlayerTD[ playerid ], 0.260000, 1.100000);
-		TextDrawColor(p_TrackPlayerTD[ playerid ], COLOR_RED);
-		TextDrawSetOutline(p_TrackPlayerTD[ playerid ], 1);
-		TextDrawSetProportional(p_TrackPlayerTD[ playerid ], 1);
-		TextDrawSetSelectable(p_TrackPlayerTD[ playerid ], 0);
-
-		p_HelpBoxTD[ playerid ] = TextDrawCreate(30.000000, 161.000000, "... Loading Help ...");
-		TextDrawBackgroundColor(p_HelpBoxTD[ playerid ], 255);
-		TextDrawFont(p_HelpBoxTD[ playerid ], 1);
-		TextDrawLetterSize(p_HelpBoxTD[ playerid ], 0.219999, 1.200000);
-		TextDrawColor(p_HelpBoxTD[ playerid ], -1);
-		TextDrawSetOutline(p_HelpBoxTD[ playerid ], 0);
-		TextDrawSetProportional(p_HelpBoxTD[ playerid ], 1);
-		TextDrawSetShadow(p_HelpBoxTD[ playerid ], 1);
-		TextDrawUseBox(p_HelpBoxTD[ playerid ], 1);
-		TextDrawBoxColor(p_HelpBoxTD[ playerid ], 117);
-		TextDrawTextSize(p_HelpBoxTD[ playerid ], 170.000000, 0.000000);
-		TextDrawSetSelectable(p_HelpBoxTD[ playerid ], 0);
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
@@ -532,6 +466,52 @@ hook OnPlayerConnect( playerid )
 {
 	if ( ! ( 0 <= playerid < MAX_PLAYERS ) )
 		return Y_HOOKS_CONTINUE_RETURN_1;
+
+	p_AchievementTD[ playerid ] = CreatePlayerTextDraw(playerid, 325.000000, 137.000000, "_");
+	PlayerTextDrawAlignment(playerid, p_AchievementTD[ playerid ], 2);
+	PlayerTextDrawBackgroundColor(playerid, p_AchievementTD[ playerid ], 80);
+	PlayerTextDrawFont(playerid, p_AchievementTD[ playerid ], 1);
+	PlayerTextDrawLetterSize(playerid, p_AchievementTD[ playerid ], 0.209999, 1.000000);
+	PlayerTextDrawColor(playerid, p_AchievementTD[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_AchievementTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_AchievementTD[ playerid ], 1);
+
+	p_GPSInformation[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 200.000000, "~g~Location:~w~ No-where~n~~g~Distance:~w~ 0.0m");
+	PlayerTextDrawBackgroundColor(playerid, p_GPSInformation[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_GPSInformation[ playerid ], 2);
+	PlayerTextDrawLetterSize(playerid, p_GPSInformation[ playerid ], 0.209999, 1.099999);
+	PlayerTextDrawColor(playerid, p_GPSInformation[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_GPSInformation[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_GPSInformation[ playerid ], 1);
+
+	p_TrackPlayerTD[ playerid ] = CreatePlayerTextDraw(playerid, 571.000000, 258.000000, "Loading~n~~w~NaN.0m");
+	PlayerTextDrawAlignment(playerid, p_TrackPlayerTD[ playerid ], 2);
+	PlayerTextDrawBackgroundColor(playerid, p_TrackPlayerTD[ playerid ], 80);
+	PlayerTextDrawFont(playerid, p_TrackPlayerTD[ playerid ], 1);
+	PlayerTextDrawLetterSize(playerid, p_TrackPlayerTD[ playerid ], 0.260000, 1.100000);
+	PlayerTextDrawColor(playerid, p_TrackPlayerTD[ playerid ], COLOR_RED);
+	PlayerTextDrawSetOutline(playerid, p_TrackPlayerTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_TrackPlayerTD[ playerid ], 1);
+
+	p_TruckingTD[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 220.000000, "~b~Location:~w~ No-where~n~~b~Distance:~w~ 0.0m");
+	PlayerTextDrawBackgroundColor(playerid, p_TruckingTD[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_TruckingTD[ playerid ], 2);
+	PlayerTextDrawLetterSize(playerid, p_TruckingTD[ playerid ], 0.210000, 1.100000);
+	PlayerTextDrawColor(playerid, p_TruckingTD[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_TruckingTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_TruckingTD[ playerid ], 1);
+
+	p_HelpBoxTD[ playerid ] = CreatePlayerTextDraw(playerid, 30.000000, 161.000000, "... Loading Help ...");
+	PlayerTextDrawBackgroundColor(playerid, p_HelpBoxTD[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_HelpBoxTD[ playerid ], 1);
+	PlayerTextDrawLetterSize(playerid, p_HelpBoxTD[ playerid ], 0.219999, 1.200000);
+	PlayerTextDrawColor(playerid, p_HelpBoxTD[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_HelpBoxTD[ playerid ], 0);
+	PlayerTextDrawSetProportional(playerid, p_HelpBoxTD[ playerid ], 1);
+	PlayerTextDrawSetShadow(playerid, p_HelpBoxTD[ playerid ], 1);
+	PlayerTextDrawUseBox(playerid, p_HelpBoxTD[ playerid ], 1);
+	PlayerTextDrawBoxColor(playerid, p_HelpBoxTD[ playerid ], 117);
+	PlayerTextDrawTextSize(playerid, p_HelpBoxTD[ playerid ], 170.000000, 0.000000);
 
   	g_ZoneOwnerTD[ playerid ] = CreatePlayerTextDraw( playerid, 86.000000, 296.000000, "_" );
 	PlayerTextDrawAlignment( playerid, g_ZoneOwnerTD[ playerid ], 2 );
@@ -644,5 +624,52 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawSetOutline(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetSelectable(playerid, p_RobberyAmountTD[ playerid ], 0);
+
+    p_FireDistance1[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 182.000000, "_");
+	PlayerTextDrawBackgroundColor(playerid, p_FireDistance1[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_FireDistance1[ playerid ], 2);
+	PlayerTextDrawLetterSize(playerid, p_FireDistance1[ playerid ], 0.210000, 1.200000);
+	PlayerTextDrawColor(playerid, p_FireDistance1[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_FireDistance1[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_FireDistance1[ playerid ], 1);
+
+	p_FireDistance2[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 236.000000, "_");
+	PlayerTextDrawBackgroundColor(playerid, p_FireDistance2[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_FireDistance2[ playerid ], 2);
+	PlayerTextDrawLetterSize(playerid, p_FireDistance2[ playerid ], 0.209999, 1.200000);
+	PlayerTextDrawColor(playerid, p_FireDistance2[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_FireDistance2[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_FireDistance2[ playerid ], 1);
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
+
+/* ** Hooked Functions ** */
+/*stock Text: TD_TextDrawCreate( Float: x, Float: y, text[ ] )
+{
+	static count;
+	printf("%d", ++count);
+	return TextDrawCreate( x, y, text );
+}
+
+#if defined _ALS_TextDrawCreate
+    #undef TextDrawCreate
+#else
+    #define _ALS_TextDrawCreate
+#endif
+
+#define TextDrawCreate TD_TextDrawCreate*/
+
+/*stock PlayerText: TD_CreatePlayerTextDraw( playerid, Float: x, Float: y, text[ ] )
+{
+	static count;
+	printf("%d", ++count);
+	return CreatePlayerTextDraw( playerid, x, y, text );
+}
+
+#if defined _ALS_CreatePlayerTextDraw
+    #undef CreatePlayerTextDraw
+#else
+    #define _ALS_CreatePlayerTextDraw
+#endif
+
+#define CreatePlayerTextDraw TD_CreatePlayerTextDraw*/
