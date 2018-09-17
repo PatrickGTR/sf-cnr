@@ -74,7 +74,7 @@ hook OnPlayerUpdateEx( playerid )
 {
 	new player_vehicle = GetPlayerVehicleID( playerid );
 
-	if ( GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && player_vehicle && p_hasTrainJob{ playerid } && !IsVehicleTrain( player_vehicle ) && p_PilotCancelTimer[ playerid ] == 0xFFFF ) {
+	if ( GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && player_vehicle && p_hasTrainJob{ playerid } && !IsVehicleTrain( player_vehicle ) && p_TrainCancelTimer[ playerid ] == 0xFFFF ) {
  		cancelPlayerTrainWork( playerid, player_vehicle, .ticks = 60 );
 	}
 
