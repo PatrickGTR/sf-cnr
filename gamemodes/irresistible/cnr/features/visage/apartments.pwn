@@ -25,8 +25,8 @@
 static const Float: VISAGE_APARTMENT_ENTRANCE[ 3 ] = { 2670.9922, 1637.9547, 1508.3590 };
 static const Float: VISAGE_APARTMENT_EXIT[ 3 ] = { 1983.7786, 1909.4755, 84.3009 };
 
-static const VISAGE_APARTMENT_INT = 0;
-static const VISAGE_APARTMENT_WORLD[ 13 ] = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
+stock const VISAGE_APARTMENT_INT = 0;
+stock const VISAGE_APARTMENT_WORLD[ 13 ] = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
 /* ** Variables ** */
 enum E_APARTMENT_DATA

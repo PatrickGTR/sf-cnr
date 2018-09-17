@@ -150,8 +150,8 @@ hook OnScriptInit( )
 
 	// custom pool tables
 	CreatePoolTable( -1019.264, 1045.7419, 1.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
-	CreatePoolTable( 1999.0837, 1888.4924, 84.22465, 0.000000, 11, 0, E_SKIN_GOLD_GREEN ); // banging7grams
-	CreatePoolTable( 2005.2181, 1891.0632, 84.22465, 90.00000, 17, 0, E_SKIN_WOOD_GREEN ); // nibble
+	CreatePoolTable( 1999.0837, 1888.4924, 84.22465, 0.000000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 1 ], E_SKIN_GOLD_GREEN ); // banging7grams
+	CreatePoolTable( 2005.2181, 1891.0632, 84.22465, 90.00000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 7 ], E_SKIN_WOOD_GREEN ); // nibble
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -321,7 +321,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 								new
 									Float: distance_to_ball = GetDistanceFromPointToPoint( X, Y, Xa, Ya );
 
-								if ( distance_to_ball < 1.8 && Z < 999.5 )
+								if ( distance_to_ball < 2.0 && Z < 999.5 )
 								{
 									new
 										Float: poolrot = atan2( Ya - Y, Xa - X ) - 90.0;
@@ -568,8 +568,8 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 		g_poolTableData[ poolid ] [ E_INTERIOR ] = interior;
 		g_poolTableData[ poolid ] [ E_WORLD ] = world;
 
-		g_poolTableData[ poolid ] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, A, .interiorid = interior, .worldid = world );
-		g_poolTableData[ poolid ] [ E_LABEL ] = CreateDynamic3DTextLabel( DEFAULT_POOL_STRING, COLOR_GREY, X, Y, Z, 10.0, .interiorid = interior, .worldid = world );
+		g_poolTableData[ poolid ] [ E_TABLE ] = CreateDynamicObject( 2964, X, Y, Z - 1.0, 0.0, 0.0, A, .interiorid = interior, .worldid = world, .priority = 9999 );
+		g_poolTableData[ poolid ] [ E_LABEL ] = CreateDynamic3DTextLabel( DEFAULT_POOL_STRING, COLOR_GREY, X, Y, Z, 10.0, .interiorid = interior, .worldid = world, .priority = 9999 );
 
 		Pool_RotateXY( -0.964, -0.51, A, x_vertex[ 0 ], y_vertex[ 0 ] );
 		Pool_RotateXY( -0.964, 0.533, A, x_vertex[ 1 ], y_vertex[ 1 ] );
@@ -584,8 +584,8 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 		// create boundary for replacing the cueball
 		new Float: vertices[ 4 ];
 
-		Pool_RotateXY( 0.85, 0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
-		Pool_RotateXY( -0.85, -0.4, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
+		Pool_RotateXY( 0.94, 0.48, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 0 ], vertices[ 1 ] );
+		Pool_RotateXY( -0.94, -0.48, g_poolTableData[ poolid ] [ E_ANGLE ], vertices[ 2 ], vertices[ 3 ] );
 
 		vertices[ 0 ] += g_poolTableData[ poolid ] [ E_X ], vertices[ 2 ] += g_poolTableData[ poolid ] [ E_X ];
 		vertices[ 1 ] += g_poolTableData[ poolid ] [ E_Y ], vertices[ 3 ] += g_poolTableData[ poolid ] [ E_Y ];
@@ -765,7 +765,7 @@ stock Pool_IsBallInHole( poolid, objectid )
 		Pool_RotateXY( g_poolPotOffsetData[ i ] [ 0 ], g_poolPotOffsetData[ i ] [ 1 ], g_poolTableData[ poolid ] [ E_ANGLE ], hole_x, hole_y );
 
 		// check if it is at the pocket
-		if ( IsBallAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + hole_x , g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) {
+		if ( Pool_IsObjectAtPos( objectid, g_poolTableData[ poolid ] [ E_X ] + hole_x , g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) {
 			return i;
 		}
 	}
@@ -850,7 +850,7 @@ stock AngleInRangeOfAngle(Float:a1, Float:a2, Float:range) {
 	return (a1 < range) && (a1 > -range);
 }
 
-stock IsBallAtPos( objectid, Float: x, Float: y, Float: z, Float: radius )
+stock Pool_IsObjectAtPos( objectid, Float: x, Float: y, Float: z, Float: radius )
 {
     new
     	Float: object_x, Float: object_y, Float: object_z;
@@ -912,6 +912,21 @@ public OnPoolUpdate( poolid )
 				GetObjectPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ], Xa, Ya, Za );
 				if ( GetDistanceFromPointToPoint( X, Y, Xa, Ya ) < 0.085 ) {
 					return GameTextForPlayer( playerid, "~n~~n~~n~~r~~h~Ball too close to other!", 500, 3 );
+				}
+			}
+
+			// check if ball is close to hole
+			new
+				Float: hole_x, Float: hole_y;
+
+			for ( new i = 0; i < sizeof( g_poolPotOffsetData ); i ++ )
+			{
+				// rotate offsets according to table
+				Pool_RotateXY( g_poolPotOffsetData[ i ] [ 0 ], g_poolPotOffsetData[ i ] [ 1 ], g_poolTableData[ poolid ] [ E_ANGLE ], hole_x, hole_y );
+
+				// check if it is at the pocket
+				if ( Pool_IsObjectAtPos( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ 0 ], g_poolTableData[ poolid ] [ E_X ] + hole_x , g_poolTableData[ poolid ] [ E_Y ] + hole_y, g_poolTableData[ poolid ] [ E_Z ], POCKET_RADIUS ) ) {
+					return GameTextForPlayer( playerid, "~n~~n~~n~~r~~h~Ball too close to hole!", 500, 3 );
 				}
 			}
 
@@ -1175,10 +1190,7 @@ public PHY_OnObjectUpdate( objectid )
 					// mark final target hole
 					if ( ( p_PoolScore[ first_player ] == 7 && p_PoolHoleGuide[ first_player ] == -1 ) || ( p_PoolScore[ second_player ] == 7 && p_PoolHoleGuide[ second_player ] == -1 ) )
 					{
-						new
-							player_being_marked = p_PoolScore[ first_player ] == 7 ? first_player : second_player;
-
-						if ( p_PoolHoleGuide[ player_being_marked ] == -1 )
+						foreach ( new player_being_marked : poolplayers< poolid > ) if ( p_PoolScore[ player_being_marked ] == 7 && p_PoolHoleGuide[ player_being_marked ] == -1 )
 						{
 							new
 								opposite_holeid = g_poolHoleOpposite[ holeid ];
@@ -1220,7 +1232,7 @@ stock Pool_OnPlayerWin( poolid, winning_player )
 		return 0;
 
 	new
-		win_amount = floatround( float( g_poolTableData[ poolid ] [ E_WAGER ] ) * ( 1 - POOL_FEE_RATE ) );
+		win_amount = floatround( float( g_poolTableData[ poolid ] [ E_WAGER ] ) * ( 1 - POOL_FEE_RATE ) * 2.0 );
 
 	// restore camera
 	RestoreCamera( winning_player );
