@@ -247,7 +247,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		if ( g_poolTableData[ poolid ] [ E_STARTED ] )
 		{
 			// quit table
-			if ( HOLDING( KEY_SECONDARY_ATTACK ) ) {
+			if ( HOLDING( KEY_SECONDARY_ATTACK ) && IsPlayerPlayingPool( playerid ) ) {
 				if ( PRESSED( KEY_CROUCH ) ) {
 					HidePlayerHelpDialog( playerid );
 					Pool_SendTableMessage( poolid, COLOR_GREY, "-- "COL_WHITE" %s(%d) has left the table", ReturnPlayerName( playerid ), playerid );
@@ -260,6 +260,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			// make pressing key fire annoying
 			if ( RELEASED( KEY_FIRE ) && g_poolTableData[ poolid ] [ E_AIMER ] != playerid && ! p_PoolChalking{ playerid } )
 			{
+				// reset anims of player
 				if ( IsPlayerPlayingPool( playerid ) )
 				{
 					p_PoolChalking{ playerid } = true;
@@ -274,6 +275,11 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				else
 				{
 					ClearAnimations( playerid );
+				}
+
+				// reset ball positions just in-case they hit it
+				if ( Pool_AreBallsStopped( poolid ) ) {
+					Pool_ResetBallPositions( poolid );
 				}
 				return 1;
 			}
