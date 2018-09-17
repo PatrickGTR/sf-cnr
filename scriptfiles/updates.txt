@@ -3,4 +3,5 @@
 (+) Adds "/p" to be able to chat inside the paintball lobby
 (+) Adds "/b production" to see what the status of your business production is.
 (+) Adds "/reconnectchuff" for level 5 administrators.
+(/) Jail times now decreased by 40% and bobby pin prices have been increased.
 (*) Fix textdraw issue within casinos.

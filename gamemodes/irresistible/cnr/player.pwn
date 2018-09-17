@@ -238,7 +238,8 @@ new
 	bool: p_AddedEmail 				[ MAX_PLAYERS char ],
 	p_TazingImmunity 				[ MAX_PLAYERS ],
 	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
-	p_PlayerAltBindTick 			[ MAX_PLAYERS ]
+	p_PlayerAltBindTick 			[ MAX_PLAYERS ],
+	p_AimedAtPolice 				[ MAX_PLAYERS ]
 ;
 
 /* ** Getters And Setters** */

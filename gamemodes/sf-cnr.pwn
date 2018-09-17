@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -1309,9 +1309,9 @@ new
  		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		600, 5 }, // 4
  		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1000, 6 }, // 5
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	1500, 7 }, // 8 [1500]
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		2500, 8 }, // 6 [1000] -makecopgreatagain
  		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		2500, 9 }, // 9
  		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		3000, 10 }, // 7 [1250]
+ 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
  		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
  		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
 	}
@@ -1389,7 +1389,7 @@ new
 ;
 
 /* ** Jail System ** */
-#define JAIL_SECONDS_MULTIPLIER		( 5 )
+#define JAIL_SECONDS_MULTIPLIER		( 3 )
 #define ALCATRAZ_REQUIRED_TIME		( 150 )
 
 #define ALCATRAZ_TIME_PAUSE 		( 5 )
@@ -3472,19 +3472,24 @@ public OnServerUpdateTimer( )
 				GivePlayerWantedLevel( playerid, 6 );
 		 	}
 
-		#if ENABLED_NPC_ROBBERIES == true
-
 			new
-				npcid = GetPlayerTargetPlayer( playerid );
+				aiming_player = GetPlayerTargetPlayer( playerid );
 
-			if ( FCNPC_IsValid( npcid ) && p_Class[ playerid ] != CLASS_POLICE )
+			if ( ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && g_iTime > p_AimedAtPolice[ playerid ] && IsPlayerConnected( aiming_player ) && p_Class[ aiming_player ] == CLASS_POLICE ) {
+				GivePlayerWantedLevel( playerid, 6 );
+				p_AimedAtPolice[ playerid ] = g_iTime + 10;
+				ShowPlayerHelpDialog( playerid, 6000, "You have aimed your weapon at a law enforcement officer! ~n~~n~~r~~h~You are now wanted." );
+			}
+
+		#if ENABLED_NPC_ROBBERIES == true
+			if ( FCNPC_IsValid( aiming_player ) && p_Class[ playerid ] != CLASS_POLICE )
 			{
-				new clerkid = GetRobberyNpcFromPlayer( npcid );
+				new clerkid = GetRobberyNpcFromPlayer( aiming_player );
 
 				if ( clerkid != -1 )
 				{
 					new weaponid = GetPlayerWeapon( playerid );
-					new Float: distance = GetDistanceBetweenPlayers( playerid, npcid, .bAllowNpc = true );
+					new Float: distance = GetDistanceBetweenPlayers( playerid, aiming_player, .bAllowNpc = true );
 					new is_melee = ( weaponid == 0 || weaponid == 1 || weaponid == 7 || 10 <= weaponid <= 18 );
 
 					if ( g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] < g_iTime && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_robberyNpcData[ clerkid ] [ E_LOOT ] && ! g_robberyNpcData[ clerkid ] [ E_PROVOKED ] && distance < 10.0 && ! is_melee )
@@ -3495,8 +3500,8 @@ public OnServerUpdateTimer( )
 						PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], "Robbed ~g~~h~$0" );
 						PlayerTextDrawShow( playerid, p_RobberyAmountTD[ playerid ] );
 
-						FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
-						FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
+						FCNPC_ApplyAnimation( aiming_player, "SHOP", "SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
+						FCNPC_SetAnimationByName( aiming_player, "SHOP:SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
 						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2300, false, "ddd", playerid, clerkid, 0 );
 
 						TriggerClosestCivilians( playerid, clerkid );
@@ -3505,7 +3510,7 @@ public OnServerUpdateTimer( )
 				else
 				{
 					new
-						civilianid = GetCivilianNpcFromPlayer( npcid );
+						civilianid = GetCivilianNpcFromPlayer( aiming_player );
 
 					if ( civilianid != -1 ) {
 						TriggerClosestCivilians( playerid, GetClosestRobberyNPC( getClosestRobberySafe( playerid ) ) );
@@ -8887,7 +8892,7 @@ CMD:toys( playerid, params[ ] )
 	return 1;
 }
 
-CMD:changes( playerid, params[ ] ) return cmd_updates( playerid, params );
+CMD:changes( playerid, params[ ] ) return cmd_updates( playerid, params ); // Command by Cloudy & Sponyy
 CMD:updates( playerid, params[ ] )
 {
     new
@@ -8940,7 +8945,7 @@ CMD:updates( playerid, params[ ] )
     }
 
     fclose( handle );
-    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Recent Updates - " #FILE_BUILD " - {C0C0C0}Created by Cloudy & sponyy", szHugeString, "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Recent Updates - " #FILE_BUILD, szHugeString, "Okay", "" );
     SendServerMessage( playerid, "You're now viewing the latest changes to the gamemode (version "#FILE_BUILD")." );
 	return 1;
 }
@@ -25692,11 +25697,8 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 			dW = p_WantedLevel[ damagedid ], 	dC = p_Class[ damagedid ]
 		;
 
-		if ( IsPlayerBoxing( issuerid ) )
+		if ( IsPlayerBoxing( issuerid ) || ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) || ! IsPlayerInMinigame( damagedid ) || ! IsPlayerInMinigame( issuerid ) )
 			return false;
-
-		if ( !IsPlayerInCasino( issuerid ) || !IsPlayerInCasino( damagedid ) )
-			return false; // applies only to casinos
 
 		return ( !iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dC == CLASS_POLICE );
 	}
@@ -29059,7 +29061,7 @@ stock BreakPlayerCuffs( playerid )
 
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) > 30 ) {
+		if ( random( 101 ) < 60 ) {
 			success = true;
 			break;
 		}
