@@ -13,6 +13,7 @@
 
 /* ** Definitions ** */
 #define INVALID_TRAIN_ROUTE 		( 0xFF )
+#define LOADING_SPEED 				( 5 ) 	// in mph
 
 /* ** Variables ** */
 enum E_STATION_DATA
@@ -96,7 +97,7 @@ hook OnPlayerStateChange( playerid, newstate, oldstate )
     {
     	if ( IsVehicleTrain( GetPlayerVehicleID( playerid ) ) )
     	{
-    		ShowPlayerHelpDialog( playerid, 3000, "You can begin a train job by typing ~g~~h~/train" );
+    		ShowPlayerHelpDialog( playerid, 3000, "You can begin a train job by typing ~g~/train" );
     	}
     }
 
@@ -107,6 +108,9 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 {
 	if ( checkpointid == p_TrainCheckPoint[ playerid ] )
 	{
+		if ( Train_GetSpeed( GetPlayerVehicleID( playerid ) ) > LOADING_SPEED )
+			return SendError( playerid, "Please slow down before %s your passengers!", p_TrainRoute[ playerid ] { 0 } != INVALID_TRAIN_ROUTE ? ( "loading" ) : ( "un-loading" ) ), 1;
+
 		DestroyDynamicRaceCP	( p_TrainCheckPoint[ playerid ] );
 		DestroyDynamicMapIcon 	( p_TrainMapIcon[ playerid ] );
 
@@ -121,7 +125,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 
 	  		KillTimer( p_TrainLoadTimer[ playerid ] );
 	  		p_TrainLoadTimer		[ playerid ] = 0xFFFF;
-	  		p_TrainLoadTimer		[ playerid ] = SetTimerEx( "OnPilotLoadCargo", 5000, false, "d", playerid );
+	  		p_TrainLoadTimer		[ playerid ] = SetTimerEx( "OnTrainLoadPassengers", 5000, false, "d", playerid );
 
 	  		TogglePlayerControllable( playerid, false );
 
@@ -154,6 +158,19 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 }
 
 /* ** Functions ** */
+stock Train_GetSpeed( vehicleid )
+{
+	new Float: speed_x, Float: speed_y, Float: speed_z, Float: iFinal, iSpeed,
+		Float: x, Float: y, Float: z;
+
+	GetVehiclePos( vehicleid, x, y, z );
+	GetVehicleVelocity( vehicleid, speed_x, speed_y, speed_z );
+
+	iFinal = floatsqroot( ( ( speed_x * speed_x ) + ( speed_y * speed_y ) ) + ( speed_z * speed_z ) ) * 136.666667;
+	iSpeed = floatround( iFinal, floatround_round );
+	return iSpeed;
+}
+
 stock StopPlayerTrainWork( playerid )
 {
 	DestroyDynamicRaceCP	( p_TrainCheckPoint[ playerid ] );
@@ -167,11 +184,26 @@ stock StopPlayerTrainWork( playerid )
 	p_TrainCheckPoint		[ playerid ] = 0xFFFF;
 	p_TrainMapIcon 			[ playerid ] = 0xFFFF;
 	p_TrainCancelTimer		[ playerid ] = 0xFFFF;
+	p_TrainLoadTimer		[ playerid ] = 0xFFFF;
 	p_TrainPositionTimer 	[ playerid ] = 0xFFFF;
 	p_TrainRoute 			[ playerid ] { 0 } = INVALID_PILOT_ROUTE;
 	p_TrainRoute 			[ playerid ] { 1 } = INVALID_PILOT_ROUTE;
 
 	PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
+}
+
+function OnTrainLoadPassengers( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) )
+		return 0;
+
+	if ( !IsPlayerInAnyVehicle( playerid ) )
+		return 0;
+
+	TogglePlayerControllable( playerid, true );
+
+	ShowPlayerHelpDialog( playerid, 7500, "Great! All of your passengers are sitting comfortably!" );
+	return KillTimer( p_TrainLoadTimer[ playerid ] ), p_TrainLoadTimer[ playerid ] = 0xFFFF, 1;
 }
 
 function OnTrainPositionUpdate( playerid, routeid )
