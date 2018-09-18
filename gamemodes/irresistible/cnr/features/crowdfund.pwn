@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\crowdfund.pwn
+ * Purpose: off-ucp crowdfunding feature (all done in-game)
  */
 
 /* ** Includes ** */
@@ -10,11 +10,6 @@
 
 /* ** Definitions ** */
 #define MAX_CROWDFUNDS 				10 		// dont bother editing
-
-#define DIALOG_CROWDFUNDS			9383
-#define DIALOG_CROWDFUND_OPTIONS	9384
-#define DIALOG_CROWDFUND_INFO 		9385
-#define DIALOG_CROWDFUND_DONATE 	9386
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

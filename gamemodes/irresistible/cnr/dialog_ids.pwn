@@ -171,6 +171,10 @@
 #define DIALOG_TOYS_COLOR 					1160
 #define DIALOG_HIGHSCORES 					1161
 #define DIALOG_HIGHSCORES_BACK 				1162
+#define DIALOG_CROWDFUNDS			 		1163
+#define DIALOG_CROWDFUND_OPTIONS	 		1164
+#define DIALOG_CROWDFUND_INFO 		 		1165
+#define DIALOG_CROWDFUND_DONATE 	 		1166
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
