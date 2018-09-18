@@ -14,6 +14,7 @@
 #include "irresistible\cnr\textdraws.pwn"
 #include "irresistible\cnr\spawn.pwn"
 #include "irresistible\cnr\dialog_ids.pwn"
+#include "irresistible\cnr\checkpoints.pwn"
 
 // static cnr features
 #include "irresistible\cnr\static\_cnr_static.pwn"

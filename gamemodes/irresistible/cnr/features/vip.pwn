@@ -16,7 +16,7 @@
 	(p_IrresistibleCoins[%0] += %1)
 
 /* ** Definitions ** */
-#define MAX_EXTRA_SLOTS 			5
+#define VIP_MAX_EXTRA_SLOTS 		5
 
 #define ICM_PAGE_DEFAULT 			( 0 )
 #define ICM_PAGE_CASHCARD 			( 1 )
@@ -276,8 +276,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
 			}
 			else if ( selectedItemID == ICM_VEH_SLOT ) {
-				if ( p_ExtraAssetSlots{ playerid } >= MAX_EXTRA_SLOTS ) {
-					SendError( playerid, "You have reached the limit of additional slots (limit " #MAX_EXTRA_SLOTS ")." );
+				if ( p_ExtraAssetSlots{ playerid } >= VIP_MAX_EXTRA_SLOTS ) {
+					SendError( playerid, "You have reached the limit of additional slots (limit " #VIP_MAX_EXTRA_SLOTS ")." );
 					return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_ASSETS );
 				}
 
