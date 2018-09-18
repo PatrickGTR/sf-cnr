@@ -3475,7 +3475,7 @@ public OnServerUpdateTimer( )
 			new
 				aiming_player = GetPlayerTargetPlayer( playerid );
 
-			if ( ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && g_iTime > p_AimedAtPolice[ playerid ] && IsPlayerConnected( aiming_player ) && p_Class[ aiming_player ] == CLASS_POLICE ) {
+			if ( ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && g_iTime > p_AimedAtPolice[ playerid ] && IsPlayerConnected( aiming_player ) && ! IsPlayerNPC( aiming_player ) && p_Class[ aiming_player ] == CLASS_POLICE ) {
 				GivePlayerWantedLevel( playerid, 6 );
 				p_AimedAtPolice[ playerid ] = g_iTime + 10;
 				ShowPlayerHelpDialog( playerid, 6000, "You have aimed your weapon at a law enforcement officer! ~n~~n~~r~~h~You are now wanted." );
