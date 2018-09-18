@@ -5528,8 +5528,14 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( IsPlayerJailed( playerid ) || IsPlayerJailed( issuerid ) )
 		return 0;
 
+	// damaged player
 	if ( p_Class[ playerid ] == CLASS_POLICE && p_inFBI{ playerid } && p_inCIA{ playerid } && !p_inArmy{ playerid } )
 		SetPlayerColor( playerid, setAlpha( COLOR_CIA, 0xFF ) ), p_VisibleOnRadar[ playerid ] = g_iTime + 2;
+
+	// shooter
+	if ( p_Class[ issuerid ] == CLASS_POLICE && p_inFBI{ issuerid } && p_inCIA{ issuerid } && !p_inArmy{ issuerid } )
+		SetPlayerColor( issuerid, setAlpha( COLOR_CIA, 0xFF ) ), p_VisibleOnRadar[ issuerid ] = g_iTime + 2;
+
 
 	// alert admins
 	new
