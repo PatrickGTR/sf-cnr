@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\vehicles\vdealership.pwn
+ * Purpose: vehicle dealership for personal vehicles
  */
 
 /* ** Includes ** */
