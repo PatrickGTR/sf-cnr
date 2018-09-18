@@ -5528,6 +5528,14 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( IsPlayerJailed( playerid ) || IsPlayerJailed( issuerid ) )
 		return 0;
 
+	// damaged player
+	if ( p_Class[ playerid ] == CLASS_POLICE && p_inFBI{ playerid } && p_inCIA{ playerid } && !p_inArmy{ playerid } )
+		SetPlayerColor( playerid, setAlpha( COLOR_CIA, 0xFF ) ), p_VisibleOnRadar[ playerid ] = g_iTime + 2;
+
+	// shooter
+	if ( p_Class[ issuerid ] == CLASS_POLICE && p_inFBI{ issuerid } && p_inCIA{ issuerid } && !p_inArmy{ issuerid } )
+		SetPlayerColor( issuerid, setAlpha( COLOR_CIA, 0xFF ) ), p_VisibleOnRadar[ issuerid ] = g_iTime + 2;
+
 	// alert admins
 	new
 		attack_difference = GetTickCount( ) - p_PlayerAltBindTick[ playerid ];
@@ -16104,6 +16112,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		      	{
 		      		if ( GetPlayerCash( playerid ) < 10000 )
 		      			return SendError( playerid, "You need $10,000 to bring your vehicle to you." );
+
+		      		foreach( new i : Player )
+		      		{
+		      			if( GetPlayerVehicleID( i ) == g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] )
+		      			{
+		      				GetPlayerPos( i, X, Y, Z );
+		      				SetPlayerPos( i, X, Y, ( Z + 0.5 ) );
+		      				SendServerMessage( i, "You have been thrown out of the vehicle as the owner has teleported it away!" );
+		      			}
+		      		}
 
 					new
 						Float: nodeX, Float: nodeY, Float: nodeZ, Float: nextX, Float: nextY,
