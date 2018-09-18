@@ -16115,8 +16115,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 		      		foreach( new i : Player )
 		      		{
-		      			if ( GetPlayerVehicleID( i ) == g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] )
+		      			if( GetPlayerVehicleID( i ) == g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] )
 		      			{
+		      				GetPlayerPos( i, X, Y, Z );
 		      				SetPlayerPos( i, X, Y, ( Z + 0.5 ) );
 		      				SendServerMessage( i, "You have been thrown out of the vehicle as the owner has teleported it away!" );
 		      			}
