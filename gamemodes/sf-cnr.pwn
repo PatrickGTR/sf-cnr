@@ -12180,21 +12180,21 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 		new
 			members = GetRaceMemberCount( raceid );
 
-		printf ("Position : %d, Members : %d", position, members);
+		// printf ("Position : %d, Members : %d", position, members);
 		if ( position >= 3 || position >= members ) {
 			DestroyRace( raceid );
-			print ("Shut race");
+			// print ("Shut race");
 		}
 		return 1;
 	}
 
-	printf("Entered Race Checkpoint : {user:%s,veh:%d,biz_veh:%d,valid_biz:%d}", ReturnPlayerName( playerid ), iVehicle, g_isBusinessVehicle[ iVehicle ],Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ));
+	// printf("Entered Race Checkpoint : {user:%s,veh:%d,biz_veh:%d,valid_biz:%d}", ReturnPlayerName( playerid ), iVehicle, g_isBusinessVehicle[ iVehicle ],Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ));
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN && g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) )
 	{
 		new
 			businessid = g_isBusinessVehicle[ iVehicle ];
 
-		printf("Is Associate : {user:%s,veh:%d,associate:%d}", ReturnPlayerName( playerid ), iVehicle, IsBusinessAssociate( playerid, businessid ));
+		// printf("Is Associate : {user:%s,veh:%d,associate:%d}", ReturnPlayerName( playerid ), iVehicle, IsBusinessAssociate( playerid, businessid ));
 		if ( ! IsBusinessAerialVehicle( businessid, GetVehicleModel( iVehicle ) ) && IsBusinessAssociate( playerid, businessid ) )
 		{
 			for ( new i = 0; i < MAX_DROPS; i ++ )

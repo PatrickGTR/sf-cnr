@@ -43,6 +43,31 @@ stock szHugeString[ 2048 ];
 stock g_szSprintfBuffer[ 1024 ];
 stock tmpVariable;
 
+/* ** Function Hooks ** */
+stock __svrticks__GetTickCount( )
+{
+    static
+        offset = 0; // store the static value here
+
+    new
+        curr_tickcount = GetTickCount( );
+
+    if ( curr_tickcount < 0 && offset == 0 )
+    {
+        offset = curr_tickcount * -1;
+        print( "\n\n*** NEGATIVE TICK COUNT DETECTED... FIXING GetTickCount( )" );
+    }
+    return curr_tickcount + offset;
+}
+
+#if defined _ALS_GetTickCount
+    #undef GetTickCount
+#else
+    #define _ALS_GetTickCount
+#endif
+
+#define GetTickCount __svrticks__GetTickCount
+
 /* ** Functions ** */
 stock SendClientMessageFormatted( playerid, colour, format[ ], va_args<> )
 {
