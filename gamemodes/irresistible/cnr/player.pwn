@@ -201,8 +201,6 @@ new
 	p_SpectateWeapons 				[ MAX_PLAYERS ] [ 13 ] [ 2 ],
 	bool: p_LeftCuffed 				[ MAX_PLAYERS char ],
 	p_LabelColor					[ MAX_PLAYERS ] = { COLOR_GREY, ... },
-	p_RapidFireTickCount			[ MAX_PLAYERS ],
-	p_RapidFireShots				[ MAX_PLAYERS char ],
 	p_BulletInvulnerbility 			[ MAX_PLAYERS ],
 	p_ProgressUpdateTimer			[ MAX_PLAYERS ] = { 0xFFFF, ... },
 	p_DeathMessage 					[ MAX_PLAYERS ] [ 32 ],

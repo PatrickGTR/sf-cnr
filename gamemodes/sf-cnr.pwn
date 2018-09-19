@@ -4101,7 +4101,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_ToggledViewPM	{ playerid } = false;
 	p_VIPExpiretime [ playerid ] = 0;
  	p_BankMoney		[ playerid ] = 0;
- 	p_RapidFireShots{ playerid } = 0;
  	p_Kills			[ playerid ] = 0;
 	p_Deaths		[ playerid ] = 0;
  	p_VIPLevel		[ playerid ] = 0;
@@ -4522,25 +4521,7 @@ public OnPlayerSpawn( playerid )
 
 public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ )
 {
-	new
-		keys, ud, lr
-	;
-	GetPlayerKeys( playerid, keys, ud, lr );
-
-	// Simple. But effective. Anti-Shooting Hacks.
-	if ( !( keys & KEY_FIRE )  ) {
-		return 0;
-	}
-
-	if ( !( 22 <= weaponid <= 34 ) && weaponid != 38 ) {
-		return 0;
-	}
-
 	if ( p_AdminLevel[ playerid ] < 1 && IsWeaponBanned( weaponid ) ) {
-		return 0;
-	}
-
-	if ( hittype == BULLET_HIT_TYPE_PLAYER && ( ( fX >= 10.0 || fX <= -10.0 ) || ( fY >= 10.0 || fY <= -10.0 ) || ( fZ >= 10.0 || fZ <= -10.0 ) ) ) {
 		return 0;
 	}
 
@@ -4548,33 +4529,8 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 		return 0;
 	}
 
-	static Float: X, Float: Y, Float: Z;
-
-	// Anti-Rapid Fire
-	if ( !p_RapidFireTickCount[ playerid ] ) p_RapidFireTickCount[ playerid ] = GetTickCount( );
-	else
-	{
-		new
-			iInterval = GetTickCount( ) - p_RapidFireTickCount[ playerid ];
-
-		if ( ( iInterval <= 35 && ( weaponid != 38 && weaponid != 28 && weaponid != 32 ) ) || ( iInterval <= 370 && ( weaponid == 34 || weaponid == 33 ) ) )
-		{
-			if ( p_RapidFireShots{ playerid }++ >= 5 )
-			{
-			 	if ( g_Debugging )
-			 	{
-			 		SendClientMessageToRCON( COLOR_YELLOW, "RAPID-FIRE: %s, weapon %s, rate %d, times fucked up: %d", ReturnPlayerName( playerid ), ReturnWeaponName( weaponid ), iInterval, p_RapidFireShots{ playerid } );
-			 		printf("[DEBUG] [RAPID-FIRE] %s | %s | rate %d | times fucked up: %d", ReturnPlayerName( playerid ), ReturnWeaponName( weaponid ), iInterval, p_RapidFireShots{ playerid } );
-			 	}
-
-				SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for rapid-firing.", ReturnPlayerName( playerid ), playerid );
-			 	KickPlayer( playerid );
-		    	return 0;
-			}
-		}
-		else p_RapidFireShots{ playerid } = 0;
-		p_RapidFireTickCount[ playerid ] = GetTickCount( );
-	}
+	static
+		Float: X, Float: Y, Float: Z;
 
 	if ( hittype == BULLET_HIT_TYPE_PLAYER )
 	{
@@ -12065,8 +12021,9 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 		}
     }
 
-	if ( newstate == PLAYER_STATE_DRIVER )
+	if ( newstate == PLAYER_STATE_DRIVER ) {
 		CallLocalFunction( "OnPlayerDriveVehicle", "dd", playerid, vID );
+	}
 
 	//if ( newstate == PLAYER_STATE_ONFOOT && p_Detained{ playerid } == true && IsPlayerConnected( p_DetainedBy[ playerid ] ) )
 	//    return PutPlayerInEmptyVehicleSeat( p_LastVehicle[ p_DetainedBy[ playerid ] ], playerid );
@@ -13759,6 +13716,12 @@ function unpause_Player( playerid )
 			}
 			SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL JACKING]"COL_GREY" %s(%d) is a suspect of jacking vehicles abnormally.", ReturnPlayerName( playerid ), playerid );
 			return 1;
+		}
+		else if ( detection == CHEAT_TYPE_RAPIDFIRE )
+		{
+			SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for rapid-firing.", ReturnPlayerName( playerid ), playerid );
+		 	Kick( playerid );
+		 	return 1;
 		}
 		else if ( detection == CHEAT_TYPE_AIRBRAKE )
 		{

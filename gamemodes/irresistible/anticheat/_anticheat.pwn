@@ -37,7 +37,8 @@ enum
 	CHEAT_TYPE_AIRBRAKE,
 	CHEAT_TYPE_PROAIM,
 	CHEAT_TYPE_AUTOCBUG,
-	CHEAT_TYPE_FLYHACKS
+	CHEAT_TYPE_FLYHACKS,
+	CHEAT_TYPE_RAPIDFIRE
 };
 
 static stock
@@ -163,3 +164,4 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 #include "irresistible\anticheat\autocbug.pwn"
 #include "irresistible\anticheat\flying.pwn"
 #include "irresistible\anticheat\remotejack.pwn"
+#include "irresistible\anticheat\rapidfire.pwn"
