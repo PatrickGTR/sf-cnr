@@ -25660,7 +25660,7 @@ stock BreakPlayerCuffs( playerid )
 
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) < 60 ) {
+		if ( random( 101 ) < 50 ) {
 			success = true;
 			break;
 		}
