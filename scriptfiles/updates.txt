@@ -8,4 +8,5 @@
 (/) Jail times now decreased by 40% and bobby pin prices have been increased.
 (*) Players inside a vehicle that is brought by a player will be respawned.
 (*) Fixes issue with being unable to exit a meth van.
+(*) If you shoot a ball, it will not stop it while it is moving.
 (*) Fix textdraw issue within casinos.
