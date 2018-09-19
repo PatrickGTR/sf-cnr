@@ -287,17 +287,6 @@ new
 	Iterator: spikestrips 			< MAX_SPIKESTRIPS >
 ;
 
-/* ** GPS System ** */
-enum E_GPS_DATA
-{
-	bool: E_CREATED,    E_NAME[ 24 ],   Float: E_X,
-	Float: E_Y,         Float: E_Z, 	E_CITY
-};
-
-new
-	g_gpsData						[ 63 ] [ E_GPS_DATA ]
-;
-
 /* ** ATM System ** */
 #if defined MAX_FACILITIES
 	#define MAX_ATMS 				( 48 + MAX_FACILITIES )
@@ -1867,75 +1856,6 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( 815.69880, -1347.7256, 13.1043, 42, 0, -1, -1, -1, 750.0 ); // TrainStation
 	CreateDynamicMapIcon( 1911.2578, -1775.8676, 12.9470,  8, 0, -1, -1, -1, 750.0 ); // BombShop
 
-	/* ** Navigation Points ** */
-	CreateNavigation( "Shipyard", 				-1547.4066, 123.6555, 3.55472, CITY_SF ); // 1
-	CreateNavigation( "Otto's Cars", 			-1657.7573, 1210.2754, 7.2500, CITY_SF ); // 2
-	CreateNavigation( "Bombshop", 				-1923.3926, 303.6380, 41.0469, CITY_SF ); // 3
-	CreateNavigation( "Wang Cars",				-1951.9911, 300.2070, 35.4688, CITY_SF ); // 4
-	CreateNavigation( "Hospital", 				-2658.3201, 639.5060, 14.4531, CITY_SF ); // 5
-	CreateNavigation( "Train Station", 			-1979.9883, 138.0498, 27.6875, CITY_SF ); // 6
-	CreateNavigation( "Bank", 					-1496.8027, 919.8218, 7.18752, CITY_SF ); // 7
-	CreateNavigation( "Police Station", 		-1609.2813, 712.9857, 13.7334, CITY_SF ); // 8
-	CreateNavigation( "City Hall", 				-2766.4087, 375.5447, 6.33470, CITY_SF ); // 9
-	CreateNavigation( "Supa Save", 				-2446.3350, 752.2393, 35.1719, CITY_SF ); // 10
-	CreateNavigation( "Vehicle Dealership", 	-2521.1895, -624.942, 132.780, CITY_SF ); // 11
-	CreateNavigation( "Trucking", 				-2127.8599, -228.7343, 35.3203, CITY_SF ); // 12
-	CreateNavigation( "Paintball", 				-2172.2017, 252.1113, 35.3388, CITY_SF ); // 13
-	CreateNavigation( "Airport",                -1422.4063, -286.5081, 14.148, CITY_SF ); // 15
-	CreateNavigation( "V.I.P Lounge",           -1880.7598, 822.3964, 35.1778, CITY_SF ); // 16
-	CreateNavigation( "Lumberjack",          	-2323.5676, -97.25822, 35.307, CITY_SF ); // 17
-	CreateNavigation( "Ammu-Nation",			-2626.6299, 208.2514, 4.81250, CITY_SF ); // 18
-	CreateNavigation( "Pawnshop",				-2490.2256, -16.9206, 25.6172, CITY_SF ); // 19
-
-	#if ENABLE_CITY_LV == true
-	// Las Venturas
-	CreateNavigation( "Airport", 				1705.3646, 1607.9652, 10.0580, CITY_LV ); // 1
-	CreateNavigation( "City Hall", 				2414.9258, 1123.4523, 10.8203, CITY_LV ); // 2
-	CreateNavigation( "Hospital", 				1606.8169, 1837.1116, 10.8203, CITY_LV ); // 3
-	CreateNavigation( "Ammu-Nation", 			2537.8972, 2083.8586, 10.8203, CITY_LV ); // 4
-	CreateNavigation( "Bombshop", 				1998.7263, 2298.5562, 10.8203, CITY_LV ); // 5
-	CreateNavigation( "Bank",					2442.1279, 2376.0293, 11.5376, CITY_LV ); // 6
-	CreateNavigation( "Autobahn", 				1948.6851, 2068.7463, 11.0610, CITY_LV ); // 7
-	CreateNavigation( "Police Department", 		2288.0063, 2429.8960, 10.8203, CITY_LV ); // 8
-	CreateNavigation( "4 Dragons Casino",		2025.3047, 1008.4356, 10.3846, CITY_LV ); // 8
-	CreateNavigation( "Caligula's Casino", 		2191.3186, 1677.9497, 11.9736, CITY_LV ); // 10
-	CreateNavigation( "The Visage Casino", 		2017.1334, 1916.4141, 12.3424, CITY_LV ); // 11
-	CreateNavigation( "Shipyard", 				1633.7454, 2330.6860, 10.8203, CITY_LV ); // 12
-	CreateNavigation( "Stadium", 				1099.3146, 1608.5789, 12.5469, CITY_LV ); // 13
-	CreateNavigation( "Quarry", 				343.09180, 877.98650, 20.4063, CITY_LV ); // 14
-	CreateNavigation( "V.I.P Lounge", 			1966.8428, 1623.2175, 12.8621, CITY_LV ); // 15
-	CreateNavigation( "Pawnshop",				2482.4395, 1326.4077, 10.8203, CITY_LV ); // 16
-	CreateNavigation( "Fort Carson", 			-135.5214, 1148.3502, 19.5938, CITY_LV ); // 17
-	CreateNavigation( "Ammu-Nation F.C.", 		-311.6576, 830.07060, 14.2422, CITY_LV ); // 18
-	CreateNavigation( "Las Payasadas", 			-233.0320, 2700.0896, 62.5391, CITY_LV ); // 19
-	CreateNavigation( "El Quebrados", 			-1491.172, 2603.0425, 55.6897, CITY_LV ); // 20
-	CreateNavigation( "Las Barrancas",          -805.4283, 1539.6168, 26.9609, CITY_LV ); // 21
-	#endif
-
-	#if ENABLE_CITY_LS == true
-	// Los Santos
-	CreateNavigation( "Vehicle Dealership", 	540.27090, -1282.3586, 17.2422, CITY_LS ); // 1
-	CreateNavigation( "Bank", 					593.73800, -1244.3899, 18.0622, CITY_LS ); // 2
-	CreateNavigation( "Airport", 				1961.4990, -2193.5586, 13.5469, CITY_LS ); // 3
-	CreateNavigation( "City Hall", 				1480.1451, -1737.7921, 13.5469, CITY_LS ); // 4
-	CreateNavigation( "Police Station", 		1539.8739, -1675.8989, 13.5469, CITY_LS ); // 5
-	CreateNavigation( "Ammu-Nation", 			1362.1816, -1282.4746, 13.5469, CITY_LS ); // 6
-	CreateNavigation( "Ferris Wheel", 			373.71490, -2032.6777, 7.67190, CITY_LS ); // 7
-	CreateNavigation( "V.I.P Lounge", 			1805.5667, -1582.5602, 13.4951, CITY_LS ); // 8
-	CreateNavigation( "Bombshop", 				1911.2462, -1775.8755, 13.3828, CITY_LS ); // 9
-	CreateNavigation( "Grove Street", 			2487.0481, -1668.7418, 13.3438, CITY_LS ); // 10
-	CreateNavigation( "Modshop", 				1041.0688, -1027.9791, 32.1016, CITY_LS ); // 11
-	CreateNavigation( "Trainstation", 			1750.6547, -1945.8823, 13.5613, CITY_LS ); // 12
-	CreateNavigation( "Lowrider Modshop", 		2645.3145, -2033.6381, 13.5540, CITY_LS ); // 13
-	CreateNavigation( "Shipyard", 				2615.8606, -2226.5325, 13.3828, CITY_LS ); // 14
-	CreateNavigation( "Pawnshop",				2507.3076, -1724.6044, 13.5469, CITY_LS ); // 15
-	CreateNavigation( "Angel Pine", 			-2143.302, -2395.7650, 30.6250, CITY_LS ); // 16
-	CreateNavigation( "Blueberry", 				234.78340, -128.77670, 1.42970, CITY_LS ); // 17
-	CreateNavigation( "Dillimore", 				680.57570, -539.80190, 16.1803, CITY_LS ); // 18
-	CreateNavigation( "Montgomery", 			1317.5898, 313.541300, 19.4063, CITY_LS ); // 19
-	CreateNavigation( "Palomino Creek", 		2335.9343, 31.8564000, 26.4819, CITY_LS ); // 20
-	#endif
-
 	/* ** Weapon Locker ** */
 	CreateAmmunationLocker( -1614.41992, 672.565246, -4.90625, 180.0000 );
 	CreateAmmunationLocker( 2245.062988, 2434.94458, 10.82031, -90.0000 );
@@ -2350,7 +2270,7 @@ public OnGameModeInit()
 
 	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
 
-	printf( "[SF-CNR] SF-CnR has been successfully initiaized. (Build: "#FILE_BUILD" | Time: %d)", ( g_ServerUptime = gettime( ) ) );
+	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: "#FILE_BUILD" | Time: %d | Tickcount: %d)", ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
 	return 1;
 }
 
@@ -2937,27 +2857,6 @@ public OnServerUpdateTimer( )
 	            ResetPlayerMoney( playerid );
 	         	GivePlayerMoney( playerid, GetPlayerCash( playerid ) );
 			}
-
-			// GPS System
-		    if ( p_GPSToggled{ playerid } == true )
-		    {
-		        new
-		        	id = p_GPSLocation[ playerid ];
-
-		        if ( IsPlayerInRangeOfPoint( playerid, 10.0, g_gpsData[ id ] [ E_X ], g_gpsData[ id ] [ E_Y ], g_gpsData[ id ] [ E_Z ] ) )
-		        {
-	  				PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
-					DestroyDynamicObject( p_GPSObject[ playerid ] );
-					KillTimer( p_GPSTimer[ playerid ] );
-
-		           	p_GPSLocation	[ playerid ] = 0;
-					p_GPSToggled	{ playerid } = false;
-					p_GPSTimer		[ playerid ] = 0xFF;
-				  	p_GPSObject		[ playerid ] = INVALID_OBJECT_ID;
-
-				  	SendServerMessage( playerid, "You have reached your destination." );
-		        }
-		    }
 
 			if ( IsPlayerInAnyVehicle( playerid ) )
 			{
@@ -3997,8 +3896,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_InHouse		[ playerid ] = -1;
 	p_InGarage 		[ playerid ] = -1;
 	p_inMovieMode	{ playerid } = false;
- 	p_GPSLocation	[ playerid ] = 0;
-	p_GPSToggled	{ playerid } = false;
 	p_CantUseAsk    { playerid } = false;
 	p_LastSkin      [ playerid ] = 0;
 	p_SecureWallet	{ playerid } = false;
@@ -4068,10 +3965,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_MiningExport[ playerid ] = 0xFFFF;
 	KillTimer( p_FireDistanceTimer[ playerid ] );
 	p_FireDistanceTimer[ playerid ] = 0xFF;
-	DestroyDynamicObject( p_GPSObject[ playerid ] );
-	KillTimer( p_GPSTimer[ playerid ] );
-	p_GPSTimer[ playerid ] = 0xFF;
-  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
 	p_ContractedAmount[ playerid ] = 0;
 	ClearPlayerWantedLevel( playerid );
 	Delete3DTextLabel( p_InfoLabel[ playerid ] );
@@ -4986,15 +4879,8 @@ public OnPlayerDeath( playerid, killerid, reason )
 	p_TicketIssuer[ playerid ] = INVALID_PLAYER_ID;
 	KillTimer( p_TrackingTimer[ playerid ] );
 	p_TrackingTimer[ playerid ] = -1;
-	p_GPSLocation	[ playerid ] = 0;
-	p_GPSToggled	{ playerid } = false;
-	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
-	DestroyDynamicObject( p_GPSObject[ playerid ] );
-	KillTimer( p_GPSTimer[ playerid ] );
 	DeletePVar( playerid, "AlcatrazWantedCD" );
 	DeletePVar( playerid, "ShotCopWantedCD" );
-	p_GPSTimer[ playerid ] = 0xFF;
-  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
 	PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
@@ -8478,27 +8364,6 @@ CMD:jaillist( playerid, params[ ] )
 	    }
 	}
 	if ( count == 0 ) SendClientMessage( playerid, -1, "There are no players in jail." );
-	return 1;
-}
-
-CMD:gps( playerid, params[ ] )
-{
-	if ( p_GPSToggled{ playerid } == true )
-	{
-		p_GPSLocation	[ playerid ] = 0;
-		p_GPSToggled	{ playerid } = false;
-		DestroyDynamicObject( p_GPSObject[ playerid ] );
-		KillTimer( p_GPSTimer[ playerid ] );
-		p_GPSTimer[ playerid ] = 0xFF;
-	  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
-	  	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
-		return SendServerMessage( playerid, "You have de-activated your GPS." ), 1;
-	}
-	else
-	{
-	    if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You have to be a driver of a vehicle to use this a command." );
-        ShowPlayerDialog( playerid, DIALOG_GPS_CITY, DIALOG_STYLE_LIST, "{FFFFFF}GPS - Choose City", "San Fierro\nLas Venturas\nLos Santos", "Select", "Cancel" );
-	}
 	return 1;
 }
 
@@ -14878,48 +14743,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
 		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
 	}
-	if ( ( dialogid == DIALOG_GPS ) && response )
-	{
-		if ( p_GPSToggled{ playerid } == true || !IsPlayerInAnyVehicle( playerid ) )
-		    return SendError( playerid, "An error has occurred." ), 0;
-
-	    for( new i, x = 0; i < sizeof( g_gpsData ); i++ )
-		{
-	        if ( g_gpsData[ i ] [ E_CREATED ] == true && g_gpsData[ i ] [ E_CITY ] == GetPVarInt( playerid, "gps_city" ) )
-			{
-		       	if ( x == listitem )
-		      	{
-					p_GPSLocation[ playerid ] = i;
-			 		p_GPSObject[ playerid ] = CreateDynamicObject( 1318, 0.0, 0.0, 0.0, 0.0, 0.0, 0 );
-					p_GPSTimer[ playerid ] = SetTimerEx( "gps_Update", 100, true, "d", playerid );
-					p_GPSToggled{ playerid } = true;
-
-					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s. Follow the arrow to reach your destination.", g_gpsData[ i ] [ E_NAME ] );
-					PlayerTextDrawShow( playerid, p_GPSInformation[ playerid ] );
-		      		break;
-				}
-		      	x++;
-			}
-		}
-	}
-	if ( ( dialogid == DIALOG_GPS_CITY ) && response )
-	{
-		if ( p_GPSToggled{ playerid } == true || !IsPlayerInAnyVehicle( playerid ) )
-		    return SendError( playerid, "An error has occurred." ), 0;
-
-	    new
-	    	GPS[ sizeof( g_gpsData ) * 22 ];
-
-	    for( new i; i < sizeof( g_gpsData ); i++ )
-	    {
-	        if ( g_gpsData[ i ] [ E_CREATED ] == true && g_gpsData[ i ] [ E_CITY ] == listitem )
-	        	format( GPS, sizeof( GPS ), "%s%s\n", GPS, g_gpsData[ i ] [ E_NAME ] );
-	    }
-
-	    SetPVarInt( playerid, "gps_city", listitem );
-
-	    ShowPlayerDialog( playerid, DIALOG_GPS, DIALOG_STYLE_LIST, "{FFFFFF}GPS - Navigator", GPS, "Select", "Cancel");
-	}
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -17632,40 +17455,6 @@ stock IsLowriderVehicle(model)
 	return false;
 }
 
-function gps_Update( playerid )
-{
-	if ( !IsPlayerInAnyVehicle( playerid ) )
-	{
-		p_GPSLocation	[ playerid ] = 0;
-		p_GPSToggled	{ playerid } = false;
-		DestroyDynamicObject( p_GPSObject[ playerid ] );
-		KillTimer( p_GPSTimer[ playerid ] );
-		p_GPSTimer[ playerid ] = 0xFF;
-	  	p_GPSObject[ playerid ] = INVALID_OBJECT_ID;
-	  	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
-	  	SendServerMessage( playerid, "You have de-activated your GPS." );
-	  	return 0;
-	}
-
-	static
-	    Float: fRY, Float: fRZ, Float: fAZ,
-	    Float: X, Float: Y, Float: Z, v, string[ 100 ], Float: pos
-	;
-	pos = GetPlayerDistanceFromPoint( playerid, g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Z ]);
-	format( string, sizeof( string ), "~g~Location:~w~ %s~n~~g~Distance:~w~ %0.2fm", g_gpsData[ p_GPSLocation[ playerid ] ] [ E_NAME ], pos );
-	PlayerTextDrawSetString( playerid, p_GPSInformation[ playerid ], string );
-	v = GetPlayerVehicleID( playerid );
-	GetVehiclePos( v, X, Y, Z );
-	GetVehicleZAngle( v, fAZ );
-
-	fRY = floatsqroot( floatpower( ( g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ] - X ), 2.0 ) + floatpower( ( g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ] - Y ), 2.0 ) );
-	fRY = floatabs( atan2( fRY, Z - g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Z ] ) );
-	fRZ = atan2(g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ] - Y, g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ] - X) + 180;
-
-    AttachDynamicObjectToVehicle( p_GPSObject[ playerid ], v, 0.0, 0.0, 1.5, 0.0, fRY, fRZ + (-fAZ) );
-	return 1;
-}
-
 public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 {
 	return 1;
@@ -20210,32 +19999,6 @@ stock mysql_escape( string[ ] )
 
 	mysql_real_escape_string( string, szEscaped );
 	return szEscaped;
-}
-
-CreateNavigation( const szName[ 24 ], Float: X, Float: Y, Float: Z, city )
-{
-	new
-	    ID = 0xFF
-	;
-
-	for( new i; i < sizeof( g_gpsData ); i++ )
-	{
-		if ( !g_gpsData[ i ] [ E_CREATED ] ) {
-		    ID = i;
-		    break;
-		}
-	}
-
-	if ( ID == 0xFF )
-	    return 0;
-
-	format( g_gpsData[ ID ] [ E_NAME ], 24, "%s", szName );
-    g_gpsData[ ID ] [ E_CREATED ] = true;
-    g_gpsData[ ID ] [ E_X ] = X;
-    g_gpsData[ ID ] [ E_Y ] = Y;
-    g_gpsData[ ID ] [ E_Z ] = Z;
-    g_gpsData[ ID ] [ E_CITY ] = city;
-    return 1;
 }
 
 stock GetDayToString( day )
@@ -25939,11 +25702,11 @@ stock GetPlayerVIPDuration( playerid ) return p_VIPExpiretime[ playerid ] - g_iT
 
 stock IsPlayerInEvent( playerid ) return ( GetPlayerVirtualWorld( playerid ) == 69 );
 
-stock UpdatePlayerEntranceExitTick( playerid, ms = 2000 ) {
-	p_EntranceTickcount[ playerid ] = GetTickCount( ) + ms;
+stock UpdatePlayerEntranceExitTick( playerid, seconds = 2 ) {
+	p_EntranceTimestamp[ playerid ] = g_iTime + seconds;
 }
 
-stock CanPlayerExitEntrance( playerid ) return GetTickCount( ) > p_EntranceTickcount[ playerid ] && ! p_pausedToLoad{ playerid };
+stock CanPlayerExitEntrance( playerid ) return g_iTime > p_EntranceTimestamp[ playerid ] && ! p_pausedToLoad{ playerid };
 
 stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
 

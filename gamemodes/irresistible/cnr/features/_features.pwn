@@ -29,6 +29,7 @@
 #include "irresistible\cnr\features\paintball.pwn"
 #include "irresistible\cnr\features\random_messages.pwn"
 #include "irresistible\cnr\features\chuffsec.pwn"
+#include "irresistible\cnr\features\gps.pwn"
 // #include "irresistible\cnr\features\pilot.pwn"
 // #include "irresistible\cnr\features\fishing.pwn"
 // #include "irresistible\cnr\features\vote.pwn"
