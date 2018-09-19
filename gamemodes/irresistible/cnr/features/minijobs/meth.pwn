@@ -92,7 +92,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
     static
     	Float: X, Float: Y, Float: Z, Float: Angle;
 
-	if ( PRESSED( KEY_SECONDARY_ATTACK ) )
+	if ( PRESSED( KEY_FIRE ) )
 	{
 		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
 		{
