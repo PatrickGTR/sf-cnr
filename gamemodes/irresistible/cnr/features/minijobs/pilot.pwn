@@ -26,7 +26,7 @@ enum E_AIRPORT_DATA
 	Float: E_X,				Float: E_Y,				Float: E_Z,
 };
 
-new
+static stock
 	g_DropOffLocations[ ] [ E_PILOT_DATA ] =
 	{
 		// SF
