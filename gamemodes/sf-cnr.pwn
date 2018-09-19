@@ -65,7 +65,6 @@ new bool: False = false;
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
 #define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + GetPlayerCash(%0)) // Bank Money and Money
 #define Achievement:: 				ach_
-#define UpdateWoodStockObject()		(format(szNormalString,32,"%d Logs Ready",g_LogsInStock),SetDynamicObjectMaterialText(g_LogCountObject,0,szNormalString,130,"Arial",0,1,-1,0,1))
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
@@ -331,31 +330,6 @@ new
 ;
 
 public OnPlayerTakeOutFire			( playerid, fireid );
-
-/* ** Lumberjack ** */
-#define MAX_TREES                   ( 16 )
-enum E_TREE_DATA
-{
-	bool: E_CREATED,    E_OBJECT,       Float: E_HEALTH,
-	Text3D: E_LABEL,    bool: E_CUT,    bool: E_CHOPPED,
-	Float: E_X,         Float: E_Y,     Float: E_Z
-};
-
-new
-	Float: g_treeExportLocations   	[ ] [ 3 ] =
-	{
-	    { -520.2759, -504.32880, 24.6917 },
-		{ -377.7403, -1438.5587, 25.7266 },
-		{ -62.98320, -1122.2581, 1.21400 },
-		{ 89.445900, -311.85220, 1.57810 },
-		{ 362.28260, 865.053800, 20.4063 },
-		{ 2399.5352, 2798.89310, 10.8203 },
-		{ -2002.906, -2409.2000, 30.6250 }
-	},
-	p_treeExportLocation            [ MAX_PLAYERS ] = { 0xFF, ... },
-	g_treeData                      [ MAX_TREES ] [ E_TREE_DATA ],
- 	g_LogCountObject 				= INVALID_OBJECT_ID
-;
 
 /* ** Mining ** */
 #define MAX_ROCKS 					( 72 )
@@ -1279,7 +1253,6 @@ public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
-public OnPlayerChainsawTree( playerid, treeid );
 public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 public OnPlayerProgressUpdate( playerid, progressid, params );
 public OnProgressCompleted( playerid, progressid, params );
@@ -2026,24 +1999,6 @@ public OnGameModeInit()
 	CreateATM( 2230.132324, 1647.986816, 1007.97900, -90.0 ); // Caligs
 	CreateATM( 2241.676269, 1649.486816, 1007.97900, 90.00 ); // Caligs
 
-	/* ** Lumberjack ** */
-	CreateLumberjackTree( -2358.10000000, -84.60000000, 34.10000000 );
-	CreateLumberjackTree( -2349.90000000, -85.40000000, 34.10000000 );
-	CreateLumberjackTree( -2341.20000000, -86.20000000, 34.10000000 );
-	CreateLumberjackTree( -2341.20000000, -93.70000000, 34.10000000 );
-	CreateLumberjackTree( -2350.90000000, -92.80000000, 34.10000000 );
-	CreateLumberjackTree( -2357.40000000, -92.20000000, 34.10000000 );
-	CreateLumberjackTree( -2357.90000000, -97.40000000, 34.10000000 );
-	CreateLumberjackTree( -2350.90000000, -98.10000000, 34.10000000 );
-	CreateLumberjackTree( -2341.70000000, -99.00000000, 34.10000000 );
-	CreateLumberjackTree( -2334.80000000, -86.00000000, 34.10000000 );
-	CreateLumberjackTree( -2334.90000000, -93.20000000, 34.10000000 );
-	CreateLumberjackTree( -2334.80000000, -98.80000000, 34.10000000 );
-	CreateLumberjackTree( -2335.00000000, -103.9000000, 34.10000000 );
-	CreateLumberjackTree( -2341.50000000, -103.5000000, 34.10000000 );
-	CreateLumberjackTree( -2350.40000000, -103.3000000, 34.10000000 );
-	CreateLumberjackTree( -2358.34000000, -103.0300000, 34.10000000 );
-
 	/* ** Mining Rock ** */
 	CreateMiningRock( ORE_COAL, 	868, -2751.8393, 1245.06689, 11.4003100, 0.000000, 0.000000, -54.8999 );
 	CreateMiningRock( ORE_COAL, 	867, -2746.3259, 1241.43030, 11.1903100, 0.000000, 0.000000, 0.000000 );
@@ -2197,10 +2152,7 @@ public OnGameModeInit()
 
 	// Signs - User friendly addition
 	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -2337.8610, -107.4217, 36.2978, 0.0000, 0.0000, 90.0551 ), 0, "Wood Chipper", 130, "impact", 80, 0, -1, 0, 1 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -2336.3244, -113.2057, 40.6778, 0.0000, 0.0000, 179.9560 ), 0, "Lumberjack", 130, "impact", 100, 0, -1, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-	SetDynamicObjectMaterialText( ( g_LogCountObject = CreateDynamicObject(3074, -2329.4724, -106.0164, 33.1678, 0.0000, 0.0000, 90.000000) ), 0, "0 Logs Ready", 130, "Arial", 0, 1, -1, 0, 1);
 
 	// Parking
  	CreateDynamicObject( 19485, -1909.55, 497.22, 25.71, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 1 );
@@ -2258,10 +2210,6 @@ public OnGameModeInit()
 	tmpVariable = CreateDynamicObject( 3524, -2587.017578, 59.971229, 4.842026, 35.399997, 0.000000, -90.000000, -1, -1, -1 );
 	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
 	SetDynamicObjectMaterialText( tmpVariable, 1, "a", 0, "arial", 0, 0, 0, 0, 0 );
-
-	// Lumberjack
-	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.1, -94.00, 34.28, 0.0, 0.0, 270.0, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
-	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
 
 	// Mining
 	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = -1.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
@@ -2643,19 +2591,6 @@ public OnPlayerTakeOutFire( playerid, fireid )
 	return 1;
 }
 
-public OnPlayerChainsawTree( playerid, treeid )
-{
-	new
-	    Float: X, Float: Y, Float: Z
-	;
-	GetDynamicObjectPos( g_treeData[ treeid ] [ E_OBJECT ], X, Y, Z );
-	MoveDynamicObject( g_treeData[ treeid ] [ E_OBJECT ], X + 0.1, Y + 0.1, Z + 0.1, ( 0.05 ), 90.0, 0.0, 0.0 );
-	g_treeData[ treeid ] [ E_CUT ] = true;
-	return 1;
-}
-
-function lumberjack_RemoveWood( obj ) return StopDynamicObject( obj ), DestroyDynamicObject( obj ), 1;
-
 public OnGameModeExit( )
 {
 	KillTimer( rl_ServerUpdate );
@@ -2994,37 +2929,6 @@ public OnServerUpdateTimer( )
 				}
 			}
 
-			if ( ( iKeys & KEY_FIRE ) && iWeapon == 9 ) // Lumberjack
-			{
-			    for( new i; i < MAX_TREES; i++ ) if ( !( g_treeData[ i ] [ E_CREATED ] == false || g_treeData[ i ] [ E_CUT ] == true ) )
-			    {
-			 		if ( GetDynamicObjectPos( g_treeData[ i ] [ E_OBJECT ], fX, fY, fZ ) )
-			 		{
-						fZ += 2.3;
-
-						if ( IsPlayerInRangeOfPoint( playerid, 2.0, fX, fY, fZ ) )
-						{
-							if ( g_treeData[ i ] [ E_HEALTH ] > 0.0 )
-							{
-								if ( ( g_treeData[ i ] [ E_HEALTH ] -= ( 1.75 + fRandomEx( 1, 5 ) ) ) < 0.0 )
-									g_treeData[ i ] [ E_HEALTH ] = 0.0;
-
-					           	UpdateDynamic3DTextLabelText( g_treeData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_treeData[ i ] [ E_HEALTH ] ) );
-							}
-							else
-				   			{
-					            GivePlayerCash( playerid, 250 );
-							    g_treeData[ i ] [ E_HEALTH ] = 0.0;
-				            	CallLocalFunction( "OnPlayerChainsawTree", "dd", playerid, i );
-					            SendServerMessage( playerid, "You have cut the tree down, now chop the logs down! "COL_ORANGE"/wood chop{FFFFFF}!" );
-					           	UpdateDynamic3DTextLabelText( g_treeData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_treeData[ i ] [ E_HEALTH ] ) );
-							}
-							break;
-						}
-					}
-			    }
-			}
-
 			// Check if the player's VIP has expired
 			CheckPlayerVipExpiry( playerid );
 
@@ -3272,6 +3176,9 @@ public ZoneTimer( )
 
  	if ( g_WorldClockSeconds >= 1440 )
  	{
+ 		// call a function when the server day ends
+ 		CallLocalFunction( "OnServerGameDayEnd", "" );
+
  	    g_WorldWeather = randarg( 10, 11, 12 );
  	    g_WorldClockSeconds = 0;
         g_WorldDayCount = ( g_WorldDayCount == 6 ? 0 : g_WorldDayCount + 1 );
@@ -3280,6 +3187,7 @@ public ZoneTimer( )
 		CreateFire( );
 		RenewWeed( );
 		PlayerPlaceRandomHits( );
+		Lumberjack_RecreateTrees( );
 
 		foreach(new p : Player) {
 			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
@@ -3323,23 +3231,6 @@ public ZoneTimer( )
 		    	}
     		}
     	}
-
-		for( new i; i < 20; i++ )
-		{
-			if ( i < MAX_TREES )
-			{
-				if ( g_treeData[ i ] [ E_CREATED ] == true && g_treeData[ i ] [ E_CHOPPED ] == true )
-				{
-					DestroyDynamicObject( g_treeData[ i ] [ E_OBJECT ] );
-					g_treeData[ i ] [ E_CREATED ] = true;
-					g_treeData[ i ] [ E_CUT ] = false;
-					g_treeData[ i ] [ E_CHOPPED ] = false;
-					g_treeData[ i ] [ E_HEALTH ] = 100.0;
-					UpdateDynamic3DTextLabelText( g_treeData[ i ] [ E_LABEL ], COLOR_YELLOW, "100.0" );
-					g_treeData[ i ] [ E_OBJECT ] = CreateDynamicObject( 618, g_treeData[ i ] [ E_X ], g_treeData[ i ] [ E_Y ], g_treeData[ i ] [ E_Z ], 0.0, 0.0, 0.0 );
-				}
-			}
-		}
 	}
 
 
@@ -4154,7 +4045,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_LastEnteredEntrance[ playerid ] = -1;
 	p_ViewingGangTalk[ playerid ] = -1;
 	p_forcedAnticheat[ playerid ] = 0;
-	p_StartedLumberjack{ playerid } = false;
 	p_PlayerAltBind[ playerid ] = -1;
 	p_RconLoginFails{ playerid } = 0;
 	p_SpawningKey[ playerid ] [ 0 ] = '\0';
@@ -4163,7 +4053,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_VehicleBringCooldown[ playerid ] = 0;
 	p_DamageSpamCount{ playerid } = 0;
 	p_AntiTextSpamCount{ playerid } = 0;
-	p_treeExportLocation[ playerid ] = 0xFF;
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
 	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
     Delete3DTextLabel( p_AdminLabel[ playerid ] );
@@ -4176,14 +4065,8 @@ public OnPlayerDisconnect( playerid, reason )
 	p_WeedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_AntiSpawnKillEnabled{ playerid } = false;
 	//p_CopTutorialProgress{ playerid } = 0;
-    DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
-	p_LumberjackReturn[ playerid ] = 0xFFFF;
-	DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
-	p_LumberjackDeliver[ playerid ] = 0xFFFF;
 	DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 	p_MiningExport[ playerid ] = 0xFFFF;
-	DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-	p_LumberjackMapIcon[ playerid ]= 0xFFFF;
 	KillTimer( p_FireDistanceTimer[ playerid ] );
 	p_FireDistanceTimer[ playerid ] = 0xFF;
 	DestroyDynamicObject( p_GPSObject[ playerid ] );
@@ -5144,19 +5027,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 	/* ** End Of Tax And Medical Fees ** */
 
-	if ( p_StartedLumberjack{ playerid } == true )
-	{
-    	p_StartedLumberjack{ playerid } = false;
-	 	GameTextForPlayer( playerid, "~r~job stopped!", 4000, 0 );
-        DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
-        p_LumberjackReturn[ playerid ] = 0xFFFF;
-        DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
-        p_LumberjackDeliver[ playerid ] = 0xFFFF;
-        p_treeExportLocation[ playerid ] = 0xFF;
-		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-		p_LumberjackMapIcon[ playerid ] = 0xFFFF;
-	}
-
 	new
 		playerGangId = p_GangID[ playerid ];
 
@@ -5269,7 +5139,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 
 			CreateCrimeReport( killerid );
 		}
-
 
         if ( p_Class[ killerid ] == CLASS_CIVILIAN && JobEquals( killerid, JOB_HITMAN ) )
 		{
@@ -8531,107 +8400,6 @@ CMD:ach( playerid, params[ ] ) return cmd_achievements( playerid, params );
 CMD:achievements( playerid, params[ ] )
 {
 	displayAchievements( playerid );
-	return 1;
-}
-
-CMD:wood( playerid, params[ ] )
-{
-	new
-	    Float: X, Float: Y, Float: Z
-	;
-
-	if ( isnull( params ) ) return SendUsage( playerid, "/wood [CHOP/CHIP/START/STOP]" );
-	else if ( strmatch( params, "chop" ) )
-	{
-	    new count = 0;
-	    for( new i; i < MAX_TREES; i++ )
-	    {
-			if ( g_treeData[ i ] [ E_CREATED ] == false || g_treeData[ i ] [ E_CUT ] == false ) continue;
-			GetDynamicObjectPos( g_treeData[ i ] [ E_OBJECT ], X, Y, Z );
-
-			if ( IsPlayerInRangeOfPoint( playerid, 4.0, X, Y, Z ) && g_treeData[ i ] [ E_CHOPPED ] == false )
-			{
-			    StopDynamicObject( g_treeData[ i ] [ E_OBJECT ] );
-			    DestroyDynamicObject( g_treeData[ i ] [ E_OBJECT ] );
-			    g_treeData[ i ] [ E_OBJECT ] = CreateDynamicObject( 831, X, Y, Z + 0.75, 0.0, 0.0, 0.0 );
-			    SetPlayerPos( playerid, X, Y + 2, Z + 0.75 );
-			    p_Wood[ playerid ]++;
-			    g_treeData[ i ] [ E_CHOPPED ] = true;
-			    count++;
-			    GivePlayerCash( playerid, 250 );
-				SendServerMessage( playerid, "Tree successfully chopped into smaller pieces. Go to the wood chipper and type "COL_ORANGE"/wood chip{FFFFFF}!" );
-				break;
-		  	}
-	    }
-		if ( !count ) SendError( playerid, "You are not next to any chopped tree." );
-	}
-	else if ( strmatch( params, "chip" ) )
-	{
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this feature while in a vehicle." );
-	    if ( IsPlayerInRangeOfPoint( playerid, 4.0, -2338.20, -106.51, 34.00 ) )
-	    {
-	        if ( p_Wood[ playerid ] < 1 )
-	            return SendError( playerid, "You are not carrying any chopped wood." );
-
-		    new object = CreateDynamicObject( 14872, -2338.20, -106.51, 34.00, -27.78, 89.40, 1.92 );
-		    MoveDynamicObject( object, -2338.20, -106.51, 33.5, 0.10 );
-			Streamer_Update( playerid ); // SyncObject( playerid );
-            PlayerPlaySound( playerid, 1153, -2338.20, -106.51, 33.99 );
-            GivePlayerCash( playerid, 500 );
-		    SetTimerEx( "lumberjack_RemoveWood", 9000, false, "d", object );
-            p_Wood[ playerid ]--;
-            g_LogsInStock ++;
-           	UpdateWoodStockObject( );
-			SendServerMessage( playerid, "You've placed a chopped log in the wood chipper. You have made a total of "COL_GOLD"$1,000!" );
-		}
-		else SendError( playerid, "You are not next to the wood chipper." );
-	}
-	else if ( strmatch( params, "start" ) )
-	{
-		if ( p_StartedLumberjack{ playerid } == true )
-		    return SendError( playerid, "You are already doing this job." );
-
-	    if ( !IsPlayerInAnyVehicle( playerid ) )
-	        return SendError( playerid, "You are not in any vehicle." );
-
-		if ( GetVehicleModel( GetPlayerVehicleID( playerid ) ) != 455 )
-	        return SendError( playerid, "You are not inside the wood exporting truck." );
-
-		if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER )
-		    return SendError( playerid, "You must be a driver of this vehicle to proceed." );
-
- 		if ( g_LogsInStock < 1 )
-	    	return SendError( playerid, "There is not enough logs in stock to export." );
-
-		new id = random( sizeof( g_treeExportLocations ) );
-		p_treeExportLocation[ playerid ] = id;
-
-		static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-		p_LumberjackMapIcon[ playerid ] = CreateDynamicMapIconEx( -2330.8535, -113.9084, 34.00, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-
-		p_LumberjackTimeElapsed[ playerid ] = g_iTime;
-		p_LumberjackReturn[ playerid ] = CreateDynamicRaceCP( 0, -2330.8535, -113.9084, 34.00, g_treeExportLocations[ id ] [ 0 ], g_treeExportLocations[ id ] [ 1 ], g_treeExportLocations[ id ] [ 2 ], 4.0, -1, -1, playerid );
-		p_StartedLumberjack{ playerid } = true;
-
-		ShowPlayerHelpDialog( playerid, 7500, "A ~g~~h~truck blip~w~~h~ has been shown on your radar. Go to where the truck blip is located to export and import logs." );
-	}
-	else if ( strmatch( params, "stop" ) )
-	{
-		if ( p_StartedLumberjack{ playerid } != true )
-		    return SendError( playerid, "You are not doing this job." );
-
-		p_StartedLumberjack{ playerid } = false;
-	 	GameTextForPlayer( playerid, "~r~job stopped!", 4000, 0 );
-        DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
-        p_LumberjackReturn[ playerid ] = 0xFFFF;
-        DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
-        p_LumberjackDeliver[ playerid ] = 0xFFFF;
-        p_treeExportLocation[ playerid ] = 0xFF;
-		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-		p_LumberjackMapIcon[ playerid ] = 0xFFFF;
-	}
-	else SendUsage( playerid, "/wood [CHOP/CHIP/START/STOP]" );
 	return 1;
 }
 
@@ -11961,18 +11729,6 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 
     if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER ) // Driver has a new state?
     {
-    	if ( p_StartedLumberjack{ playerid } == true )
-		{
-	    	p_StartedLumberjack{ playerid } = false;
-		 	GameTextForPlayer( playerid, "~r~job stopped!", 4000, 0 );
-	        DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
-	        p_LumberjackReturn[ playerid ] = 0xFFFF;
-	        DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
-	        p_LumberjackDeliver[ playerid ] = 0xFFFF;
-        	p_treeExportLocation[ playerid ] = 0xFF;
-			DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-			p_LumberjackMapIcon[ playerid ]= 0xFFFF;
-		}
 		if ( p_PawnStoreExport[ playerid ] != 0xFFFF )
 		{
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
@@ -12089,18 +11845,6 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( checkpointid == g_Checkpoints[ CP_PAWNSHOP ] )
 		return ShowPlayerDialog( playerid, DIALOG_TOYS_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Purchase Toys", getToyCategories( .pawnshop = true ), "Select", "Cancel" );
-
-	if ( checkpointid == g_Checkpoints[ CP_LUMBERJACK ] )
-	{
-	    if ( p_Class[ playerid ] != CLASS_CIVILIAN )
-	        return SendError( playerid, "Only civilians can access this feature." );
-
-	    szLargeString[ 0 ] = '\0';
-	    strcat( szLargeString, ""COL_WHITE"Welcome to the "COL_ORANGE"Lumberjack"COL_WHITE" job! \n\nHere we cut trees, chop them further then process them into crates.\nWe pay well for cutting a tree down and processing the logs. You can also\nbe a driver that will transport the boxes to the" );
-		strcat( szLargeString, "factory that requires it.\n\nOnly a specific vehicle can be driven to have these boxes delivered.\nIf it's not there and somewhere lost, contact an administrator to bring it back!" );
-		ShowPlayerDialog( playerid, DIALOG_LUMBERJACK, DIALOG_STYLE_MSGBOX, "{FFFFFF}Lumberjack Job", szLargeString, "Join", "Cancel" );
-	    return 1;
-	}
 
 	new
 		houseid = p_InHouse[ playerid ];
@@ -12553,58 +12297,6 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			GivePlayerScore( playerid, floatround( oresExported / 2 ) ); // 16 score is a bit too much for ore... so half that = 8
 			SendServerMessage( playerid, "You have exported %d rock ore(s) to an industry, earning you "COL_GOLD"%s"COL_WHITE".", oresExported, cash_format( cashEarned ) );
 		}
-		return 1;
-	}
-
-	else if ( p_LumberjackDeliver[ playerid ] == checkpointid )
-	{
-		new
-			Float: fDistance = GetDistanceFromPointToPoint( -2330.8535, -113.9084, g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 0 ], g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 1 ] ),
-			iTimeElapsed = g_iTime - p_LumberjackTimeElapsed[ playerid ],
-			iTheoreticalFinish = floatround( fDistance / 30.0 ) // distance / 25m/s (2000m / 25m/s)
-		;
-
-		// Check if it is really quick to finish
-		if ( iTimeElapsed < iTheoreticalFinish ) {
-		    SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking (0xBC-%d-%d).", iTheoreticalFinish, iTimeElapsed );
-	    	KickPlayerTimed( playerid );
-	    	return 1;
-		}
-
-	    new cash = floatround( fDistance ) + 5000;
-        DestroyDynamicRaceCP( p_LumberjackDeliver[ playerid ] );
-        p_LumberjackDeliver[ playerid ] = 0xFFFF;
-		ShowPlayerHelpDialog( playerid, 7500, "Great job! You've earned ~y~%s~w~~h~!~n~~n~Navigate to the import location to pack your truck with logs.~n~~n~~y~~h~Info: The truck blip has been updated, navigate to it.", cash_format( cash ) );
-        //SendServerMessage( playerid, "You've made "COL_GOLD"%s"COL_WHITE" from exporting. Go and pick another box up!"  );
-	    GivePlayerCash( playerid, cash );
-	    GivePlayerScore( playerid, 5 );
-
-		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-		p_LumberjackMapIcon[ playerid ] = CreateDynamicMapIconEx( -2330.8535, -113.9084, 34.00, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-
-	    p_LumberjackReturn[ playerid ] = CreateDynamicRaceCP( 0, -2330.8535, -113.9084, 34.00, g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 0 ], g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 1 ], g_treeExportLocations[ p_treeExportLocation[ playerid ] ] [ 2 ], 4.0, -1, -1, playerid );
-		Beep( playerid );
-		return 1;
-	}
-
-	else if ( p_LumberjackReturn[ playerid ] == checkpointid )
-	{
-	    if ( g_LogsInStock < 1 )
-	    	return SendError( playerid, "There is not enough logs in stock to export." );
-
-        DestroyDynamicRaceCP( p_LumberjackReturn[ playerid ] );
-        p_LumberjackReturn[ playerid ] = 0xFFFF;
-        g_LogsInStock--;
-        UpdateWoodStockObject( );
-		new id = random( sizeof( g_treeExportLocations ) );
-		p_treeExportLocation[ playerid ] = id;
-
-		DestroyDynamicMapIcon( p_LumberjackMapIcon[ playerid ] );
-		p_LumberjackMapIcon[ playerid ] = CreateDynamicMapIconEx( g_treeExportLocations[ id ] [ 0 ], g_treeExportLocations[ id ] [ 1 ], g_treeExportLocations[ id ] [ 2 ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-
-		ShowPlayerHelpDialog( playerid, 7500, "You've packed your truck with logs. ~g~~h~Navigate your way to the export location.~n~~n~Info:~y~~h~ The truck blip has been updated, navigate to it." );
-        p_LumberjackDeliver[ playerid ] = CreateDynamicRaceCP( 0, g_treeExportLocations[ id ] [ 0 ], g_treeExportLocations[ id ] [ 1 ], g_treeExportLocations[ id ] [ 2 ], -2330.8535, -113.9084, 34.00, 4.0, -1, -1, playerid );
-       	Beep( playerid );
 		return 1;
 	}
 
@@ -15264,12 +14956,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    SendServerMessage( playerid, "You have redeemed a %s.", ReturnWeaponName( weaponid ) );
 			p_VIPWeaponRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_BRONZE ? 60 : 300 );
 		}
-	}
-	if ( ( dialogid == DIALOG_LUMBERJACK ) && response )
-	{
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "This feature is disabled if you are jailed." );
-	    GivePlayerWeapon( playerid, 9, 1 );
-		SendServerMessage( playerid, "Thank you for your participation, you have been given a chainsaw!" );
 	}
 	if ( ( dialogid == DIALOG_FIGHTSTYLE ) && response )
 	{
@@ -20774,33 +20460,6 @@ stock SyncObject( playerid, Float: offsetX = 0.005, Float: offsetY = 0.005, Floa
 
 	if ( GetPlayerPos( playerid, X, Y, Z ) )
 		SetPlayerPos( playerid, X + offsetX, Y + offsetY, Z + offsetZ );
-}
-
-CreateLumberjackTree( Float: X, Float: Y, Float: Z )
-{
-	new ID = -1;
-	for( new i; i < MAX_TREES; i++ )
-	{
-	    if ( !g_treeData[ i ] [ E_CREATED ] )
-	    {
-	        ID = i;
-	        break;
-	    }
-	}
-
-	if ( ID != -1 )
-	{
-	    g_treeData[ ID ] [ E_CREATED ] = true;
-	    g_treeData[ ID ] [ E_CUT ] = false;
-	    g_treeData[ ID ] [ E_CHOPPED ] = false;
-	    g_treeData[ ID ] [ E_X ] = X;
-	    g_treeData[ ID ] [ E_Y ] = Y;
-	    g_treeData[ ID ] [ E_Z ] = Z;
-	    g_treeData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 618, X, Y, Z, 0.0, 0.0, 0.0 );
-	    g_treeData[ ID ] [ E_HEALTH ] = 100.0;
-		g_treeData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "100.0", COLOR_YELLOW, X, Y, Z + 0.5, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1 );
-	}
-	return ID;
 }
 
 CreateWeedPlant( Float: X, Float: Y, Float: Z, Float: rX, Float: rY, Float: rZ )

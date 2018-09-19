@@ -19,7 +19,6 @@ new
 	g_WorldClockSeconds             = 0,
 	g_WorldDayCount                 = 0,
 	g_WorldWeather                  = 10,
-	g_LogsInStock 					= 0,
 	g_PingLimit                     = 1024,
 	g_circleall_CD                  = false,
 	log__Text						[ 6 ][ 90 ],

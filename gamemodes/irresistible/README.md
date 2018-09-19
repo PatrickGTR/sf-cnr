@@ -1,19 +1,23 @@
-/*
+# Irresistible Gaming Development Framework
+#### Copyright (C) 2011-2018
 
-						Irresistible Gaming Development Framework
-							  	   Copyright (c) 2018
+**Source Contributors:**  Lorenc ("Lorenc") Pekaj, Steven ("Stev") Howard
+**BIG THANKS to Stev, Nibble, Banging7Grams, Kova, Queen and Panther for making this possible.**
 
-	This framework allows you to easily collaborate on Irresistible Gaming servers.
+### Script Callbacks
 
-	Internal Server Callbacks (Hookable):
-		- SetPlayerRandomSpawn( )
-			* When a player is attempting to spawn somewhere randomly
-
-		- OnServerUpdate( )
-
-		- OnPlayerUpdateEx( )
-
-		- OnNpcConnect( npcid )
-
-		- OnPlayerDriveVehicle( playerid, vehicleid )
- */
+- `public SetPlayerRandomSpawn( playerid )`
+    - Called when a player is attempting to be respawned somewhere randomly 
+- `public OnServerUpdate( )` 
+    - Called every second (or sooner) indefinitely
+- `public OnPlayerUpdateEx( playerid )`
+    - Same interval as OnServerUpdate, but it is called indefinitely for every player in-game
+    - When you wish to update something frequently, but not use OnPlayerUpdate
+- `OnServerGameDayEnd( )`
+    - Called every 24 minutes in-game (basically when a new day starts)
+- `OnNpcConnect( npcid )`
+    - Called specifically when an NPC connects, as OnPlayerConnect will not
+- `OnNpcDisconnect( npcid, reason )`
+    - Called specifically when an NPC disconnects, as OnPlayerDisconnect will not
+- `OnPlayerDriveVehicle( playerid, vehicleid )`
+    - Called when a player enters a vehicle as a driver
