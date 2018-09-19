@@ -35,7 +35,7 @@ static stock
 	Iterator: trees 				< MAX_TREES >,
  	g_LogCountObject 				= INVALID_OBJECT_ID,
 	g_LogsInStock 					= 0,
-	g_LumberjackCP 					= -1,
+	g_LumberjackCP 					= -1
 ;
 
 /* ** Hooks ** */

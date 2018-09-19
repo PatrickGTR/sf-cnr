@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -3187,7 +3187,6 @@ public ZoneTimer( )
 		CreateFire( );
 		RenewWeed( );
 		PlayerPlaceRandomHits( );
-		Lumberjack_RecreateTrees( );
 
 		foreach(new p : Player) {
 			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
