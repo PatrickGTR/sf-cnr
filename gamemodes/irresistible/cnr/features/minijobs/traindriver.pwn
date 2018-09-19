@@ -104,11 +104,6 @@ hook OnPlayerStateChange( playerid, newstate, oldstate )
     return 1;
 }
 
-CMD:getspeed(playerid,params[]){
-	SendServerMessage( playerid, "You are travelling at %d", Train_GetSpeed( GetPlayerVehicleID( playerid ) ));
-	return 1;
-}
-
 hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 {
 	if ( checkpointid == p_TrainCheckPoint[ playerid ] )
