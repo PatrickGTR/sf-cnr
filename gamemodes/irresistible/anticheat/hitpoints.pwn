@@ -184,7 +184,9 @@ static stock
 	Float: p_LastDamageIssued		[ MAX_PLAYERS ],
 	p_LastTookDamage 				[ MAX_PLAYERS ],
 	p_LastDamageIssuer 				[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
-	p_LastWeaponIssuer 				[ MAX_PLAYERS ]
+	p_LastWeaponIssuer 				[ MAX_PLAYERS ],
+	p_LastDeath						[ MAX_PLAYERS ],
+	p_DeathSpam						[ MAX_PLAYERS char ]
 ;
 
 /* ** Forwards ** */
@@ -283,6 +285,7 @@ hook OnPlayerConnect( playerid )
 	    // Reset variables
 		p_PlayerHealth[ playerid ] [ E_UPDATE_FAIL ] = 0;
 		p_PlayerArmour[ playerid ] [ E_UPDATE_FAIL ] = 0;
+		p_DeathSpam{ playerid } = 0;
 	}
 	return 1;
 }
@@ -563,16 +566,36 @@ stock AC_CheckForHealthHacks( playerid, iTicks )
 
 hook OnPlayerDeath( playerid, killerid, reason )
 {
-	if ( !IsPlayerNPC( playerid ) )
+	if ( ! IsPlayerNPC( playerid ) )
 	{
+		new
+			server_time = gettime( );
+
 		// Reset spawned variable
 		AC_SetPlayerSpawned( playerid, false );
+
+		// Anti-fakekill
+		switch( server_time - p_LastDeath[ playerid ] )
+		{
+			case 0 .. 3:
+			{
+				if ( p_DeathSpam{ playerid } ++ == 3 )
+				{
+					CallLocalFunction( "OnPlayerCheatDetected", "ddd", playerid, CHEAT_TYPE_FAKEKILL, p_DeathSpam{ playerid } );
+					return Y_HOOKS_BREAK_RETURN_1;
+				}
+			}
+			default: p_DeathSpam{ playerid } = 0;
+		}
+
+		p_LastDeath[ playerid ] = server_time;
 
 	    // Died in Vehicle
 		if ( GetPlayerVehicleID( playerid ) && AC_IsPlayerSpawned( playerid ) )
 	    {
-			if( ( GetTickCount( ) - p_LastTookDamage[ playerid ] ) > 2500 )
+			if( ( GetTickCount( ) - p_LastTookDamage[ playerid ] ) > 2500 ) {
 				p_LastDamageIssuer[ playerid ] = INVALID_PLAYER_ID, p_LastWeaponIssuer[ playerid ] = 51;
+			}
 
 			CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
 	    }

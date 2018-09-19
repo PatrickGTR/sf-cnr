@@ -4044,7 +4044,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_FPSCounter 	{ playerid } = false;
 	p_Ropes			[ playerid ] = 0;
 	p_Scissors      [ playerid ] = 0;
-	DeathSpam       { playerid } = 0;
 	p_Fires         [ playerid ] = 0;
 	p_PingImmunity  { playerid } = 0;
 	p_Robberies     [ playerid ] = 0;
@@ -5063,20 +5062,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	    return SendServerMessage( playerid, "Possible Fake-kill detected - 0x0A" ), KickPlayerTimed( playerid );
 	}
 
-	switch( g_iTime - LastDeath[ playerid ] )
-	{
-		case 0 .. 3:
-		{
-			if ( DeathSpam{ playerid }++ == 3 )
-			{
-				SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for fake-killing.", ReturnPlayerName( playerid ), playerid );
-				BanEx( playerid, "Fake-kill" );
-				return 1;
-			}
-		}
-		default: DeathSpam{ playerid } = 0;
-	}
-
 	// Robbery system
 	if ( IsPlayerNPC( killerid ) )
 	{
@@ -5089,7 +5074,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
 	// Reset player variables
-	LastDeath[ playerid ] = g_iTime;
     p_Spawned{ playerid } = false;
     p_QuitToAvoidTimestamp[ playerid ] = 0;
     CutSpectation( playerid );
@@ -5225,7 +5209,8 @@ public OnPlayerDeath( playerid, killerid, reason )
 
 		if ( p_Class[ killerid ] == CLASS_POLICE )
 	    {
-	        if ( p_Class[ killerid ] == p_Class[ playerid ] ) {
+	        if ( p_Class[ killerid ] == p_Class[ playerid ] )
+	        {
 	            // SendClientMessageToAdmins( -1, ""COL_PINK"[FAKE-KILL]{FFFFFF} Traces of fake-kill have came from %s: "COL_GREY"%s", ReturnPlayerName( playerid ), ReturnPlayerIP( playerid ) );
 	            // KickPlayerTimed( playerid );
 	            SendClientMessageFormatted( killerid, -1, ""COL_BLUE"[INNOCENT KILL]{FFFFFF} You have killed a team mate %s, you have lost 2 score and "COL_GOLD"$10,000{FFFFFF}.", ReturnPlayerName( playerid ) );
@@ -5239,38 +5224,35 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 			else
 			{
-				if ( !DeathSpam{ playerid } ) // If the player doesn't even have a death-spam count.
+				if ( !IsPlayerInEvent( killerid ) ) // Allow in event
 				{
-					if ( !IsPlayerInEvent( killerid ) ) // Allow in event
+				    if ( p_WantedLevel[ playerid ] > 5 )
 					{
-					    if ( p_WantedLevel[ playerid ] > 5 )
-						{
-							static const killedWords[ ] [ ] = { { "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" } };
-					        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
-					        GivePlayerCash( killerid, cashEarned );
-					        GivePlayerScore( killerid, 2 );
-					        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), cash_format( cashEarned ) ); // 8hska7082bmahu
-					       	if ( p_WantedLevel[ playerid ] > 64 ) SendGlobalMessage( -1, ""COL_GOLD"[POLICE KILL]{FFFFFF} %s(%d) has %s %s(%d) who had a wanted level of %d!", ReturnPlayerName( killerid ), killerid, killedWords[ random( sizeof( killedWords ) ) ], ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ] );
-					    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], cash_format( cashEarned ) );
-					    }
-					    else
-					    {
-					        if ( p_WantedLevel[ playerid ] <= 0 ) {
-								SendClientMessageFormatted( killerid, -1, ""COL_BLUE"[INNOCENT KILL]{FFFFFF} You have killed innocent %s, you have lost 2 score and "COL_GOLD"$10,000{FFFFFF}.", ReturnPlayerName( playerid ) );
-								GivePlayerCash( killerid, -10000 );
-								GivePlayerScore( killerid, -2 );
-								JailPlayer( killerid, 200, 1 );
-								cmd_rules( killerid, "" );
-								WarnPlayerClass( killerid, p_inArmy{ killerid } );
-								SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 200 seconds by the server "COL_GREEN"[REASON: Killing Innocent(s)]", ReturnPlayerName( killerid ), killerid );
-							}
-							else if ( p_WantedLevel[ playerid ] <= 5 ) {
-								SendClientMessageFormatted( killerid, -1, ""COL_BLUE"[INNOCENT KILL]{FFFFFF} You have killed low suspect %s, you have lost 2 score and "COL_GOLD"$5,000{FFFFFF}.", ReturnPlayerName( playerid ) );
-		                        GivePlayerCash( killerid, -5000 );
-								GivePlayerScore( killerid, -2 );
-							}
-					    }
-					}
+						static const killedWords[ ] [ ] = { { "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" } };
+				        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
+				        GivePlayerCash( killerid, cashEarned );
+				        GivePlayerScore( killerid, 2 );
+				        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), cash_format( cashEarned ) ); // 8hska7082bmahu
+				       	if ( p_WantedLevel[ playerid ] > 64 ) SendGlobalMessage( -1, ""COL_GOLD"[POLICE KILL]{FFFFFF} %s(%d) has %s %s(%d) who had a wanted level of %d!", ReturnPlayerName( killerid ), killerid, killedWords[ random( sizeof( killedWords ) ) ], ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ] );
+				    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], cash_format( cashEarned ) );
+				    }
+				    else
+				    {
+				        if ( p_WantedLevel[ playerid ] <= 0 ) {
+							SendClientMessageFormatted( killerid, -1, ""COL_BLUE"[INNOCENT KILL]{FFFFFF} You have killed innocent %s, you have lost 2 score and "COL_GOLD"$10,000{FFFFFF}.", ReturnPlayerName( playerid ) );
+							GivePlayerCash( killerid, -10000 );
+							GivePlayerScore( killerid, -2 );
+							JailPlayer( killerid, 200, 1 );
+							cmd_rules( killerid, "" );
+							WarnPlayerClass( killerid, p_inArmy{ killerid } );
+							SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 200 seconds by the server "COL_GREEN"[REASON: Killing Innocent(s)]", ReturnPlayerName( killerid ), killerid );
+						}
+						else if ( p_WantedLevel[ playerid ] <= 5 ) {
+							SendClientMessageFormatted( killerid, -1, ""COL_BLUE"[INNOCENT KILL]{FFFFFF} You have killed low suspect %s, you have lost 2 score and "COL_GOLD"$5,000{FFFFFF}.", ReturnPlayerName( playerid ) );
+	                        GivePlayerCash( killerid, -5000 );
+							GivePlayerScore( killerid, -2 );
+						}
+				    }
 				}
 			}
 	    }
@@ -11966,20 +11948,6 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 
 	p_LastPlayerState{ playerid } = oldstate;
 
-  	if ( newstate == PLAYER_STATE_DRIVER && p_AdminLevel[ playerid ] <= 0 )
-    {
-        if ( GetPlayerVehicleID( playerid ) != p_CarWarpVehicleID[ playerid ] )
-        {
-	        if ( p_CarWarpTime[ playerid ] > g_iTime )
-	        {
-	        	SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for car warping.", ReturnPlayerName( playerid ), playerid );
-				BanEx( playerid, "Car Warp" );
-	            return 1;
-	        }
-	        p_CarWarpTime[ playerid ] = g_iTime + 1;
-	        p_CarWarpVehicleID[ playerid ] = GetPlayerVehicleID( playerid );
-		}
-    }
 
     if ( oldstate == PLAYER_STATE_SPECTATING )
     {
@@ -13715,20 +13683,30 @@ function unpause_Player( playerid )
 	        	return Kick( playerid ), 1;
 			}
 			SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL JACKING]"COL_GREY" %s(%d) is a suspect of jacking vehicles abnormally.", ReturnPlayerName( playerid ), playerid );
-			return 1;
 		}
 		else if ( detection == CHEAT_TYPE_RAPIDFIRE )
 		{
 			SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for rapid-firing.", ReturnPlayerName( playerid ), playerid );
 		 	Kick( playerid );
-		 	return 1;
+		}
+		else if ( detection == CHEAT_TYPE_FAKEKILL )
+		{
+			SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for fake-killing.", ReturnPlayerName( playerid ), playerid );
+			BanEx( playerid, "Fake-kill" );
+		}
+		else if ( detection == CHEAT_TYPE_CARWARP )
+		{
+			if ( ! GetPlayerAdminLevel( playerid ) )
+			{
+	        	SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for car warping.", ReturnPlayerName( playerid ), playerid );
+				BanEx( playerid, "Car Warp" );
+			}
 		}
 		else if ( detection == CHEAT_TYPE_AIRBRAKE )
 		{
 			//SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for airbraking.", ReturnPlayerName( playerid ), playerid );
 			//AdvancedBan( playerid, "Server", "Airbrake", ReturnPlayerIP( playerid ) );
 			SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL MOVEMENT]"COL_GREY" %s(%d) has been detected for airbrake.", ReturnPlayerName( playerid ), playerid );
-			return 1;
 		}
 		else if ( detection == CHEAT_TYPE_FLYHACKS )
 		{
@@ -13739,7 +13717,6 @@ function unpause_Player( playerid )
 		else if ( detection == CHEAT_TYPE_WEAPON )
 		{
 			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for weapon hack (%s).", ReturnPlayerName( playerid ), playerid, ReturnWeaponName( params ) );
-			return 1;
 		}
 		else
 		{

@@ -22,12 +22,12 @@
 enum
 {
 	CHEAT_TYPE_WEAPON,
-	//CHEAT_TYPE_CARWARP,
+	CHEAT_TYPE_CARWARP,
 	//CHEAT_TYPE_MONEY,
 	//CHEAT_TYPE_PLAYERBUGGER,
 	//CHEAT_TYPE_PICKUP_SPAM,
 	//CHEAT_TYPE_SPECTATE,
-	//CHEAT_TYPE_FAKEKILL,
+	CHEAT_TYPE_FAKEKILL,
 	CHEAT_TYPE_REMOTE_JACK,
 	//CHEAT_TYPE_PING_LIMIT,
 	CHEAT_TYPE_SPEED_HACK,
@@ -165,3 +165,4 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 #include "irresistible\anticheat\flying.pwn"
 #include "irresistible\anticheat\remotejack.pwn"
 #include "irresistible\anticheat\rapidfire.pwn"
+#include "irresistible\anticheat\carwarp.pwn"
