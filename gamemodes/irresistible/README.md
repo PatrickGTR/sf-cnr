@@ -2,6 +2,7 @@
 #### Copyright (C) 2011-2018
 
 **Source Contributors:**  Lorenc ("Lorenc") Pekaj, Steven ("Stev") Howard
+
 **BIG THANKS to Stev, Nibble, Banging7Grams, Kova, Queen and Panther for making this possible.**
 
 ### Script Callbacks

@@ -73,7 +73,6 @@ hook OnScriptInit( )
 	g_Checkpoints[ CP_HOSPITAL ] = CreateDynamicCP( -2647.5007, 659.0084, 970.4332, 2.0, -1, -1, -1, 100.0 );
     g_Checkpoints[ CP_PAINTBALL ] = CreateDynamicCP( -2172.2017, 252.1113, 35.3388, 1.0, -1, -1, -1, 100.0 );
 	//g_Checkpoints[ CP_DROP_OFF_FBI ] = CreateDynamicCP( -2446.6785, 522.9684, 30.2548, 3.0, -1, -1, -1, 100.0 );
-	g_Checkpoints[ CP_LUMBERJACK ] = CreateDynamicCP( -2323.5676, -97.2582, 35.3078, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_FIGHTSTYLE ] = CreateDynamicCP( 768.2576, -22.8351, 1000.5859, 2.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_247_MENU ] = CreateDynamicCP( -29.0409, -184.7446, 1003.5469, 1.0, -1, -1, -1, 25.0 );
 	g_Checkpoints[ CP_AMMUNATION_0 ] = CreateDynamicCP( 296.3782, -38.4512, 1001.5156, 1.0, -1, -1, -1, 20.0 );
@@ -164,7 +163,6 @@ hook OnScriptInit( )
 	CreateDynamic3DTextLabel("[PAINTBALL]", COLOR_GOLD, -2172.2017, 252.1113, 35.3388, 20.0);
 	CreateDynamic3DTextLabel("[GUN REDEEM]\n"COL_WHITE"/vipgun", COLOR_GOLD, -1945.9280, 830.0893, 1214.2678, 20.0);
 	CreateDynamic3DTextLabel("[GUN REDEEM]\n"COL_WHITE"/vipgun", COLOR_GOLD, -1966.1765, 851.0482, 1214.2678, 20.0);
-	CreateDynamic3DTextLabel("[LUMBERJACK JOB]", COLOR_GOLD, -2323.5676, -97.2582, 35.3078, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 768.2576, -22.8351, 1000.5859, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 8 );
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2563.5728, -1310.5925, 1143.7242, 20.0);
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2034.0669, 1001.6073, 1510.2416, 20.0);
