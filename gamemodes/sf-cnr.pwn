@@ -25626,37 +25626,54 @@ stock CuffPlayer( victimid, playerid )
 		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
-		GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
-		//GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
-		GameTextForPlayer( playerid, "~n~~y~~h~/arrest", 2000, 4 );
-		SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
-	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
-		KillTimer( p_CuffAbuseTimer[ victimid ] );
-   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
-		//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
-		//TogglePlayerControllable( victimid, 0 );
-		p_Cuffed{ victimid } = true;
-		SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
-      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
 
-		if ( ! BreakPlayerCuffs( victimid ) ) {
+      	new
+      		break_attempts;
+
+		if ( ! BreakPlayerCuffs( victimid, break_attempts ) )
+		{
+			GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
+			//GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
+			GameTextForPlayer( playerid, "~n~~y~~h~/arrest", 2000, 4 );
+			SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
+		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
+			KillTimer( p_CuffAbuseTimer[ victimid ] );
+	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
+			//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
+			//TogglePlayerControllable( victimid, 0 );
+			p_Cuffed{ victimid } = true;
+			p_QuitToAvoidTimestamp[ victimid ] = g_iTime + 3;
+			SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
+	      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
 			ShowPlayerHelpDialog( victimid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
-		} else {
-	    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
+		}
+		else
+		{
+			if ( break_attempts >= 2 )
+			{
+				new
+					money_dropped = 390 * break_attempts;
+
+	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off, and dropped %s!", ReturnPlayerName( victimid ), victimid, cash_format( money_dropped ) );
+	    		GivePlayerCash( playerid, money_dropped );
+			}
+			else
+			{
+	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
+			}
 		}
 		return 1;
  	}
  	else return SendError( playerid, "There are no players around to cuff." );
 }
 
-stock BreakPlayerCuffs( playerid )
+stock BreakPlayerCuffs( playerid, &attempts = 0 )
 {
 	if ( p_BobbyPins[ playerid ] < 1 )
 	    return 0;
 
 	new
-		bool: success = false,
-		attempts;
+		bool: success = false;
 
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
@@ -25671,7 +25688,7 @@ stock BreakPlayerCuffs( playerid )
 	}
 
 	if ( success ) {
-		TogglePlayerControllable( playerid, 1 );
+		/*TogglePlayerControllable( playerid, 1 );
 	 	RemovePlayerAttachedObject( playerid, 2 );
 		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
 		if ( !IsPlayerInAnyVehicle( playerid ) ) {
@@ -25682,10 +25699,8 @@ stock BreakPlayerCuffs( playerid )
 		//p_Detained{ playerid } = false;
 		//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
 		//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
-		p_QuitToAvoidTimestamp[ playerid ] = g_iTime + 3;
+		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;*/
 		p_TazingImmunity[ playerid ] = g_iTime + 6;
-
 		SendServerMessage( playerid, "You have used %d bobby pins to successfully break your cuffs.", attempts );
 	    GivePlayerWantedLevel( playerid, 6 );
 	} else {
