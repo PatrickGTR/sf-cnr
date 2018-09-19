@@ -1356,7 +1356,7 @@ hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: f
 			poolball_index = GetPoolBallIndexFromModel( GetObjectModel( hitid ) );
 
 		if ( poolball_index != -1 ) {
-			foreach ( new poolid : pooltables ) if ( g_poolTableData[ poolid ] [ E_STARTED ] && ( g_poolBallData[ poolid ] [ E_POCKETED ] [ i ] || ! PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ i ] ) ) ) {
+			foreach ( new poolid : pooltables ) if ( g_poolTableData[ poolid ] [ E_STARTED ] && ( g_poolBallData[ poolid ] [ E_POCKETED ] [ poolball_index ] || ! PHY_IsObjectMoving( g_poolBallData[ poolid ] [ E_BALL_OBJECT ] [ poolball_index ] ) ) ) {
 				Pool_ResetBallPositions( poolid, poolball_index, poolball_index + 1 );
 				break;
 			}
