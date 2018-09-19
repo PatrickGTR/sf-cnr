@@ -41,7 +41,9 @@ enum E_POOL_SKINS {
 	E_SKIN_DEFAULT,
 	E_SKIN_WOOD_PURPLE,
 	E_SKIN_WOOD_GREEN,
-	E_SKIN_GOLD_GREEN
+	E_SKIN_GOLD_GREEN,
+	E_SKIN_WOOD_BLUE,
+	E_SKIN_LWOOD_GREEN
 };
 
 enum E_POOL_BALL_OFFSET_DATA
@@ -152,6 +154,8 @@ hook OnScriptInit( )
 	CreatePoolTable( -1019.264, 1045.7419, 1.763000, 0.000000, 0, 0, E_SKIN_WOOD_PURPLE ); // panther
 	CreatePoolTable( 1999.0837, 1888.4924, 84.22465, 0.000000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 1 ], E_SKIN_GOLD_GREEN ); // banging7grams
 	CreatePoolTable( 2005.2181, 1891.0632, 84.22465, 90.00000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 7 ], E_SKIN_WOOD_GREEN ); // nibble
+	CreatePoolTable( -2087.757, 845.72698, 76.36699, 90.00000, 0, 0, E_SKIN_WOOD_BLUE ); // Stev
+	CreatePoolTable( -2880.332, 56.208999, 7.521999, 0.000000, 0, 0, E_SKIN_LWOOD_GREEN ); // Kova
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -622,6 +626,19 @@ stock CreatePoolTable( Float: X, Float: Y, Float: Z, Float: A = 0.0, interior = 
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 2, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
 			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 11631, "mp_ranchcut", "mpCJ_WOOD_DARK", 0 );
+		}
+		else if ( skin == E_SKIN_WOOD_BLUE )
+		{
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 11100, "bendytunnel_sfse", "blackmetal", -16 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 11100, "bendytunnel_sfse", "blackmetal", -16 );
+		}
+		else if ( skin == E_SKIN_LWOOD_GREEN )
+		{
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 0, 10375, "subshops_sfs", "ws_white_wall1", -11731124 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 3, 16150, "ufo_bar", "sa_wood07_128", -16 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 4, 16150, "ufo_bar", "sa_wood07_128", -16 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 1, 9362, "sfn_byofficeint", "CJ_Black_metal", -16 );
+			SetDynamicObjectMaterial( g_poolTableData[ poolid ] [ E_TABLE ], 2, 8463, "vgseland", "tiadbuddhagold", -16 );
 		}
 
 	#if defined POOL_DEBUG

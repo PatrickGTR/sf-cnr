@@ -15375,9 +15375,6 @@ stock initializeObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 1723, -2089.573974, 848.955993, 75.364997, 0.000000, 0.000000, 180.000000, -1, -1, -1 ), 1, 11100, "bendytunnel_sfse", "blackmetal", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 1723, -2088.222900, 852.067016, 75.364997, 0.000000, 0.000000, -90.000000, -1, -1, -1 ), 1, 11100, "bendytunnel_sfse", "blackmetal", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 1704, -2091.277099, 852.067016, 75.347000, 0.000000, 0.000000, -30.399999, -1, -1, -1 ), 1, 11100, "bendytunnel_sfse", "blackmetal", -16 );
-	tmpVariable = CreateDynamicObject( 2964, -2087.757080, 845.726989, 75.366996, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
-	SetDynamicObjectMaterial( tmpVariable, 4, 11100, "bendytunnel_sfse", "blackmetal", -16 );
-	SetDynamicObjectMaterial( tmpVariable, 3, 11100, "bendytunnel_sfse", "blackmetal", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19923, -2090.320068, 841.908020, 75.416999, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 11100, "bendytunnel_sfse", "blackmetal", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19929, -2095.357910, 840.440002, 75.416999, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 1, 11100, "bendytunnel_sfse", "blackmetal", -16 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19929, -2093.509033, 839.379028, 75.416999, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 1, 11100, "bendytunnel_sfse", "blackmetal", -16 );
