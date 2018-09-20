@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: sampac.inc
+ * Purpose: 3rd party anticheat implementation (sampcac.xyz)
  */
 
 /* ** Includes ** */
@@ -39,6 +39,10 @@ function OnPlayerCheat( player_id, cheat_id )
 
     if ( IsPlayerConnected( player_id ) ) {
         GetPlayerName( player_id, playerName, sizeof( playerName ) );
+    }
+
+    if ( strmatch( g_szCheatNames[ cheat_id ], "Aimbot (6)" ) ) {
+    	return 1; // ignore aimbot (6)
     }
 
     // AdvancedBan( player_id, "Server", g_szCheatNames[ cheat_id ], ReturnPlayerIP( player_id ) );
