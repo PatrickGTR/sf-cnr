@@ -723,8 +723,8 @@ new
  		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		660, 5 }, // 4
  		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
+ 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3250, 8 }, // 6 [1000] -makecopgreatagain
  		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3500, 9 }, // 9
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
  		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
  		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
  		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
@@ -22443,15 +22443,14 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 			dW = p_WantedLevel[ damagedid ], 	dC = p_Class[ damagedid ]
 		;
 
+		if ( IsPlayerInMinigame( damagedid ) || IsPlayerInMinigame( issuerid ) )
+			return true;
 
 		if ( IsPlayerBoxing( issuerid ) )
 			return false;
 
-		if ( IsPlayerInMinigame( damagedid ) || IsPlayerInMinigame( issuerid ) )
-			return true;
-
-		if ( IsPlayerInCasino( issuerid ) || IsPlayerInCasino( damagedid ) )
-			return true;
+		if ( ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) )
+			return false;
 
 		return ( !iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dC == CLASS_POLICE );
 	}
@@ -25658,7 +25657,7 @@ stock CuffPlayer( victimid, playerid )
 			if ( break_attempts >= 2 )
 			{
 				new
-					money_dropped = RandomEx( 350, 500 ) * break_attempts;
+					money_dropped = RandomEx( 200, 400 ) * break_attempts;
 
 	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off, and dropped %s!", ReturnPlayerName( victimid ), victimid, cash_format( money_dropped ) );
 	    		GivePlayerCash( playerid, money_dropped );
