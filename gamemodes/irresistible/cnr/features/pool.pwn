@@ -155,7 +155,7 @@ hook OnScriptInit( )
 	CreatePoolTable( 1999.0837, 1888.4924, 84.22465, 0.000000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 1 ], E_SKIN_GOLD_GREEN ); // banging7grams
 	CreatePoolTable( 2005.2181, 1891.0632, 84.22465, 90.00000, VISAGE_APARTMENT_INT, VISAGE_APARTMENT_WORLD[ 7 ], E_SKIN_WOOD_GREEN ); // nibble
 	CreatePoolTable( -2087.757, 845.72698, 76.36699, 90.00000, 0, 0, E_SKIN_WOOD_BLUE ); // Stev
-	CreatePoolTable( -2880.332, 56.208999, 7.521999, 0.000000, 0, 0, E_SKIN_LWOOD_GREEN ); // Kova
+	CreatePoolTable( -2880.332, 56.208999, 8.521999, 0.000000, 0, 0, E_SKIN_LWOOD_GREEN ); // Kova
 
 	printf( "[POOL TABLES]: %d pool tables have been successfully loaded.", Iter_Count( pooltables ) );
 	return 1;
@@ -518,6 +518,7 @@ stock Pool_RemovePlayer( playerid )
 	DestroyDynamicObject( p_PoolHoleGuide[ playerid ] );
 	p_PoolHoleGuide[ playerid ] = -1;
 	RestoreCamera( playerid );
+	HidePlayerHelpDialog( playerid );
 
 	// check if the player is even in the table
 	if ( poolid != -1 && Iter_Contains( poolplayers< poolid >, playerid ) )
