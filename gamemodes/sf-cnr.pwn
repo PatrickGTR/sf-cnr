@@ -716,16 +716,16 @@ enum E_SHOP_DATA
 new
 	g_shopItemData[ ] [ E_SHOP_DATA ] =
 	{
- 		{ true , "Drain Cleaner", 		"Caustic Soda",				 	LIMIT_CS,		150, 1 }, // 0
- 		{ true , "Stone Cleaner",		"Muriatic Acid", 			 	LIMIT_MU,		250, 2 }, // 1
- 		{ true , "Gas Tank",			"Hydrogen Chloride", 		 	LIMIT_HCL,		300, 3 }, // 2
- 		{ false, "Chastity Belt", 		"Protection from aids", 	 	LIMIT_ONE,		500, 4 }, // 3
- 		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		600, 5 }, // 4
- 		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1000, 6 }, // 5
- 		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	1500, 7 }, // 8 [1500]
- 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		2500, 9 }, // 9
- 		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		3000, 10 }, // 7 [1250]
+ 		{ true , "Drain Cleaner", 		"Caustic Soda",				 	LIMIT_CS,		190, 1 }, // 0
+ 		{ true , "Stone Cleaner",		"Muriatic Acid", 			 	LIMIT_MU,		275, 2 }, // 1
+ 		{ true , "Gas Tank",			"Hydrogen Chloride", 		 	LIMIT_HCL,		330, 3 }, // 2
+ 		{ false, "Chastity Belt", 		"Protection from aids", 	 	LIMIT_ONE,		550, 4 }, // 3
+ 		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		660, 5 }, // 4
+ 		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
+ 		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
+ 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3500, 9 }, // 9
  		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
+ 		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
  		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
  		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
 	}
@@ -5361,8 +5361,10 @@ function Untaze( playerid )
 	if ( !IsPlayerTied( playerid ) )
 		TogglePlayerControllable( playerid, 1 );
 
+	SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
 	ClearAnimations( playerid );
 	p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
+	p_TazingImmunity[ playerid ] = g_iTime + 6;
 	p_Tazed{ playerid } = false;
 	return 1;
 }
@@ -22441,8 +22443,15 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 			dW = p_WantedLevel[ damagedid ], 	dC = p_Class[ damagedid ]
 		;
 
-		if ( IsPlayerBoxing( issuerid ) || ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) || ! IsPlayerInMinigame( damagedid ) || ! IsPlayerInMinigame( issuerid ) )
+
+		if ( IsPlayerBoxing( issuerid ) )
 			return false;
+
+		if ( IsPlayerInMinigame( damagedid ) || IsPlayerInMinigame( issuerid ) )
+			return true;
+
+		if ( IsPlayerInCasino( issuerid ) || IsPlayerInCasino( damagedid ) )
+			return true;
 
 		return ( !iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( iW && iC != CLASS_POLICE && !dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dW && dC != CLASS_POLICE ) || ( !iW && iC != CLASS_POLICE && dC == CLASS_POLICE );
 	}
@@ -22457,9 +22466,6 @@ stock IsPlayerInCasino( playerid ) {
 	if ( IsPlayerInRangeOfPoint( playerid, 10.0, -792.8680, 661.2518, 19.3380 ) && world == 0 ) return 1; // roycegate mansion
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
 }
-
-//function RespawnVehicle( vehicleid )
-//	return SetVehicleToRespawn( vehicleid );
 
 stock ShowPlayerBankMenuDialog( playerid )
 {
@@ -25628,7 +25634,7 @@ stock CuffPlayer( victimid, playerid )
 		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
 
       	new
-      		break_attempts;
+      		break_attempts = 0;
 
 		if ( ! BreakPlayerCuffs( victimid, break_attempts ) )
 		{
@@ -25652,7 +25658,7 @@ stock CuffPlayer( victimid, playerid )
 			if ( break_attempts >= 2 )
 			{
 				new
-					money_dropped = 390 * break_attempts;
+					money_dropped = RandomEx( 350, 500 ) * break_attempts;
 
 	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off, and dropped %s!", ReturnPlayerName( victimid ), victimid, cash_format( money_dropped ) );
 	    		GivePlayerCash( playerid, money_dropped );
@@ -25677,7 +25683,7 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) < 50 ) {
+		if ( random( 101 ) < 35 ) { // 35% success rate RIP!
 			success = true;
 			break;
 		}
@@ -25700,7 +25706,7 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 		//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
 		//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;*/
-		p_TazingImmunity[ playerid ] = g_iTime + 6;
+		Untaze( playerid );
 		SendServerMessage( playerid, "You have used %d bobby pins to successfully break your cuffs.", attempts );
 	    GivePlayerWantedLevel( playerid, 6 );
 	} else {
