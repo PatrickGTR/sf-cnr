@@ -5358,10 +5358,12 @@ function Untaze( playerid )
 	if ( !IsPlayerConnected( playerid ) || !p_Tazed{ playerid } ) // || p_Detained{ playerid } == true
 	    return 0;
 
-	if ( !IsPlayerTied( playerid ) )
+	if ( ! IsPlayerTied( playerid ) )
 		TogglePlayerControllable( playerid, 1 );
 
-	SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+	if ( GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_CUFFED )
+		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+
 	ClearAnimations( playerid );
 	p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
 	p_TazingImmunity[ playerid ] = g_iTime + 6;
@@ -6702,22 +6704,25 @@ CMD:request( playerid, params[ ] )
 CMD:cnr( playerid, params[ ] )
 {
 	new
-		Float: iClass[ 2 ];
+		Float: cops, Float: robbers;
 
-	for( new i = 0; i < MAX_PLAYERS; i++ ) if ( IsPlayerConnected( i ) ) {
-		#if defined __cnr__chuffsec
-			if ( i == g_secureTruckDriver ) continue;
-		#endif
-		iClass[ ( p_Class[ i ] == CLASS_POLICE ? CLASS_POLICE : CLASS_CIVILIAN ) ] ++;
+	GetServerPoliceRatio( cops, robbers );
+	SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" The server is made up of %0.2f%s robbers and %0.2f%s cops.", robbers, "%%", cops, "%%" );
+	return 1;
+}
+
+stock GetServerPoliceRatio( &Float: police, &Float: robbers = 0.0, &total_online = 0 )
+{
+	new
+		Float: class_count[ 2 ];
+
+	for( new i = 0; i < MAX_PLAYERS; i++ ) if ( IsPlayerConnected( i ) && ! IsPlayerNPC( i ) ) {
+		class_count[ ( p_Class[ i ] == CLASS_POLICE ? CLASS_POLICE : CLASS_CIVILIAN ) ] ++;
+		total_online ++;
 	}
 
-	new
-		Float: iCivilians  	= ( iClass[ CLASS_CIVILIAN ] / ( iClass[ CLASS_CIVILIAN ] + iClass[ CLASS_POLICE ] ) ) * 100.0,
-		Float: iPolice 		= ( iClass[ CLASS_POLICE ] / ( iClass[ CLASS_CIVILIAN ] + iClass[ CLASS_POLICE ] ) ) * 100.0
-	;
-
-	SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" The server is made up of %0.2f%s robbers and %0.2f%s cops.", iCivilians, "%%", iPolice, "%%" );
-	return 1;
+	robbers = ( class_count[ CLASS_CIVILIAN ] / ( class_count[ CLASS_CIVILIAN ] + class_count[ CLASS_POLICE ] ) ) * 100.0;
+	police = ( class_count[ CLASS_POLICE ] / ( class_count[ CLASS_CIVILIAN ] + class_count[ CLASS_POLICE ] ) ) * 100.0;
 }
 
 CMD:eventbank( playerid, params[ ] )
@@ -8928,7 +8933,7 @@ CMD:bail( playerid, params[ ] )
 	else if ( GetPVarInt( pID, "bail_antispam" ) > g_iTime ) return SendError( playerid, "You must wait 10 seconds before offering a bail to this player." );
 	else
 	{
-	    equa = 30 * p_JailTime[ pID ];
+	    equa = 50 * p_JailTime[ pID ];
 	    if ( p_JailTime[ pID ] >= ALCATRAZ_TIME_WANTED ) equa *= 2;
 	    p_BailOfferer[ pID ] = playerid;
 	    p_BailTimestamp[ pID ] = g_iTime + 120;
@@ -8942,7 +8947,7 @@ CMD:bail( playerid, params[ ] )
 CMD:acceptbail( playerid, params[ ] )
 {
 	new
-	    equa = 30 * p_JailTime[ playerid ];
+	    equa = 50 * p_JailTime[ playerid ];
 
 	if ( p_JailTime[ playerid ] >= ALCATRAZ_TIME_WANTED )
 		equa *= 2;
@@ -25677,12 +25682,19 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 	if ( p_BobbyPins[ playerid ] < 1 )
 	    return 0;
 
-	new
-		bool: success = false;
+	new Float: police_percentage, total_online;
+	new bool: success = false;
 
+	// get current police percentage
+	GetServerPoliceRatio( police_percentage, .total_online = total_online );
+
+	// probability based off some factors
+	new probability = police_percentage < 20.0 && total_online > 15 ? 10 : 35; // over 15 players, but less than 20% cops? make breakcuff the worst
+
+	// attempt to uncuff
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) < 35 ) { // 35% success rate RIP!
+		if ( random( 101 ) <= probability ) { // 35% success rate RIP!
 			success = true;
 			break;
 		}
