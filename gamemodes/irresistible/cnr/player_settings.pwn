@@ -1,41 +1,41 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\player_settings.pwn
+ * Purpose: player settings that can be easily configured via /controlpanel (/cp)
  */
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_SETTINGS 					( 12 )
+#define MAX_SETTINGS 				( 12 )
 
-#define SETTING_BAILOFFERS 				( 0 )
-#define SETTING_EVENT_TP				( 1 )
-#define SETTING_GANG_INVITES			( 2 )
-#define SETTING_CHAT_PREFIXES			( 3 )
-#define SETTING_RANSOMS					( 4 )
-#define SETTING_AUTOSAVE				( 5 )
-#define SETTING_CONNECTION_LOG 			( 6 )
-#define SETTING_HITMARKER 				( 7 )
-#define SETTING_VIPSKIN 				( 8 )
-#define SETTING_COINS_BAR	 			( 9 )
-#define SETTING_TOP_DONOR 				( 10 )
-#define SETTING_WEAPON_PICKUP 			( 11 )
+#define SETTING_BAILOFFERS 			( 0 )
+#define SETTING_EVENT_TP			( 1 )
+#define SETTING_GANG_INVITES		( 2 )
+#define SETTING_CHAT_PREFIXES		( 3 )
+#define SETTING_RANSOMS				( 4 )
+#define SETTING_AUTOSAVE			( 5 )
+#define SETTING_CONNECTION_LOG 		( 6 )
+#define SETTING_HITMARKER 			( 7 )
+#define SETTING_VIPSKIN 			( 8 )
+#define SETTING_COINS_BAR	 		( 9 )
+#define SETTING_TOP_DONOR 			( 10 )
+#define SETTING_WEAPON_PICKUP 		( 11 )
 
 /* ** Variables ** */
 enum E_SETTING_DATA {
-	bool: E_DEFAULT_VAL,		E_NAME[ 20 ]
+	bool: E_DEFAULT_VAL,			E_NAME[ 20 ]
 };
 
 static stock
-	g_PlayerSettings 					[ ] [ E_SETTING_DATA ] = {
+	g_PlayerSettings 				[ ] [ E_SETTING_DATA ] = {
 		{ false, "Bail Offers" }, { false, "Event Teleports" }, { false, "Gang Invites" }, { false, "Chat Prefixes" }, { false, "Ransom Offers" },
 		{ false, "Auto-Save" }, { true, "Connection Log" }, { true, "Hitmarker" }, { true, "V.I.P Skin" }, { false, "Total Coin Bar" }, { false, "Last Donor Text" },
 		{ false, "Auto Pickup Weapon" }
 	},
-	bool: p_PlayerSettings 				[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
+	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
 
 /* ** Hooks ** */
