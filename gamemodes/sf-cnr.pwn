@@ -53,6 +53,7 @@ native gpci 						( playerid, serial[ ], len );
 
 new bool: False = false;
 
+#define IsPlayerPlayingPool(%0)		(False)
 /* ** SF-CNR ** */
 #include 							"irresistible\_main.pwn"
 
@@ -723,8 +724,8 @@ new
  		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		660, 5 }, // 4
  		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3250, 8 }, // 6 [1000] -makecopgreatagain
- 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3500, 9 }, // 9
+ 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3400, 9 }, // 9
+ 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3650, 8 }, // 6 [1000] -makecopgreatagain
  		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
  		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
  		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
@@ -849,34 +850,6 @@ new
 		{ "Los Santos Bank", 	INVALID_OBJECT_ID, false, 0, 0, 56, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
 		{ "Militia Ship", 		INVALID_OBJECT_ID, false, 0, 0, 0, { -2372.6223, 1551.3984, 2.1172000 }, { -2371.41699, 1552.027709, -0.75281000 }, { 0.0000000, 0.000000, 28.0000000 } }
 	}
-;
-
-/* ** Player Settings ** */
-#define MAX_SETTINGS 					( 11 )
-
-#define SETTING_BAILOFFERS 				( 0 )
-#define SETTING_EVENT_TP				( 1 )
-#define SETTING_GANG_INVITES			( 2 )
-#define SETTING_CHAT_PREFIXES			( 3 )
-#define SETTING_RANSOMS					( 4 )
-#define SETTING_AUTOSAVE				( 5 )
-#define SETTING_CONNECTION_LOG 			( 6 )
-#define SETTING_HITMARKER 				( 7 )
-#define SETTING_VIPSKIN 				( 8 )
-#define SETTING_COINS_BAR	 			( 9 )
-#define SETTING_TOP_DONOR 				( 10 )
-
-enum E_SETTING_DATA
-{
-	bool: E_DEFAULT_VAL,		E_NAME[ 16 ]
-};
-
-new
-	g_PlayerSettings[ ] [ E_SETTING_DATA ] = {
-		{ false, "Bail Offers" }, { false, "Event Teleports" }, { false, "Gang Invites" }, { false, "Chat Prefixes" }, { false, "Ransom Offers" },
-		{ false, "Auto-Save" }, { true, "Connection Log" }, { true, "Hitmarker" }, { true, "V.I.P Skin" }, { false, "Total Coin Bar" }, { false, "Last Donor Text" }
-	},
-	bool: p_PlayerSettings[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
 
 /* ** Information System ** */
@@ -2592,7 +2565,7 @@ public OnServerUpdateTimer( )
 				ClearPlayerRoadblocks( playerid );
 
 			// Toggle total coin bar
-			if ( !p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } )
+			if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) )
 				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", p_IrresistibleCoins[ playerid ] ) );
 
 			// Decrementing Weed Opacity Label
@@ -3672,10 +3645,8 @@ public OnLookupComplete( playerid, success )
 		format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server!", ReturnPlayerName( playerid ), playerid );
 	}
 
-	foreach(new i : Player)
-	{
-		if ( p_PlayerSettings[ i ] { SETTING_CONNECTION_LOG } )
-			SendClientMessage( i, COLOR_CONNECT, szNormalString );
+	foreach ( new i : Player ) if ( IsPlayerSettingToggled( i, SETTING_CONNECTION_LOG ) ) {
+		SendClientMessage( i, COLOR_CONNECT, szNormalString );
 	}
 
 	format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
@@ -3997,13 +3968,12 @@ public OnPlayerDisconnect( playerid, reason )
 
 	for( new i; i < MAX_PLAYERS; i++ )
 	{
-		if ( IsPlayerConnected( i ) && p_PlayerSettings[ i ] { SETTING_CONNECTION_LOG } )
+		if ( IsPlayerConnected( i ) && IsPlayerSettingToggled( i, SETTING_CONNECTION_LOG ) )
 		{
 			SendClientMessage( i, color, string ); // Send a message to people
 		}
 
 		if ( i < MAX_GANGS ) 	p_gangInvited[ playerid ] [ i ] = false;
-		if ( i < MAX_SETTINGS ) p_PlayerSettings[ playerid ] { i } = false;
 		if ( i < MAX_WEAPONS ) 	p_WeaponKills[ playerid ] [ i ] = 0;
 		if ( i < MAX_RACES )	p_raceInvited[ playerid ] [ i ] = false;
 		if ( i < MAX_STREAKS ) 	p_streakData[ playerid ] [ i ] [ E_BEST_STREAK ] = 0, p_streakData[ playerid ] [ i ] [ E_STREAK ] = 0;
@@ -4084,7 +4054,7 @@ public OnPlayerSpawn( playerid )
 	}
 
 	// VIP Skin
-	if ( p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] )
+	if ( IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] )
 		SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
 
 	if ( justConnected{ playerid } == true )
@@ -4732,7 +4702,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	}
 
 	// Hitmarker
-	if ( p_PlayerSettings[ issuerid ] { SETTING_HITMARKER } )
+	if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
 	{
 		new
 			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
@@ -5286,7 +5256,7 @@ public OnPlayerText( playerid, text[ ] )
 		}
 	}
 
-	if ( !p_PlayerSettings[ playerid ] { SETTING_CHAT_PREFIXES } )
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_CHAT_PREFIXES ) )
 	{
 		switch( text[ 0 ] )
 		{
@@ -7259,7 +7229,7 @@ CMD:ransompay( playerid, params[ ] )
 	if ( !IsPlayerConnected( p_RansomPlacer[ playerid ] ) ) return SendError( playerid, "Your ransom offerer is not connected anymore." );
 	else if ( !IsPlayerTied( playerid ) ) return p_RansomPlacer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "Only tied players can use this command." );
 	else if ( GetPlayerCash( playerid ) < p_RansomAmount[ playerid ] ) return SendError( playerid, "You do not have enough money for your ransom." );
-	else if ( p_PlayerSettings[ playerid ] { SETTING_RANSOMS } ) return SendError( playerid, "This feature is unavailable as you have disabled ransom offers." );
+	else if ( IsPlayerSettingToggled( playerid, SETTING_RANSOMS ) ) return SendError( playerid, "This feature is unavailable as you have disabled ransom offers." );
 	else
 	{
 		TogglePlayerControllable( playerid, 1 );
@@ -7294,7 +7264,7 @@ CMD:ransom( playerid, params[ ] )
 	else if ( !JobEquals( playerid, JOB_KIDNAPPER ) ) return SendError( playerid, "You must be a kidnapper to use this command." );
    	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( victimid == playerid ) return SendError( playerid, "You cannot create a ransom on yourself." );
-	else if ( p_PlayerSettings[ victimid ] { SETTING_RANSOMS } ) return SendError( playerid, "This player has disabled ransom offers." );
+	else if ( IsPlayerSettingToggled( victimid, SETTING_RANSOMS ) ) return SendError( playerid, "This player has disabled ransom offers." );
 	else if ( amount < 50 || amount > 20000 ) return SendError( playerid, "You may place a ransom from $50 to $20,000." );
 	else if ( amount > 99999999 || amount < 0 ) return SendError( playerid, "You may place a ransom from $50 to $20,000."); // Making cash go over billions...
 	else if ( amount > GetPlayerCash( victimid ) ) return SendError( playerid, "This person doesn't have enough money to pay this amount." );
@@ -7656,7 +7626,7 @@ CMD:vipskin( playerid, params[ ] )
 	else
 	{
 	    p_LastSkin[ playerid ] = skin;
-	    if ( p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } ) SetPlayerSkin( playerid, skin );
+	    if ( IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) ) SetPlayerSkin( playerid, skin );
 	    SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP]"COL_WHITE" You have changed your V.I.P skin id to %d!", skin );
 	}
 	return 1;
@@ -8123,18 +8093,6 @@ CMD:animlist( playerid, params[ ] )
 
 CMD:email( playerid, params[ ] ) {
 	return ShowPlayerAccountGuard( playerid );
-}
-
-CMD:cp( playerid, params[ ] ) return cmd_controlpanel( playerid, params );
-CMD:controlpanel( playerid, params[ ] )
-{
-	szLargeString = ""COL_WHITE"Setting\t"COL_WHITE"Status\t"COL_WHITE"Default\n"COL_GREY"Irresistible Guard\t \t"COL_GREY">>>\n";
-
-	for( new i = 0; i < MAX_SETTINGS; i++ )
-		format( szLargeString, 600, "%s%s\t%s\t"COL_GREY"%s\n", szLargeString, g_PlayerSettings[ i ] [ E_NAME ], p_PlayerSettings[ playerid ] { i } == g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( ""#COL_GREEN"enabled" ) : ( ""#COL_RED"disabled" ), g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ) );
-
-	ShowPlayerDialog( playerid, DIALOG_CP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Control Panel", szLargeString, "Select", "Cancel" );
-	return 1;
 }
 
 CMD:ask( playerid, params[ ] )
@@ -8929,7 +8887,7 @@ CMD:bail( playerid, params[ ] )
 	else if ( pID == playerid ) return SendError( playerid, "You cannot bail yourself." );
 	else if ( !IsPlayerJailed( pID ) ) return SendError( playerid, "This player isn't jailed." );
 	else if ( IsPlayerAdminJailed( pID ) ) return SendError( playerid, "This player has been admin jailed." );
-	else if ( p_PlayerSettings[ pID ] { SETTING_BAILOFFERS } ) return SendError( playerid, "This player has disabled bail notifications." );
+	else if ( IsPlayerSettingToggled( pID, SETTING_BAILOFFERS ) ) return SendError( playerid, "This player has disabled bail notifications." );
 	else if ( GetPVarInt( pID, "bail_antispam" ) > g_iTime ) return SendError( playerid, "You must wait 10 seconds before offering a bail to this player." );
 	else
 	{
@@ -10741,7 +10699,7 @@ CMD:gang( playerid, params[ ] )
 		if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/gang invite [PLAYER_ID]" );
 		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "You cannot invite people from non-civilian classes." );
-		else if ( p_PlayerSettings[ pID ] { SETTING_GANG_INVITES } ) return SendError( playerid, "This player has disabled gang invites." );
+		else if ( IsPlayerSettingToggled( pID, SETTING_GANG_INVITES ) ) return SendError( playerid, "This player has disabled gang invites." );
 		else if ( pID == playerid ) return SendError( playerid, "You cannot use this on yourself." );
 		else if ( p_GangID[ pID ] != INVALID_GANG_ID ) return SendError( playerid, "This player is already inside a gang." );
 		else if ( p_GangID[ playerid ] == INVALID_GANG_ID ) return SendError( playerid, "You are not inside any gang." );
@@ -13434,7 +13392,7 @@ public AC_OnFileCalculated( playerid, filename[ ], md5[ ], bool: isCheat )
 	return 1;
 }*/
 
-thread OnPlayerLogin( playerid, password[ ] )
+thread OnAttemptPlayerLogin( playerid, password[ ] )
 {
 	new
 	    rows, fields
@@ -13580,6 +13538,9 @@ thread OnPlayerLogin( playerid, password[ ] )
 			// Check if vip expired
 			CheckPlayerVipExpiry( playerid );
 
+			// Load other player related variables
+			CallLocalFunction( "OnPlayerLogin", "dd", playerid, p_AccountID[ playerid ] );
+
 			// Load some more linking tables
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `EMAILS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnEmailLoad", "d", playerid );
@@ -13592,9 +13553,6 @@ thread OnPlayerLogin( playerid, password[ ] )
 
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOYS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnToyOffsetLoad", "d", playerid );
-
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `SETTINGS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnSettingsLoad", "d", playerid );
 
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `STREAKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnStreaksLoad", "d", playerid );
@@ -13710,7 +13668,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         	}
 
 			format( szBigQuery, sizeof( szBigQuery ), "SELECT * FROM `USERS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ) );
-       		mysql_function_query( dbHandle, szBigQuery, true, "OnPlayerLogin", "ds", playerid, inputtext );
+       		mysql_function_query( dbHandle, szBigQuery, true, "OnAttemptPlayerLogin", "ds", playerid, inputtext );
         }
         else return ShowPlayerDialog( playerid, DIALOG_LOGIN_QUIT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Account - Authentication", "{FFFFFF}Are you sure you want to leave the server?", "Yes", "No" );
     }
@@ -15471,49 +15429,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    format( szBigString, sizeof( szBigString ), "INSERT INTO `EMAIL_VERIFY`(`USER_ID`, `EMAIL`) VALUES (%d, '%s') ON DUPLICATE KEY UPDATE `EMAIL`='%s',`DATE`=CURRENT_TIMESTAMP", p_AccountID[ playerid ], mysql_escape( email ), mysql_escape( email ) );
 	    mysql_function_query( dbHandle, szBigString, true, "OnQueueEmailVerification", "ds", playerid, email );
 		return 1;
-	}
-	if ( ( dialogid == DIALOG_CP_MENU ) && response )
-	{
-		if ( GetPlayerVirtualWorld( playerid ) == 69 ) return SendError( playerid, "You cannot modify your player settings within an event." );
-
-		if ( listitem == 0 ) {
-			return ShowPlayerAccountGuard( playerid );
-		}
-
-		new
-			settingid = listitem - 1;
-
-		if ( ( p_PlayerSettings[ playerid ] { settingid } = !p_PlayerSettings[ playerid ] { settingid } ) == true )
-		{
-			if ( settingid == SETTING_VIPSKIN )
-			{
-				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-				SyncObject( playerid );
-				ClearAnimations( playerid );
-				SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
-			}
-
-			else if ( settingid == SETTING_COINS_BAR )
-			 	ShowPlayerTogglableTextdraws( playerid, .force = false );
-
-			else if ( settingid == SETTING_TOP_DONOR )
- 				HidePlayerTogglableTextdraws( playerid, .force = false );
-
-			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid );
-		}
-		else
-		{
-			if ( settingid == SETTING_COINS_BAR )
- 				HidePlayerTogglableTextdraws( playerid, .force = false );
-
-			else if ( settingid == SETTING_TOP_DONOR )
- 				ShowPlayerTogglableTextdraws( playerid, .force = false );
-
-			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], settingid );
-		}
-		mysql_single_query( szNormalString );
-		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { settingid } != g_PlayerSettings[ settingid ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ), g_PlayerSettings[ settingid ] [ E_NAME ] );
-	    cmd_cp( playerid, "" ); // Redirect to control panel again...
 	}
 	if ( dialogid == DIALOG_WEAPON_DEAL )
 	{
@@ -18326,7 +18241,7 @@ stock IsPlayerFBI( playerid )
 
 	switch( skinid ) {
 	    case 286, 71, 285: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
 				return false;
 			}
 	    	return true;
@@ -18342,7 +18257,7 @@ stock IsPlayerCIA( playerid )
 
 	switch( skinid ) {
 	    case 303 .. 305: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
 				return false;
 			}
 	    	return true;
@@ -18362,7 +18277,7 @@ stock IsPlayerPolice( playerid )
 
 	switch( skinid ) {
    	    case 265, 266, 267, 306, 307, 280, 281, 284: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
 				return false;
 			}
 	    	return true;
@@ -18378,7 +18293,7 @@ stock IsPlayerMedic( playerid )
 
 	switch( skinid ) {
 	    case 274 .. 276, 308: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
 				return false;
 			}
 	    	return true;
@@ -18394,7 +18309,7 @@ stock IsPlayerFireman( playerid )
 
 	switch( skinid ) {
 	    case 277, 278, 279: {
-			if ( IsPlayerSpawned( playerid ) && p_PlayerSettings[ playerid ] { SETTING_VIPSKIN } && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
 				return false;
 			}
 	    	return true;
@@ -20978,7 +20893,7 @@ stock autosaveStart( playerid, bool: force_save = false )
 	new
 		iTime = g_iTime;
 
-    if ( p_PlayerSettings[ playerid ] { SETTING_AUTOSAVE } && force_save == false )
+    if ( IsPlayerSettingToggled( playerid, SETTING_AUTOSAVE ) && force_save == false )
 		return;
 
     if ( GetPVarInt( playerid, "last_transaction" ) > iTime && force_save == false )
@@ -20986,7 +20901,7 @@ stock autosaveStart( playerid, bool: force_save = false )
 
 	SavePlayerData( playerid );
 	SetPVarInt( playerid, "last_transaction", iTime + 15 );
-	SendClientMessage( playerid, -1, p_PlayerSettings[ playerid ] { SETTING_AUTOSAVE } ? ( ""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved." ) :  (""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved, "COL_GREY"you can disable this over /cp"COL_WHITE"." ) );
+	SendClientMessage( playerid, -1, IsPlayerSettingToggled( playerid, SETTING_AUTOSAVE ) ? ( ""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved." ) :  (""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved, "COL_GREY"you can disable this over /cp"COL_WHITE"." ) );
 }
 
 stock getCurrentDate( )
@@ -22281,27 +22196,6 @@ stock reloadPlayerToys( playerid )
 	return 1;
 }
 
-thread OnSettingsLoad( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0;
-
-	new
-		rows, fields, i = -1
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows ) {
-		while( ++i < rows ) {
-			new iSetting = cache_get_field_content_int( i, "SETTING_ID", dbHandle );
-
-			if ( iSetting < MAX_SETTINGS ) // Must be something wrong otherwise...
-				p_PlayerSettings[ playerid ] { iSetting } = true;
-		}
-	}
-	return 1;
-}
-
 stock GetVehicleDriver( vehicleid )
 {
 	foreach(new i : Player)
@@ -22718,13 +22612,13 @@ stock CreateBusinessActors( businessid )
 stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
 {
 	// Current Coins
-	if ( p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } == false || force ) {
+	if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
 		TextDrawShowForPlayer( playerid, g_CurrentCoinsTD );
 		PlayerTextDrawShow( playerid, p_CoinsTD[ playerid ] );
 	}
 
 	// Top donor
-	if ( p_PlayerSettings[ playerid ] { SETTING_TOP_DONOR } == false || force ) {
+	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
 		TextDrawShowForPlayer( playerid, g_TopDonorTD );
 	}
 }
@@ -22732,13 +22626,13 @@ stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
 stock HidePlayerTogglableTextdraws( playerid, bool: force = true )
 {
 	// Current Coins
-	if ( p_PlayerSettings[ playerid ] { SETTING_COINS_BAR } == true || force ) {
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
 		TextDrawHideForPlayer( playerid, g_CurrentCoinsTD );
 		PlayerTextDrawHide( playerid, p_CoinsTD[ playerid ] );
 	}
 
 	// Top donor
-	if ( p_PlayerSettings[ playerid ] { SETTING_TOP_DONOR } == true || force ) {
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
 		TextDrawHideForPlayer( playerid, g_TopDonorTD );
 	}
 }
@@ -25659,7 +25553,7 @@ stock CuffPlayer( victimid, playerid )
 		}
 		else
 		{
-			if ( break_attempts >= 2 )
+			if ( break_attempts )
 			{
 				new
 					money_dropped = RandomEx( 200, 400 ) * break_attempts;
@@ -25682,14 +25576,14 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 	if ( p_BobbyPins[ playerid ] < 1 )
 	    return 0;
 
-	new Float: police_percentage, total_online;
+	new Float: police_percentage;
 	new bool: success = false;
 
 	// get current police percentage
-	GetServerPoliceRatio( police_percentage, .total_online = total_online );
+	GetServerPoliceRatio( police_percentage );
 
 	// probability based off some factors
-	new probability = police_percentage < 20.0 && total_online > 15 ? 10 : 35; // over 15 players, but less than 20% cops? make breakcuff the worst
+	new probability = 35 + floatround( police_percentage );
 
 	// attempt to uncuff
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
@@ -25745,3 +25639,4 @@ stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
 stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
+

@@ -119,18 +119,25 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 			}
 			else
 			{
-				new current_weapon = GetPlayerWeapon( playerid );
+				new
+					current_weapon = GetPlayerWeapon( playerid );
 
 				GetPlayerKeys( playerid, keys, existing_weapon, existing_weapon );
 				GetPlayerWeaponData( playerid, g_weaponDropData[ dropid ] [ E_SLOT_ID ], existing_weapon, existing_ammo );
 
-				new holding_replace_key = ( keys & KEY_ACTION );
+				new
+					holding_replace_key = ( keys & KEY_ACTION );
 
-				// if ( existing_weapon > g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! ( keys & KEY_ACTION ) && existing_ammo )
-				if ( existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && ! holding_replace_key && existing_ammo )
+				if ( ! holding_replace_key )
 				{
-					ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
-					return 1;
+					new
+						setting_enabled = IsPlayerSettingToggled( playerid, SETTING_WEAPON_PICKUP );
+
+					if ( ! setting_enabled || ( setting_enabled && existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && existing_ammo ) )
+					{
+						ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
+						return 1;
+					}
 				}
 
 				GivePlayerWeapon( playerid, g_weaponDropData[ dropid ] [ E_WEAPON_ID ], g_weaponDropData[ dropid ] [ E_AMMO ] );

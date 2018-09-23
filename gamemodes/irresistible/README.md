@@ -8,8 +8,8 @@
 ### Script Callbacks
 
 - `public SetPlayerRandomSpawn( playerid )`
-    - Called when a player is attempting to be respawned somewhere randomly 
-- `public OnServerUpdate( )` 
+    - Called when a player is attempting to be respawned somewhere randomly
+- `public OnServerUpdate( )`
     - Called every second (or sooner) indefinitely
 - `public OnPlayerUpdateEx( playerid )`
     - Same interval as OnServerUpdate, but it is called indefinitely for every player in-game
@@ -22,3 +22,5 @@
     - Called specifically when an NPC disconnects, as OnPlayerDisconnect will not
 - `OnPlayerDriveVehicle( playerid, vehicleid )`
     - Called when a player enters a vehicle as a driver
+- `OnPlayerLogin( playerid, accountid )`
+    - Called when a player successfully logs into their account
