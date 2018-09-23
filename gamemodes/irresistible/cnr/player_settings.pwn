@@ -29,7 +29,7 @@ enum E_SETTING_DATA {
 	bool: E_DEFAULT_VAL,		E_NAME[ 20 ]
 };
 
-new
+static stock
 	g_PlayerSettings 					[ ] [ E_SETTING_DATA ] = {
 		{ false, "Bail Offers" }, { false, "Event Teleports" }, { false, "Gang Invites" }, { false, "Chat Prefixes" }, { false, "Ransom Offers" },
 		{ false, "Auto-Save" }, { true, "Connection Log" }, { true, "Hitmarker" }, { true, "V.I.P Skin" }, { false, "Total Coin Bar" }, { false, "Last Donor Text" },
