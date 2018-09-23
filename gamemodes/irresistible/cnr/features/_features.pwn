@@ -7,11 +7,6 @@
 
 /* ** Includes ** */
 
-// core (needs to be moved to \cnr)
-#include "irresistible\cnr\features\vip.pwn"
-#include "irresistible\cnr\features\irresistibleguard.pwn"
-#include "irresistible\cnr\features\ammunation.pwn"
-
 // houses
 #include "irresistible\cnr\features\houses\_houses.pwn"
 #include "irresistible\cnr\features\vehicles\_vehicles.pwn"
@@ -38,4 +33,4 @@
 // #include "irresistible\cnr\features\eastereggs.pwn"
 
 // pool
-#include "irresistible\cnr\features\pool.pwn"
+// #include "irresistible\cnr\features\pool.pwn"
