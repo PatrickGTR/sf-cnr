@@ -544,3 +544,20 @@ stock VIPToString( viplvl )
 	}
 	return string;
 }
+
+stock VIPToColor( viplvl )
+{
+	static
+		string[ 16 ];
+
+	switch( viplvl )
+	{
+	    case VIP_DIAMOND: string = COL_DIAMOND;
+	    case VIP_PLATINUM: string = COL_PLATINUM;
+	    case VIP_GOLD: string = COL_GOLD;
+		case VIP_BRONZE: string = COL_BRONZE;
+		case VIP_REGULAR: string = COL_GREY;
+		default: string = COL_WHITE;
+	}
+	return string;
+}

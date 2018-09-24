@@ -660,8 +660,9 @@ CMD:goto( playerid, params[ ] )
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
     else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/goto [PLAYER_ID]" );
-    else if ( ! IsPlayerConnected( pID ) ) return SendError(playerid, "Invalid Player ID.");
-    else if ( pID == playerid ) return SendError(playerid, "You cannot go to yourself.");
+    else if ( ! IsPlayerConnected( pID ) ) return SendError( playerid, "Invalid Player ID." );
+    else if ( pID == playerid ) return SendError( playerid, "You cannot go to yourself." );
+    else if ( p_Spectating{ pID } ) return SendError( playerid, "You cannot go to this player right now." );
     else
     {
         GetPlayerPos( pID, X, Y, Z );

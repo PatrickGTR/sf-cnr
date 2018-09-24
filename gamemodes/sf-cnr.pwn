@@ -7548,7 +7548,7 @@ CMD:viplist( playerid, params[ ] )
 
 	foreach(new i : Player) if ( p_VIPLevel[ i ] > 0 )
 	{
-	    format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t%s%s\n", szLargeString, ReturnPlayerName( i ), i, p_VIPLevel[ i ] >= 5 ? ( COL_DIAMOND ) : ( COL_GOLD ), VIPToString( p_VIPLevel[ i ] ) );
+	    format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t%s%s\n", szLargeString, ReturnPlayerName( i ), i, VIPToColor( p_VIPLevel[ i ] ), VIPToString( p_VIPLevel[ i ] ) );
 	    count++;
 	}
     if ( count == 0 ) return SendError( playerid, "There are no V.I.P's online." );

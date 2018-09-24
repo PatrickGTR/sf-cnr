@@ -63,11 +63,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) )
 			return SendError( playerid, "You cannot use this feature inside of an interior." );
 
-	    new
-		    Float: X, Float: Y, Float: Z;
-
-		GetPlayerPos( playerid, X, Y, Z );
-
 		for( new id, x = 0; id < MAX_BUYABLE_VEHICLES; id ++ )
 		{
 			if ( g_vehicleData[ playerid ] [ id ] [ E_CREATED ] == true && g_vehicleData[ playerid ] [ id ] [ E_OWNER_ID ] == p_AccountID[ playerid ] && IsValidVehicle( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ) )
@@ -76,6 +71,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		      	{
 		      		if ( GetPlayerCash( playerid ) < 10000 )
 		      			return SendError( playerid, "You need $10,000 to bring your vehicle to you." );
+
+				    new
+					    Float: X, Float: Y, Float: Z;
 
 		      		foreach( new i : Player )
 		      		{
@@ -87,11 +85,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		      			}
 		      		}
 
-					new
-						Float: nodeX, Float: nodeY, Float: nodeZ, Float: nextX, Float: nextY,
-						nodeid = NearestNodeFromPoint( X, Y, Z ),
-						nextNodeid = NearestNodeFromPoint( X, Y, Z, 9999.9, nodeid )
-					;
+					// get the player's position again
+					GetPlayerPos( playerid, X, Y, Z );
+
+					// get nearest node
+					new Float: nodeX, Float: nodeY, Float: nodeZ, Float: nextX, Float: nextY;
+					new nodeid = NearestNodeFromPoint( X, Y, Z );
+					new nextNodeid = NearestNodeFromPoint( X, Y, Z, 9999.9, nodeid );
 
 					GetNodePos( nextNodeid, nextX, nextY, nodeZ );
 					GetNodePos( nodeid, nodeX, nodeY, nodeZ );
