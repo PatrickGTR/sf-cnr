@@ -25611,7 +25611,7 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 	GetServerPoliceRatio( police_percentage );
 
 	// probability based off some factors
-	new probability = 25 + floatround( police_percentage );
+	new probability = 20 + floatround( police_percentage, floatround_floor );
 
 	// attempt to uncuff
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
