@@ -4623,18 +4623,18 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 		// Passive mode enabled for damaged id?
 		if ( IsPlayerPassiveModeEnabled( playerid ) ) {
-		 	return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~This player has passive mode enabled." ), 0;
+ 			return ShowPlayerHelpDialog( issuerid, 2000, "This player has passive mode ~g~enabled." ), 0;
 		}
 
 		// Passive mode enabled for player?
 		if ( IsPlayerPassiveModeEnabled( issuerid ) ) {
 			p_PassiveModeDisabled{ issuerid } = true;
-		 	return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~Passive mode disabled!" ), 0;
+ 			return ShowPlayerHelpDialog( issuerid, 2000, "Passive mode ~r~disabled." ), 0;
 		}
 
 		// Anti Random Deathmatch
 		if ( IsRandomDeathmatch( issuerid, playerid ) ) {
-			return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~This player cannot be random deathmatched." ), 0;
+			return ShowPlayerHelpDialog( issuerid, 2000, "This player cannot be ~r~random deathmatched." ), 0;
 		}
 	}
 
