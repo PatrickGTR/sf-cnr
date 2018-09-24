@@ -24,3 +24,5 @@
     - Called when a player enters a vehicle as a driver
 - `OnPlayerLogin( playerid, accountid )`
     - Called when a player successfully logs into their account
+- `OnHouseOwnerChange( houseid, ownerid )`
+    - Called when the ownership of a home is changed

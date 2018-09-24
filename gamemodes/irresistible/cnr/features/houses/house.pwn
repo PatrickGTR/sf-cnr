@@ -444,7 +444,7 @@ CMD:h( playerid, params[ ] )
 					GivePlayerCash( playerid, -( g_houseData[ i ] [ E_COST ] ) );
 					autosaveStart( playerid, true ); // force_save
 					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", cash_format( g_houseData[ i ] [ E_COST ] ) );
-                    SetHouseOwner( i, ReturnPlayerName( playerid ) );
+                    SetHouseOwner( i, p_AccountID[ playerid ], ReturnPlayerName( playerid ) );
 
 					p_OwnedHouses[ playerid ] ++;
 					return 1;
@@ -535,7 +535,7 @@ CMD:h( playerid, params[ ] )
 			p_OwnedHouses[ playerid ] ++;
 
 		    // destroyAllFurniture( houseid );
-			SetHouseOwner( houseid, ReturnPlayerName( playerid ), .buyerid = playerid );
+			SetHouseOwner( houseid, p_AccountID[ playerid ], ReturnPlayerName( playerid ) );
 
 			GivePlayerCash( playerid, -sellingprice );
 			GivePlayerCash( sellerid, sellingprice );
@@ -621,7 +621,7 @@ thread OnHouseLoad( )
 	// Make Lorenc the owner of unowned VIP houses
 	foreach ( new houseid : houses ) if ( g_houseData[ houseid ] [ E_COST ] < 10000 ) {
 		if ( strmatch( g_houseData[ houseid ] [ E_OWNER ], "No-one" ) ) {
-			SetHouseOwner( houseid, "Lorenc" );
+			SetHouseOwner( houseid, 1, "Lorenc" );
 		}
 	}
 
@@ -758,31 +758,29 @@ stock SetHouseForAuction( ID )
 	return 1;
 }
 
-stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ], buyerid = INVALID_PLAYER_ID )
+stock SetHouseOwner( houseid, owner, owner_name[ 24 ] )
 {
-	if ( ! Iter_Contains( houses, houseid ) || isnull( szOwner ) )
+	if ( ! Iter_Contains( houses, houseid ) || ! strlen( owner_name ) )
 		return 0;
 
-	new
-		query[ 128 ]
-	;
-	format( g_houseData[ houseid ] [ E_OWNER ], 24, "%s", szOwner );
+	// copy home owner name to variable
+	strcpy( g_houseData[ houseid ] [ E_OWNER ], owner_name );
 
-	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='%s' WHERE ID=%d", mysql_escape( szOwner ), houseid );
-	mysql_single_query( query );
+	// update in database
+	mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE HOUSES SET OWNER='%e' WHERE ID=%d", g_houseData[ houseid ] [ E_OWNER ], houseid );
+	mysql_single_query( szNormalString );
 
-	// transfer furniture to account
-	if ( buyerid != INVALID_PLAYER_ID ) {
-		mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", p_AccountID[ buyerid ], houseid ) );
-	}
+	// callback when the home owner changes
+	CallLocalFunction( "OnHouseOwnerChange", "dd", houseid, owner );
 
+	// refresh label
 	DestroyDynamicMapIcon( g_houseData[ houseid ] [ E_MAP_ICON ] );
 	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", houseid, g_houseData[ houseid ] [ E_OWNER ], cash_format( g_houseData[ houseid ] [ E_COST ] ) );
- 	UpdateDynamic3DTextLabelText( g_houseData[ houseid ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString);
+ 	UpdateDynamic3DTextLabelText( g_houseData[ houseid ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
 	return 1;
 }
 
-stock SwitchHouseOwners( ID, playerid, buyerid )
+/*stock SwitchHouseOwners( ID, playerid, buyerid )
 {
 	if ( IsPlayerConnected( playerid ) )
 	{
@@ -810,7 +808,7 @@ stock SwitchHouseOwners( ID, playerid, buyerid )
 	g_houseData[ ID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], 1.0, g_houseData[ ID ] [ E_WORLD ], g_houseData[ ID ] [ E_INTERIOR_ID ], -1, 50.0 );
 
 	DestroyDynamicMapIcon( g_houseData[ ID ] [ E_MAP_ICON ] );
-}
+}*/
 
 stock GetPlayerOwnedHouses( playerid )
 {

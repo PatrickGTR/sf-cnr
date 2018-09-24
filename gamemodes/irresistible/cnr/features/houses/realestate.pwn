@@ -72,6 +72,12 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	return 1;
 }
 
+hook OnHouseOwnerChange( houseid, owner )
+{
+	mysql_single_query( sprintf( "DELETE FROM `HOUSE_LISTINGS` WHERE `HOUSE_ID` = %d AND `SALE_DATE` IS NULL", houseid ) );
+	return 1;
+}
+
 /* ** Commands ** */
 hook cmd_h( playerid, params[ ] )
 {
@@ -236,7 +242,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 
 		// set listing as sold and transfer home
 		mysql_single_query( sprintf( "UPDATE `HOUSE_LISTINGS` SET `SALE_DATE` = CURRENT_TIMESTAMP WHERE `ID` = %d", house_listing_id ) );
-		SetHouseOwner( houseid, ReturnPlayerName( playerid ), .buyerid = playerid );
+		SetHouseOwner( houseid, GetPlayerAccountID( playerid ), ReturnPlayerName( playerid ) );
 		GivePlayerIrresistibleCoins( playerid, -ask_price );
 		return 1;
 	}
