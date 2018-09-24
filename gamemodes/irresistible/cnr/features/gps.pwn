@@ -28,8 +28,8 @@ static stock
 	Iterator: gpswaypoint 			< MAX_GPS_WAYPOINTS >,
 	bool: p_GPSToggled            	[ MAX_PLAYERS char ],
 	p_GPSTimer                      [ MAX_PLAYERS ] = { -1, ... },
-	p_GPSLocation               	[ MAX_PLAYERS ],
 	p_GPSObject                   	[ MAX_PLAYERS ] = { INVALID_OBJECT_ID, ... },
+	p_GPSDestName 					[ MAX_PLAYERS ] [ 24 ],
 	g_GpsLastSorted					= -1
 ;
 
@@ -111,22 +111,6 @@ hook OnScriptInit( playerid )
 	return 1;
 }
 
-hook OnPlayerUpdateEx( playerid )
-{
-    if ( p_GPSToggled{ playerid } )
-    {
-        new
-        	id = p_GPSLocation[ playerid ];
-
-        if ( IsPlayerInRangeOfPoint( playerid, 10.0, g_gpsData[ id ] [ E_X ], g_gpsData[ id ] [ E_Y ], g_gpsData[ id ] [ E_Z ] ) )
-        {
-        	GPS_StopNavigation( playerid );
-		  	SendServerMessage( playerid, "You have reached your destination." );
-        }
-    }
-	return 1;
-}
-
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_GPS && response )
@@ -147,12 +131,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		      			gpsid = g_sortedGpsData[ i ] [ E_ID ];
 
 					g_gpsData[ gpsid ] [ E_FREQUENCY ] ++; // increase frequency
-					p_GPSLocation[ playerid ] = gpsid;
-			 		p_GPSObject[ playerid ] = CreateDynamicObject( 1318, 0.0, 0.0, 0.0, 0.0, 0.0, 0 );
-					p_GPSTimer[ playerid ] = SetTimerEx( "gps_Update", 100, true, "d", playerid );
-					p_GPSToggled{ playerid } = true;
+					GPS_SetPlayerWaypoint( playerid, g_gpsData[ gpsid ] [ E_NAME ], g_gpsData[ gpsid ] [ E_X ], g_gpsData[ gpsid ] [ E_Y ], g_gpsData[ gpsid ] [ E_Z ] );
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s. Follow the arrow to reach your destination.", g_gpsData[ gpsid ] [ E_NAME ] );
-					PlayerTextDrawShow( playerid, p_GPSInformation[ playerid ] );
 		      		break;
 				}
 		      	x++;
@@ -171,7 +151,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( server_time > g_GpsLastSorted )
 		{
 			g_sortedGpsData = g_gpsData;
-			g_GpsLastSorted = server_time + 60;
+			g_GpsLastSorted = server_time + 10;
 			SortDeepArray( g_sortedGpsData, E_FREQUENCY, .order = SORT_DESC );
 		}
 
@@ -244,7 +224,6 @@ stock CreateNavigation( const name[ 24 ], Float: X, Float: Y, Float: Z, city, co
 
 stock GPS_StopNavigation( playerid )
 {
- 	p_GPSLocation[ playerid ] = 0;
 	p_GPSToggled{ playerid } = false;
 	DestroyDynamicObject( p_GPSObject[ playerid ] );
 	KillTimer( p_GPSTimer[ playerid ] );
@@ -253,8 +232,25 @@ stock GPS_StopNavigation( playerid )
 	PlayerTextDrawHide( playerid, p_GPSInformation[ playerid ] );
 }
 
-function gps_Update( playerid )
+stock GPS_SetPlayerWaypoint( playerid, const destName[ ], Float: destX, Float: destY, Float: destZ )
 {
+	p_GPSToggled{ playerid } = true;
+	format( p_GPSDestName[ playerid ], sizeof( p_GPSDestName[ ] ), "%s", destName );
+
+	DestroyDynamicObject( p_GPSObject[ playerid ] );
+	p_GPSObject[ playerid ] = CreateDynamicObject( 1318, 0.0, 0.0, 0.0, 0.0, 0.0, 0 );
+
+	KillTimer( p_GPSTimer[ playerid ] );
+	p_GPSTimer[ playerid ] = SetTimerEx( "GPS_Update", 100, true, "dfff", playerid, destX, destY, destZ );
+
+	PlayerTextDrawShow( playerid, p_GPSInformation[ playerid ] );
+}
+
+function GPS_Update( playerid, Float: destX, Float: destY, Float: destZ )
+{
+	static Float: fRY, Float: fRZ, Float: fAZ;
+	static Float: X, Float: Y, Float: Z;
+
 	if ( ! IsPlayerInAnyVehicle( playerid ) )
 	{
 		GPS_StopNavigation( playerid );
@@ -262,21 +258,26 @@ function gps_Update( playerid )
 	  	return 1;
 	}
 
-	static
-	    Float: fRY, Float: fRZ, Float: fAZ,
-	    Float: X, Float: Y, Float: Z, v, string[ 100 ], Float: pos
-	;
-	pos = GetPlayerDistanceFromPoint( playerid, g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ], g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Z ]);
-	format( string, sizeof( string ), "~g~Location:~w~ %s~n~~g~Distance:~w~ %0.2fm", g_gpsData[ p_GPSLocation[ playerid ] ] [ E_NAME ], pos );
-	PlayerTextDrawSetString( playerid, p_GPSInformation[ playerid ], string );
-	v = GetPlayerVehicleID( playerid );
-	GetVehiclePos( v, X, Y, Z );
-	GetVehicleZAngle( v, fAZ );
+	new
+		Float: distance = GetPlayerDistanceFromPoint( playerid, destX, destY, destZ );
 
-	fRY = floatsqroot( floatpower( ( g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ] - X ), 2.0 ) + floatpower( ( g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ] - Y ), 2.0 ) );
-	fRY = floatabs( atan2( fRY, Z - g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Z ] ) );
-	fRZ = atan2(g_gpsData[ p_GPSLocation[ playerid ] ] [ E_Y ] - Y, g_gpsData[ p_GPSLocation[ playerid ] ] [ E_X ] - X) + 180;
+	if ( distance < 10.0 )
+	{
+    	GPS_StopNavigation( playerid );
+	  	return SendServerMessage( playerid, "You have reached your destination." );
+	}
 
-    AttachDynamicObjectToVehicle( p_GPSObject[ playerid ], v, 0.0, 0.0, 1.5, 0.0, fRY, fRZ + (-fAZ) );
+	new
+		vehicleid = GetPlayerVehicleID( playerid );
+
+	GetVehiclePos( vehicleid, X, Y, Z );
+	GetVehicleZAngle( vehicleid, fAZ );
+
+	fRY = floatsqroot( floatpower( ( destX - X ), 2.0 ) + floatpower( ( destY - Y ), 2.0 ) );
+	fRY = floatabs( atan2( fRY, Z - destZ ) );
+	fRZ = atan2( destY - Y, destX - X ) + 180.0;
+
+    AttachDynamicObjectToVehicle( p_GPSObject[ playerid ], vehicleid, 0.0, 0.0, 1.5, 0.0, fRY, fRZ - fAZ );
+	PlayerTextDrawSetString( playerid, p_GPSInformation[ playerid ], sprintf( "~g~Location:~w~ %s~n~~g~Distance:~w~ %0.2fm", p_GPSDestName[ playerid ], distance ) );
 	return 1;
 }
