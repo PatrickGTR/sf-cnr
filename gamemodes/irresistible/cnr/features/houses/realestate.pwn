@@ -48,7 +48,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		switch ( listitem )
 		{
-			case 0: mysql_tquery( dbHandle, sprintf( "SELECT * FROM `HOUSE_LISTINGS` WHERE `ID` = %d", listingid ), "HouseListing_OnBuyHome", "dd", playerid, listingid );
+			case 0: mysql_tquery( dbHandle, sprintf( "SELECT *, UNIX_TIMESTAMP(`SALE_DATE`) as `SALE_DATE_TS` FROM `HOUSE_LISTINGS` WHERE `ID` = %d", listingid ), "HouseListing_OnBuyHome", "dd", playerid, listingid );
 			case 1:
 			{
 				if ( IsPlayerInAnyVehicle( playerid ) )
@@ -187,10 +187,15 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 			return SendError( playerid, "You do not have enough Irresistible coins for this home (%0.2f IC).", ask_price );
 		}
 
-		//
-		// TODO: check if sale elapsed
-		//
+		// check if sale already completed
+		new
+			sale_date_ts = cache_get_field_content_int( 0, "SALE_DATE_TS" );
 
+		if ( sale_date_ts != 0 && GetServerTime( ) > sale_date_ts ) {
+			return SendError( playerid, "You can no longer buy this home as it has been sold." );
+		}
+
+		// credit seller if they are on/offline
 		new
 			owner_account_id = cache_get_field_content_int( 0, "USER_ID" ),
 			sellerid;
@@ -199,7 +204,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 			break;
 		}
 
-		// credit seller if they are on/offline
+		// validate seller id
 		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
 			p_OwnedHouses[ sellerid ] --;
 			GivePlayerIrresistibleCoins( sellerid, ask_price );
