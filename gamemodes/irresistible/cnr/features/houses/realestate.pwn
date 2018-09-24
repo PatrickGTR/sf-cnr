@@ -241,7 +241,6 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 		ASK float,
 		LISTING_DATE DATETIME default CURRENT_TIMESTAMP,
 		SALE_DATE DATETIME default null,
-		UNIQUE KEY (HOUSE_ID),
 		FOREIGN KEY (HOUSE_ID) REFERENCES HOUSES (ID) ON DELETE CASCADE
 	);
 */
