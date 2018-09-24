@@ -68,6 +68,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
 			}
 
+			else if ( settingid == SETTING_PASSIVE_MODE ) {
+				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
+			}
+
 			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid );
 		}
 		else
@@ -76,12 +80,19 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			 	HidePlayerTogglableTextdraws( playerid, .force = false );
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
 			}
+			else if ( settingid == SETTING_PASSIVE_MODE ) {
+				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
+			}
 
 			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], settingid );
 		}
 		mysql_single_query( szNormalString );
+
 		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { settingid } ? ( "enabled" ) : ( "disabled" ), g_PlayerSettings[ settingid ] );
-	    cmd_cp( playerid, "" ); // Redirect to control panel again...
+
+	    if ( ! strmatch( inputtext, "ignore" )) {
+	   		cmd_cp( playerid, "" ); // Redirect to control panel again...
+	    }
 	}
 	return 1;
 }
@@ -138,6 +149,13 @@ CMD:controlpanel( playerid, params[ ] )
 	}
 
 	ShowPlayerDialog( playerid, DIALOG_CP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Control Panel", szLargeString, "Select", "Cancel" );
+	return 1;
+}
+
+CMD:passivemode( playerid, params[ ] ) return cmd_passive( playerid, params );
+CMD:passive( playerid, params[ ] )
+{
+	CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
 	return 1;
 }
 

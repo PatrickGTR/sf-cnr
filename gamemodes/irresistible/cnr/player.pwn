@@ -243,7 +243,9 @@ new
 	p_PlayerAltBind 				[ MAX_PLAYERS ] = { -1, ... },
 	p_PlayerAltBindTick 			[ MAX_PLAYERS ],
 	p_AimedAtPolice 				[ MAX_PLAYERS ],
-	bool: p_PassiveModeDisabled 	[ MAX_PLAYERS char ]
+	bool: p_PassiveModeDisabled 	[ MAX_PLAYERS char ],
+	p_PassiveModeExpireTimer 		[ MAX_PLAYERS ] = { -1, ... },
+	Text3D: p_PassiveModeLabel 		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID }
 ;
 
 /* ** Getters And Setters** */

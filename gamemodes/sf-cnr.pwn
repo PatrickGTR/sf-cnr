@@ -3791,6 +3791,7 @@ public OnPlayerDisconnect( playerid, reason )
 	resetPlayerStreaks( playerid );
     RemovePlayerFromRace( playerid );
 	ClearPlayerRoadblocks( playerid, .distance_check = false );
+	ResetPlayerPassiveMode( playerid );
 	//p_Detained		{ playerid } = false;
 	p_Tied			{ playerid } = false;
 	p_Kidnapped		{ playerid } = false;
@@ -3893,7 +3894,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_CasinoRewardsPoints[ playerid ] = 0.0;
 	p_OwnedBusinesses[ playerid ] = 0;
 	g_LastExportModel[ playerid ] = 0;
-	p_PassiveModeDisabled{ playerid } = false;
 	p_ExplosiveBullets[ playerid ] = 0;
 	p_GangSplitProfits[ playerid ] = 0;
 	p_IrresistibleCoins[ playerid ] = 0.0;
@@ -4150,6 +4150,9 @@ public OnPlayerSpawn( playerid )
     Attach3DTextLabelToPlayer( p_SpawnKillLabel[ playerid ], playerid, 0.0, 0.0, 0.3 );
     p_AntiSpawnKillEnabled{ playerid } = true;
 	/* ** Anti-Spawn Kill ** */
+
+    // passive mode
+	SetPlayerPassiveMode( playerid );
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN )
 	{
@@ -4621,15 +4624,17 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
 		}
 
-		// Passive mode enabled for damaged id?
-		if ( IsPlayerPassiveModeEnabled( playerid ) ) {
- 			return ShowPlayerHelpDialog( issuerid, 2000, "This player has passive mode ~g~enabled." ), 0;
+		// Passive mode enabled for player?
+		if ( IsPlayerPassive( issuerid ) ) {
+			if ( p_PassiveModeExpireTimer[ issuerid ] == -1 ) {
+				p_PassiveModeExpireTimer[ issuerid ] = PassiveMode_Reset( issuerid, 4 ); // it will just set it to anything but -1 for now
+			}
+ 			return 0;
 		}
 
-		// Passive mode enabled for player?
-		if ( IsPlayerPassiveModeEnabled( issuerid ) ) {
-			p_PassiveModeDisabled{ issuerid } = true;
- 			return ShowPlayerHelpDialog( issuerid, 2000, "Passive mode ~r~disabled." ), 0;
+		// Passive mode enabled for damaged id?
+		if ( IsPlayerPassive( playerid ) ) {
+ 			return ShowPlayerHelpDialog( issuerid, 2000, "This player has passive mode ~g~enabled." ), 0;
 		}
 
 		// Anti Random Deathmatch
@@ -4837,6 +4842,7 @@ public OnPlayerDeath( playerid, killerid, reason )
     RemovePlayerStolensFromHands( playerid );
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
+    ResetPlayerPassiveMode( playerid );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	ClearPlayerRoadblocks( playerid, .distance_check = false );
 	p_Tazed{ playerid } = false;
@@ -4852,7 +4858,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
 	p_WeedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_Tied{ playerid } = false;
-	p_PassiveModeDisabled{ playerid } = false;
 	p_TicketTimestamp[ playerid ] = 0;
 	p_Kidnapped{ playerid } = false;
     //p_Detained{ playerid } = false;
@@ -9797,6 +9802,7 @@ CMD:tie( playerid, params[ ] )
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "You cannot use this command on spawn protected players." );
+		if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
 		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
 
 		// remove rope after attempt
@@ -10218,6 +10224,7 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rape is in a casino." );
 		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
 		if ( p_AntiSpawnKillEnabled{ victimid } ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
+		if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
 		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		if ( IsPlayerAFK( victimid ) && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) return SendError( playerid, "This player is in an AFK state." );
@@ -19371,9 +19378,9 @@ stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
 	new count = 0;
 	new Float: Z;
 
-	foreach(new i : Player)
+	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) )
 	{
-		if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! p_AntiSpawnKillEnabled{ i } )
+		if ( ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
 		{
             if ( IsPlayerAFK( i ) )
             {
@@ -22359,7 +22366,7 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 		if ( IsPlayerBoxing( issuerid ) )
 			return false;
 
-		if ( IsPlayerPassiveModeEnabled( damagedid ) )
+		if ( IsPlayerPassive( damagedid ) )
 			return true;
 
 		if ( ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) )
@@ -25664,7 +25671,45 @@ stock DisablePlayerSpawnProtection( playerid )
 	return 1;
 }
 
-stock IsPlayerPassiveModeEnabled( playerid )
+stock SetPlayerPassiveMode( playerid )
+{
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) )
+		return 0;
+
+	// reset any labels etc
+	ResetPlayerPassiveMode( playerid );
+
+	// place label
+	p_PassiveModeLabel[ playerid ] = CreateDynamic3DTextLabel( "Passive Mode", COLOR_GREEN, 0.0, 0.0, -0.6, 15.0, .attachedplayer = playerid );
+	return 1;
+}
+
+stock IsPlayerPassive( playerid )
 {
 	return IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) && ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
+}
+
+stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
+{
+	DestroyDynamic3DTextLabel( p_PassiveModeLabel[ playerid ] );
+	KillTimer( p_PassiveModeExpireTimer[ playerid ] );
+	p_PassiveModeLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	p_PassiveModeExpireTimer[ playerid ] = -1;
+	p_PassiveModeDisabled{ playerid } = passive_disabled;
+}
+
+function PassiveMode_Reset( playerid, time_left )
+{
+	if ( -- time_left <= 0 )
+	{
+		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
+		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
+	}
+	else
+	{
+    	UpdateDynamic3DTextLabelText( p_PassiveModeLabel[ playerid ], COLOR_RED, sprintf( "Passive Mode Disabled In %d Seconds", time_left ) );
+		p_PassiveModeExpireTimer[ playerid ] = SetTimerEx( "PassiveMode_Reset", 980, false, "dd", playerid, time_left );
+ 		ShowPlayerHelpDialog( playerid, 1500, "Passive mode disabled in ~r~%d seconds.", time_left );
+	}
+	return 1;
 }
