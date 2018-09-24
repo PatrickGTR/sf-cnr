@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_SETTINGS 				( 12 )
+#define MAX_SETTINGS 				( 13 )
 
 #define SETTING_BAILOFFERS 			( 0 )
 #define SETTING_EVENT_TP			( 1 )
@@ -23,17 +23,14 @@
 #define SETTING_COINS_BAR	 		( 9 )
 #define SETTING_TOP_DONOR 			( 10 )
 #define SETTING_WEAPON_PICKUP 		( 11 )
+#define SETTING_PASSIVE_MODE 		( 12 )
 
 /* ** Variables ** */
-enum E_SETTING_DATA {
-	bool: E_DEFAULT_VAL,			E_NAME[ 20 ]
-};
-
 static stock
-	g_PlayerSettings 				[ ] [ E_SETTING_DATA ] = {
-		{ false, "Bail Offers" }, { false, "Event Teleports" }, { false, "Gang Invites" }, { false, "Chat Prefixes" }, { false, "Ransom Offers" },
-		{ false, "Auto-Save" }, { true, "Connection Log" }, { true, "Hitmarker" }, { true, "V.I.P Skin" }, { false, "Total Coin Bar" }, { false, "Last Donor Text" },
-		{ false, "Auto Pickup Weapon" }
+	g_PlayerSettings 				[ MAX_SETTINGS ] [ 24 ] = {
+		{ "Prevent Bail Offers" }, { "Prevent Event Teleports" }, { "Prevent Gang Invites" }, { "Prevent Chat Prefixes" }, { "Prevent Ransom Offers" },
+		{ "Prevent Auto-Save" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
+		{ "Manual Pickup Weapon" }, { "Passive Mode" }
 	},
 	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
@@ -54,36 +51,36 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			settingid = listitem - 1;
 
+		if ( settingid == SETTING_VIPSKIN && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
+			return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+		}
+
 		if ( ( p_PlayerSettings[ playerid ] { settingid } = !p_PlayerSettings[ playerid ] { settingid } ) == true )
 		{
-			if ( settingid == SETTING_VIPSKIN )
-			{
-				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+			if ( settingid == SETTING_VIPSKIN ) {
 				SyncObject( playerid );
 				ClearAnimations( playerid );
 				SetPlayerSkin( playerid, p_LastSkin[ playerid ] );
 			}
 
-			else if ( settingid == SETTING_COINS_BAR )
-			 	ShowPlayerTogglableTextdraws( playerid, .force = false );
-
-			else if ( settingid == SETTING_TOP_DONOR )
- 				HidePlayerTogglableTextdraws( playerid, .force = false );
+			else if ( settingid == SETTING_COINS_BAR || settingid == SETTING_TOP_DONOR ) {
+			 	HidePlayerTogglableTextdraws( playerid, .force = false );
+ 				ShowPlayerTogglableTextdraws( playerid, .force = false );
+			}
 
 			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid );
 		}
 		else
 		{
-			if ( settingid == SETTING_COINS_BAR )
- 				HidePlayerTogglableTextdraws( playerid, .force = false );
-
-			else if ( settingid == SETTING_TOP_DONOR )
+			if ( settingid == SETTING_COINS_BAR || settingid == SETTING_TOP_DONOR ) {
+			 	HidePlayerTogglableTextdraws( playerid, .force = false );
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
+			}
 
 			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], settingid );
 		}
 		mysql_single_query( szNormalString );
-		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { settingid } != g_PlayerSettings[ settingid ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ), g_PlayerSettings[ settingid ] [ E_NAME ] );
+		SendServerMessage( playerid, "You have %s "COL_GREY"%s"COL_WHITE". Changes may take effect after spawning/relogging.", p_PlayerSettings[ playerid ] { settingid } ? ( "enabled" ) : ( "disabled" ), g_PlayerSettings[ settingid ] );
 	    cmd_cp( playerid, "" ); // Redirect to control panel again...
 	}
 	return 1;
@@ -91,7 +88,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 hook OnPlayerConnect( playerid ) {
 	for ( new i = 0; i < MAX_SETTINGS; i ++ ) {
-		p_PlayerSettings[ playerid ] { i } = g_PlayerSettings[ i ] [ E_DEFAULT_VAL ];
+		p_PlayerSettings[ playerid ] { i } = false;
 	}
 	return 1;
 }
@@ -131,12 +128,13 @@ thread OnSettingsLoad( playerid )
 
 /* ** Commands ** */
 CMD:cp( playerid, params[ ] ) return cmd_controlpanel( playerid, params );
+CMD:settings( playerid, params[ ] ) return cmd_controlpanel( playerid, params );
 CMD:controlpanel( playerid, params[ ] )
 {
-	szLargeString = ""COL_WHITE"Setting\t"COL_WHITE"Status\t"COL_WHITE"Default\n"COL_GREY"Irresistible Guard\t \t"COL_GREY">>>\n";
+	szLargeString = ""COL_WHITE"Setting\t"COL_WHITE"Status\n"COL_GREY"Irresistible Guard\t"COL_ORANGE">>>\n";
 
 	for( new i = 0; i < MAX_SETTINGS; i++ ) {
-		format( szLargeString, 600, "%s%s\t%s\t"COL_GREY"%s\n", szLargeString, g_PlayerSettings[ i ] [ E_NAME ], p_PlayerSettings[ playerid ] { i } == g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( ""#COL_GREEN"enabled" ) : ( ""#COL_RED"disabled" ), g_PlayerSettings[ i ] [ E_DEFAULT_VAL ] ? ( "disabled" ) : ( "enabled" ) );
+		format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\n", szLargeString, g_PlayerSettings[ i ], p_PlayerSettings[ playerid ] { i } ? ( ""#COL_GREEN"YES" ) : ( ""#COL_RED"NO" ) );
 	}
 
 	ShowPlayerDialog( playerid, DIALOG_CP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Control Panel", szLargeString, "Select", "Cancel" );
@@ -145,5 +143,5 @@ CMD:controlpanel( playerid, params[ ] )
 
 /* ** Functions ** */
 stock IsPlayerSettingToggled( playerid, settingid ) {
-	return p_PlayerSettings[ playerid ] { settingid } == g_PlayerSettings[ settingid ] [ E_DEFAULT_VAL ];
+	return p_PlayerSettings[ playerid ] { settingid };
 }

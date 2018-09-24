@@ -133,7 +133,7 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 					new
 						setting_enabled = IsPlayerSettingToggled( playerid, SETTING_WEAPON_PICKUP );
 
-					if ( ! setting_enabled || ( setting_enabled && existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && existing_ammo ) )
+					if ( setting_enabled || ( ! setting_enabled && existing_weapon != g_weaponDropData[ dropid ] [ E_WEAPON_ID ] && existing_ammo ) )
 					{
 						ShowPlayerHelpDialog( playerid, 2500, "Hold ~r~~k~~PED_ANSWER_PHONE~~w~ To Take %s", ReturnWeaponName( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] ) );
 						return 1;

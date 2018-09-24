@@ -1,12 +1,5 @@
-(+) Adds pool system minigame, like in singleplayer.
-(+) Adds pilot minijob, accessible using "/pilot" in specific plane models.
-(+) Adds traindriver minijob, accessible using "/train" in a train.
-(+) Adds "/p" to be able to chat inside the paintball lobby
-(+) Adds "/b production" to see what the status of your business production is.
-(+) Adds "/reconnectchuff" for level 5 administrators.
-(+) GPS now shows describes what each location is 'known for' and will be ordered by what is used most.
-(/) Jail times now decreased by 40% and bobby pin prices have been increased.
-(*) Players inside a vehicle that is brought by a player will be respawned.
-(*) Fixes issue with being unable to exit a meth van.
-(*) If you shoot a ball, it will not stop it while it is moving.
-(*) Fix textdraw issue within casinos.
+(+) Adds passive mode (togglable via /settings). Disables random death matching as an innocent player.
+(+) You can now disable automatic weapon pickup through /settings.
+(/) If you successfully break your cuffs, you get immunity from being tazed for 10 seconds.
+(/) Default 25% success rate breaking cuffs... Increases with more police in the server.
+(/) Simplified "/cp" (alternatively, /settings) dialog.

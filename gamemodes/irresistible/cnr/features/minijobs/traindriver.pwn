@@ -71,36 +71,24 @@ hook OnPlayerDeath( playerid, killerid, reason )
 	return 1;
 }
 
-/*hook OnPlayerUpdateEx( playerid )
-{
-	new player_vehicle = GetPlayerVehicleID( playerid );
-
-	if ( GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && player_vehicle && p_hasTrainJob{ playerid } && !IsVehicleTrain( player_vehicle ) && p_TrainCancelTimer[ playerid ] == -1 ) {
- 		cancelPlayerTrainWork( playerid, player_vehicle, .ticks = 60 );
-	}
-	return 1;
-}*/
-
 hook OnPlayerStateChange( playerid, newstate, oldstate )
 {
+	new
+		vehicleid = GetPlayerVehicleID( playerid );
+
 	if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER && p_hasTrainJob{ playerid } ) {
 		KillTimer( p_TrainCancelTimer[ playerid ] ); // just in-case
-		cancelPlayerTrainWork( playerid, GetPlayerVehicleID( playerid ), 15 );
+		cancelPlayerTrainWork( playerid, 15 );
     }
 
-    else if ( newstate == PLAYER_STATE_DRIVER && oldstate != PLAYER_STATE_DRIVER && p_hasTrainJob{ playerid } ) {
+    else if ( newstate == PLAYER_STATE_DRIVER && oldstate != PLAYER_STATE_DRIVER && p_hasTrainJob{ playerid } && IsVehicleTrain( vehicleid ) ) {
     	KillTimer( p_TrainCancelTimer[ playerid ] );
     	p_TrainCancelTimer[ playerid ] = -1;
     }
 
-    else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle(playerid) && !p_hasTrainJob{ playerid })
-    {
-    	if ( IsVehicleTrain( GetPlayerVehicleID( playerid ) ) )
-    	{
-    		ShowPlayerHelpDialog( playerid, 3000, "You can begin a train job by typing ~g~/train" );
-    	}
+    else if ( newstate == PLAYER_STATE_DRIVER && IsPlayerInAnyVehicle( playerid ) && !p_hasTrainJob{ playerid } && IsVehicleTrain( vehicleid ) ) {
+    	ShowPlayerHelpDialog( playerid, 5000, "You can begin a train job by typing ~g~/train" );
     }
-
     return 1;
 }
 
@@ -220,7 +208,7 @@ function OnTrainPositionUpdate( playerid, routeid )
 	return 1;
 }
 
-function cancelPlayerTrainWork( playerid, vehicleid, ticks )
+function cancelPlayerTrainWork( playerid, ticks )
 {
 	if ( ticks < 1 || !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || ! p_hasTrainJob{ playerid } )
 	{
@@ -230,7 +218,7 @@ function cancelPlayerTrainWork( playerid, vehicleid, ticks )
 	else
 	{
 		ShowPlayerHelpDialog( playerid, 1000, "You have %d seconds to get back inside the train you were using.", ticks - 1 );
-		p_TrainCancelTimer[ playerid ] = SetTimerEx( "cancelPlayerTrainWork", 980, false, "ddd", playerid, vehicleid, ticks - 1 );
+		p_TrainCancelTimer[ playerid ] = SetTimerEx( "cancelPlayerTrainWork", 980, false, "dd", playerid, ticks - 1 );
 	}
 	return 1;
 }

@@ -147,7 +147,7 @@ CMD:resetwepall( playerid, params[ ] )
 
 		foreach(new pID : Player)
 		{
-		   	if ( !IsPlayerSpawned( pID ) || ! IsPlayerSettingToggled( pID, SETTING_EVENT_TP ) )
+		   	if ( !IsPlayerSpawned( pID ) || IsPlayerSettingToggled( pID, SETTING_EVENT_TP ) )
 		   		continue;
 
 		   	if ( IsPlayerAFK( playerid ) )
@@ -184,7 +184,7 @@ CMD:giveweaponall( playerid, params[ ] )
 
 	    foreach(new pID : Player)
 	    {
-		   	if ( !IsPlayerSpawned( pID ) || IsPlayerJailed( pID ) || ! IsPlayerSettingToggled( pID, SETTING_EVENT_TP ) )
+		   	if ( !IsPlayerSpawned( pID ) || IsPlayerJailed( pID ) || IsPlayerSettingToggled( pID, SETTING_EVENT_TP ) )
 		   		continue;
 
 		   	if ( IsPlayerAFK( playerid ) )
@@ -223,7 +223,7 @@ CMD:circleall( playerid, params[ ] )
 		GetPlayerPos( playerid, nX, nY, nZ );
 	    foreach(new i : Player)
 	    {
-	        if ( IsPlayerSpawned( i ) && i != playerid && !IsPlayerJailed( i ) && IsPlayerSettingToggled( i, SETTING_EVENT_TP ) )
+	        if ( IsPlayerSpawned( i ) && i != playerid && !IsPlayerJailed( i ) && ! IsPlayerSettingToggled( i, SETTING_EVENT_TP ) )
 	        {
 	        	if ( !allowcop && p_Class[ i ] == CLASS_POLICE )
 	        		continue;

@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -725,7 +725,7 @@ new
  		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
  		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
  		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3400, 9 }, // 9
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3650, 8 }, // 6 [1000] -makecopgreatagain
+ 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
  		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
  		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
  		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
@@ -2565,7 +2565,7 @@ public OnServerUpdateTimer( )
 				ClearPlayerRoadblocks( playerid );
 
 			// Toggle total coin bar
-			if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) )
+			if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) )
 				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", p_IrresistibleCoins[ playerid ] ) );
 
 			// Decrementing Weed Opacity Label
@@ -3247,13 +3247,8 @@ public ZoneTimer( )
 		UpdatePlayerTime( playerid );
 
 		// Remove Anti-Spawn Kill
-		if ( p_AntiSpawnKillEnabled{ playerid } && g_iTime > p_AntiSpawnKill[ playerid ] )
-		{
-			DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
-			SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } == true ? float( INVALID_PLAYER_ID ) : 100.0 );
-			Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
-			p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-			p_AntiSpawnKillEnabled{ playerid } = false;
+		if ( p_AntiSpawnKillEnabled{ playerid } && g_iTime > p_AntiSpawnKill[ playerid ] ) {
+			DisablePlayerSpawnProtection( playerid );
 		}
 
 		// Increment Variables Whilst Not AFK
@@ -3898,6 +3893,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_CasinoRewardsPoints[ playerid ] = 0.0;
 	p_OwnedBusinesses[ playerid ] = 0;
 	g_LastExportModel[ playerid ] = 0;
+	p_PassiveModeDisabled{ playerid } = false;
 	p_ExplosiveBullets[ playerid ] = 0;
 	p_GangSplitProfits[ playerid ] = 0;
 	p_IrresistibleCoins[ playerid ] = 0.0;
@@ -4146,14 +4142,13 @@ public OnPlayerSpawn( playerid )
 	}
 
 	/* ** Anti-Spawn Kill ** */
-	DisableRemoteVehicleCollisions( playerid, 1 );
+	DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
 	SetPlayerHealth( playerid, INVALID_PLAYER_ID );
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
-	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-    p_SpawnKillLabel[ playerid ] = Create3DTextLabel( "Spawn Protected!", COLOR_GOLD, 0.0, 0.0, 0.0, 15.0, 0 );
+	p_SpawnKillLabel[ playerid ] = Create3DTextLabel( "Spawn Protected!", COLOR_GOLD, 0.0, 0.0, 0.0, 15.0, 0 );
+	p_AntiSpawnKill[ playerid ] = g_iTime + 15;
     Attach3DTextLabelToPlayer( p_SpawnKillLabel[ playerid ], playerid, 0.0, 0.0, 0.3 );
     p_AntiSpawnKillEnabled{ playerid } = true;
-	p_AntiSpawnKill[ playerid ] = g_iTime + 15;
 	/* ** Anti-Spawn Kill ** */
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN )
@@ -4301,8 +4296,9 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 		if ( IsPlayerConnected( hitid ) && ( IsPlayerTazed( hitid ) || IsPlayerCuffed( hitid ) || IsPlayerKidnapped( hitid ) || IsPlayerTied( hitid ) || IsPlayerLoadingObjects( hitid ) || IsPlayerAdminOnDuty( hitid ) || p_AntiSpawnKillEnabled{ hitid } ) )
 			return 0;
 
-		if ( p_AntiSpawnKill[ playerid ] > g_iTime && p_AntiSpawnKillEnabled{ playerid } )
-		 	return ( p_AntiSpawnKill[ playerid ] = 0 ), SendServerMessage( playerid, "Your spawn protection is no longer active!" ), 0;
+		if ( p_AntiSpawnKill[ playerid ] > g_iTime && p_AntiSpawnKillEnabled{ playerid } ) {
+		 	return DisablePlayerSpawnProtection( playerid ), SendServerMessage( playerid, "Your spawn protection is no longer active!" ), 0;
+		}
 	}
 
 	else if ( hittype == BULLET_HIT_TYPE_VEHICLE )
@@ -4621,12 +4617,25 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	// Anti RDM and gang member damage
 	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
 	{
-		if ( IsPlayerInPlayerGang( issuerid, playerid ) )
+		if ( IsPlayerInPlayerGang( issuerid, playerid ) ) {
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
+		}
+
+		// Passive mode enabled for damaged id?
+		if ( IsPlayerPassiveModeEnabled( playerid ) ) {
+		 	return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~This player has passive mode enabled." ), 0;
+		}
+
+		// Passive mode enabled for player?
+		if ( IsPlayerPassiveModeEnabled( issuerid ) ) {
+			p_PassiveModeDisabled{ issuerid } = true;
+		 	return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~Passive mode disabled!" ), 0;
+		}
 
 		// Anti Random Deathmatch
-		if ( IsRandomDeathmatch( issuerid, playerid ) )
-			return ShowPlayerHelpDialog( issuerid, 2000, "You cannot ~r~~h~random deathmatch~w~~h~ in this location!" ), 0;
+		if ( IsRandomDeathmatch( issuerid, playerid ) ) {
+			return ShowPlayerHelpDialog( issuerid, 2000, "~r~~h~This player cannot be random deathmatched." ), 0;
+		}
 	}
 
 	// No passenger, no bullets
@@ -4640,8 +4649,9 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	}
 
 	// Wanted on shoot!
-	if ( p_WantedLevel[ issuerid ] <= 2 && p_Class[ issuerid ] != CLASS_POLICE && p_Class[ playerid ] == CLASS_POLICE && GetPVarInt( issuerid, "ShotCopWantedCD" ) < g_iTime )
+	if ( p_WantedLevel[ issuerid ] <= 2 && p_Class[ issuerid ] != CLASS_POLICE && p_Class[ playerid ] == CLASS_POLICE && GetPVarInt( issuerid, "ShotCopWantedCD" ) < g_iTime ) {
 		GivePlayerWantedLevel( issuerid, 6 ), SetPVarInt( issuerid, "ShotCopWantedCD", g_iTime + 120 );
+	}
 
 	// Headshots
 	if ( ( weaponid == WEAPON_SNIPER || weaponid == WEAPON_RIFLE ) && bodypart == 9 )
@@ -4842,6 +4852,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
 	p_WeedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_Tied{ playerid } = false;
+	p_PassiveModeDisabled{ playerid } = false;
 	p_TicketTimestamp[ playerid ] = 0;
 	p_Kidnapped{ playerid } = false;
     //p_Detained{ playerid } = false;
@@ -5323,7 +5334,7 @@ public OnPlayerText( playerid, text[ ] )
 	return 1;
 }
 
-function Untaze( playerid )
+function Untaze( playerid, taze_immunity_seconds )
 {
 	if ( !IsPlayerConnected( playerid ) || !p_Tazed{ playerid } ) // || p_Detained{ playerid } == true
 	    return 0;
@@ -5336,7 +5347,7 @@ function Untaze( playerid )
 
 	ClearAnimations( playerid );
 	p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
-	p_TazingImmunity[ playerid ] = g_iTime + 6;
+	p_TazingImmunity[ playerid ] = g_iTime + taze_immunity_seconds;
 	p_Tazed{ playerid } = false;
 	return 1;
 }
@@ -22348,6 +22359,9 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 		if ( IsPlayerBoxing( issuerid ) )
 			return false;
 
+		if ( IsPlayerPassiveModeEnabled( damagedid ) )
+			return true;
+
 		if ( ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) )
 			return false;
 
@@ -22612,13 +22626,13 @@ stock CreateBusinessActors( businessid )
 stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
 {
 	// Current Coins
-	if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
 		TextDrawShowForPlayer( playerid, g_CurrentCoinsTD );
 		PlayerTextDrawShow( playerid, p_CoinsTD[ playerid ] );
 	}
 
 	// Top donor
-	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
 		TextDrawShowForPlayer( playerid, g_TopDonorTD );
 	}
 }
@@ -22626,13 +22640,13 @@ stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
 stock HidePlayerTogglableTextdraws( playerid, bool: force = true )
 {
 	// Current Coins
-	if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
+	if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
 		TextDrawHideForPlayer( playerid, g_CurrentCoinsTD );
 		PlayerTextDrawHide( playerid, p_CoinsTD[ playerid ] );
 	}
 
 	// Top donor
-	if ( ! IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
+	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
 		TextDrawHideForPlayer( playerid, g_TopDonorTD );
 	}
 }
@@ -25446,7 +25460,7 @@ stock TazePlayer( victimid, playerid )
 			GameTextForPlayer( playerid, "~n~~y~~h~/cuff", 2000, 4 );
 			SendClientMessageFormatted( victimid, -1, ""COL_RED"[TAZED]{FFFFFF} You have been tazed by %s(%d) for 3 seconds!", ReturnPlayerName( playerid ), playerid );
 		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[TAZED]{FFFFFF} You have tazed %s(%d) for 3 seconds!", ReturnPlayerName( victimid ), victimid );
-	        SetTimerEx( "Untaze", 2000, false, "d", victimid ); // previous 3000
+	        SetTimerEx( "Untaze", 2000, false, "dd", victimid, 6 ); // previous 3000
 			TogglePlayerControllable( victimid, 0 );
 			ApplyAnimation( victimid, "CRACK", "crckdeth2", 5.0, 1, 1, 1, 0, 0 );
 			p_Tazed{ victimid } = true;
@@ -25493,7 +25507,7 @@ stock ArrestPlayer( victimid, playerid )
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", cash_format( totalCash ), ReturnPlayerName( victimid ), victimid );
 		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 		CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
-		Untaze( victimid );
+		Untaze( victimid, 6 );
 		GivePlayerIrresistiblePoints( victimid, -2 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
@@ -25583,7 +25597,7 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 	GetServerPoliceRatio( police_percentage );
 
 	// probability based off some factors
-	new probability = 35 + floatround( police_percentage );
+	new probability = 25 + floatround( police_percentage );
 
 	// attempt to uncuff
 	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
@@ -25611,7 +25625,7 @@ stock BreakPlayerCuffs( playerid, &attempts = 0 )
 		//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
 		//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;*/
-		Untaze( playerid );
+		Untaze( playerid, 10 );
 		SendServerMessage( playerid, "You have used %d bobby pins to successfully break your cuffs.", attempts );
 	    GivePlayerWantedLevel( playerid, 6 );
 	} else {
@@ -25640,3 +25654,17 @@ stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
 
+stock DisablePlayerSpawnProtection( playerid )
+{
+	DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
+	SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } ? float( INVALID_PLAYER_ID ) : 100.0 );
+	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
+	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	p_AntiSpawnKillEnabled{ playerid } = false;
+	return 1;
+}
+
+stock IsPlayerPassiveModeEnabled( playerid )
+{
+	return IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) && ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
+}

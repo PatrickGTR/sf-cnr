@@ -129,7 +129,15 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 			return 1; // ignore if unowned/erroneous
 		}
 
-        if ( ownerid != playerid )
+		if ( ownerid == playerid )
+		{
+			SendClientMessage(playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" Welcome back to your vehicle.");
+			Beep( playerid );
+			GetVehicleParamsEx( vehicleid, engine, lights, alarm, doors, bonnet, boot, objective );
+			SetVehicleParamsEx( vehicleid, VEHICLE_PARAMS_ON, lights, VEHICLE_PARAMS_OFF, doors, bonnet, boot, objective );
+			return 1;
+		}
+        else
 	    {
 			if ( g_vehicleData[ ownerid ] [ slotid ] [ E_LOCKED ] == true )
 			{
@@ -152,16 +160,8 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 				}
 				else SendClientMessage( playerid, -1, ""COL_PINK"[ADMIN]"COL_GREY" This is a locked vehicle." );
 			}
+			else SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" This vehicle is owned by %s.", ReturnPlayerName( ownerid ) );
 		}
-		else if ( ownerid == playerid )
-		{
-			SendClientMessage(playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" Welcome back to your vehicle.");
-			Beep( playerid );
-			GetVehicleParamsEx( vehicleid, engine, lights, alarm, doors, bonnet, boot, objective );
-			SetVehicleParamsEx( vehicleid, VEHICLE_PARAMS_ON, lights, VEHICLE_PARAMS_OFF, doors, bonnet, boot, objective );
-			return 1;
-		}
-		else SendClientMessageFormatted( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" This vehicle is owned by %s.", ReturnPlayerName( ownerid ) );
 	}
 	return 1;
 }
