@@ -5218,7 +5218,7 @@ public OnPlayerUnjailed( playerid, reasonid )
     PlainUnjailPlayer 		( playerid );
 	SetPlayerColorToTeam	( playerid );
     ClearPlayerWantedLevel	( playerid );
-    ResetPlayerPassiveMode 	( playerid );
+	SetPlayerPassiveMode 	( playerid );
 	return 1;
 }
 
@@ -17993,12 +17993,8 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 		{
 			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
 			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], szWanted );
-			if ( !p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-
-			// remove passive mode if the player is wanted
-			if ( p_PassiveModeExpireTimer[ playerid ] == -1 ) {
-				p_PassiveModeExpireTimer[ playerid ] = PassiveMode_Reset( playerid, 4 ); // it will just set it to anything but -1 for now
-			}
+			if ( ! p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
+			PassiveMode_Reset( playerid, 0 ); // remove passive mode if the player is wanted
 		}
 	}
 	else SetPlayerColorToTeam( playerid ), PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] ), Uncuff( playerid );
@@ -25709,7 +25705,7 @@ stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 
 function PassiveMode_Reset( playerid, time_left )
 {
-	if ( -- time_left <= 0 )
+	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
 	{
 		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
 		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
