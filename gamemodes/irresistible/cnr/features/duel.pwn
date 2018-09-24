@@ -21,7 +21,6 @@
 #define DIALOG_DUEL_ARMOUR			7367
 
 /* ** Variables ** */
-
 enum E_DUEL_DATA
 {
 	E_PLAYER,						E_WEAPON[ 2 ],						E_BET,
@@ -51,6 +50,8 @@ new
 		{ "Grove Street",			{ 2476.4580, -1668.631, 13.3249 }, { 2501.1560, -1667.655, 13.3559 }},
 		{ "Ocean Docks",			{ 2683.5440, -2485.137, 13.5425 }, { 2683.8470, -2433.726, 13.5553 }}
 	},
+
+
 	bool: p_playerDueling			[ MAX_PLAYERS char ],
 	p_duelInvitation           		[ MAX_PLAYERS ][ MAX_PLAYERS ],
 
@@ -58,11 +59,12 @@ new
 ;
 
 /* ** Hooks ** */
-hook OnGameModeInit()
+hook OnScriptInit( )
 {
-	CreateDynamicMapIcon(g_DuelCoordinates[0], g_DuelCoordinates[1], g_DuelCoordinates[2], 23, 0, -1, -1, -1, 750.0);
-	g_DuelCheckpoint = CreateDynamicCP(g_DuelCoordinates[0], g_DuelCoordinates[1], g_DuelCoordinates[2], 1.5, 0, 0, -1);
-	CreateDynamic3DTextLabel(""COL_GOLD"[DUEL PLAYER]", -1, g_DuelCoordinates[0], g_DuelCoordinates[1], g_DuelCoordinates[2], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 0, 0, -1);
+	CreateDynamicMapIcon( g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 23, 0, -1, -1, -1, 750.0 );
+	g_DuelCheckpoint = CreateDynamicCP( g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 1.5, 0, 0, -1 );
+	CreateDynamic3DTextLabel( ""COL_GOLD"[DUEL PLAYER]", -1, g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 0, 0, -1 );
+	
 	return 1;
 }
 
@@ -133,19 +135,17 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 		switch ( listitem )
 		{
-			case 0: ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_GREY"Note: You can enter partially their names.", "Select", "Back");
+			case 0: ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_GREY"Note: You can enter partially their names.", "Select", "Back");
 			case 1: ShowPlayerDialog( playerid, DIALOG_DUEL_HEALTH, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Health", ""COL_WHITE"Enter the amount of health you will begin with:\n\n"COL_GREY"Note: The default health is 100.0.", "Select", "Back");
 			case 2: ShowPlayerDialog( playerid, DIALOG_DUEL_ARMOUR, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Armour", ""COL_WHITE"Enter the amount of armour you will begin with:\n\n"COL_GREY"Note: The default armour is 100.0.", "Select", "Back");
 
 			case 3:
 			{
-				erase ( szBigString );
-
 				new
 					iWeapon = g_duelData [ playerid ] [ E_WEAPON ] [ 0 ];
 
 				for ( new i = 0; i < sizeof( g_WeaponList ); i ++) {
-					format( szBigString, sizeof(szBigString), "%s%s%s\n", szBigString, iWeapon == g_WeaponList [ i ] ? ( COL_GREY ) : ( COL_WHITE ), ReturnWeaponName( g_WeaponList[ i ] ) );
+					format( szBigString, sizeof( szBigString ), "%s%s%s\n", szBigString, iWeapon == g_WeaponList [ i ] ? ( COL_GREY ) : ( COL_WHITE ), ReturnWeaponName( g_WeaponList[ i ] ) );
 				}
 
 				ShowPlayerDialog( playerid, DIALOG_DUEL_WEAPON, DIALOG_STYLE_LIST, ""COL_WHITE"Duel Settings - Change Primary Weapon", szBigString, "Select", "Back");
@@ -153,13 +153,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 			case 4:
 			{
-				erase ( szBigString );
-
 				new
 					iWeapon = g_duelData [ playerid ] [ E_WEAPON ] [ 1 ];
 
 				for ( new i = 0; i < sizeof( g_WeaponList ); i ++ ) {
-					format( szBigString, sizeof(szBigString), "%s%s%s\n", szBigString, iWeapon == g_WeaponList [ i ] ? ( COL_GREY ) : ( COL_WHITE ), ReturnWeaponName( g_WeaponList [ i ]) );
+					format( szBigString, sizeof( szBigString ), "%s%s%s\n", szBigString, iWeapon == g_WeaponList [ i ] ? ( COL_GREY ) : ( COL_WHITE ), ReturnWeaponName( g_WeaponList [ i ]) );
 				}
 
 				ShowPlayerDialog( playerid, DIALOG_DUEL_WEAPON_TWO, DIALOG_STYLE_LIST, ""COL_WHITE"Duel Settings - Change Secondary Weapon", szBigString, "Select", "Back");
@@ -171,7 +169,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 					iLocationID = g_duelData [ playerid ][ E_LOCATION_ID ];
 
 				for ( new i = 0; i < sizeof( g_duelLocationData ); i ++ ) {
-					format( szBigString, sizeof(szBigString), "%s%s%s\n", szBigString, iLocationID == i ? ( COL_GREY ) : ( COL_WHITE ), g_duelLocationData[ i ][ E_NAME ]);
+					format( szBigString, sizeof( szBigString ), "%s%s%s\n", szBigString, iLocationID == i ? ( COL_GREY ) : ( COL_WHITE ), g_duelLocationData[ i ][ E_NAME ] );
 				}
 
 				ShowPlayerDialog(playerid, DIALOG_DUEL_LOCATION, DIALOG_STYLE_LIST, ""COL_WHITE"Duel Settings - Change Location", szBigString, "Select", "Back");
@@ -184,7 +182,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 				new
 					pID = g_duelData [ playerid ][ E_PLAYER ];
 
-				if ( !IsPlayerConnected( pID ) ) {
+				if ( !IsPlayerConnected( pID ) )
+				{
 					SendError( playerid, "You haven't selected anyone to duel!" );
 					return ShowPlayerDuelMenu( playerid );
 				}
@@ -208,34 +207,33 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		;
 
 		if ( sscanf( inputtext, "u", pID) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_GREY"Note: You can enter partially their names.", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_GREY"Note: You can enter partially their names.", "Select", "Back" );
 
 		if ( pID == playerid )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't invite yourself to duel!", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't invite yourself to duel!", "Select", "Back" );
 
 		if ( pID == INVALID_PLAYER_ID || !IsPlayerConnected( pID ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"Player is not connected!", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"Player is not connected!", "Select", "Back" );
 
 		if ( IsPlayerDueling( playerid ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You are already in a duel!", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You are already in a duel!", "Select", "Back" );
 
 		if ( IsPlayerDueling( pID ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"This player is already in a duel!", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"This player is already in a duel!", "Select", "Back" );
 
 		if ( GetPlayerWantedLevel( pID ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't duel this person right now, they are wanted", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't duel this person right now, they are wanted", "Select", "Back" );
 
 		if ( GetDistanceBetweenPlayers( playerid, pID ) > 25.0 )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"The player you wish to duel is not near you.", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"The player you wish to duel is not near you.", "Select", "Back" );
 
 		if ( IsPlayerJailed( pID ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't duel this person right now, they are currently in jail.", "Select", "Back" );
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_PLAYER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Select a Player", ""COL_WHITE"Please type the name of the player you wish to duel:\n\n"COL_RED"You can't duel this person right now, they are currently in jail.", "Select", "Back" );
 
 		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have selected {C0C0C0}%s {FFFFFF}as your opponent.", ReturnPlayerName( pID ) );
 
 		g_duelData[ playerid ][ E_PLAYER ] = pID;
-		ShowPlayerDuelMenu( playerid );
-		return 1;
+		return ShowPlayerDuelMenu( playerid ), 1;
 	}
 
 	else if ( dialogid == DIALOG_DUEL_LOCATION )
@@ -296,15 +294,15 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 			return ShowPlayerDuelMenu( playerid );
 
 		new
-			Float:fHealth;
+			Float: fHealth;
 
-		if (sscanf(inputtext, "f", fHealth))
-			return ShowPlayerDialog(playerid, DIALOG_DUEL_HEALTH, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Health", "{FFFFFF}Enter the amount of health you will begin with:\n\n{C0C0C0}Note: The default health is 100.0.", "Select", "Back");
+		if ( sscanf( inputtext, "f", fHealth ) )
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_HEALTH, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Health", ""COL_WHITE"Enter the amount of health you will begin with:\n\n"COL_GREY"Note: The default health is 100.0.", "Select", "Back" );
 
-		if (!(1.0 <= fHealth <= 100.0))
-			return ShowPlayerDialog(playerid, DIALOG_DUEL_HEALTH, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Health", "{FFFFFF}Enter the amount of health you will begin with:\n\n{FF0000}The amount you have entered is a invalid amount, 1 to 100 only!", "Select", "Back");
+		if ( !( 1.0 <= fHealth <= 100.0 ) )
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_HEALTH, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Health", ""COL_WHITE"Enter the amount of health you will begin with:\n\n"COL_RED"The amount you have entered is a invalid amount, 1 to 100 only!", "Select", "Back" );
 
-		SendClientMessageFormatted(playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have changed Health to {C0C0C0}%0.2f%%{FFFFFF}.", fHealth);
+		SendClientMessageFormatted(playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have changed Health to {C0C0C0}%0.2f%%"COL_WHITE".", fHealth);
 		g_duelData[ playerid ][ E_HEALTH ] = fHealth;
 		ShowPlayerDuelMenu( playerid );
 		return 1;
@@ -312,19 +310,19 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 	else if (dialogid == DIALOG_DUEL_ARMOUR)
 	{
-		if (!response)
+		if ( !response )
 			return ShowPlayerDuelMenu( playerid );
 
 		new
-			Float:fArmour;
+			Float: fArmour;
 
-		if (sscanf(inputtext, "f", fArmour))
-			return ShowPlayerDialog(playerid, DIALOG_DUEL_ARMOUR, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Armour", "{FFFFFF}Enter the amount of armour you will begin with:\n\n{C0C0C0}Note: The default armour is 100.0.", "Select", "Back");
+		if ( sscanf( inputtext, "f", fArmour ) )
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_ARMOUR, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Armour", ""COL_WHITE"Enter the amount of armour you will begin with:\n\n"COL_GREY"Note: The default armour is 100.0.", "Select", "Back" );
 
-		if (!(0.0 <= fArmour <= 100.0))
-			return ShowPlayerDialog(playerid, DIALOG_DUEL_ARMOUR, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Armour", "{FFFFFF}Enter the amount of armour you will begin with:\n\n{FF0000}The amount you have entered is a invalid amount, 0 to 100 only!", "Select", "Back");
+		if ( !( 0.0 <= fArmour <= 100.0 ) )
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_ARMOUR, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Armour", ""COL_WHITE"Enter the amount of armour you will begin with:\n\n"COL_RED"The amount you have entered is a invalid amount, 0 to 100 only!", "Select", "Back" );
 
-		SendClientMessageFormatted(playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have changed Armour to {C0C0C0}%0.2f%%{FFFFFF}.", fArmour);
+		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have changed Armour to {C0C0C0}%0.2f%%"COL_WHITE".", fArmour );
 		g_duelData[ playerid ][ E_ARMOUR ] = fArmour;
 		ShowPlayerDuelMenu( playerid );
 		return 1;
@@ -332,10 +330,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 
 	else if (dialogid == DIALOG_DUEL_WAGER)
 	{
-		if (IsPlayerDueling(playerid)) // prevent spawning money
-			return SendError(playerid, "You cannot use this at the moment.");
+		if ( IsPlayerDueling( playerid ) ) // prevent spawning money
+			return SendError( playerid, "You cannot use this at the moment." );
 
-		if (!response)
+		if ( !response )
 			return ShowPlayerDuelMenu( playerid );
 
 		new
@@ -343,13 +341,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[] )
 		;
 
 		if ( sscanf( inputtext, "d", iBet ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Set A Wager", "{FFFFFF}Please enter the wager for this duel:", "Select", "Back");
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_WAGER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Set A Wager", ""COL_WHITE"Please enter the wager for this duel:", "Select", "Back");
 
 		if ( ! ( 0 <= iBet < 10000000 ) )
-			return ShowPlayerDialog( playerid, DIALOG_DUEL_WAGER, DIALOG_STYLE_INPUT, "{FFFFFF}Duel Settings - Set A Wager", "{FFFFFF}Please enter the wager for this duel:\n\n{FF0000}Wagers must be between $0 and $10,000,000.", "Select", "Back");
+			return ShowPlayerDialog( playerid, DIALOG_DUEL_WAGER, DIALOG_STYLE_INPUT, ""COL_WHITE"Duel Settings - Set A Wager", ""COL_WHITE"Please enter the wager for this duel:\n\n"COL_RED"Wagers must be between $0 and $10,000,000.", "Select", "Back");
 
 		g_duelData[playerid][ E_BET ] = iBet;
-		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]{FFFFFF} You have changed the wager to %s.", cash_format(g_duelData[playerid][ E_BET ]));
+		SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have changed the wager to %s.", cash_format(g_duelData[playerid][ E_BET ]));
 		ShowPlayerDuelMenu( playerid );
 		return 1;
 	}
@@ -484,29 +482,30 @@ static stock ClearDuelInvites( playerid )
 	return count;
 }
 
-stock IsPlayerDueling(playerid) {
-	return p_playerDueling{playerid};
+stock IsPlayerDueling( playerid ) {
+	return p_playerDueling{ playerid };
 }
 
 stock ShowPlayerDuelMenu(playerid)
 {
-	if ( GetPlayerClass( playerid ) != CLASS_CIVILIAN )
+	if ( p_Class[ playerid ] != CLASS_CIVILIAN )
 		return SendError( playerid, "You can only use this feature whist being a civilian.");
 
-	if ( GetPlayerWantedLevel( playerid ))
+	if ( p_WantedLevel[ playerid ] > 0 )
 		return SendError( playerid, "You cannot duel whilst having a wanted level.");
 
 	format( szBigString, sizeof(szBigString),
-		"Player\t{C0C0C0}%s\nHealth\t{C0C0C0}%.2f%%\nArmour\t{C0C0C0}%.2f%%\nPrimary Weapon\t{C0C0C0}%s\nSecondary Weapon\t{C0C0C0}%s\nLocation\t{C0C0C0}%s\nWager\t{C0C0C0}%s\n"COL_GOLD"Send Invite\t"COL_GOLD">>>",
-		(!IsPlayerConnected(g_duelData[ playerid ][ E_PLAYER ]) ? (""COL_RED"N/A") : (ReturnPlayerName(g_duelData[ playerid ][ E_PLAYER ]))),
+		"Player\t"COL_GREY"%s\nHealth\t"COL_GREY"%.2f%%\nArmour\t"COL_GREY"%.2f%%\nPrimary Weapon\t"COL_GREY"%s\nSecondary Weapon\t"COL_GREY"%s\nLocation\t"COL_GREY"%s\nWager\t"COL_GREY"%s\n"COL_GOLD"Send Invite\t"COL_GOLD">>>",
+		(!IsPlayerConnected(g_duelData[ playerid ][ E_PLAYER ]) ? (""COL_RED"No-one") : (ReturnPlayerName( g_duelData[ playerid ][ E_PLAYER ] ) ) ),
 		g_duelData[ playerid ][ E_HEALTH ],
 		g_duelData[ playerid ][ E_ARMOUR ],
-		ReturnWeaponName(g_duelData[ playerid ][ E_WEAPON ][0]),
-		ReturnWeaponName(g_duelData[ playerid ][ E_WEAPON ][1]),
+		ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 0 ] ),
+		ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 1 ] ),
 		g_duelLocationData[ g_duelData[ playerid ][ E_LOCATION_ID ] ][ E_NAME ],
-		cash_format(g_duelData[playerid][ E_BET ])
+		cash_format( g_duelData[ playerid ][ E_BET ] )
 	);
-	ShowPlayerDialog(playerid, DIALOG_DUEL, DIALOG_STYLE_TABLIST, ""COL_WHITE"{FFFFFF}Duel Settings", szBigString, "Select", "Cancel");
+
+	ShowPlayerDialog(playerid, DIALOG_DUEL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Duel Settings", szBigString, "Select", "Cancel");
 	return 1;
 }
 
@@ -520,7 +519,7 @@ static stock forfeitPlayerDuel(playerid)
 	new
 		winnerid = g_duelData[ playerid ][ E_PLAYER ];
 
-	if (!IsPlayerConnected(winnerid) || !IsPlayerDueling(winnerid))
+	if ( ! IsPlayerConnected( winnerid ) || ! IsPlayerDueling( winnerid ))
 		return 0;
 
 	// begin wager info
@@ -535,14 +534,19 @@ static stock forfeitPlayerDuel(playerid)
 	g_duelData[ winnerid ][ E_ROUNDS ] = g_duelData[ playerid ][ E_ROUNDS ];
 
 	// check if theres a remaining round
-	if (g_duelData[ playerid ][ E_ROUNDS ] == 0) {
-		if (0 < amount_waged < 10000000) {
+	if (g_duelData[ playerid ][ E_ROUNDS ] == 0)
+	{
+		if ( 0 < amount_waged < 10000000 )
+		{
 			new
-				winning_prize = floatround(float(amount_waged) * 1.95); // We take 2.5% of the total pot
-			GivePlayerCash(winnerid, winning_prize);
-			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid, cash_format(winning_prize));
-		} else {
-			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d)!", ReturnPlayerName(winnerid), winnerid, ReturnPlayerName(playerid), playerid);
+				winning_prize = floatround( float( amount_waged ) * 1.95 ); // We take 2.5% of the total pot
+			
+			GivePlayerCash( winnerid, winning_prize );
+			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName( winnerid ), winnerid, ReturnPlayerName( playerid ), playerid, cash_format( winning_prize ) );
+		}
+		else
+		{
+			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d)!", ReturnPlayerName( winnerid ), winnerid, ReturnPlayerName( playerid ), playerid );
 		}
 	}
 	return 1;
