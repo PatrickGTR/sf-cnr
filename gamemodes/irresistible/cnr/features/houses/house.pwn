@@ -386,6 +386,7 @@ CMD:bruteforce( playerid, params[ ] )
 	return 1;
 }
 
+CMD:house( playerid, params[ ] ) return cmd_h( playerid, params );
 CMD:h( playerid, params[ ] )
 {
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )

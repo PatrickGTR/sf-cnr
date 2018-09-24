@@ -19,6 +19,10 @@
 #define ShowPlayerHomeListing(%0,%1) \
 	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `HOUSE_LISTINGS` WHERE `ID` = %d", %1 ), "HouseListing_OnShowHome", "dd", %0, %1 )
 
+/* ** Constants ** */
+static const
+	HOUSE_LISTING_FEE 				= 50000;
+
 /* ** Variables ** */
 static stock
 	p_CurrentListings 				[ MAX_PLAYERS ] [ 20 ];
@@ -43,8 +47,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( ! response )
 			return ShowPlayerHomeListings( playerid );
 
-		new
-			listingid = GetPVarInt( playerid, "house_listing_viewid" );
+		new houseid = GetPVarInt( playerid, "house_listing_houseid" );
+		new listingid = GetPVarInt( playerid, "house_listing_viewid" );
 
 		switch ( listitem )
 		{
@@ -53,7 +57,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			{
 				if ( IsPlayerInAnyVehicle( playerid ) )
 				{
-					new houseid = GetPVarInt( playerid, "house_listing_houseid" );
 					GPS_SetPlayerWaypoint( playerid, g_houseData[ houseid ] [ E_HOUSE_NAME ], g_houseData[ houseid ] [ E_EX ], g_houseData[ houseid ] [ E_EY ], g_houseData[ houseid ] [ E_EZ ] );
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s. Follow the arrow to reach your destination.", g_houseData[ houseid ] [ E_HOUSE_NAME ] );
 				}
@@ -70,29 +73,41 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Commands ** */
-CMD:homelistings( playerid, params[ ] )
+hook cmd_h( playerid, params[ ] )
 {
-	ShowPlayerHomeListings( playerid );
-	return 1;
-}
-
-CMD:listhome( playerid, params[ ] )
-{
-	new Float: coins;
-
-	if ( sscanf( params, "df", coins ) )
-		return 0;
-
 	new
 		houseid = p_InHouse[ playerid ];
 
-	if ( ! Iter_Contains( houses, houseid ) )
-		return SendError( playerid, "This home does not exist" );
+	if ( strmatch( params, "listings" ) ) {
+		return ShowPlayerHomeListings( playerid ), Y_HOOKS_BREAK_RETURN_1;
+	}
+	if ( strmatch( params, "list cancel" ) )
+	{
+		if ( ! Iter_Contains( houses, houseid ) ) return SendError( playerid, "You are not inside of any home." );
+		else if ( ! IsPlayerHomeOwner( playerid, houseid ) ) return SendError( playerid, "You are not the owner of this home." );
+		{
+			mysql_tquery( dbHandle, sprintf( "DELETE FROM `HOUSE_LISTINGS` WHERE `HOUSE_ID` = %d AND `SALE_DATE` IS NULL", houseid ), "HouseListing_OnDeleteListing", "dd", playerid, houseid );
+		}
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	else if ( !strcmp( params, "list", false, 4 ) )
+	{
+		new
+			Float: coins;
 
-	if ( ! IsPlayerHomeOwner( playerid, houseid ) )
-		return SendError( playerid, "You are not the owner of this home." );
-
-	mysql_single_query( sprintf( "INSERT INTO HOUSE_LISTINGS (HOUSE_ID, USER_ID, ASK) VALUES (%d, %d, %f)", houseid, GetPlayerAccountID( playerid ), coins ) );
+		if ( sscanf( params[ 5 ], "f", coins ) ) return SendUsage( playerid, "/h list [ASK_PRICE (IC)]");
+		else if ( ! Iter_Contains( houses, houseid ) ) return SendError( playerid, "You are not inside of any home." );
+		else if ( g_houseData[ houseid ] [ E_COST ] > 2500 ) return SendError( playerid, "This home is not a V.I.P home." );
+		else if ( ! IsPlayerHomeOwner( playerid, houseid ) ) return SendError( playerid, "You are not the owner of this home." );
+		else if ( coins < 25.0 ) return SendError( playerid, "Please specify an ask price greater than 25.00 IC." );
+		else if ( coins > 25000.0 ) return SendError( playerid, "Please specify an ask price less than 25,000 IC." );
+		else if ( GetPlayerCash( playerid ) < HOUSE_LISTING_FEE && GetPlayerVIPLevel( playerid ) != VIP_GOLD ) return SendError( playerid, "You need at least %s to create a house listing.", cash_format( HOUSE_LISTING_FEE ) );
+		else
+		{
+			mysql_tquery( dbHandle, sprintf( "SELECT * FROM `HOUSE_LISTINGS` WHERE `HOUSE_ID` = %d AND `SALE_DATE` IS NULL", houseid ), "HouseListing_OnCreateListing", "ddf", playerid, houseid, coins );
+		}
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
 	return 1;
 }
 
@@ -130,7 +145,7 @@ thread HouseListing_OnShowHomes( playerid )
 
 				new Float: coins = cache_get_field_content_float( row, "ASK" );
 
-				format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t%s, %s\t"COL_GREEN"%0.2f IC\n", szLargeString, house_name, owner, city, location, coins );
+				format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t%s, %s\t"COL_GREEN"%s IC\n", szLargeString, house_name, owner, city, location, number_format( coins, .decimals = 2 ) );
 			}
 			else
 			{
@@ -161,7 +176,7 @@ thread HouseListing_OnShowHome( playerid, house_listing_id )
 		return ShowPlayerDialog(
 			playerid, DIALOG_HOUSE_LIST_VIEW, DIALOG_STYLE_TABLIST,
 			"{FFFFFF}House Real Estate",
-			sprintf( "Purchase Home\t"COL_GREEN"%0.2f IC\nSet GPS Waypoint\t"COL_GREY">>>", coins ),
+			sprintf( "Purchase Home\t"COL_GREEN"%s IC\nSet GPS Waypoint\t"COL_GREY">>>", number_format( coins, .decimals = 2 ) ),
 			"Select", "Back"
 		);
 	}
@@ -184,7 +199,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 		// does the dude even have the coins
 		if ( GetPlayerIrresistibleCoins( playerid ) < ask_price ) {
 			ShowPlayerHomeListing( playerid, house_listing_id );
-			return SendError( playerid, "You do not have enough Irresistible coins for this home (%0.2f IC).", ask_price );
+			return SendError( playerid, "You do not have enough Irresistible coins for this home (%s IC).", number_format( ask_price, .decimals = 2 ) );
 		}
 
 		// check if sale already completed
@@ -228,6 +243,43 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 	else
 	{
 		return SendError( playerid, "An error has occurred, please try again." );
+	}
+}
+
+thread HouseListing_OnCreateListing( playerid, houseid, Float: ask_price )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( ! rows )
+	{
+		// debit user account
+		if ( GetPlayerVIPLevel( playerid ) != VIP_GOLD ) {
+			GivePlayerCash( playerid, -HOUSE_LISTING_FEE );
+		}
+
+		// insert into database and notify
+		mysql_single_query( sprintf( "INSERT INTO `HOUSE_LISTINGS` (`HOUSE_ID`, `USER_ID`, `ASK`) VALUES (%d, %d, %f)", houseid, GetPlayerAccountID( playerid ), ask_price ) );
+		return SendServerMessage( playerid, "You have listed your home. You can retract your listing using "COL_GREY"/h list cancel"COL_WHITE"." );
+	}
+	else
+	{
+		return SendError( playerid, "This home is already listed. You can retract your listing using "COL_GREY"/h list cancel"COL_WHITE"." );
+	}
+}
+
+thread HouseListing_OnDeleteListing( playerid, houseid )
+{
+	new
+		deleted_rows = cache_affected_rows( );
+
+	if ( deleted_rows )
+	{
+		return SendServerMessage( playerid, "You have delisted your home. You can create a new listing using "COL_GREY"/h list"COL_WHITE"." );
+	}
+	else
+	{
+		return SendError( playerid, "This home is not listed on the premium realestate market." );
 	}
 }
 
