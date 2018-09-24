@@ -534,8 +534,7 @@ CMD:h( playerid, params[ ] )
 			p_OwnedHouses[ playerid ] ++;
 
 		    // destroyAllFurniture( houseid );
-		    mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", p_AccountID[ playerid ], houseid ) );
-			SetHouseOwner( houseid, ReturnPlayerName( playerid ) );
+			SetHouseOwner( houseid, ReturnPlayerName( playerid ), .buyerid = playerid );
 
 			GivePlayerCash( playerid, -sellingprice );
 			GivePlayerCash( sellerid, sellingprice );
@@ -758,7 +757,7 @@ stock SetHouseForAuction( ID )
 	return 1;
 }
 
-stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ] )
+stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ], buyerid = INVALID_PLAYER_ID )
 {
 	if ( ! Iter_Contains( houses, houseid ) || isnull( szOwner ) )
 		return 0;
@@ -770,6 +769,11 @@ stock SetHouseOwner( houseid, szOwner[ MAX_PLAYER_NAME ] )
 
 	format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='%s' WHERE ID=%d", mysql_escape( szOwner ), houseid );
 	mysql_single_query( query );
+
+	// transfer furniture to account
+	if ( buyerid != INVALID_PLAYER_ID ) {
+		mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", p_AccountID[ buyerid ], houseid ) );
+	}
 
 	DestroyDynamicMapIcon( g_houseData[ houseid ] [ E_MAP_ICON ] );
 	format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", houseid, g_houseData[ houseid ] [ E_OWNER ], cash_format( g_houseData[ houseid ] [ E_COST ] ) );
