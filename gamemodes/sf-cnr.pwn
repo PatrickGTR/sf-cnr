@@ -5218,6 +5218,7 @@ public OnPlayerUnjailed( playerid, reasonid )
     PlainUnjailPlayer 		( playerid );
 	SetPlayerColorToTeam	( playerid );
     ClearPlayerWantedLevel	( playerid );
+    ResetPlayerPassiveMode 	( playerid );
 	return 1;
 }
 
@@ -17987,11 +17988,17 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 	if ( p_WantedLevel[ playerid ] )
 	{
 		SetPlayerColor( playerid, COLOR_WANTED2 );
+
 		if ( IsPlayerSpawned( playerid ) )
 		{
 			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
 			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], szWanted );
 			if ( !p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
+
+			// remove passive mode if the player is wanted
+			if ( p_PassiveModeExpireTimer[ playerid ] == -1 ) {
+				p_PassiveModeExpireTimer[ playerid ] = PassiveMode_Reset( playerid, 4 ); // it will just set it to anything but -1 for now
+			}
 		}
 	}
 	else SetPlayerColorToTeam( playerid ), PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] ), Uncuff( playerid );
