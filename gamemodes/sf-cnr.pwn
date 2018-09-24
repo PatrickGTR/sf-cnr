@@ -25683,7 +25683,7 @@ stock SetPlayerPassiveMode( playerid )
 	ResetPlayerPassiveMode( playerid );
 
 	// place label
-	if ( p_Class[ playerid ] != CLASS_POLICE ) {
+	if ( ! IsPlayerInPaintBall( playerid ) && GetPlayerClass( playerid ) != CLASS_POLICE ) {
 		p_PassiveModeLabel[ playerid ] = CreateDynamic3DTextLabel( "Passive Mode", COLOR_GREEN, 0.0, 0.0, -0.6, 15.0, .attachedplayer = playerid );
 	}
 	return 1;
