@@ -1,4 +1,4 @@
-/*
+	/*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
  * Module: cnr/commands/admin/admin_five.pwn
@@ -746,7 +746,7 @@ CMD:forceac( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
     else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-    else if ( pID == playerid ) return SendError( playerid, "You cant kick yourself." );
+    else if ( pID == playerid ) return SendError( playerid, "You cant use this command on yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
     //else if ( GetPlayerScore( pID ) < 100 ) return SendError( playerid, "This player's score is under 100, please spectate instead." );
     else
