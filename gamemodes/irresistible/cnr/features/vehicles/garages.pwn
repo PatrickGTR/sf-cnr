@@ -53,6 +53,18 @@ new
 ;
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	// format garage interior list
+	for( new i = 0; i < sizeof( g_garageInteriorData ); i++ ) {
+		format( szg_garageInteriors, sizeof( szg_garageInteriors ), "%s"COL_GREY"%d Vehicle Slots"COL_WHITE"\t%s\n", szg_garageInteriors, g_garageInteriorData[ i ] [ E_VEHICLE_CAPACITY ], g_garageInteriorData[ i ] [ E_NAME ] );
+	}
+
+	// load all garages
+	mysql_function_query( dbHandle, "SELECT * FROM `GARAGES`", true, "OnGaragesLoad", "" );
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_GARAGE_INTERIORS )

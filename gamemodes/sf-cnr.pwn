@@ -1270,9 +1270,6 @@ public OnGameModeInit()
 	initializeActors( );
 
 	/* ** Loading default string values - Makes it efficient. ** */
-	for( new i = 0; i < sizeof( g_garageInteriorData ); i++ )
-		format( szg_garageInteriors, sizeof( szg_garageInteriors ), "%s"COL_GREY"%d Vehicle Slots"COL_WHITE"\t%s\n", szg_garageInteriors, g_garageInteriorData[ i ] [ E_VEHICLE_CAPACITY ], g_garageInteriorData[ i ] [ E_NAME ] );
-
 	for( new i = 0; i < sizeof( g_informationPickupsData ); i++ )
 	{
 		g_informationPickupsData[ i ] [ E_PICKUP_ID ] = CreateDynamicPickup( 1239, 2, g_informationPickupsData[ i ] [ E_X ], g_informationPickupsData[ i ] [ E_Y ], g_informationPickupsData[ i ] [ E_Z ] );
@@ -6072,7 +6069,7 @@ CMD:business( playerid, params[ ] )
 
 	new
 		iBusiness = p_InBusiness[ playerid ];
-	
+
 	if ( strmatch( params, "production" ) )
 	{
 		new
