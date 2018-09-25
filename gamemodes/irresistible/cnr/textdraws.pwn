@@ -25,6 +25,7 @@ new
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_ProgressBoxTD        	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
+	Text:  g_PassiveModeTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_VehiclePreviewBoxTD 	= Text: INVALID_TEXT_DRAW,
 	Text:  g_VehiclePreviewTxtTD	= Text: INVALID_TEXT_DRAW,
 	Text:  p_VehiclePreviewCloseTD	= Text: INVALID_TEXT_DRAW,
@@ -422,6 +423,14 @@ hook OnScriptInit( )
 	TextDrawColor(g_AdminOnDutyTD, -65281);
 	TextDrawSetOutline(g_AdminOnDutyTD, 1);
 	TextDrawSetProportional(g_AdminOnDutyTD, 1);
+
+	g_PassiveModeTD = TextDrawCreate(555.000000, 66.500000, "PASSIVE MODE" );
+	TextDrawBackgroundColor(g_PassiveModeTD, 255);
+	TextDrawFont(g_PassiveModeTD, 1);
+	TextDrawLetterSize(g_PassiveModeTD, 0.180000, 0.899999);
+	TextDrawColor(g_PassiveModeTD, -65281);
+	TextDrawSetOutline(g_PassiveModeTD, 1);
+	TextDrawSetProportional(g_PassiveModeTD, 1);
 
 	/* ** Player TextDraws ** */
 	for(new playerid; playerid != MAX_PLAYERS; playerid ++)

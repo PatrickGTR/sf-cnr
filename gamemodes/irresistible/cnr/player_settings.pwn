@@ -160,6 +160,28 @@ CMD:passive( playerid, params[ ] )
 	return 1;
 }
 
+CMD:passivelist( playerid, params[ ])
+{
+	new 
+		count = 0;
+	
+	szBigString[ 0 ] = '\0';
+	
+	foreach ( new i : Player )
+	{
+		if ( IsPlayerPassive( i ) )
+		{
+			format( szBigString, sizeof( szBigString ), "%s%s(%d)\n", szBigString, ReturnPlayerName( i ), i );
+			count ++;
+		}
+	}
+
+	if ( count == 0 )
+		return SendError( playerid, "There is currently no players in passive mode." );
+	else 
+		return ShowPlayerDialog(playerid, DIALOG_NULL, DIALOG_STYLE_LIST, ""COL_WHITE"Passive List", szBigString, "Close", "" ), 1;
+}
+
 /* ** Functions ** */
 stock IsPlayerSettingToggled( playerid, settingid ) {
 	return p_PlayerSettings[ playerid ] { settingid };

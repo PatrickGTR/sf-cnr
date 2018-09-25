@@ -9389,7 +9389,7 @@ CMD:pm( playerid, params[ ] )
 		pID, msg[100]
 	;
 
-	if ( sscanf( params, "us[100]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
+	if ( sscanf( params, "us[128]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot pm yourself." );
     else if ( p_BlockedPM[ pID ] [ playerid ] == true ) return SendError( playerid, "This person has blocked pm's coming from you." );
@@ -25703,6 +25703,7 @@ stock SetPlayerPassiveMode( playerid )
 	// place label
 	if ( ! IsPlayerInPaintBall( playerid ) && GetPlayerClass( playerid ) != CLASS_POLICE ) {
 		p_PassiveModeLabel[ playerid ] = CreateDynamic3DTextLabel( "Passive Mode", COLOR_GREEN, 0.0, 0.0, -0.6, 15.0, .attachedplayer = playerid );
+		TextDrawShowForPlayer( playerid, g_PassiveModeTD );
 	}
 	return 1;
 }
@@ -25719,12 +25720,15 @@ stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 	p_PassiveModeLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_PassiveModeExpireTimer[ playerid ] = -1;
 	p_PassiveModeDisabled{ playerid } = passive_disabled;
+	TextDrawHideForPlayer( playerid, g_PassiveModeTD );
 }
 
 function PassiveMode_Reset( playerid, time_left )
 {
 	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
 	{
+		TextDrawHideForPlayer( playerid, g_PassiveModeTD );
+
 		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
 		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
 	}
