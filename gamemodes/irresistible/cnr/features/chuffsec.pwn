@@ -279,10 +279,14 @@ stock allSecurityOffsetsShot( ) {
 	return 1;
 }
 
-
 stock IsSecurityDriverAFK( ) { // Damn thing bugged with range of point
 	new
 		Float: Z;
 
 	return ( GetPlayerPos( g_secureTruckDriver, Z, Z, Z ) && Z > 1000.0 );
+}
+
+stock GetSecurityDriverPlayer( )
+{
+	return IsPlayerConnected( g_secureTruckDriver ) && IsPlayerNPC( g_secureTruckDriver ) ? g_secureTruckDriver : INVALID_PLAYER_ID;
 }

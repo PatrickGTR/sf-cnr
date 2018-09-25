@@ -528,7 +528,15 @@ CMD:reconnectchuff( playerid, params[ ] )
  	if ( p_AdminLevel[ playerid ] < 5 )
  		return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
+ 	new
+ 		chuffsecid = GetSecurityDriverPlayer( );
+
+ 	if ( chuffsecid != INVALID_PLAYER_ID ) {
+ 		Kick( chuffsecid );
+ 	} else {
+		ConnectNPC( SECURE_TRUCK_DRIVER_NAME, "secureguard" );
+ 	}
+
 	AddAdminLogLineFormatted( "%s(%d) has attempted to reconnect %s", ReturnPlayerName( playerid ), playerid, SECURE_TRUCK_DRIVER_NAME );
 	SendServerMessage( playerid, "You are now attempting to reconnect %s.", SECURE_TRUCK_DRIVER_NAME );
 	return 1;
