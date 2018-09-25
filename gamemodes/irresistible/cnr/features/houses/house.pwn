@@ -320,7 +320,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			new houseid = p_InHouse[ playerid ];
 			format( g_houseData[ houseid ] [ E_HOUSE_NAME ], 30, "%s", inputtext);
-			mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE `HOUSES` SET `NAME`='%s' WHERE `ID`=%d", g_houseData[ houseid ] [ E_HOUSE_NAME ], p_InHouse[ playerid ] );
+			mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE `HOUSES` SET `NAME`='%e' WHERE `ID`=%d", g_houseData[ houseid ] [ E_HOUSE_NAME ], p_InHouse[ playerid ] );
 			mysql_single_query( szNormalString );
 			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" %s(%d)\n"COL_GOLD"Owner:"COL_WHITE" %s\n"COL_GOLD"Price:"COL_WHITE" %s", g_houseData[ houseid ] [ E_HOUSE_NAME ], houseid, g_houseData[ houseid ] [ E_OWNER ], cash_format( g_houseData[ houseid ] [ E_COST ] ) );
  			UpdateDynamic3DTextLabelText( g_houseData[ houseid ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
