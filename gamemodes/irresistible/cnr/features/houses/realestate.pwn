@@ -133,7 +133,7 @@ thread HouseListing_OnShowHomes( playerid )
 			owner[ 24 ];
 
 		// set headers
-		szLargeString = ""COL_GREY"House\t"COL_GREY"Owner\t"COL_GREY"Location\t"COL_GREY"Ask Price (IC)\n";
+		szHugeString = ""COL_GREY"House\t"COL_GREY"Owner\t"COL_GREY"Location\t"COL_GREY"Ask Price (IC)\n";
 
 		for ( new row = 0; row < sizeof ( p_CurrentListings[ ] ); row ++ )
 		{
@@ -152,7 +152,7 @@ thread HouseListing_OnShowHomes( playerid )
 
 				new Float: coins = cache_get_field_content_float( row, "ASK" );
 
-				format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t%s, %s\t"COL_GREEN"%s IC\n", szLargeString, house_name, owner, location, city, number_format( coins, .decimals = 2 ) );
+				format( szHugeString, sizeof( szHugeString ), "%s%s\t%s\t%s, %s\t"COL_GREEN"%s IC\n", szHugeString, house_name, owner, location, city, number_format( coins, .decimals = 2 ) );
 			}
 			else
 			{
@@ -160,8 +160,8 @@ thread HouseListing_OnShowHomes( playerid )
 			}
 		}
 
-		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s (or free if you're GOLD V.I.P).", cash_format( HOUSE_LISTING_FEE ) );
-		return ShowPlayerDialog( playerid, DIALOG_HOUSE_LISTINGS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Premium Home Estate", szLargeString, "Select", "Back" );
+		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_GOLD ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
+		return ShowPlayerDialog( playerid, DIALOG_HOUSE_LISTINGS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Premium Home Estate", szHugeString, "Select", "Back" );
 	}
 	else
 	{
@@ -211,6 +211,12 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 			return SendError( playerid, "You do not have enough Irresistible Coins for this home (%s IC).", number_format( ask_price, .decimals = 2 ) );
 		}
 
+		// check if player is over the limit
+		if ( p_OwnedHouses[ playerid ] >= GetPlayerHouseSlots( playerid ) ) {
+			ShowPlayerHomeListing( playerid, house_listing_id );
+			return SendError( playerid, "You cannot purchase any more houses, you've reached the limit." );
+		}
+
 		// check if sale already completed
 		new
 			sale_date_ts = cache_get_field_content_int( 0, "SALE_DATE_TS" );
@@ -242,7 +248,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 			GivePlayerIrresistibleCoins( sellerid, ask_price );
 			SendServerMessage( sellerid, "You have successfully sold your house for "COL_GOLD"%s IC"COL_WHITE" to %s(%d)!", number_format( ask_price, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
 		} else {
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `COINS` = `COINS` + %0.2f WHERE `ID` = %d", ask_price, owner_account_id ) );
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `COINS` = `COINS` + %f WHERE `ID` = %d", ask_price, owner_account_id ) );
 		}
 
 		new
@@ -255,6 +261,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 		mysql_single_query( sprintf( "UPDATE `HOUSE_LISTINGS` SET `SALE_DATE` = CURRENT_TIMESTAMP WHERE `ID` = %d", house_listing_id ) );
 		SetHouseOwner( houseid, GetPlayerAccountID( playerid ), ReturnPlayerName( playerid ) );
 		GivePlayerIrresistibleCoins( playerid, -ask_price );
+		p_OwnedHouses[ playerid ] ++;
 		return 1;
 	}
 	else
