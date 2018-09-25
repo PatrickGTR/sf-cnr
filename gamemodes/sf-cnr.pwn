@@ -4832,8 +4832,6 @@ public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 public OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	printf( "[OnPlayerDeathEx] %d, %d, %d, %f, %d", playerid, killerid, reason, damage, bodypart );
-	
 	if ( !p_PlayerLogged{ playerid } ) {
 	    return SendServerMessage( playerid, "Possible Fake-kill detected - 0x0A" ), KickPlayerTimed( playerid );
 	}
@@ -5075,8 +5073,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
     ClearPlayerWantedLevel( playerid );
-
-    printf( "[OnPlayerDeathEx] %d, %d, %d, %f, %d", playerid, killerid, reason, damage, bodypart );
 	return 1;
 }
 
@@ -25729,8 +25725,6 @@ function PassiveMode_Reset( playerid, time_left )
 {
 	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
 	{
-		TextDrawHideForPlayer( playerid, g_PassiveModeTD );
-
 		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
 		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
 	}
