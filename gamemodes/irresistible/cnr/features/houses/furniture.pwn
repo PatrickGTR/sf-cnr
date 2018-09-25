@@ -490,7 +490,10 @@ hook OnPlayerSelectDynObject( playerid, objectid, modelid, Float:x, Float:y, Flo
 
 hook OnHouseOwnerChange( houseid, owner )
 {
-	mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", owner, houseid ) );
+	if ( owner != 0 ) // transfer furniture only to valid owner
+	{
+		mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", owner, houseid ) );
+	}
 	return 1;
 }
 

@@ -14,19 +14,19 @@ enum SAZONE_MAIN {
 };
 
 enum MainCity {
-	City_Name[MAX_ZONE_NAME], Float:City_Area[6]
+	City_Short[3], City_Name[MAX_ZONE_NAME], Float:City_Area[6]
 };
 
 static const gSACitys[9][MainCity] = {
-    {"Los Santos",    {44.60,-2892.90,-242.90,2997.00,-768.00,900.00} },
-    {"Las Venturas",  {869.40,596.30,-242.90,2997.00,2993.80,900.00} },
-    {"Bone County",   {-480.50,596.30,-242.90,869.40,2993.80,900.00} },
-    {"Tierra Robada", {-2997.40,1659.60,-242.90,-480.50,2993.80,900.00} },
-    {"Tierra Robada", {-1213.90,596.30,-242.90,-480.50,1659.60,900.00} },
-    {"San Fierro",    {-2997.40,-1115.50,-242.90,-1213.90,1659.60,900.00} },
-    {"Red County",    {-1213.90,-768.00,-242.90,2997.00,596.30,900.00} },
-    {"Flint County",  {-1213.90,-2892.90,-242.90,44.60,-768.00,900.00} },
-    {"Whetstone",     {-2997.40,-2892.90,-242.90,-1213.90,-1115.50,900.00}}
+    {"LS", "Los Santos",    {44.60,-2892.90,-242.90,2997.00,-768.00,900.00} },
+    {"LV", "Las Venturas",  {869.40,596.30,-242.90,2997.00,2993.80,900.00} },
+    {"BC", "Bone County",   {-480.50,596.30,-242.90,869.40,2993.80,900.00} },
+    {"TR", "Tierra Robada", {-2997.40,1659.60,-242.90,-480.50,2993.80,900.00} },
+    {"TR", "Tierra Robada", {-1213.90,596.30,-242.90,-480.50,1659.60,900.00} },
+    {"SF", "San Fierro",    {-2997.40,-1115.50,-242.90,-1213.90,1659.60,900.00} },
+    {"RC", "Red County",    {-1213.90,-768.00,-242.90,2997.00,596.30,900.00} },
+    {"FC", "Flint County",  {-1213.90,-2892.90,-242.90,44.60,-768.00,900.00} },
+    {"WS", "Whetstone",     {-2997.40,-2892.90,-242.90,-1213.90,-1115.50,900.00}}
 };
 
 static const gSAZones[][SAZONE_MAIN] = {
@@ -421,7 +421,19 @@ stock Get2DCity(zone[], Float:x, Float:y, Float:z = 0.0)
     return format(zone, MAX_ZONE_NAME, "San Andreas");
 }
 
-stock GetZoneFromCoordinates( zone[ ], Float: x, Float: y, Float: z = 0.0 )
+stock Get2DCityShort(zone[], Float:x, Float:y)
+{
+    for( new i = 0, s = sizeof(gSACitys); i < s; i++ )
+	{
+    	if(x >= gSACitys[i][City_Area][0] && x <= gSACitys[i][City_Area][3] && y >= gSACitys[i][City_Area][1] && y <= gSACitys[i][City_Area][4])
+		{
+    		return format(zone, MAX_ZONE_NAME, gSACitys[i][City_Short]);
+		}
+    }
+    return format(zone, MAX_ZONE_NAME, "SA");
+}
+
+stock GetZoneFromCoordinates( zone[ ], Float: x, Float: y, Float: z = 0.0, const placeholder[ ] = "a place" )
 {
     #pragma unused z
 
@@ -433,7 +445,7 @@ stock GetZoneFromCoordinates( zone[ ], Float: x, Float: y, Float: z = 0.0 )
 			break;
 
 	if( i >= sizeof( gSAZones ) )
-		return format( zone, MAX_ZONE_NAME, "a place" );
+		return format( zone, MAX_ZONE_NAME, placeholder );
 
 	return strmid( zone, gSAZones[ i ] [ SAZONE_NAME ], false, strlen( gSAZones[ i ] [ SAZONE_NAME ] ), MAX_ZONE_NAME );
 }

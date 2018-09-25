@@ -398,9 +398,8 @@ CMD:h( playerid, params[ ] )
 	}
 
 	new
-	    ID = p_InHouse[ playerid ],
-	    query[ 140 ]
-	;
+	    ID = p_InHouse[ playerid ];
+
 	if ( strmatch( params, "spawn" ) )
 	{
 		SendServerMessage( playerid, "We have changed the command to simply "COL_GREY"/spawn"COL_WHITE"." );
@@ -463,30 +462,10 @@ CMD:h( playerid, params[ ] )
 			format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ ID ][ E_OWNER ], ID );
 		    AddFileLogLine( "log_houses.txt", szBigString );
 			p_OwnedHouses[ playerid ] --;
-			format( g_houseData[ ID ] [ E_PASSWORD ], 4, "N/A" );
-			format( g_houseData[ ID ] [ E_OWNER ], 7, "No-one" );
-			format( g_houseData[ ID ] [ E_HOUSE_NAME ], 5, "Home" );
-			for( new i; i < MAX_HOUSE_WEAPONS; i++ ) { g_HouseWeapons[ ID ] [ i ] = 0, g_HouseWeaponAmmo[ ID ] [ i ] = -1; }
-			SaveHouseWeaponStorage( ID );
+			SetHouseForAuction( ID );
 			GivePlayerCash( playerid, ( g_houseData[ ID ] [ E_COST ] / 2 ) );
-			destroyAllFurniture( ID );
-			FillHomeWithFurniture( ID, 0 );
-			g_houseData[ ID ] [ E_TX ] = g_houseInteriors[ 0 ] [ E_EX ];
-			g_houseData[ ID ] [ E_TY ] = g_houseInteriors[ 0 ] [ E_EY ];
-			g_houseData[ ID ] [ E_TZ ] = g_houseInteriors[ 0 ] [ E_EZ ];
-			g_houseData[ ID ] [ E_INTERIOR_ID ] = 2;
-			format( query, sizeof( query ), "UPDATE HOUSES SET OWNER='No-one',PASSWORD='N/A',NAME='Home',TX=%f,TY=%f,TZ=%f,INTERIOR=%d WHERE ID=%d", g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], g_houseData[ ID ] [ E_INTERIOR_ID ], ID );
-		    mysql_single_query( query );
-			format( szBigString, sizeof( szBigString ), ""COL_GOLD"House:"COL_WHITE" Home(%d)\n"COL_GOLD"Owner:"COL_WHITE" No-one\n"COL_GOLD"Price:"COL_WHITE" %s", ID, cash_format( g_houseData[ ID ] [ E_COST ] ) );
-			UpdateDynamic3DTextLabelText( g_houseData[ ID ] [ E_LABEL ] [ 0 ], COLOR_WHITE, szBigString );
-			DestroyDynamic3DTextLabel( g_houseData[ ID ] [ E_LABEL ] [ 1 ] );
-			g_houseData[ ID ] [ E_LABEL ] [ 1 ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, g_houseData[ ID ] [ E_WORLD ] );
-			DestroyDynamicCP( g_houseData[ ID ] [ E_CHECKPOINT ] [ 1 ] );
-			g_houseData[ ID ] [ E_CHECKPOINT ] [ 1 ] = CreateDynamicCP( g_houseData[ ID ] [ E_TX ], g_houseData[ ID ] [ E_TY ], g_houseData[ ID ] [ E_TZ ], 1.0, g_houseData[ ID ] [ E_WORLD ], g_houseData[ ID ] [ E_INTERIOR_ID ], -1, 50.0 );
 			SetPlayerPos( playerid, g_houseData[ ID ] [ E_EX ], g_houseData[ ID ] [ E_EY ], g_houseData[ ID ] [ E_EZ ] );
-			DestroyDynamicMapIcon( g_houseData[ ID ] [ E_MAP_ICON ] );
-			SetPlayerInterior( playerid, 0 );
-			SetPlayerVirtualWorld( playerid, 0 );
+			SetPlayerInterior( playerid, 0 ), SetPlayerVirtualWorld( playerid, 0 );
 			SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
 		}
 		return 1;
@@ -735,7 +714,9 @@ stock SetHouseForAuction( ID )
 	    SendClientMessage( player, -1, ""COL_PINK"[HOUSE]"COL_WHITE" One of your houses has been taken for auction.");
 		p_OwnedHouses[ player ] --;
 	}
+	CallLocalFunction( "OnHouseOwnerChange", "dd", ID, 0 );
 	for( new i; i < MAX_HOUSE_WEAPONS; i++ ) { g_HouseWeapons[ ID ] [ i ] = 0, g_HouseWeaponAmmo[ ID ] [ i ] = -1; }
+	SaveHouseWeaponStorage( ID );
 	format( g_houseData[ ID ] [ E_PASSWORD ], 4, "N/A" );
 	format( g_houseData[ ID ] [ E_OWNER ], 7, "No-one" );
 	format( g_houseData[ ID ] [ E_HOUSE_NAME ], 5, "Home" );
