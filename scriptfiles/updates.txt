@@ -1,5 +1,7 @@
+(+) Adds a premium real estate listing system, use /estate to see if any homes are interesting.
 (+) Adds passive mode (togglable via /settings). Disables random death matching as an innocent player.
 (+) You can now disable automatic weapon pickup through /settings.
+(+) Admins can now track the hitmarker of spectating players.
 (/) If you successfully break your cuffs, you get immunity from being tazed for 10 seconds.
 (/) Default 25% success rate breaking cuffs... Increases with more police in the server.
 (/) Simplified "/cp" (alternatively, /settings) dialog.
