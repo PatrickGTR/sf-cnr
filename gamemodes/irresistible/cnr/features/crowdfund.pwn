@@ -112,7 +112,7 @@ CMD:crowdfunds( playerid, params[ ] ) return ShowPlayerCrowdfunds( playerid );
 /* ** Functions ** */
 stock ShowPlayerCrowdfunds( playerid ) {
 	return mysql_tquery( dbHandle,
-		"SELECT CROWDFUNDS.ID, CROWDFUNDS.FEATURE, CROWDFUNDS.FUND_TARGET, SUM(CROWDFUND_PATREONS.AMOUNT) AS RAISED, UNIX_TIMESTAMP(RELEASE_DATE) AS RELEASE, UNIX_TIMESTAMP(END_DATE) AS END FROM CROWDFUNDS " \
+		"SELECT CROWDFUNDS.ID, CROWDFUNDS.FEATURE, CROWDFUNDS.FUND_TARGET, SUM(CROWDFUND_PATREONS.AMOUNT) AS RAISED, UNIX_TIMESTAMP(RELEASE_DATE) AS RELEASE_TS, UNIX_TIMESTAMP(END_DATE) AS END_TS FROM CROWDFUNDS " \
 		"LEFT JOIN CROWDFUND_PATREONS on CROWDFUNDS.ID = CROWDFUND_PATREONS.CROWDFUND_ID " \
 		"GROUP BY CROWDFUNDS.ID ORDER BY CROWDFUNDS.ID DESC LIMIT " # MAX_CROWDFUNDS,
 		"OnDisplayCrowdfunds", "i", playerid
@@ -230,9 +230,7 @@ thread OnDisplayCrowdfundInfo( playerid, crowdfund_id )
 thread OnDisplayCrowdfunds( playerid )
 {
 	new
-		rows;
-
-	cache_get_data( rows, tmpVariable );
+		rows = cache_get_row_count( );
 
 	if ( ! rows ) {
 		return SendError( playerid, "There is no crowdfund to show. Try again later." );
@@ -259,8 +257,8 @@ thread OnDisplayCrowdfunds( playerid )
 			new Float: percent_raised = ( amount_raised / target_amount ) * 100.0;
 
 			new curr_timestamp = gettime( );
-			new release_timestamp = cache_get_field_content_int( row, "RELEASE", dbHandle );
-			new end_timestamp = cache_get_field_content_int( row, "END", dbHandle );
+			new release_timestamp = cache_get_field_content_int( row, "RELEASE_TS", dbHandle );
+			new end_timestamp = cache_get_field_content_int( row, "END_TS", dbHandle );
 
 			// inactive
 			if ( ( curr_timestamp > release_timestamp && release_timestamp != 0 ) || ( curr_timestamp > end_timestamp ) )

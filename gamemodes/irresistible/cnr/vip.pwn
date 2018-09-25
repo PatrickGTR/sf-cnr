@@ -39,6 +39,8 @@
 #define ICM_NAME					( 7 )
 #define ICM_VEH_SLOT 				( 8 )
 
+#define VIP_ALLOW_OVER_LIMIT 		( true )
+
 /* ** Variables ** */
 enum E_IC_MARKET_DATA
 {
