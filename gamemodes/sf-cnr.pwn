@@ -4730,6 +4730,24 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	    KillTimer( p_DamageTDTimer[ issuerid ] );
 		p_DamageTDTimer[ issuerid ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", issuerid );
 	}
+
+	foreach ( new i : Player )
+	{
+		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
+		{
+			new
+				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
+
+			PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
+
+			PlayerTextDrawSetString( i, p_DamageTD[ i ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
+    		PlayerTextDrawShow( i, p_DamageTD[ i ] );
+
+	    	KillTimer( p_DamageTDTimer[ i ] );
+			p_DamageTDTimer[ i ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", i );
+		}
+	}
+
 	return 1;
 }
 #endif
@@ -6054,7 +6072,7 @@ CMD:business( playerid, params[ ] )
 
 	new
 		iBusiness = p_InBusiness[ playerid ];
-
+	
 	if ( strmatch( params, "production" ) )
 	{
 		new
