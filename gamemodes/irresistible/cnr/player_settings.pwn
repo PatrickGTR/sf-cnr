@@ -152,6 +152,7 @@ CMD:controlpanel( playerid, params[ ] )
 	return 1;
 }
 
+CMD:rpmode( playerid, params[ ] ) return cmd_passive( playerid, params );
 CMD:passivemode( playerid, params[ ] ) return cmd_passive( playerid, params );
 CMD:passive( playerid, params[ ] )
 {
