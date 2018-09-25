@@ -53,7 +53,7 @@ native gpci 						( playerid, serial[ ], len );
 
 new bool: False = false;
 
-#define IsPlayerPlayingPool(%0)		(False)
+// #define IsPlayerPlayingPool(%0)		(False)
 /* ** SF-CNR ** */
 #include 							"irresistible\_main.pwn"
 
@@ -14128,10 +14128,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( ! response )
 			return ShowPlayerSpawnMenu( playerid );
 
+	#if VIP_ALLOW_OVER_LIMIT == false
 		if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) ) {
 			ResetSpawnLocation( playerid );
 			return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
 		}
+	#endif
 
     	new x = 0;
 
@@ -18012,7 +18014,7 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
 			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], szWanted );
 			if ( ! p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-			PassiveMode_Reset( playerid, 0 ); // remove passive mode if the player is wanted
+			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
 		}
 	}
 	else SetPlayerColorToTeam( playerid ), PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] ), Uncuff( playerid );

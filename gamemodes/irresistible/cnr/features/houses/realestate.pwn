@@ -236,6 +236,7 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 
 		// credit seller if they are on/offline
 		new
+			houseid = cache_get_field_content_int( 0, "HOUSE_ID" ),
 			sellerid;
 
 		foreach ( sellerid : Player ) if ( GetPlayerAccountID( sellerid ) == owner_account_id ) {
@@ -246,13 +247,11 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
 			p_OwnedHouses[ sellerid ] --;
 			GivePlayerIrresistibleCoins( sellerid, ask_price );
-			SendServerMessage( sellerid, "You have successfully sold your house for "COL_GOLD"%s IC"COL_WHITE" to %s(%d)!", number_format( ask_price, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
+			SendServerMessage( sellerid, "You have successfully sold your home (%s) for "COL_GOLD"%s IC"COL_WHITE" to %s(%d)!", g_houseData[ houseid ] [ E_HOUSE_NAME ], number_format( ask_price, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
 		} else {
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `COINS` = `COINS` + %f WHERE `ID` = %d", ask_price, owner_account_id ) );
 		}
 
-		new
-			houseid = cache_get_field_content_int( 0, "HOUSE_ID" );
 
 		// show sellers name & house name
 		SendServerMessage( playerid, "You have successfully bought %s's home (%s"COL_WHITE") for "COL_GOLD"%s IC"COL_WHITE"!", g_houseData[ houseid ] [ E_OWNER ], g_houseData[ houseid ] [ E_HOUSE_NAME ], number_format( ask_price, .decimals = 2 ) );
