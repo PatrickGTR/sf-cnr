@@ -9389,7 +9389,7 @@ CMD:pm( playerid, params[ ] )
 		pID, msg[100]
 	;
 
-	if ( sscanf( params, "us[128]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
+	if ( sscanf( params, "us[100]", pID, msg ) ) return SendUsage( playerid, "/pm [PLAYER_ID] [MESSAGE]" );
     else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
     else if ( pID == playerid ) return SendError( playerid, "You cannot pm yourself." );
     else if ( p_BlockedPM[ pID ] [ playerid ] == true ) return SendError( playerid, "This person has blocked pm's coming from you." );
