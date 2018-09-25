@@ -16,6 +16,7 @@
 #define COL_DIAMOND                	"{4EE2EC}"
 #define COL_GREY                    "{C0C0C0}"
 #define COL_PINK                    "{FF0770}"
+#define COL_PURPLE 					"{885EAD}"
 #define COL_WHITE                   "{FFFFFF}"
 #define COL_ORANGE                  "{FF7500}"
 #define COL_GANG                    "{009999}"
