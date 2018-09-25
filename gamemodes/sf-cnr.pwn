@@ -53,7 +53,7 @@ native gpci 						( playerid, serial[ ], len );
 
 new bool: False = false;
 
-#define IsPlayerPlayingPool(%0)		(False)
+// #define IsPlayerPlayingPool(%0)		(False)
 /* ** SF-CNR ** */
 #include 							"irresistible\_main.pwn"
 
@@ -18008,7 +18008,7 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
 			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], szWanted );
 			if ( ! p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-			PassiveMode_Reset( playerid, 0 ); // remove passive mode if the player is wanted
+			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
 		}
 	}
 	else SetPlayerColorToTeam( playerid ), PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] ), Uncuff( playerid );
