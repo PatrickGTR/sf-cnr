@@ -428,7 +428,7 @@ hook OnScriptInit( )
 	TextDrawBackgroundColor(g_PassiveModeTD, 255);
 	TextDrawFont(g_PassiveModeTD, 1);
 	TextDrawLetterSize(g_PassiveModeTD, 0.180000, 0.899999);
-	TextDrawColor(g_PassiveModeTD, -65281);
+	TextDrawColor(g_PassiveModeTD, COLOR_GREEN);
 	TextDrawSetOutline(g_PassiveModeTD, 1);
 	TextDrawSetProportional(g_PassiveModeTD, 1);
 

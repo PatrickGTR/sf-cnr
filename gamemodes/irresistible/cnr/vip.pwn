@@ -51,7 +51,7 @@ enum E_IC_MARKET_DATA
 new
 	g_irresistibleVipItems			[ ] [ E_IC_MARKET_DATA ] =
 	{
-		{ VIP_GOLD,		"Gold V.I.P",		2000.0 },
+		{ VIP_GOLD,		"Gold V.I.P",		1800.0 },
 		{ VIP_BRONZE,	"Bronze V.I.P", 	1000.0 },
 		{ VIP_REGULAR, 	"Regular V.I.P",	500.0 }
 	},
@@ -65,16 +65,16 @@ new
 	},
 	g_irresistibleMarketItems		[ ] [ E_IC_MARKET_DATA ] =
 	{
-		{ ICM_COKE_BIZ,	"Gang Facility",		5000.0 },
-		{ ICM_COKE_BIZ,	"Bunker Business",		4500.0 },
+		{ ICM_COKE_BIZ,	"Gang Facility",		4500.0 },
+		{ ICM_COKE_BIZ,	"Bunker Business",		3900.0 },
 		{ ICM_COKE_BIZ,	"Coke Business",		1500.0 },
 		{ ICM_METH_BIZ,	"Meth Business",		700.0 },
-		{ ICM_VEHICLE,	"Vehicle",				500.0 },
-		{ ICM_HOUSE,	"House",				500.0 },
 		{ ICM_WEED_BIZ,	"Weed Business",		500.0 },
+		{ ICM_VEHICLE,	"Select Vehicle",		450.0 },
+		{ ICM_HOUSE,	"Select House",			450.0 },
 		{ ICM_GATE,		"Custom Gate",			350.0 },
-		{ ICM_GARAGE,	"Garage", 				250.0 },
 		{ ICM_VEH_SLOT,	"Extra Vehicle Slot", 	350.0 },
+		{ ICM_GARAGE,	"Select Garage", 		250.0 },
 		{ ICM_NAME,		"Change Your Name", 	50.0 }
 	},
 	p_CoinMarketPage 				[ MAX_PLAYERS char ],
@@ -84,6 +84,9 @@ new
 	p_ExtraAssetSlots 				[ MAX_PLAYERS char ]
 
 ;
+
+/* ** Forwards ** */
+forward Float: GetPlayerUpgradeVIPCost( playerid, Float: days_left = 30.0 );
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
@@ -95,13 +98,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		if ( listitem == sizeof( g_irresistibleVipItems ) )
 		{
-			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 )
-			{
-				new
-					iCoinRequirement = floatround( g_irresistibleVipItems[ sizeof( g_irresistibleVipItems ) - current_vip ] [ E_PRICE ] * GetGVarFloat( "vip_discount" ) * ( days_left / 30.0 ), floatround_ceil );
+			new
+				Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
 
+			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 && upgrade_cost )
+			{
 				p_CoinMarketPage{ playerid } = ICM_PAGE_UPGRADE;
-				return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( iCoinRequirement, .prefix = '\0', .decimals = 2 ) ), "Yes", "No" );
+				return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( upgrade_cost, .decimals = 2 ) ), "Yes", "No" );
 			}
 			else
 			{
@@ -112,7 +115,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		else if ( listitem == sizeof( g_irresistibleVipItems ) + 1 ) {
 			return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_CASHCARD );
 		}
-		else if ( listitem > sizeof( g_irresistibleVipItems ) + 1 ) {
+		else if ( listitem == sizeof( g_irresistibleVipItems ) + 2 ) {
+			return ShowPlayerHomeListings( playerid );
+		}
+		else if ( listitem > sizeof( g_irresistibleVipItems ) + 2 ) {
 			return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_ASSETS );
 		}
 		else {
@@ -134,7 +140,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			p_CoinMarketPage{ playerid } = ICM_PAGE_DEFAULT;
 			p_CoinMarketSelectedItem{ playerid } = listitem;
-			return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( iCoinRequirement, .prefix = '\0', .decimals = 2 ) ), "Yes", "No" );
+			return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( iCoinRequirement, .decimals = 2 ) ), "Yes", "No" );
 		}
 	}
 	else if ( dialogid == DIALOG_IC_MARKET_2 || dialogid == DIALOG_IC_MARKET_3 )
@@ -155,7 +161,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		p_CoinMarketPage{ playerid } = ( dialogid == DIALOG_IC_MARKET_3 ) ? ICM_PAGE_CASHCARD : ICM_PAGE_ASSETS;
 		p_CoinMarketSelectedItem{ playerid } = listitem;
-		return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( iCoinRequirement, .prefix = '\0', .decimals = 2 ) ), "Yes", "No" );
+		return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( iCoinRequirement, .decimals = 2 ) ), "Yes", "No" );
 	}
 	else if ( dialogid == DIALOG_YOU_SURE_VIP )
 	{
@@ -174,23 +180,21 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 )
 			{
-				new new_vip_item = sizeof( g_irresistibleVipItems ) - current_vip;
-				new Float: iCoinRequirement = floatround( g_irresistibleVipItems[ new_vip_item ] [ E_PRICE ] * GetGVarFloat( "vip_discount" ) * ( days_left / 30.0 ), floatround_ceil );
+				new Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
+				new new_vip_item = ( current_vip == VIP_BRONZE ? 0 : 1 );
 
-				if ( player_coins < iCoinRequirement ) {
-					SendError( playerid, "You need around %s coins before you can upgrade your V.I.P!", number_format( iCoinRequirement - player_coins, .prefix = '\0', .decimals = 2 ) );
+				if ( player_coins < upgrade_cost ) {
+					SendError( playerid, "You need around %s coins before you can upgrade your V.I.P!", number_format( upgrade_cost - player_coins, .decimals = 2 ) );
 					return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 				}
 
-				// lower = higher the rank from the array
-				new_vip_item --;
-
-				if ( 0 <= new_vip_item < sizeof( g_irresistibleVipItems ) )
+				// if it's zero then the player is not regular/bronze
+				if ( upgrade_cost )
 				{
 					// set level no interval, deduct and notify
 					SetPlayerVipLevel( playerid, g_irresistibleVipItems[ new_vip_item ] [ E_ID ], .interval = 0 );
-					GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
-					SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have upgraded to %s for %s Irresistible Coins!", g_irresistibleVipItems[ new_vip_item ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+					GivePlayerIrresistibleCoins( playerid, -upgrade_cost );
+					SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have upgraded to %s for %s Irresistible Coins!", g_irresistibleVipItems[ new_vip_item ] [ E_NAME ], number_format( upgrade_cost, .decimals = 0 ) );
 				}
 				else
 				{
@@ -225,7 +229,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 
 			if ( player_coins < iCoinRequirement ) {
-				SendError( playerid, "You need around %s coins before you can get this V.I.P!", number_format( iCoinRequirement - player_coins, .prefix = '\0', .decimals = 2 ) );
+				SendError( playerid, "You need around %s coins before you can get this V.I.P!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
 				return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 			}
 
@@ -236,7 +240,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			SetPlayerVipLevel( playerid, selected_vip );
 
 			// Send message
-			SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have redeemed %s V.I.P for %s Irresistible Coins! Congratulations! :D", VIPToString( selected_vip ), number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have redeemed %s V.I.P for %s Irresistible Coins! Congratulations! :D", VIPToString( selected_vip ), number_format( iCoinRequirement, .decimals = 0 ) );
 
 			// Redirect player
 			ShowPlayerVipRedeemedDialog( playerid );
@@ -249,7 +253,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			new Float: iCoinRequirement = g_irreisistibleCashCards[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
 
 			if ( player_coins < iCoinRequirement ) {
-				SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .prefix = '\0', .decimals = 2 ) );
+				SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
 				return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 			}
 
@@ -257,7 +261,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			GivePlayerCash( playerid, cash_amount );
 			GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
-			SendServerMessage( playerid, "You have ordered a "COL_GREEN"%s Cash Card (%s)"COL_WHITE" for %s Irresistible Coins!", g_irreisistibleCashCards[ listitem ] [ E_NAME ], number_format( cash_amount ), number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			SendServerMessage( playerid, "You have ordered a "COL_GREEN"%s Cash Card (%s)"COL_WHITE" for %s Irresistible Coins!", g_irreisistibleCashCards[ listitem ] [ E_NAME ], number_format( cash_amount ), number_format( iCoinRequirement, .decimals = 0 ) );
 			ShowPlayerHelpDialog( playerid, 10000, "You have bought a ~g~%s~w~ %s Cash Card!", number_format( cash_amount ), g_irreisistibleCashCards[ listitem ] [ E_NAME ] );
 		}
 
@@ -267,7 +271,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			new Float: iCoinRequirement = g_irresistibleMarketItems[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
 
 			if ( player_coins < iCoinRequirement ) {
-				SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .prefix = '\0', .decimals = 2 ) );
+				SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
 				return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 			}
 
@@ -285,7 +289,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				p_ExtraAssetSlots{ playerid } ++;
 				GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
-	    		SendServerMessage( playerid, "You have redeemed an "COL_GOLD"vehicle slot"COL_WHITE" for %s Irresistible Coins!", number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+	    		SendServerMessage( playerid, "You have redeemed an "COL_GOLD"vehicle slot"COL_WHITE" for %s Irresistible Coins!", number_format( iCoinRequirement, .decimals = 0 ) );
     			AddPlayerNote( playerid, -1, sprintf( "Bought veh extra slot, has %d extra", p_ExtraAssetSlots{ playerid } ) );
 			}
 			else
@@ -293,9 +297,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
     			AddPlayerNote( playerid, -1, sprintf( ""COL_GOLD"%s" #COL_WHITE, g_irresistibleMarketItems[ listitem ] [ E_NAME ] ) );
     			SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) needs a %s. (/viewnotes)", ReturnPlayerName( playerid ), playerid, g_irresistibleMarketItems[ listitem ] [ E_NAME ] );
-    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"%s"COL_WHITE" for %s Irresistible Coins!", g_irresistibleMarketItems[ listitem ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+    			SendServerMessage( playerid, "You have ordered a "COL_GOLD"%s"COL_WHITE" for %s Irresistible Coins!", g_irresistibleMarketItems[ listitem ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
     			SendServerMessage( playerid, "Online admins have been notified of your purchase. Use "COL_GREY"/notes"COL_WHITE" to track your orders and to remind online admins." );
-    			ShowPlayerHelpDialog( playerid, 10000, "You can use ~y~/notes~w~ to track your orders.~n~~n~Also, admins can be called using this command." );
+    			ShowPlayerHelpDialog( playerid, 10000, "You can use ~y~/notes~w~ to track your orders.~n~~n~Also, admins will be reminded using this command." );
 			}
 
 			/*case 8:
@@ -330,7 +334,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					        }
 
 							p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
-		    				SendServerMessage( playerid, "You have redeemed "COL_GOLD"Gold Rims"COL_WHITE" on your vehicle for %s Irresistible Coins!", number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+		    				SendServerMessage( playerid, "You have redeemed "COL_GOLD"Gold Rims"COL_WHITE" on your vehicle for %s Irresistible Coins!", number_format( iCoinRequirement, .decimals = 0 ) );
 
 		    				// Receipt
 	    					AddPlayerNote( playerid, -1, sprintf( "Bought gold rims on vehicle #%d", g_vehicleData[ playerid ] [ buyableid ] [ E_SQL_ID ] ) );
@@ -341,7 +345,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				}
 				else
 				{
-					SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - p_IrresistibleCoins[ playerid ], .prefix = '\0', .decimals = 2 ) );
+					SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - p_IrresistibleCoins[ playerid ], .decimals = 2 ) );
 					return ShowPlayerCoinMarketDialog( playerid, true );
 				}
 			}*/
@@ -362,7 +366,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new Float: player_coins = GetPlayerIrresistibleCoins( playerid );
 
 		if ( player_coins < iCoinRequirement ) {
-			SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .prefix = '\0', .decimals = 2 ) );
+			SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
 			return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_ASSETS );
 		}
 
@@ -401,6 +405,7 @@ CMD:vip( playerid, params[ ] )
 		strcat( vip_description, "Coin generation increase\t0%\t10%\t25%\n" );
 		strcat( vip_description, "Ability to transfer coins P2P\tN\tY\tY\n" );
 		strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tN\tY\n" );
+		strcat( vip_description, "Premium home listing fees waived\tN\tN\tY\n" );
 		strcat( vip_description, "Tax reduction\t0%\t0%\t50%\n" );
 		strcat( vip_description, "Inactive asset protection\t14\t14\t30\n" );
 		strcat( vip_description, "Total Vehicle component editing slots\t4\t6\t10\n" );
@@ -431,7 +436,7 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 	new Float: discount = GetGVarFloat( "vip_discount" );
 	new szMarket[ 512 ] = ""COL_GREY"Item Name\t"COL_GREY"Coins Needed\n";
 
-	if ( page == ICM_PAGE_DEFAULT )
+	if ( page == ICM_PAGE_DEFAULT || page == ICM_PAGE_UPGRADE )
 	{
 		new current_vip = GetPlayerVIPLevel( playerid );
 		new Float: days_left = float( GetPlayerVIPDuration( playerid ) ) / 86400.0;
@@ -445,22 +450,25 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 			new Float: iCoinRequirement = g_irresistibleVipItems[ i ] [ E_PRICE ] * discount;
 
 			if ( current_vip != 0 && current_vip != g_irresistibleVipItems[ i ] [ E_ID ] ) {
-				format( szMarket, sizeof( szMarket ), "%s{333333}%s\t{333333}%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+				format( szMarket, sizeof( szMarket ), "%s{333333}%s\t{333333}%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
 			} else {
-				format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+				format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
 			}
 		}
 
 		// upgrade vip
-		if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 )
+		new
+			Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
+
+		if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 && upgrade_cost )
 		{
-			new iCoinRequirement = floatround( g_irresistibleVipItems[ sizeof( g_irresistibleVipItems ) - current_vip ] [ E_PRICE ] * discount * ( days_left / 30.0 ), floatround_ceil );
-			format( szMarket, sizeof( szMarket ), "%sUpgrade V.I.P\t"COL_GOLD"%s\n", szMarket, number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			format( szMarket, sizeof( szMarket ), "%sUpgrade V.I.P\t"COL_GOLD"%s\n", szMarket, number_format( upgrade_cost, .decimals = 0 ) );
 		}
 		else strcat( szMarket, "{333333}Upgrade V.I.P\t{333333}Unavailable\n" );
 
 		// thats it
 		strcat( szMarket, ""COL_GREEN"Buy shark cards...\t"COL_GREEN">>>\n" );
+		strcat( szMarket, ""COL_PURPLE"Buy premium homes...\t"COL_PURPLE">>>\n" );
 		strcat( szMarket, ""COL_GREY"See other items...\t"COL_GREY">>>" );
 		return ShowPlayerDialog( playerid, DIALOG_IC_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin -{FFFFFF} Market", szMarket, "Select", "" );
 	}
@@ -471,7 +479,7 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 		for( new i = 0; i < sizeof( g_irreisistibleCashCards ); i++ )
 		{
 			new iCoinRequirement = floatround( g_irreisistibleCashCards[ i ] [ E_PRICE ] * discount );
-			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GREEN"%s\t"COL_GOLD"%s\n", szMarket, g_irreisistibleCashCards[ i ] [ E_NAME ], number_format( g_irreisistibleCashCards[ i ] [ E_ID ] ), number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GREEN"%s\t"COL_GOLD"%s\n", szMarket, g_irreisistibleCashCards[ i ] [ E_NAME ], number_format( g_irreisistibleCashCards[ i ] [ E_ID ] ), number_format( iCoinRequirement, .decimals = 0 ) );
 		}
 		return ShowPlayerDialog( playerid, DIALOG_IC_MARKET_3, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin -{FFFFFF} Cash Cards", szMarket, "Select", "Back" );
 	}
@@ -479,10 +487,8 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 	{
 		for( new i = 0; i < sizeof( g_irresistibleMarketItems ); i++ )
 		{
-			new
-				iCoinRequirement = floatround( g_irresistibleMarketItems[ i ] [ E_PRICE ] * discount );
-
-			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleMarketItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .prefix = '\0', .decimals = 0 ) );
+			new iCoinRequirement = floatround( g_irresistibleMarketItems[ i ] [ E_PRICE ] * discount );
+			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleMarketItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
 		}
 		return ShowPlayerDialog( playerid, DIALOG_IC_MARKET_2, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin -{FFFFFF} Asset Market", szMarket, "Select", "Back" );
 	}
@@ -562,4 +568,24 @@ stock VIPToColor( viplvl )
 		default: string = COL_WHITE;
 	}
 	return string;
+}
+
+stock Float: GetPlayerUpgradeVIPCost( playerid, Float: days_left = 30.0 )
+{
+	new
+		current_vip = GetPlayerVIPLevel( playerid );
+
+	if ( current_vip != VIP_BRONZE && current_vip != VIP_REGULAR )
+		return 0.0;
+
+	new
+		Float: total_cost = 0.0;
+
+	switch ( current_vip )
+	{
+		case VIP_BRONZE: total_cost = g_irresistibleVipItems[ 0 ] [ E_PRICE ] - g_irresistibleVipItems[ 1 ] [ E_PRICE ];
+		case VIP_REGULAR: total_cost = g_irresistibleVipItems[ 1 ] [ E_PRICE ] - g_irresistibleVipItems[ 2 ] [ E_PRICE ];
+	}
+
+	return total_cost * GetGVarFloat( "vip_discount" ) * ( days_left / 30.0 );
 }

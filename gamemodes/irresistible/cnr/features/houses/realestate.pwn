@@ -13,9 +13,6 @@
 #define DIALOG_HOUSE_LIST_VIEW		5839
 
 /* ** Macros ** */
-#define ShowPlayerHomeListings(%0) \
-	mysql_tquery( dbHandle, "SELECT HL.ID, HL.HOUSE_ID, H.NAME, U.NAME AS OWNER, HL.ASK FROM HOUSE_LISTINGS HL INNER JOIN HOUSES H ON H.ID = HL.HOUSE_ID INNER JOIN USERS U ON U.ID = HL.USER_ID WHERE SALE_DATE IS NULL", "HouseListing_OnShowHomes", "d", %0 )
-
 #define ShowPlayerHomeListing(%0,%1) \
 	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `HOUSE_LISTINGS` WHERE `ID` = %d", %1 ), "HouseListing_OnShowHome", "dd", %0, %1 )
 
@@ -161,7 +158,7 @@ thread HouseListing_OnShowHomes( playerid )
 		}
 
 		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_GOLD ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
-		return ShowPlayerDialog( playerid, DIALOG_HOUSE_LISTINGS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Premium Home Estate", szHugeString, "Select", "Back" );
+		return ShowPlayerDialog( playerid, DIALOG_HOUSE_LISTINGS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Premium Home Estate", szHugeString, "Select", "Close" );
 	}
 	else
 	{
@@ -304,6 +301,11 @@ thread HouseListing_OnDeleteListing( playerid, houseid )
 	{
 		return SendError( playerid, "This home is not listed on the premium realestate market." );
 	}
+}
+
+/* ** Functions ** */
+stock ShowPlayerHomeListings( playerid ) {
+	return mysql_tquery( dbHandle, "SELECT HL.ID, HL.HOUSE_ID, H.NAME, U.NAME AS OWNER, HL.ASK FROM HOUSE_LISTINGS HL INNER JOIN HOUSES H ON H.ID = HL.HOUSE_ID INNER JOIN USERS U ON U.ID = HL.USER_ID WHERE SALE_DATE IS NULL", "HouseListing_OnShowHomes", "d", playerid );
 }
 
 /* ** Migrations ** */
