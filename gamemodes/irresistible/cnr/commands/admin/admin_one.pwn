@@ -88,12 +88,17 @@ CMD:reports( playerid, params[ ] )
 {
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	if ( !strlen( szReportsLog[ 7 ] ) )
-		szLargeString = "None at the moment.";
-	else
-		format( szLargeString, sizeof( szLargeString ), "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", szReportsLog[ 0 ], szReportsLog[ 1 ], szReportsLog[ 2 ], szReportsLog[ 3 ], szReportsLog[ 4 ], szReportsLog[ 5 ], szReportsLog[ 6 ], szReportsLog[ 7 ] );
+	szLargeString = ""COL_GREY"Date\t"COL_GREY"Reported By\t"COL_GREY"Reported\t"COL_GREY"Message\n";
 
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Report Log", szLargeString, "Okay", "" );
+	if ( !strlen( szReportsLog[ 7 ] ) )
+		return SendError( playerid, "There is no reports at the moment." );
+
+	for (new i = 0; i < 8; i ++)
+	{
+		format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, szReportsLog[ i ] );
+	}
+
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Report Log", szLargeString, "Okay", "" );
 	return 1;
 }
 
@@ -101,12 +106,17 @@ CMD:questions( playerid, params[ ] )
 {
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 
-	if ( !strlen( szQuestionsLog[ 7 ] ) )
-		szLargeString = "None at the moment.";
-	else
-		format( szLargeString, sizeof( szLargeString ), "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", szQuestionsLog[ 0 ], szQuestionsLog[ 1 ], szQuestionsLog[ 2 ], szQuestionsLog[ 3 ], szQuestionsLog[ 4 ], szQuestionsLog[ 5 ], szQuestionsLog[ 6 ], szQuestionsLog[ 7 ] );
+	szLargeString = ""COL_GREY"Date\t"COL_GREY"Player\t"COL_GREY"Question\n";
 
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Question Log", szLargeString, "Okay", "" );
+	if ( !strlen( szQuestionsLog[ 7 ] ) )
+		return SendError( playerid, "There is no questions at the moment." );
+
+	for (new i = 0; i < 8; i ++)
+	{
+		format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, szQuestionsLog[ i ] );
+	}
+
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Question Log", szLargeString, "Okay", "" );
 	return 1;
 }
 
@@ -678,18 +688,26 @@ CMD:goto( playerid, params[ ] )
 CMD:mutelist( playerid, params[ ] )
 {
 	new
-		count = 0, time = g_iTime;
+		count = 0;
 
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	SendClientMessage( playerid, COLOR_PINK, ".: Mute List :." );
-	foreach(new i : Player)
+
+	szNormalString[ 0 ] = '\0';
+	foreach( new i : Player )
 	{
-	    if ( p_Muted{ i } == true && time < p_MutedTime[ i ] )
-	    {
-	        SendClientMessageFormatted( playerid, COLOR_GREY, "%s (%s)", ReturnPlayerName( i ), secondstotime( p_MutedTime[ i ] - time ) );
-	        count++;
-	    }
+		if ( p_Muted{ i } && g_iTime < p_MutedTime[ i ] )
+		{
+			format( szNormalString, sizeof( szNormalString ), "%s"COL_WHITE"%s(%d)\t"COL_GREY"%s\n",
+				szNormalString,
+				ReturnPlayerName( i ), i,
+				secondstotime( p_MutedTime[ i ] - g_iTime )
+			);
+
+			count ++;
+		}
 	}
-	if ( count == 0 ) SendClientMessage( playerid, COLOR_GREY, "There are no muted players online." );
-	return 1;
+	if ( count == 0 )
+		return SendError( playerid, "There are no muted players online." );
+	else 
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Muted List", szNormalString, "Close", "" ), 1;
 }

@@ -4832,6 +4832,8 @@ public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 public OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
+	printf( "[OnPlayerDeathEx] %d, %d, %d, %f, %d", playerid, killerid, reason, damage, bodypart );
+	
 	if ( !p_PlayerLogged{ playerid } ) {
 	    return SendServerMessage( playerid, "Possible Fake-kill detected - 0x0A" ), KickPlayerTimed( playerid );
 	}
@@ -5073,6 +5075,8 @@ public OnPlayerDeath( playerid, killerid, reason )
 	}
 
     ClearPlayerWantedLevel( playerid );
+
+    printf( "[OnPlayerDeathEx] %d, %d, %d, %f, %d", playerid, killerid, reason, damage, bodypart );
 	return 1;
 }
 
@@ -8136,7 +8140,7 @@ CMD:ask( playerid, params[ ] )
 		for( new iPos; iPos < sizeof( szQuestionsLog ) - 1; iPos++ )
 			memcpy( szQuestionsLog[ iPos ], szQuestionsLog[ iPos + 1 ], 0, sizeof( szQuestionsLog[ ] ) * 4 );
 
-		format( szNormalString, sizeof( szNormalString ), "[%s] %s: %s\n", getCurrentTime( ), ReturnPlayerName( playerid ), szMessage );
+		format( szNormalString, sizeof( szNormalString ), "%s\t%s(%d)\t%s\n", getCurrentTime( ), ReturnPlayerName( playerid ), playerid, szMessage );
 		strcpy( szQuestionsLog[ 7 ], szNormalString );
 
 		Beep( playerid );
@@ -9230,7 +9234,7 @@ CMD:report( playerid, params[ ] )
 		for( new iPos; iPos < sizeof( szReportsLog ) - 1; iPos++ )
 			memcpy( szReportsLog[ iPos ], szReportsLog[ iPos + 1 ], 0, sizeof( szReportsLog[ ] ) * 4 );
 
-		format( szNormalString, sizeof( szNormalString ), "[%s] %s(%d): %s\n", getCurrentTime( ), ReturnPlayerName( iPlayer ), iPlayer, szMessage );
+		format( szNormalString, sizeof( szNormalString ), "%s\t%s(%d)\t%s(%d)\t%s\n", getCurrentTime( ), ReturnPlayerName( playerid ), playerid, ReturnPlayerName( iPlayer ), iPlayer, szMessage );
 		strcpy( szReportsLog[ 7 ], szNormalString );
 
 		Beep( playerid );
@@ -25701,6 +25705,7 @@ stock SetPlayerPassiveMode( playerid )
 	// place label
 	if ( ! IsPlayerInPaintBall( playerid ) && GetPlayerClass( playerid ) != CLASS_POLICE ) {
 		p_PassiveModeLabel[ playerid ] = CreateDynamic3DTextLabel( "Passive Mode", COLOR_GREEN, 0.0, 0.0, -0.6, 15.0, .attachedplayer = playerid );
+		TextDrawShowForPlayer( playerid, g_PassiveModeTD );
 	}
 	return 1;
 }
@@ -25717,12 +25722,15 @@ stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 	p_PassiveModeLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_PassiveModeExpireTimer[ playerid ] = -1;
 	p_PassiveModeDisabled{ playerid } = passive_disabled;
+	TextDrawHideForPlayer( playerid, g_PassiveModeTD );
 }
 
 function PassiveMode_Reset( playerid, time_left )
 {
 	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
 	{
+		TextDrawHideForPlayer( playerid, g_PassiveModeTD );
+
 		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
 		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
 	}
