@@ -488,6 +488,15 @@ hook OnPlayerSelectDynObject( playerid, objectid, modelid, Float:x, Float:y, Flo
 	return 1;
 }
 
+hook OnHouseOwnerChange( houseid, owner )
+{
+	if ( owner != 0 ) // transfer furniture only to valid owner
+	{
+		mysql_single_query( sprintf( "UPDATE `FURNITURE` SET `OWNER`=%d WHERE `HOUSE_ID`=%d", owner, houseid ) );
+	}
+	return 1;
+}
+
 hook OnPlayerConnect( playerid )
 {
 	//Katie - 271.884979,306.631988,999.148437 - DEFAULT - 2
