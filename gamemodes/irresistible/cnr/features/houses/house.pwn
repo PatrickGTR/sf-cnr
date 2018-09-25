@@ -392,10 +392,12 @@ CMD:h( playerid, params[ ] )
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
+#if VIP_ALLOW_OVER_LIMIT == false
 	if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) && ! strmatch( params, "sell" ) ) {
 		ResetSpawnLocation( playerid );
 		return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
 	}
+#endif
 
 	new
 	    ID = p_InHouse[ playerid ];

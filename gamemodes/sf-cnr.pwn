@@ -14124,10 +14124,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( ! response )
 			return ShowPlayerSpawnMenu( playerid );
 
+	#if VIP_ALLOW_OVER_LIMIT == false
 		if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) ) {
 			ResetSpawnLocation( playerid );
 			return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
 		}
+	#endif
 
     	new x = 0;
 

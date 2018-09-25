@@ -245,6 +245,7 @@ CMD:v( playerid, params[ ] )
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
+#if VIP_ALLOW_OVER_LIMIT == false
 	// force hoarders to sell
 	if ( ! p_VIPLevel[ playerid ] && p_OwnedVehicles[ playerid ] > GetPlayerVehicleSlots( playerid ) && ! strmatch( params, "sell" ) && ! strmatch( params, "bring" ) ) {
 		for( new i = 0; i < p_OwnedVehicles[ playerid ]; i++ ) if ( g_vehicleData[ playerid ] [ i ] [ E_OWNER_ID ] == p_AccountID[ playerid ] ) {
@@ -252,6 +253,7 @@ CMD:v( playerid, params[ ] )
 		}
 		return SendError( playerid, "Please renew your V.I.P or sell this vehicle to match your vehicle allocated limit. (/v sell/bring only)" );
 	}
+#endif
 
 	new
 		vehicleid = GetPlayerVehicleID( playerid ),
