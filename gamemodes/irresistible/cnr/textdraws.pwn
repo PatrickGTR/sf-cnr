@@ -21,7 +21,6 @@ new
 	Text:  g_MovieModeTD            [ 6 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_WorldDayTD       		= Text: INVALID_TEXT_DRAW,
 	Text:  g_AchievementTD          [ 4 ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  g_AnimationTD            = Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_ProgressBoxTD        	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
@@ -262,17 +261,6 @@ hook OnScriptInit( )
 	TextDrawColor(g_AdminLogTD, -16289537);
 	TextDrawSetOutline(g_AdminLogTD, 1);
 	TextDrawSetProportional(g_AdminLogTD, 1);
-
-	g_AnimationTD = TextDrawCreate(220.000000, 141.000000, "PRESS ~r~~h~~k~~PED_SPRINT~~W~ TO STOP THE ANIMATION");
-	TextDrawBackgroundColor(g_AnimationTD, 80);
-	TextDrawFont(g_AnimationTD, 3);
-	TextDrawLetterSize(g_AnimationTD, 0.310000, 1.200000);
-	TextDrawColor(g_AnimationTD, -1);
-	TextDrawSetOutline(g_AnimationTD, 1);
-	TextDrawSetProportional(g_AnimationTD, 1);
-	TextDrawUseBox(g_AnimationTD, 1);
-	TextDrawBoxColor(g_AnimationTD, 117);
-	TextDrawTextSize(g_AnimationTD, 418.000000, 0.000000);
 
     g_AchievementTD[ 0 ] = TextDrawCreate(250.000000, 120.000000, "_");
 	TextDrawBackgroundColor(g_AchievementTD[ 0 ], 255);

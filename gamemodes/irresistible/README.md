@@ -26,3 +26,9 @@
     - Called when a player successfully logs into their account
 - `OnHouseOwnerChange( houseid, ownerid )`
     - Called when the ownership of a home is changed
+- `OnPlayerFirstSpawn( playerid )`
+    - Called when a player spawns for the first time
+- `OnPlayerMovieMode( playerid, toggled )`
+    - Called when player toggles movie mode
+
+

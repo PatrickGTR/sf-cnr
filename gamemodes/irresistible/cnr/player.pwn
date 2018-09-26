@@ -12,7 +12,6 @@
 #define IsPlayerKidnapped(%1)       (p_Kidnapped{%1})
 #define IsPlayerBlowingCock(%0)   	(p_GivingBlowjob{%0})
 #define IsPlayerGettingBlowed(%0) 	(p_GettingBlowjob{%0})
-#define IsPlayerMining(%0)			(p_isMining{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerAdminJailed(%0) 	(p_AdminJailed{%0} && p_JailTime[%0])
 #define GetPlayerXP(%1)             (p_XP[%1])
@@ -112,7 +111,6 @@ new
 	bool: p_AdminLog                [ MAX_PLAYERS char ],
 	bool: p_beingSpectated			[ MAX_PLAYERS ],
 	p_whomSpectating				[ MAX_PLAYERS ],
-	bool: p_InAnimation        		[ MAX_PLAYERS char ],
 	p_AntiSaveStatsSpam				[ MAX_PLAYERS ],
 	p_AntiMechFixSpam				[ MAX_PLAYERS ],
 	p_AntiMechNosSpam				[ MAX_PLAYERS ],
@@ -266,3 +264,4 @@ stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
 
 stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };
+

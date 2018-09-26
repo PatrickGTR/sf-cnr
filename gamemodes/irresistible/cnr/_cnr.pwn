@@ -19,8 +19,7 @@
 #include "irresistible\cnr\ammunation.pwn"
 #include "irresistible\cnr\irresistibleguard.pwn"
 #include "irresistible\cnr\player_settings.pwn"
-#include "irresistible\cnr\animation.pwn"
- 
+
 // static cnr features
 #include "irresistible\cnr\static\_cnr_static.pwn"
 

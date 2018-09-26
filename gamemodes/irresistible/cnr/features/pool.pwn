@@ -10,9 +10,6 @@
 #include 							< physics >
 #include 							< progress2 >
 
-/* ** Marcos ** */
-#define IsPlayerPlayingPool(%0) 	(p_isPlayingPool{%0})
-
 /* ** Definitions ** */
 #define POCKET_RADIUS 				0.09
 #define POOL_TIMER_SPEED 			30
@@ -1409,6 +1406,10 @@ stock Pool_UpdatePlayerCamera( playerid, poolid )
 		SetPlayerCameraPos( playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] + 2.0 );
 		SetPlayerCameraLookAt( playerid, g_poolTableData[ poolid ] [ E_X ], g_poolTableData[ poolid ] [ E_Y ], g_poolTableData[ poolid ] [ E_Z ] );
 	}
+}
+
+stock IsPlayerPlayingPool( playerid ) {
+	return p_isPlayingPool{ playerid };
 }
 
 /* ** Commands ** */

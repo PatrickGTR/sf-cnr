@@ -356,6 +356,8 @@ new
 	Iterator: miningrock< MAX_ROCKS >
 ;
 
+stock IsPlayerMining( playerid ) return p_isMining{ playerid };
+
 /* ** Weed System ** */
 #define MAX_WEED_STORAGE 			6
 #define MAX_WEED                    ( 42 )
@@ -3806,7 +3808,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_drillStrength [ playerid ] = 0;
 	p_RansomAmount	[ playerid ] = 0;
 	p_RansomPlacer	[ playerid ] = INVALID_PLAYER_ID;
-	p_InAnimation	{ playerid } = false;
 	p_LabelColor 	[ playerid ] = COLOR_GREY;
 	p_Uptime        [ playerid ] = 0;
 	p_Muted 		{ playerid } = false;
@@ -4054,31 +4055,8 @@ public OnPlayerSpawn( playerid )
 	    justConnected{ playerid } = false;
 	    StopAudioStreamForPlayer( playerid );
 
-	    // Preload all animations
-	    // PreloadAnimationLibrary( playerid, "DANCING" );
-	    // PreloadAnimationLibrary( playerid, "PED" );
-	    // PreloadAnimationLibrary( playerid, "PAULNMAC" );
-	    // PreloadAnimationLibrary( playerid, "INT_OFFICE" );
-	    // PreloadAnimationLibrary( playerid, "BEACH" );
-	    // PreloadAnimationLibrary( playerid, "SWEET" );
-	    // PreloadAnimationLibrary( playerid, "SNM" );
-	    // PreloadAnimationLibrary( playerid, "COP_AMBIENT" );
-	    // PreloadAnimationLibrary( playerid, "ON_LOOKERS" );
-	    // PreloadAnimationLibrary( playerid, "SHOP" );
-	    // PreloadAnimationLibrary( playerid, "RAPPING" );
-	    // PreloadAnimationLibrary( playerid, "DEALER" );
-	    // PreloadAnimationLibrary( playerid, "STRIP" );
-	    // PreloadAnimationLibrary( playerid, "RIOT" );
-	    // PreloadAnimationLibrary( playerid, "BLOWJOBZ" );
-	    // PreloadAnimationLibrary( playerid, "CRACK" );
-	    // PreloadAnimationLibrary( playerid, "GYMNASIUM" );
-	    // PreloadAnimationLibrary( playerid, "ROB_BANK" );
-	    // PreloadAnimationLibrary( playerid, "BOMBER" );
-	    // PreloadAnimationLibrary( playerid, "CARRY" );
-	    // PreloadAnimationLibrary( playerid, "VENDING" );
-	    // PreloadAnimationLibrary( playerid, "CASINO" );
-	    // PreloadAnimationLibrary( playerid, "GANGS" );
-	    // PreloadAnimationLibrary( playerid, "INT_HOUSE" );
+	    // Callback
+	    CallLocalFunction( "OnPlayerFirstSpawn", "d", playerid );
 
 		// Jail people that left jailed
 	    if ( p_JailTime[ playerid ] ) // We load this when the player logs in.
@@ -4899,11 +4877,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	HidePlayerTogglableTextdraws( playerid );
 	resetPlayerStreaks( playerid );
-
-	if ( p_InAnimation{ playerid } == true ) {
-		TextDrawHideForPlayer( playerid, g_AnimationTD );
-		p_InAnimation{ playerid } = false;
-	}
 
 	/* ** Tax And Medical Fees ** */
 	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
@@ -8321,7 +8294,6 @@ CMD:moviemode( playerid, params[ ] )
 			TextDrawShowForPlayer( playerid, g_CurrentRankTD );
 			TextDrawShowForPlayer( playerid, g_currentXPTD );
 		    PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
-			if ( p_InAnimation{ playerid } ) TextDrawShowForPlayer( playerid, g_AnimationTD );
 			PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 			if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
 			TextDrawShowForPlayer( playerid, g_WebsiteTD );
@@ -8347,7 +8319,6 @@ CMD:moviemode( playerid, params[ ] )
 			PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 			PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 			TextDrawHideForPlayer( playerid, g_WebsiteTD );
-			TextDrawHideForPlayer( playerid, g_AnimationTD );
 			TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 			PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
@@ -8361,6 +8332,7 @@ CMD:moviemode( playerid, params[ ] )
 		    SendServerMessage( playerid, "Movie mode has been toggled." );
 		}
 	}
+	CallLocalFunction( "OnPlayerMovieMode", "dd", playerid, p_inMovieMode{ playerid } );
 	return 1;
 }
 
@@ -11197,7 +11169,7 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 	    iVehiclePrice
 	;
 
-	if ( p_InAnimation{ playerid } == true ) // cancel animations
+	if ( IsPlayerUsingAnimation( playerid ) ) // cancel animations
    		CallLocalFunction( "OnPlayerKeyStateChange", "ddd", playerid, KEY_SPRINT, KEY_SECONDARY_ATTACK );
 
 	if ( p_Cuffed{ playerid } ) {
@@ -12741,7 +12713,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		// mining
 		if ( GetPlayerWeapon( playerid ) == WEAPON_SHOVEL )
 		{
-			if ( ! p_InAnimation{ playerid } && ! IsPlayerAttachedObjectSlotUsed( playerid, 4 ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
+			if ( ! IsPlayerUsingAnimation( playerid ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 4 ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
 			{
 				foreach(new m : miningrock)
 				{
@@ -20070,52 +20042,6 @@ stock CutSpectation( playerid )
 	return 1;
 }
 
-stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, looping, lockx, locky, lockz, lp, specialaction=0 )
-{
-	if ( !IsPlayerConnected( playerid ) )		return 0;
-//	else if ( p_InAnimation{ playerid } )        return SendError( playerid, "You cannot use this command since you're playing an animation." );
-	else if ( IsPlayerInAnyVehicle( playerid ) )	return SendError( playerid, "You cannot use this command inside a vehicle." );
-	else if ( !IsPlayerSpawned( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're not spawned." );
-//	else if ( IsPlayerJailed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're jailed." );
-	else if ( IsPlayerTazed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're tazed." );
-	//else if ( IsPlayerDetained( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're detained." );
-	else if ( IsPlayerCuffed( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're cuffed." );
-	else if ( IsPlayerTied( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're tied." );
-	else if ( IsPlayerKidnapped( playerid ) ) 	return SendError( playerid, "You cannot use this command since you're kidnapped." );
-	else if ( IsPlayerGettingBlowed( playerid ) )return SendError( playerid, "You cannot use this command since you're getting blowed." );
-	else if ( IsPlayerBlowingCock( playerid ) )  	return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-	else if ( IsPlayerPlayingPoker( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing poker." );
-	else if ( IsPlayerPlayingPool( playerid ) ) return SendError( playerid, "You cannot use this command since you're playing pool." );
-	else if ( IsPlayerInWater( playerid ) )      return SendError( playerid, "You cannot use this command since you're in water." );
-	else if ( IsPlayerMining( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're mining." );
-	else if ( IsPlayerBoxing( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're boxing." );
-	else if ( IsPlayerInEvent( playerid ) ) 		return SendError( playerid, "You cannot use this command since you're in an event." );
-    else if ( GetPlayerAnimationIndex( playerid ) == 1660 ) return SendError( playerid, "You cannot use this command since you're using a vending machine." );
-	else if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-	else if ( IsPlayingAnimation( playerid, "ROB_BANK", "CAT_Safe_Rob" ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-	else if ( IsPlayingAnimation( playerid, "GANGS", "smkcig_prtl" ) ) return SendError( playerid, "You cannot use this command since you're smoking." );
-	else if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return SendError( playerid, "You cannot use this command since you're holding a stolen good." );
-	else if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command since you're entering a vehicle." );
-    else if ( GetPlayerState( playerid ) == PLAYER_STATE_EXIT_VEHICLE ) return SendError( playerid, "You cannot use this command since you're exiting a vehicle." );
-	else
-	{
-		SetPlayerSpecialAction( playerid, 0 );
-	    if ( specialaction == 0 ) {
-			ApplyAnimation( playerid, animlib, "null", 0.0, 0, 0, 0, 0, 0 );
-		    ApplyAnimation( playerid, animlib, animname, Speed, looping, lockx, locky, lockz, lp );
-		} else {
-            SetPlayerSpecialAction( playerid, specialaction );
-		}
-
-		if ( looping ) // Animations that must be played once.
-		{
-	    	p_InAnimation{ playerid } = true;
-			if ( !p_inMovieMode{ playerid } ) TextDrawShowForPlayer( playerid, g_AnimationTD );
-		}
-	}
-	return 1;
-}
-
 stock secondstotime(seconds, const delimiter[] = ", ", start = 0, end = -1)
 {
     static const times[] = {
@@ -21025,7 +20951,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 		       	 	if ( g_robberyData[ robberyid ] [ E_STATE ] ) return SendError( playerid, "This safe must be in an idle state to pick it." );
 		       	 	//else if ( p_UsingRobberySafe[ playerid ] != -1 ) return SendError( playerid, "You're currently working on another safe." );
 		       	 	else if ( g_robberyData[ robberyid ] [ E_OPEN ] ) return 1; //SendError( playerid, "This safe is open." );
-		       	 	else if ( p_InAnimation{ playerid } ) return 1; //SendError( playerid, "You mustn't be using an animation." );
+		       	 	else if ( IsPlayerUsingAnimation( playerid ) ) return 1; //SendError( playerid, "You mustn't be using an animation." );
 		       	 	else if ( g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF ) return SendError( playerid, "This safe is currently busy." );
 		       	 	else if ( p_Class[ playerid ] == CLASS_POLICE ) return SendError( playerid, "You cannot pick this safe as a law enforcement officer." );
 		       	 	// else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] ) return SendError( playerid, "There is nothing to rob from this business safe." );
