@@ -395,7 +395,7 @@ CMD:vip( playerid, params[ ] )
 
 	if ( vip_description[ 0 ] == '\0' ) {
 		vip_description = " \t"COL_WHITE"Regular VIP\t"COL_BRONZE"Bronze VIP\t"COL_GOLD"Gold V.I.P\n";
-		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_WHITE"$5.00 /mo\t"COL_BRONZE"$10.00 /mo\t"COL_GOLD"$20.00 /mo\n" );
+		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_WHITE"$5.00 /mo\t"COL_BRONZE"$10.00 /mo\t"COL_GOLD"$18.00 /mo\n" );
 		strcat( vip_description, "Total house slots\t5\t10\tunlimited\n" );
 		strcat( vip_description, "Total garage slots*\t5\t10\tunlimited\n" );
 		strcat( vip_description, "Total business slots\t5\t10\tunlimited\n" );

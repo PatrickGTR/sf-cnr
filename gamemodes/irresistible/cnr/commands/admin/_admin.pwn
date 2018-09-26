@@ -14,8 +14,8 @@
 
 #define DIALOG_ADMIN_CMDS 			1167
 #define DIALOG_ADMIN_CMDS_BACK 		1168
-/* ** Variables ** */
 
+/* ** Variables ** */
 enum E_COMMAND_DATA
 {
     E_LEVEL,
@@ -23,7 +23,7 @@ enum E_COMMAND_DATA
     E_DESCRIPTION[ 144 ],
 }
 
-new 
+static stock
     g_CommandData                   [ ] [ E_COMMAND_DATA ] =
     {
     	/* ** Level 1 Commands ** */
@@ -200,7 +200,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		szHugeString[ 0 ] = '\0';
 
-		new 
+		new
 			level = ( listitem + 1 );
 
 		if ( p_AdminLevel[ playerid ] < level )
@@ -208,7 +208,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		for (new iLine = 0; iLine < sizeof( g_CommandData ); iLine ++ ) if ( g_CommandData[ iLine ][ E_LEVEL ] == level )
 		{
-			format( szHugeString, sizeof( szHugeString ), "%s"COL_GREY"%s\t"COL_WHITE"%s\n", 
+			format( szHugeString, sizeof( szHugeString ), "%s"COL_GREY"%s\t"COL_WHITE"%s\n",
 			szHugeString,
 			g_CommandData[ iLine ][ E_COMMAND ],
 			g_CommandData[ iLine ][ E_DESCRIPTION ]);

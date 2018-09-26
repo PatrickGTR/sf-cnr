@@ -2,6 +2,9 @@
 (+) Adds passive mode (togglable via /settings). Disables random death matching as an innocent player.
 (+) You can now disable automatic weapon pickup through /settings.
 (+) Admins can now track the hitmarker of spectating players.
+(+) /acmds is now entirely based off dialogs thanks to Stev.
+(/) Gold V.I.P costs no more than $18.00 USD a month (1,800 IC).
+(/) Shark cards have been reduced by 10% in price, and a lot of the other items have also been reduced.
 (/) If you successfully break your cuffs, you get immunity from being tazed for 10 seconds.
-(/) Default 25% success rate breaking cuffs... Increases with more police in the server.
+(/) Default 20% success rate breaking cuffs... Increases with more police in the server.
 (/) Simplified "/cp" (alternatively, /settings) dialog.
