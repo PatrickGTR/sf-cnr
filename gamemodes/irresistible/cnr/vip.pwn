@@ -57,11 +57,11 @@ new
 	},
 	g_irreisistibleCashCards 		[ ] [ E_IC_MARKET_DATA ] =
 	{
-		{ 1250000,		"Tiger Shark",			250.0 },
-		{ 2750000,		"Bull Shark",			500.0 },
-		{ 6000000,		"Great White Shark",	1000.0 },
-		{ 10000000,		"Whale Shark",			1500.0 },
-		{ 20000000,		"Megalodon Shark",		2500.0 }
+		{ 1250000,		"Tiger Shark",			225.0 },
+		{ 2750000,		"Bull Shark",			450.0 },
+		{ 6000000,		"Great White Shark",	900.0 },
+		{ 10000000,		"Whale Shark",			1350.0 },
+		{ 20000000,		"Megalodon Shark",		2250.0 }
 	},
 	g_irresistibleMarketItems		[ ] [ E_IC_MARKET_DATA ] =
 	{
@@ -71,7 +71,7 @@ new
 		{ ICM_METH_BIZ,	"Meth Business",		700.0 },
 		{ ICM_WEED_BIZ,	"Weed Business",		500.0 },
 		{ ICM_VEHICLE,	"Select Vehicle",		450.0 },
-		{ ICM_HOUSE,	"Select House",			450.0 },
+		{ ICM_HOUSE,	"Select House",			400.0 },
 		{ ICM_GATE,		"Custom Gate",			350.0 },
 		{ ICM_VEH_SLOT,	"Extra Vehicle Slot", 	350.0 },
 		{ ICM_GARAGE,	"Select Garage", 		250.0 },
