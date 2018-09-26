@@ -34,12 +34,6 @@ hook OnScriptInit( )
 	return 1;
 }
 
-hook OnPlayerDisconnect( playerid, reason )
-{
-	p_InAnimation{ playerid } = false;
-	return 1;
-}
-
 #if defined AC_INCLUDED
 hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
@@ -55,7 +49,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 hook OnPlayerMovieMode( playerid, bool: toggled )
 {
-	if ( toggled && IsPlayerUsingAnimation( playerid ) ) {
+	if ( ! toggled && IsPlayerUsingAnimation( playerid ) ) {
 		TextDrawShowForPlayer( playerid, g_AnimationTD );
 	} else {
 		TextDrawHideForPlayer( playerid, g_AnimationTD );
@@ -65,6 +59,9 @@ hook OnPlayerMovieMode( playerid, bool: toggled )
 
 hook OnPlayerFirstSpawn( playerid )
 {
+	// Just as good as hooking
+	p_InAnimation{ playerid } = false;
+
     // Preload all animations
     PreloadAnimationLibrary( playerid, "DANCING" );
     PreloadAnimationLibrary( playerid, "PED" );
