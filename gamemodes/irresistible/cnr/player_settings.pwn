@@ -104,9 +104,9 @@ hook OnPlayerConnect( playerid ) {
 	return 1;
 }
 
-hook OnPlayerLogin( playerid, accountid )
+hook OnPlayerLogin( playerid )
 {
-	format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `SETTINGS` WHERE `USER_ID`=%d", accountid );
+	format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `SETTINGS` WHERE `USER_ID`=%d", GetPlayerAccountID( playerid ) );
 	mysql_function_query( dbHandle, szNormalString, true, "OnSettingsLoad", "d", playerid );
 	return 1;
 }
@@ -162,11 +162,11 @@ CMD:passive( playerid, params[ ] )
 
 CMD:passivelist( playerid, params[ ])
 {
-	new 
+	new
 		count = 0;
-	
+
 	szBigString[ 0 ] = '\0';
-	
+
 	foreach ( new i : Player )
 	{
 		if ( IsPlayerPassive( i ) )
@@ -178,7 +178,7 @@ CMD:passivelist( playerid, params[ ])
 
 	if ( count == 0 )
 		return SendError( playerid, "There is currently no players in passive mode." );
-	else 
+	else
 		return ShowPlayerDialog(playerid, DIALOG_NULL, DIALOG_STYLE_LIST, ""COL_WHITE"Passive List", szBigString, "Close", "" ), 1;
 }
 

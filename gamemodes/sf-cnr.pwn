@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -13302,7 +13302,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			CheckPlayerVipExpiry( playerid );
 
 			// Load other player related variables
-			CallLocalFunction( "OnPlayerLogin", "dd", playerid, p_AccountID[ playerid ] );
+			CallLocalFunction( "OnPlayerLogin", "d", playerid );
 
 			// Load some more linking tables
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `EMAILS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
