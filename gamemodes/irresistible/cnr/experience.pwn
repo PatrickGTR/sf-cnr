@@ -25,16 +25,16 @@ enum E_LEVELS {
 };
 
 enum E_LEVEL_DATA {
-	E_LEVELS: E_LEVEL, 	Float: E_MAX_UNITS
+	E_NAME[ 16 ],				Float: E_MAX_UNITS
 };
 
 static const
 	g_levelData[ ] [ E_LEVEL_DATA ] =
 	{
-		// Level					Requirement For Level 100
-		{ E_LAW_ENFORCEMENT, 		25000.0 },
-		{ E_DEATHMATCH, 			200000.0 },
-		{ E_ROBBERY,				100000.0 }
+		// Level Name 			Level 100 Req.
+		{ "Law Enforcement",	25000.0 }, 		// 25K arrests
+		{ "Robbery", 			100000.0 }, 	// 100K robberies
+		{ "Deathmatch", 		200000.0 } 		// 200K kills
 	}
 ;
 
@@ -70,6 +70,21 @@ hook OnPlayerLogin( playerid )
 {
 	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `USER_LEVELS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "Experience_OnLoad", "d", playerid );
 	return 1;
+}
+
+/* ** Commands ** */
+CMD:level( playerid, params[ ] )
+{
+	szLargeString = ""COL_GREY"Skill\t"COL_GREY"Current Level\t"COL_GREY"% To Next Level\n";
+
+	for ( new level_id; level_id < sizeof( g_levelData ); level_id ++ )
+	{
+		new Float: current_rank = GetPlayerLevel( playerid, E_LEVELS: level_id );
+		new Float: progress_to_next_level = floatfract( current_rank ) * 100.0;
+
+		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%d\t%0.1f%\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank, progress_to_next_level );
+	}
+	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Player Level", szLargeString, "Close", "" );
 }
 
 /* ** Functions ** */
