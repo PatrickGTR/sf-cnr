@@ -55,7 +55,7 @@ new
 		{ VIP_BRONZE,	"Bronze V.I.P", 	1000.0 },
 		{ VIP_REGULAR, 	"Regular V.I.P",	500.0 }
 	},
-	g_irreisistibleCashCards 		[ ] [ E_IC_MARKET_DATA ] =
+	g_irresistibleCashCards 		[ ] [ E_IC_MARKET_DATA ] =
 	{
 		{ 1250000,		"Tiger Shark",			225.0 },
 		{ 2750000,		"Bull Shark",			450.0 },
@@ -156,7 +156,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		// cash cards
 		else if ( dialogid == DIALOG_IC_MARKET_3 ) {
-			iCoinRequirement *= g_irreisistibleCashCards[ listitem ] [ E_PRICE ];
+			iCoinRequirement *= g_irresistibleCashCards[ listitem ] [ E_PRICE ];
 		}
 
 		p_CoinMarketPage{ playerid } = ( dialogid == DIALOG_IC_MARKET_3 ) ? ICM_PAGE_CASHCARD : ICM_PAGE_ASSETS;
@@ -250,19 +250,19 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		// buy cash cards
 		else if ( p_CoinMarketPage{ playerid } == ICM_PAGE_CASHCARD )
 		{
-			new Float: iCoinRequirement = g_irreisistibleCashCards[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
+			new Float: iCoinRequirement = g_irresistibleCashCards[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
 
 			if ( player_coins < iCoinRequirement ) {
 				SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
 				return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 			}
 
-			new cash_amount = g_irreisistibleCashCards[ listitem ] [ E_ID ];
+			new cash_amount = g_irresistibleCashCards[ listitem ] [ E_ID ];
 
 			GivePlayerCash( playerid, cash_amount );
 			GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
-			SendServerMessage( playerid, "You have ordered a "COL_GREEN"%s Cash Card (%s)"COL_WHITE" for %s Irresistible Coins!", g_irreisistibleCashCards[ listitem ] [ E_NAME ], number_format( cash_amount ), number_format( iCoinRequirement, .decimals = 0 ) );
-			ShowPlayerHelpDialog( playerid, 10000, "You have bought a ~g~%s~w~ %s Cash Card!", number_format( cash_amount ), g_irreisistibleCashCards[ listitem ] [ E_NAME ] );
+			SendServerMessage( playerid, "You have ordered a "COL_GREEN"%s Cash Card (%s)"COL_WHITE" for %s Irresistible Coins!", g_irresistibleCashCards[ listitem ] [ E_NAME ], number_format( cash_amount ), number_format( iCoinRequirement, .decimals = 0 ) );
+			ShowPlayerHelpDialog( playerid, 10000, "You have bought a ~g~%s~w~ %s Cash Card!", number_format( cash_amount ), g_irresistibleCashCards[ listitem ] [ E_NAME ] );
 		}
 
 		// all other market items
@@ -476,10 +476,10 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 	{
 		szMarket = ""COL_GREY"Cash Card\t"COL_GREY"Amount ($)\t"COL_GREY"Coins Needed\n";
 
-		for( new i = 0; i < sizeof( g_irreisistibleCashCards ); i++ )
+		for( new i = 0; i < sizeof( g_irresistibleCashCards ); i++ )
 		{
-			new iCoinRequirement = floatround( g_irreisistibleCashCards[ i ] [ E_PRICE ] * discount );
-			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GREEN"%s\t"COL_GOLD"%s\n", szMarket, g_irreisistibleCashCards[ i ] [ E_NAME ], number_format( g_irreisistibleCashCards[ i ] [ E_ID ] ), number_format( iCoinRequirement, .decimals = 0 ) );
+			new iCoinRequirement = floatround( g_irresistibleCashCards[ i ] [ E_PRICE ] * discount );
+			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GREEN"%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleCashCards[ i ] [ E_NAME ], number_format( g_irresistibleCashCards[ i ] [ E_ID ] ), number_format( iCoinRequirement, .decimals = 0 ) );
 		}
 		return ShowPlayerDialog( playerid, DIALOG_IC_MARKET_3, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin -{FFFFFF} Cash Cards", szMarket, "Select", "Back" );
 	}
