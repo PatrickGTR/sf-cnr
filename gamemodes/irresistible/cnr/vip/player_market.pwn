@@ -43,8 +43,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		if ( sscanf( inputtext, "f", purchase_amount ) )
 		{
-			SendError( playerid, "Please specify a valid amount." );
-			return PlayerMarket_ShowSellOrder( playerid, sellorderid );
+			return SendError( playerid, "Please specify a valid amount." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
+		}
+		else if ( ! ( 1.0 <= purchase_amount <= 10000.0 ) )
+		{
+			return SendError( playerid, "Please specify an amount between 1.0 and 10,000 IC." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
 		}
 		else
 		{
@@ -58,21 +61,32 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Commands ** */
 CMD:sellcoins( playerid, params[ ] )
 {
+	if ( ! IsPlayerSecurityVerified( playerid ) )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	new
 		Float: quantity, price;
 
-	if ( sscanf( params, "df", price, quantity ) ) return SendUsage( playerid, "/sellcoins [PRICE_PER_COIN] [COINS]" );
+	if ( GetPlayerVIPLevel( playerid ) < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+	else if ( sscanf( params, "df", price, quantity ) ) return SendUsage( playerid, "/sellcoins [PRICE_PER_COIN] [COINS]" );
 	else if ( quantity < 10.0 ) return SendError( playerid, "The minimum amount you can sell is 10.0 Irresistible Coins." );
 	else if ( quantity > GetPlayerIrresistibleCoins( playerid ) ) return SendError( playerid, "You do not have this many Irresistible Coins." );
 	else if ( ! ( 1000 <= price <= 125000 )) return SendError( playerid, "Selling price must be between $1,000 and $125,000 per coin." );
 	else
 	{
+		new
+			Float: sell_volume = float( price ) * quantity;
+
+		if ( ! ( 1000.0 <= sell_volume <= 2000000000.0 ) ) {
+			return SendError( playerid, "The maximum amount of volume per order is $2,000,000,000." ); // prevent bugs
+		}
+
 		// insert into database
 		mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO IC_SELL_ORDERS (USER_ID, ASK_PRICE, AVAILABLE_IC, TOTAL_IC) VALUES (%d, %d, %f, %f)", GetPlayerAccountID( playerid ), price, quantity, quantity );
 		mysql_single_query( szBigString );
 
 		// deduct the coins
-		SendServerMessage( playerid, "Sell order for %s Irresistible Coins (at %s/IC) has been placed. Cancel via /ic cancel.", number_format( quantity, .decimals = 2 ), cash_format( price ) );
+		SendServerMessage( playerid, "Sell order for %s Irresistible Coins (at %s/IC) has been placed. Cancel via /cancelorders.", number_format( quantity, .decimals = 3 ), cash_format( price ) );
 		GivePlayerIrresistibleCoins( playerid, -quantity );
 	}
 	return 1;
@@ -80,7 +94,19 @@ CMD:sellcoins( playerid, params[ ] )
 
 CMD:buycoins( playerid, params[ ] )
 {
+	if ( ! IsPlayerSecurityVerified( playerid ) )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
 	ShowPlayerCoinSellOrders( playerid );
+	return 1;
+}
+
+CMD:cancelorders( playerid, params[ ] )
+{
+	if ( ! IsPlayerSecurityVerified( playerid ) )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `IC_SELL_ORDERS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "PlayerMarket_OnCancelOrders", "d", playerid );
 	return 1;
 }
 
@@ -110,7 +136,7 @@ thread PlayerMarket_OnShowSellOrders( playerid )
 				new Float: quantity = cache_get_field_content_float( row, "AVAILABLE_IC" );
 				new ask_price = cache_get_field_content_int( row, "ASK_PRICE" );
 
-				format( szHugeString, sizeof( szHugeString ), "%s%s\t%s\t"COL_GREEN"%s\n", szHugeString, seller, number_format( quantity, .decimals = 2 ), cash_format( ask_price ) );
+				format( szHugeString, sizeof( szHugeString ), "%s%s\t%s IC\t"COL_GREEN"%s\n", szHugeString, seller, number_format( quantity, .decimals = 3 ), cash_format( ask_price ) );
 			}
 			else
 			{
@@ -139,8 +165,33 @@ thread PlayerMarket_OnShowSellOrder( playerid, sellorderid )
 
 	SetPVarInt( playerid, "playermarket_sellorder", sellorderid );
 
-	format( szBigString, sizeof( szBigString ), "This player has %s Irresistible Coins to sell at %s per coin.\n\nHow many Irresistible Coins would you like to buy?", number_format( quantity, .decimals = 2 ), cash_format( ask_price ) );
+	format( szBigString, sizeof( szBigString ), ""COL_WHITE"This player has %s Irresistible Coins to sell at %s per coin.\n\nHow many Irresistible Coins would you like to buy?", number_format( quantity, .decimals = 3 ), cash_format( ask_price ) );
 	return ShowPlayerDialog( playerid, DIALOG_IC_BUY, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Buy Coins", szBigString, "Buy", "Back" ), 1;
+}
+
+thread PlayerMarket_OnCancelOrders( playerid )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( ! rows ) {
+		return SendError( playerid, "You do not have any sell orders at the moment." );
+	}
+
+	new
+		Float: coins_accum = 0.0;
+
+	for ( new row = 0; row < rows; row ++ ) {
+		coins_accum += cache_get_field_content_float( row, "AVAILABLE_IC" );
+	}
+
+	// delete from db
+	mysql_single_query( sprintf( "DELETE FROM IC_SELL_ORDERS WHERE USER_ID = %d", GetPlayerAccountID( playerid ) ) );
+
+	// credit back user
+	GivePlayerIrresistibleCoins( playerid, coins_accum );
+	SendServerMessage( playerid, "You have canceled %d sell orders. You have been returned %s IC.", rows, number_format( coins_accum, .decimals = 3 ) );
+	return 1;
 }
 
 thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amount )
@@ -170,6 +221,10 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 	// check if seller is the buyer
 	new seller_account_id = cache_get_field_content_int( 0, "USER_ID" );
 
+	if ( GetPlayerAccountID( playerid ) == seller_account_id ) {
+		return SendError( playerid, "You cannot buy your own coins." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
+	}
+
 	// delete the sell order if theres little remaining else reduce
 	if ( available_quantity - purchase_amount < 0.5 ) {
 		mysql_single_query( sprintf( "DELETE FROM IC_SELL_ORDERS WHERE ID = %d", sellorderid ) );
@@ -185,11 +240,13 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 		break;
 	}
 
+	new after_fee_amount = floatround( float( purchase_cost ) * 0.995, floatround_floor );
+
 	if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
-		GivePlayerCash( playerid, purchase_cost ), Beep( playerid );
-		SendServerMessage( sellerid, "You have successfully %s IC to %s(%d) for "COL_GOLD"%s"COL_WHITE"!", number_format( purchase_amount, .decimals = 2 ), ReturnPlayerName( playerid ), playerid, cash_format( purchase_cost ) );
+		GivePlayerCash( sellerid, after_fee_amount ), Beep( sellerid );
+		SendServerMessage( sellerid, "You have successfully sold %s IC to %s(%d) for "COL_GOLD"%s"COL_WHITE" (-0.5%s fee)!", number_format( purchase_amount, .decimals = 3 ), ReturnPlayerName( playerid ), playerid, cash_format( after_fee_amount ), "%%" );
 	} else {
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = `CASH` + %d WHERE `ID` = %d", purchase_cost, seller_account_id ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = `CASH` + %d WHERE `ID` = %d", after_fee_amount, seller_account_id ) );
 	}
 
 	// log the purchase
@@ -199,7 +256,7 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 	// credit the buyer
 	GivePlayerCash( playerid, -purchase_cost );
 	GivePlayerIrresistibleCoins( playerid, purchase_amount );
-	SendServerMessage( playerid, "You have successfully purchased %s IC (rate %s each) for %s.", number_format( purchase_amount, .decimals = 2 ), cash_format( ask_price ), cash_format( purchase_cost ) );
+	SendServerMessage( playerid, "You have successfully purchased %s IC (@ %s/IC) for %s.", number_format( purchase_amount, .decimals = 3 ), cash_format( ask_price ), cash_format( purchase_cost ) );
 	return 1;
 }
 

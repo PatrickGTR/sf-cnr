@@ -1,3 +1,4 @@
+(+) Adds a system of buying (/buycoins) and selling (/sellcoins) Irresistible Coins. 
 (+) Adds a premium real estate listing system, use /estate to see if any homes are interesting.
 (+) Adds passive mode (togglable via /settings). Disables random death matching as an innocent player.
 (+) You can now disable automatic weapon pickup through /settings.
