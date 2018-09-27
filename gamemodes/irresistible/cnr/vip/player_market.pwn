@@ -45,9 +45,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			return SendError( playerid, "Please specify a valid amount." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
 		}
-		else if ( ! ( 1.0 <= purchase_amount <= 10000.0 ) )
+		else if ( ! ( 0.5 <= purchase_amount <= 10000.0 ) )
 		{
-			return SendError( playerid, "Please specify an amount between 1.0 and 10,000 IC." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
+			return SendError( playerid, "Please specify an amount between 0.5 and 10,000 IC." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
 		}
 		else
 		{
