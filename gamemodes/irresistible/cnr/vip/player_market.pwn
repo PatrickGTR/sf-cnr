@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\vip\player_market.pwn
+ * Purpose: a selling market for irresistible coins between players
  */
 
 /* ** Includes ** */
