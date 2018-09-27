@@ -71,9 +71,6 @@ new bool: False = false;
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 #define GetBusinessSecurity(%0) 	(g_businessSecurityData[%0][E_LEVEL])
 
-/* Dynamic Macros */
-#define IsDoubleXP()				(GetGVarInt("doublexp")!=0)
-
 /* Beast Functions */
 #define SendClientMessageToCops(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_POLICE)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
@@ -2551,7 +2548,6 @@ public OnServerUpdateTimer( )
 
 		    // Generally Updated textdraws
 			PlayerTextDrawSetString( playerid, p_LocationTD[ playerid ], GetPlayerArea( playerid ) );
-			PlayerTextDrawSetString( playerid, p_ExperienceTD[ playerid ], sprintf( "%08d", p_XP[ playerid ] ) );
 
 			// Update casino labels
 			UpdateDynamic3DTextLabelText( p_RewardsLabel_Caligs[ playerid ], COLOR_GOLD, sprintf( "[CASINO REWARDS]\n\n"COL_WHITE"You have %s rewards points!", points_format( p_CasinoRewardsPoints[ playerid ] ) ) );
@@ -17991,15 +17987,13 @@ stock GivePlayerXP( playerid, amount )
 		p_XP[ playerid ] += amount;
 	    PlayerTextDrawSetString( playerid, p_ExperienceAwardTD[ playerid ], string );
 	    PlayerTextDrawShow( playerid, p_ExperienceAwardTD[ playerid ] );
-		p_ExperienceHideTimer[ playerid ] = SetTimerEx( "ExperienceTD_hide", 3500, false, "d", playerid );
+		SetTimerEx( "ExperienceTD_hide", 3500, false, "d", playerid );
 		if ( p_XP[ playerid ] > 99999999 ) p_XP[ playerid ] = 99999999;
 		autosaveStart( playerid ); // auto-save
 		return 1;
 	}
 	return 0;
 }
-
-function ExperienceTD_hide( playerid ) return PlayerTextDrawHide( playerid, p_ExperienceAwardTD[ playerid ] );
 
 stock IsPlayerFBI( playerid )
 {

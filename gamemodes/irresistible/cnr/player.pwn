@@ -65,7 +65,6 @@ new
 	bool: p_Spectating            	[ MAX_PLAYERS char ],
 	bool: p_Muted                   [ MAX_PLAYERS char ],
 	bool: p_InfectedHIV             [ MAX_PLAYERS char ],
-	p_ExperienceHideTimer           [ MAX_PLAYERS ],
 	p_AntiTextSpam                  [ MAX_PLAYERS ],
 	bool: p_BlockedPM            	[ MAX_PLAYERS ] [ MAX_PLAYERS ],
 	bool: p_inFBI                   [ MAX_PLAYERS char ],
@@ -265,3 +264,4 @@ stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
 
 stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };
 
+stock IsPlayerLoggedIn( playerid ) return p_PlayerLogged{ playerid };
