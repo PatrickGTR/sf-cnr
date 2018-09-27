@@ -125,3 +125,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Functions ** */
+stock IsPlayerSecurityVerified( playerid ) {
+	return ! ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED );
+}

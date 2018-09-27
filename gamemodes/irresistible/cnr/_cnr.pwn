@@ -15,7 +15,9 @@
 #include "irresistible\cnr\spawn.pwn"
 #include "irresistible\cnr\dialog_ids.pwn"
 #include "irresistible\cnr\checkpoints.pwn"
-#include "irresistible\cnr\vip.pwn"
+
+// reliant on core definitions
+#include "irresistible\cnr\vip\_vip.pwn"
 #include "irresistible\cnr\ammunation.pwn"
 #include "irresistible\cnr\irresistibleguard.pwn"
 #include "irresistible\cnr\player_settings.pwn"
