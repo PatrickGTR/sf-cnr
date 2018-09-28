@@ -39,7 +39,7 @@
 #define DIALOG_GANG_COLOR           		1027
 #define DIALOG_GANG_COLOR_INPUT     		1028
 #define DIALOG_RADIO                		1029
-#define DIALOG_XPMARKET             		1030
+//#define DIALOG_XPMARKET             		1030
 #define DIALOG_PAINTBALL            		1031
 #define DIALOG_GPS                  		1032
 #define DIALOG_VIP_LOCKER           		1033

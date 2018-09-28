@@ -424,7 +424,7 @@ CMD:givexp( playerid, params [ ] )
 	    xp
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, "udd", pID, level, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [XP_AMOUNT]" );
+	else if ( sscanf( params, "udd", pID, level, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [LEVEL_ID] [XP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{

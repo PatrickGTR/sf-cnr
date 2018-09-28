@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -2189,7 +2189,7 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "UPDATE USERS SET VIP_PACKAGE=0, VIP_EXPIRE=0 WHERE UNIX_TIMESTAMP() > VIP_EXPIRE AND VIP_EXPIRE != 0", true, "onRemoveInactiveRows", "d", 1 );
 
 	// Truncate accounts older than 2 months
-	mysql_function_query( dbHandle, "UPDATE USERS SET CASH=0,BANKMONEY=0,COINS=0.0 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>5259487", true, "onRemoveInactiveRows", "d", 2 );
+	mysql_function_query( dbHandle, "UPDATE USERS SET CASH=0,BANKMONEY=0,COINS=0.0,XP=0 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>5259487", true, "onRemoveInactiveRows", "d", 2 );
 
 	// Remove inactive homes older than 2 weeks
 	mysql_function_query( dbHandle, "DELETE a2,a3 FROM `USERS` a1 " \
@@ -6953,7 +6953,7 @@ CMD:robitems( playerid, params[ ] )
 		SetPVarInt( playerid, "robitems_timestamp", g_iTime + 60 );
 		GivePlayerWantedLevel( playerid, 4 );
 		GivePlayerScore( playerid, 1 );
-		GivePlayerExperience( playerid, E_ROBBERY, 0.5 );
+		GivePlayerExperience( playerid, E_ROBBERY );
 
 		new
 			available_items[ 3 ] = { -1, -1, -1 },
@@ -8233,11 +8233,11 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 	return 1;
 }
 
-CMD:xpmarket( playerid, params[ ] )
-{
+CMD:xpmarket( playerid, params[ ] ) return SendServerMessage( playerid, "You can no longer sell your experience anymore." );
+/*{
 	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %s legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", number_format( p_XP[ playerid ] ) ), "Select", "Cancel");
 	return 1;
-}
+}*/
 
 CMD:emp( playerid, params[ ] )
 {
@@ -12171,7 +12171,7 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 
 				GivePlayerWantedLevel( playerid, 4 );
 				GivePlayerScore( playerid, 1 );
-				GivePlayerExperience( playerid, E_ROBBERY );
+				GivePlayerExperience( playerid, E_ROBBERY, 0.67 );
 
 				GetPlayerPos 			( playerid, X, Y, Z );
 			    Get2DCity				( szCity, X, Y, Z );
@@ -14487,7 +14487,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     	}
     	else ShowPlayerShopMenu( playerid );
     }
-	if ( ( dialogid == DIALOG_XPMARKET ) && response )
+	/*if ( ( dialogid == DIALOG_XPMARKET ) && response )
 	{
 		if ( !strlen( inputtext ) || !IsNumeric( inputtext ) )
 		    return SendError( playerid, "The input you have entered is invalid, must be a numeric with over 0 characters." ), cmd_xpmarket( playerid, "" ), 1;
@@ -14499,7 +14499,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		GivePlayerCash( playerid, strval( inputtext ) * EXCHANGE_XPCASH );
 		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
 		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
-	}
+	}*/
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -18007,7 +18007,7 @@ stock SetPlayerColorToTeam( playerid )
 	return 1;
 }
 
-stock GivePlayerXP_Legacy( playerid, amount )
+/*stock GivePlayerXP_Legacy( playerid, amount )
 {
 	if ( p_PlayerLogged{ playerid } == true )
 	{
@@ -18026,7 +18026,7 @@ stock GivePlayerXP_Legacy( playerid, amount )
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 stock IsPlayerFBI( playerid )
 {

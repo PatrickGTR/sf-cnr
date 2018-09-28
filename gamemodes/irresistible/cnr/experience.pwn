@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\experience.pwn
+ * Purpose: player experience system 2.0
  */
 
 /* ** Includes ** */
@@ -17,8 +17,8 @@
 /* ** Constants ** */
 enum E_LEVELS {
 	E_POLICE,
-	E_DEATHMATCH,
 	E_ROBBERY,
+	E_DEATHMATCH,
 
 	/*E_FIREMAN,
 	E_PARAMEDIC,
@@ -112,6 +112,9 @@ hook OnPlayerDisconnect( playerid, reason ) {
 }
 
 /* ** Commands ** */
+CMD:experience( playerid, params[ ] ) return cmd_level( playerid, params );
+CMD:levels( playerid, params[ ] ) return cmd_level( playerid, params );
+CMD:xp( playerid, params[ ] ) return cmd_level( playerid, params );
 CMD:level( playerid, params[ ] )
 {
 	new
@@ -139,7 +142,7 @@ CMD:level( playerid, params[ ] )
 	}
 
 	SetPVarInt( playerid, "experience_watchingid", watchingid );
-	return ShowPlayerDialog( playerid, DIALOG_VIEW_LEVEL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}%s(%d) Level - Total Level %d", ReturnPlayerName( watchingid ), watchingid, player_total_lvl ), szLargeString, "Refresh", "Close" );
+	return ShowPlayerDialog( playerid, DIALOG_VIEW_LEVEL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}%s's Level - Total Level %d", ReturnPlayerName( watchingid ), player_total_lvl ), szLargeString, "Refresh", "Close" );
 }
 
 /* ** SQL Threads ** */
@@ -178,7 +181,7 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	new Float: next_rank_xp = ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * float( next_rank * next_rank );
 
 	if ( g_playerExperience[ playerid ] [ level ] + xp_earned >= next_rank_xp ) {
-		ShowPlayerHelpDialog( playerid, 10000, "~y~Congratulations!~n~~n~~w~Your %s Level is now ~y~%d.", g_levelData[ _: level ] [ E_NAME ], next_rank );
+		ShowPlayerHelpDialog( playerid, 10000, "~p~Congratulations %s!~n~~n~~w~Your %s Level is now ~p~%d.", ReturnPlayerName( playerid ), g_levelData[ _: level ] [ E_NAME ], next_rank );
 		if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/levelup.mp3" );
 	}
 
@@ -195,11 +198,10 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	// save to database
 	format(
 		szBigString, sizeof( szBigString ),
-		"INSERT INTO `USER_LEVELS` (`USER_ID`,`LEVEL_ID`,`EXPERIENCE`) VALUES(%d,%d,%d) ON DUPLICATE KEY UPDATE `EXPERIENCE`=%d",
+		"INSERT INTO `USER_LEVELS` (`USER_ID`,`LEVEL_ID`,`EXPERIENCE`) VALUES(%d,%d,%f) ON DUPLICATE KEY UPDATE `EXPERIENCE`=%f",
 		GetPlayerAccountID( playerid ), _: level, g_playerExperience[ playerid ] [ level ], g_playerExperience[ playerid ] [ level ]
 	);
-	mysql_single_query( szBigString );
-	return 1;
+	return mysql_single_query( szBigString ), 1;
 }
 
 function Experience_HideIncrementTD( playerid ) {
