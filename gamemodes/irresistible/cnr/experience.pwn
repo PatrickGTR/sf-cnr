@@ -148,7 +148,7 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0 )
 		return;
 
 	// dilation is there so people see +3 when they arrest ... could trigger dopamine levels instead of constantly +1 lol
-	new xp_earned = ( default_xp * g_levelData[ _: level ] [ E_XP_DILATION ] ) * ( IsDoubleXP( ) ? 2.0 : 1.0 );
+	new Float: xp_earned = ( default_xp * g_levelData[ _: level ] [ E_XP_DILATION ] ) * ( IsDoubleXP() ? 2.0 : 1.0 );
 
 	// check if its over 100 anyway
 	if ( ( g_playerExperience[ playerid ] [ level ] += xp_earned ) > g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) {
