@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define EXP_MAX_PLAYER_LEVEL 		( 100 )
+#define EXP_MAX_PLAYER_LEVEL 		( 100.0 )
 
 /* ** Double XP ** */
 #define IsDoubleXP() 				( GetGVarInt( "doublexp" ) )
@@ -19,12 +19,12 @@ enum E_LEVELS {
 	E_LAW_ENFORCEMENT,
 	E_DEATHMATCH,
 	E_ROBBERY,
-	// E_FIREMAN,
-	// E_HITMAN,
-	// E_BURGLAR,
-	// E_TERRORIST,
-	// E_CAR_JACKER,
-	// E_DRUG_PRODUCTION
+	E_FIREMAN,
+	E_HITMAN,
+	E_BURGLAR,
+	E_TERRORIST,
+	E_CAR_JACKER,
+	E_DRUG_PRODUCTION
 };
 
 enum E_LEVEL_DATA {
@@ -35,9 +35,15 @@ static const
 	g_levelData[ ] [ E_LEVEL_DATA ] =
 	{
 		// Level Name 			Level 100 Req.		XP Dilation (just to confuse user)
-		{ "Law Enforcement",	25000.0, 			3.0 }, 		// 25K arrests
-		{ "Robbery", 			100000.0,			2.0 }, 		// 100K robberies
-		{ "Deathmatch", 		200000.0,			1.0 } 		// 200K kills
+		{ "Law Enforcement",	10000.0, 			3.0 }, 		// 10K arrests
+		{ "Robbery", 			50000.0,			2.0 }, 		// 100K robberies
+		{ "Deathmatch", 		100000.0,			1.0 }, 		// 100K kills
+		{ "Fireman",			10000.0,			3.0 },		// 10k fires
+		{ "Hitman",				1500.0,				1.5 },		// 1.5k contracts
+		{ "Burglar",			2000.0,				2.5 },		// 2K burglaries
+		{ "Terrorist",			15000.0,			2.0 },		// 15k blown entities
+		{ "Car Jacker",			10000.0,			2.0 },		// 10k cars jacked
+		{ "Drug Production",	10000.0,			2.0	}		// 10k exports drug related
 	}
 ;
 
@@ -90,6 +96,9 @@ hook OnPlayerDisconnect( playerid, reason ) {
 /* ** Commands ** */
 CMD:level( playerid, params[ ] )
 {
+	new
+		player_total_lvl = 0;
+
 	szLargeString = ""COL_GREY"Skill\t"COL_GREY"Current Level\t"COL_GREY"% To Next Level\n";
 
 	for ( new level_id; level_id < sizeof( g_levelData ); level_id ++ )
@@ -97,9 +106,17 @@ CMD:level( playerid, params[ ] )
 		new Float: current_rank = GetPlayerLevel( playerid, E_LEVELS: level_id );
 		new Float: progress_to_next_level = floatfract( current_rank ) * 100.0;
 
-		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%d\t%0.1f%\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank, progress_to_next_level );
+		player_total_lvl += floatround( current_rank, floatround_floor );
+		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%0.0f / %0.0f\t%0.1f%\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank, EXP_MAX_PLAYER_LEVEL, progress_to_next_level );
 	}
-	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Player Level", szLargeString, "Close", "" );
+	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}Player Level - Total Level %d", player_total_lvl ), szLargeString, "Close", "" );
+}
+
+CMD:givelevel( playerid, params[ ] ) {
+	new rank, Float: xp;
+	sscanf( params, "df", rank, xp );
+	GivePlayerExperience( playerid, E_LEVELS: rank, xp );
+	return 1;
 }
 
 /* ** SQL Threads ** */
@@ -125,13 +142,13 @@ thread Experience_OnLoad( playerid )
 }
 
 /* ** Functions ** */
-stock GivePlayerExperience( playerid, E_LEVELS: level, Float: experience = 1.0 )
+stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0 )
 {
 	if ( ! IsPlayerLoggedIn( playerid ) )
 		return;
 
 	// dilation is there so people see +3 when they arrest ... could trigger dopamine levels instead of constantly +1 lol
-	new xp_earned = ( experience * g_levelData[ _: level ] [ E_XP_DILATION ] ) * ( IsDoubleXP( ) ? 2.0 : 1.0 );
+	new xp_earned = ( default_xp * g_levelData[ _: level ] [ E_XP_DILATION ] ) * ( IsDoubleXP( ) ? 2.0 : 1.0 );
 
 	// check if its over 100 anyway
 	if ( ( g_playerExperience[ playerid ] [ level ] += xp_earned ) > g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) {
@@ -173,4 +190,15 @@ stock GetPlayerTotalLevel( playerid, &level = 0 ) {
 		PRIMARY KEY (USER_ID, LEVEL_ID),
 		FOREIGN KEY (USER_ID) REFERENCES USERS (ID) ON DELETE CASCADE
 	);
+
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 0 as LEVEL_ID, ARRESTS * 3.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 1 as LEVEL_ID, ROBBERIES * 2.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 2 as LEVEL_ID, KILLS * 1.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 3 as LEVEL_ID, FIRES * 3.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 4 as LEVEL_ID, CONTRACTS * 1.5 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 5 as LEVEL_ID, BURGLARIES * 1.5 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 6 as LEVEL_ID, (BLEW_JAILS + BLEW_VAULT) * 2.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 7 as LEVEL_ID, VEHICLES_JACKED * 2.0 AS EXPERIENCE FROM USERS);
+	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 8 as LEVEL_ID, (METH_YIELDED + (TRUCKED*0.33)) * 2.0 AS EXPERIENCE FROM USERS);
+	DELETE FROM USER_LEVELS WHERE EXPERIENCE = 0;
  */
