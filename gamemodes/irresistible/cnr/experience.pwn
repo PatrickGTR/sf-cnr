@@ -39,9 +39,9 @@ static const
 	g_levelData[ ] [ E_LEVEL_DATA ] =
 	{
 		// Level Name 			Level 100 Req.		XP Dilation (just to confuse user)
-		{ "Police",				10000.0, 			20.0 }, 	// 10K arrests
-		{ "Robbery", 			50000.0,			15.0 }, 	// 100K robberies
-		{ "Deathmatch", 		100000.0,			10.0 } 		// 100K kills
+		{ "Police",				7500.0, 			20.0 }, 	// 7.5k arrests
+		{ "Robbery", 			30000.0,			15.0 }, 	// 30K robberies
+		{ "Deathmatch", 		75000.0,			10.0 } 		// 75K kills
 /*
 		{ "Fireman",			10000.0,			9.0 },		// 10k fires
 		{ "Hitman",				1500.0,				4.5 },		// 1.5k contracts
