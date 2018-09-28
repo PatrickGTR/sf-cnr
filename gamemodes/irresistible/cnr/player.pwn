@@ -14,7 +14,6 @@
 #define IsPlayerGettingBlowed(%0) 	(p_GettingBlowjob{%0})
 #define IsPlayerLoadingObjects(%0)	(p_pausedToLoad{%0})
 #define IsPlayerAdminJailed(%0) 	(p_AdminJailed{%0} && p_JailTime[%0])
-#define GetPlayerXP(%1)             (p_XP[%1])
 #define IsPlayerLorenc(%0) 			(p_AccountID[%0] == 1)
 
 /* ** Variables ** */

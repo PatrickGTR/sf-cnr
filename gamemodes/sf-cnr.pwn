@@ -2469,6 +2469,7 @@ public OnPlayerTakeOutFire( playerid, fireid )
 	Achievement::HandleExtinguishedFires( playerid );
     SendClientMessageToFireman( -1, "{A83434}[FIREMAN]{FFFFFF} %s(%d) has extinguished house fire %d.", ReturnPlayerName( playerid ), playerid, fireid );
 	GivePlayerScore( playerid, 2 );
+	//GivePlayerExperience( playerid, E_FIREMAN );
 	GivePlayerCash( playerid, 5000 );
 	g_fireData[ fireid ] [ E_CREATED ]	= false;
     g_fireData[ fireid ] [ E_HOUSE ] 	= -1;
@@ -4956,6 +4957,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 				        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
 				        GivePlayerCash( killerid, cashEarned );
 				        GivePlayerScore( killerid, 2 );
+						GivePlayerExperience( killerid, E_POLICE, 0.5 );
 				        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), cash_format( cashEarned ) ); // 8hska7082bmahu
 				       	if ( p_WantedLevel[ playerid ] > 64 ) SendGlobalMessage( -1, ""COL_GOLD"[POLICE KILL]{FFFFFF} %s(%d) has %s %s(%d) who had a wanted level of %d!", ReturnPlayerName( killerid ), killerid, killedWords[ random( sizeof( killedWords ) ) ], ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ] );
 				    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], cash_format( cashEarned ) );
@@ -5022,7 +5024,11 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 		}
 
-		if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 12 ), GivePlayerScore( killerid, 1, .multiplier = 0.2 );
+		if ( p_Class[ killerid ] != CLASS_POLICE ) {
+			GivePlayerWantedLevel( killerid, 12 );
+			GivePlayerScore( killerid, 1, .multiplier = 0.2 );
+			GivePlayerExperience( killerid, E_DEATHMATCH );
+		}
 	}
 	else if ( IsPlayerNPC( killerid ) ) SendDeathMessage( killerid, playerid, reason );
 	else
@@ -5067,12 +5073,13 @@ public OnVehicleDeath( vehicleid, killerid )
 
 		if ( g_businessData[ businessid ] [ E_EXPORT_STARTED ] == 1 )
 		{
-			printf("2.is associate %d, ticks %d", IsBusinessAssociate( attackerid, businessid ), g_iTime - g_VehicleLastAttacked[ vehicleid ] );
+			// printf("2.is associate %d, ticks %d", IsBusinessAssociate( attackerid, businessid ), g_iTime - g_VehicleLastAttacked[ vehicleid ] );
 			if ( IsPlayerConnected( attackerid ) && ! IsBusinessAssociate( attackerid, businessid ) && ( g_iTime - g_VehicleLastAttacked[ vehicleid ] ) < 8 )
 			{
 				GivePlayerScore( attackerid, 2 );
 				GivePlayerCash( attackerid, payout );
-				if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 );
+				if ( p_Class[ attackerid ] != CLASS_POLICE ) GivePlayerWantedLevel( attackerid, 6 ), GivePlayerExperience( attackerid, E_ROBBERY );
+				else GivePlayerExperience( attackerid, E_POLICE );
 				SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( attackerid ), attackerid, cash_format( payout ) );
 			}
 			else
@@ -5083,7 +5090,8 @@ public OnVehicleDeath( vehicleid, killerid )
 					{
 						GivePlayerScore( killerid, 2 );
 						GivePlayerCash( killerid, payout );
-						if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 );
+						if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 ), GivePlayerExperience( killerid, E_ROBBERY );
+						else GivePlayerExperience( killerid, E_POLICE );
 						SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, cash_format( payout ) );
 					}
 				}
@@ -5625,6 +5633,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				SendServerMessage( playerid, "Great you've mined an ore, now store it in a "COL_GREY"Dune"COL_WHITE"." );
 			}
 
+			//GivePlayerExperience( playerid, E_MINING );
 			SetPVarInt( playerid, "carrying_ore", m );
 			SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
 			SetPlayerAttachedObject( playerid, 4, 2936, 5, 0.000000, 0.197999, 0.133999, 113.099983, -153.799987, 57.300003, 0.631000, 0.597000, 0.659999, g_miningData[ m ] [ E_ARGB ], g_miningData[ m ] [ E_ARGB ] );
@@ -5660,6 +5669,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				SendServerMessage( playerid, "You have successfully cracked this business' password. It will not be accessible in 3 minutes." );
 				GivePlayerWantedLevel( playerid, 12 );
 				GivePlayerScore( playerid, 2 );
+				//GivePlayerExperience( playerid, E_BURGLAR );
 				Achievement::HandleBurglaries( playerid );
 			}
 			else
@@ -5686,6 +5696,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				SendServerMessage( playerid, "You have successfully cracked this houses' password. You have two minutes to do your thing." );
 				GivePlayerWantedLevel( playerid, 12 );
 				GivePlayerScore( playerid, 2 );
+				//GivePlayerExperience( playerid, E_BURGLAR );
 				Achievement::HandleBurglaries( playerid );
 			}
 			else
@@ -5760,6 +5771,7 @@ public OnProgressCompleted( playerid, progressid, params )
 
 						GivePlayerScore( playerid, 2 );
 						GivePlayerWantedLevel( playerid, 6 );
+						GivePlayerExperience( playerid, E_ROBBERY );
 			        	SplitPlayerCashForGang( playerid, float( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ) );
 						g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = 0;
 						DestroyDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] );
@@ -5921,6 +5933,7 @@ public OnProgressCompleted( playerid, progressid, params )
 
 					GivePlayerWantedLevel	( playerid, 24 );
 					GivePlayerScore			( playerid, 5 );
+					GivePlayerExperience 	( playerid, E_ROBBERY, 2.0 );
 
 					if ( random( 101 ) >= 20 ) {
 						if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
@@ -6940,6 +6953,7 @@ CMD:robitems( playerid, params[ ] )
 		SetPVarInt( playerid, "robitems_timestamp", g_iTime + 60 );
 		GivePlayerWantedLevel( playerid, 4 );
 		GivePlayerScore( playerid, 1 );
+		GivePlayerExperience( playerid, E_ROBBERY, 0.5 );
 
 		new
 			available_items[ 3 ] = { -1, -1, -1 },
@@ -7406,6 +7420,7 @@ CMD:acceptcure( playerid, params[ ] )
 		GivePlayerCash( playerid, -4875 );
 		GivePlayerCash( p_CureDealer[ playerid ], 4875 );
 		GivePlayerScore( p_CureDealer[ playerid ], 2 );
+		//GivePlayerExperience( p_CureDealer[ playerid ], E_PARAMEDIC );
 		p_LastCuredTS[ p_CureDealer[ playerid ] ] = time + 15;
 		p_CureDealer[ playerid ] = INVALID_PLAYER_ID;
 	}
@@ -7459,6 +7474,7 @@ CMD:acceptheal( playerid, params[ ] )
 		GivePlayerCash( playerid, -1200 );
 		GivePlayerCash( p_HealDealer[ playerid ], 1200 );
 		GivePlayerScore( p_HealDealer[ playerid ], 2 );
+		//GivePlayerExperience( p_HealDealer[ playerid ], E_PARAMEDIC );
 		p_LastHealedTS[ p_HealDealer[ playerid ] ] = g_iTime + 15;
 		p_HealDealer[ playerid ] = INVALID_PLAYER_ID;
 	}
@@ -7760,8 +7776,8 @@ CMD:mech( playerid, params[ ] )
 	if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
 	else if ( strmatch( params, "fix" ) )
 	{
-	    if ( ( GetTickCount( ) - p_AntiMechFixSpam[ playerid ] ) < 10000 )
-	    	return SendError( playerid, "You must wait 10 seconds before using this feature again." );
+	    if ( p_AntiMechFixSpam[ playerid ] > g_iTime )
+	    	return SendError( playerid, "You must wait %d seconds before using this feature again.", p_AntiMechFixSpam[ playerid ] - g_iTime );
 
    		if ( !IsPlayerInAnyVehicle( playerid ) )
    			return SendError( playerid, "You are not in any vehicle." );
@@ -7769,17 +7785,19 @@ CMD:mech( playerid, params[ ] )
 		new
 			cost = 250;
 
-		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) )
-			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 2500 : 750;
+		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) ) {
+			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 5000 : 2500;
+		}
 
-   		if ( GetPlayerCash( playerid ) < cost )
+   		if ( GetPlayerCash( playerid ) < cost ) {
    			return SendError( playerid, "You need %s to fix this vehicle.", cash_format( cost ) );
+   		}
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 	 	SendServerMessage( playerid, "You have repaired this vehicle." );
-	 	p_AntiMechFixSpam[ playerid ] = GetTickCount( );
+	 	p_AntiMechFixSpam[ playerid ] = g_itime + 5;
 	 	GivePlayerCash( playerid, -cost );
 	}
 	else if ( strmatch( params, "nos" ) )
@@ -7808,38 +7826,40 @@ CMD:mech( playerid, params[ ] )
 	}
 	else if ( strmatch( params, "flip" ) )
 	{
-	    if ( ( GetTickCount( ) - p_AntiMechFlipSpam[ playerid ] ) < 10000 ) return SendError( playerid, "You must wait 10 seconds before using this feature." );
+	    if ( p_AntiMechFlipSpam[ playerid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before using this feature.", p_AntiMechFlipSpam[ playerid ] - g_iTime );
    		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You are not in any vehicle." );
 		if ( GetPlayerCash( playerid ) < 200 ) return SendError( playerid, "You need $200 to flip this vehicle." );
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		GetVehicleZAngle( iVehicle, vZ ), SetVehicleZAngle( iVehicle, vZ );
 		GivePlayerCash( playerid, -200 );
 	 	SendServerMessage( playerid, "You have successfully flipped this vehicle." );
-	 	p_AntiMechFlipSpam[ playerid ] = GetTickCount( );
+	 	p_AntiMechFlipSpam[ playerid ] = g_iTime + 5;
 	}
 	else if ( strmatch( params, "flix" ) )
 	{
-	    if ( ( GetTickCount( ) - p_AntiMechFixSpam[ playerid ] ) < 10000 ) return SendError( playerid, "You must wait 10 seconds before using this feature." );
-	    if ( ( GetTickCount( ) - p_AntiMechFlipSpam[ playerid ] ) < 10000 ) return SendError( playerid, "You must wait 10 seconds before using this feature." );
+	    if ( p_AntiMechFixSpam[ playerid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before using this feature again.", p_AntiMechFixSpam[ playerid ] - g_iTime );
+	    if ( p_AntiMechFlipSpam[ playerid ] > g_iTime ) return SendError( playerid, "You must wait %d seconds before using this feature.", p_AntiMechFlipSpam[ playerid ] - g_iTime );
    		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You are not in any vehicle." );
    		if ( GetPlayerCash( playerid ) < 500 ) return SendError( playerid, "You need $500 to flip and fix this vehicle." );
 
 		new
 			cost = 500;
 
-		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) )
-			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 3000 : 1250;
+		if ( g_isBusinessVehicle[ iVehicle ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ iVehicle ] ) ) {
+			cost = IsBusinessAerialVehicle( g_isBusinessVehicle[ iVehicle ], GetVehicleModel( iVehicle ) ) ? 6000 : 3500;
+		}
 
-   		if ( GetPlayerCash( playerid ) < cost )
+   		if ( GetPlayerCash( playerid ) < cost ) {
    			return SendError( playerid, "You need %s to fix this vehicle.", cash_format( cost ) );
+   		}
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 		GetVehicleZAngle( iVehicle, vZ ), SetVehicleZAngle( iVehicle, vZ );
 	 	SendServerMessage( playerid, "You have flipped and fixed this vehicle." );
-	 	p_AntiMechFixSpam[ playerid ] = GetTickCount( );
-	 	p_AntiMechFlipSpam[ playerid ] = GetTickCount( );
+	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 5;
+	 	p_AntiMechFlipSpam[ playerid ] =  g_iTime + 5;
 	 	GivePlayerCash( playerid, -cost );
 	}
 	else if ( strmatch( params, "price" ) )
@@ -8215,7 +8235,7 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 
 CMD:xpmarket( playerid, params[ ] )
 {
-	ShowPlayerDialog(playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", ""COL_WHITE"Welcome, enter inside the input box how much XP you're willing\nto trade in for.\n\nExchange Rate: "COL_GOLD"1 XP = $"#EXCHANGE_XPCASH"", "Select", "Cancel");
+	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %d legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", p_XP[ playerid ] ), "Select", "Cancel");
 	return 1;
 }
 
@@ -8536,9 +8556,9 @@ CMD:discordpm( playerid, params[ ] )
 
 CMD:perks( playerid, params[ ] )
 {
-	if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-    ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
-	return 1;
+	//if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+    //ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
+	return SendServerMessage( playerid, "/perks is unavailable, become a dirty mechanic instead." );
 }
 
 CMD:viewguns( playerid, params[ ] )
@@ -9797,6 +9817,7 @@ CMD:payticket( playerid, params[] )
 	if ( IsPlayerConnected( copid ) ) {
 		GivePlayerScore( copid, 2 );
 		GivePlayerCash( copid, 1500 );
+		GivePlayerExperience( copid, E_POLICE, 0.5 );
 		GameTextForPlayer( copid, "~n~~g~~h~Ticket paid!", 2000, 4 );
 		SendClientMessageFormatted( copid, -1, ""COL_GREEN"[TICKET]{FFFFFF} %s(%d) has paid his ticket issues, you have earned "COL_GOLD"$1,500{FFFFFF}!", ReturnPlayerName( playerid ), playerid );
 	}
@@ -9947,6 +9968,7 @@ CMD:rob( playerid, params[ ] )
 			GivePlayerWantedLevel( playerid, 4 );
 			GivePlayerCash( victimid, -( cashRobbed ) );
 			GivePlayerScore( playerid, 1 );
+			GivePlayerExperience( playerid, E_ROBBERY );
 		}
 		else
 		{
@@ -10008,6 +10030,7 @@ CMD:rape( playerid, params[ ] )
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d) and infected them with "COL_RED"HIV{FFFFFF}!", ReturnPlayerName( victimid ), victimid );
 			    GivePlayerScore( playerid, 2 );
 			    GivePlayerWantedLevel( playerid, 5 );
+				//GivePlayerExperience( playerid, E_PARAMEDIC );
 			    GetPlayerHealth( victimid, Health );
 			  	SetPlayerHealth( victimid,  ( Health - 25.0 ) );
 
@@ -10019,6 +10042,7 @@ CMD:rape( playerid, params[ ] )
 			    SendClientMessageFormatted( victimid, -1, ""COL_RED"[RAPED]{FFFFFF} You have been raped by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d)!", ReturnPlayerName( victimid ), victimid );
 			    GivePlayerScore( playerid, 1 );
+				//GivePlayerExperience( playerid, E_PARAMEDIC, 0.5 );
 			    GivePlayerWantedLevel( playerid, 4 );
 			    GetPlayerHealth( victimid, Health );
 			  	SetPlayerHealth( victimid,  ( Health - 25.0 ) );
@@ -11740,6 +11764,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 						GivePlayerWantedLevel( playerid, 6 );
 						GivePlayerCash( playerid, iCash );
 						GivePlayerScore( playerid, 2 );
+						//GivePlayerExperience( playerid, E_CAR_JACKER );
 						Achievement::HandleCarJacked( playerid );
 						SetTimerEx( "ExportVehicle", 3000, false, "dd", iVehicle, i );
 						SendServerMessage( playerid, "You have exported your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", GetVehicleName( GetVehicleModel( iVehicle ) ), cash_format( iCash ) );
@@ -11877,6 +11902,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
 			GivePlayerScore( playerid, score == 0 ? 1 : score, .multiplier = 0.4 );
+			//GivePlayerExperience( playerid, E_BURGLAR, float( items ) * 0.2 );
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
 			DestroyDynamicRaceCP( p_PawnStoreExport[ playerid ] );
@@ -11910,6 +11936,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			p_MiningExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );
 			GivePlayerScore( playerid, floatround( oresExported / 2 ) ); // 16 score is a bit too much for ore... so half that = 8
+			//GivePlayerExperience( playerid, E_MINING, float( oresExported ) * 0.2 );
 			SendServerMessage( playerid, "You have exported %d rock ore(s) to an industry, earning you "COL_GOLD"%s"COL_WHITE".", oresExported, cash_format( cashEarned ) );
 		}
 		return 1;
@@ -12141,6 +12168,7 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 
 				GivePlayerWantedLevel( playerid, 4 );
 				GivePlayerScore( playerid, 1 );
+				GivePlayerExperience( playerid, E_ROBBERY );
 
 				GetPlayerPos 			( playerid, X, Y, Z );
 			    Get2DCity				( szCity, X, Y, Z );
@@ -14188,7 +14216,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        {
 	            if ( p_XP[ playerid ] >= 100 )
 	            {
-	                GivePlayerXP( playerid, -100 );
+	                GivePlayerXP_Legacy( playerid, -100 );
 	                for( new i; i < MAX_WEAPONS; i++ )
 					{
 					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && !( 16 <= i <= 18 ) && i != 35 && i != 47 && i != WEAPON_BOMB )
@@ -14222,7 +14250,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
 					p_DamageSpamCount{ playerid } = 0;
 	                RepairVehicle( vehicleid );
-					GivePlayerXP( playerid, -200 );
+					GivePlayerXP_Legacy( playerid, -200 );
 					SendServerMessage( playerid, "You have fixed and flipped your vehicle for 200 XP." );
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 	            }
@@ -14234,7 +14262,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	            {
 		            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
 					GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
-					GivePlayerXP( playerid, -50 );
+					GivePlayerXP_Legacy( playerid, -50 );
 					SendServerMessage( playerid, "You have flipped your vehicle for 50 XP." );
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 	            }
@@ -14245,7 +14273,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	if ( p_XP[ playerid ] >= 80 )
 	            {
 	                AddVehicleComponent( GetPlayerVehicleID( playerid ), 1010 );
-					GivePlayerXP( playerid, -80 );
+					GivePlayerXP_Legacy( playerid, -80 );
 					SendServerMessage( playerid, "You have installed nitro on your car for 80 XP." );
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 	            }
@@ -14259,7 +14287,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 					p_DamageSpamCount{ playerid } = 0;
 	                RepairVehicle( vehicleid );
-					GivePlayerXP( playerid, -120 );
+					GivePlayerXP_Legacy( playerid, -120 );
 					SendServerMessage( playerid, "You have repaired your car for 120 XP." );
 	            }
 	        	else return SendError( playerid, "You don't have enough XP for this." );
@@ -14461,10 +14489,10 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( !strlen( inputtext ) || !IsNumeric( inputtext ) )
 		    return SendError( playerid, "The input you have entered is invalid, must be a numeric with over 0 characters." ), cmd_xpmarket( playerid, "" ), 1;
 
-		if ( strval( inputtext ) < 0 || strval( inputtext ) > GetPlayerXP( playerid ) || strval( inputtext ) > 99999999 )
+		if ( strval( inputtext ) < 0 || strval( inputtext ) > p_XP[ playerid ] || strval( inputtext ) > 99999999 )
 		    return SendError( playerid, "Invalid amount, must be from 0 to the amount of XP you have." ), cmd_xpmarket( playerid, "" ), 1;
 
-		GivePlayerXP( playerid, -( strval( inputtext ) ) );
+		GivePlayerXP_Legacy( playerid, -( strval( inputtext ) ) );
 		GivePlayerCash( playerid, strval( inputtext ) * EXCHANGE_XPCASH );
 		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
 		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
@@ -17609,6 +17637,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 			{
 				g_alcatrazTimestamp = g_iTime + 300;
 
+				//GivePlayerExperience( playerid, E_TERRORIST );
 				GivePlayerScore( playerid, 3 );
 				GivePlayerWantedLevel( playerid, 24 );
 				Achievement::HandleJailBlown( playerid );
@@ -17632,6 +17661,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 
 					MoveDynamicObject( g_bankvaultData[ j ] [ E_OBJECT ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 2 ], 2.0, g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 2 ] );
 
+					//GivePlayerExperience( playerid, E_TERRORIST );
 					GivePlayerScore( playerid, 3 );
 					GivePlayerWantedLevel( playerid, 24 );
 					Achievement::HandleBankBlown( playerid );
@@ -17655,6 +17685,7 @@ stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
 				    	g_jailData[ j ] [ E_BOMBED ] = true;
 				    	g_jailData[ j ] [ E_TIMESTAMP ] = g_iTime + 300;
 
+						//GivePlayerExperience( playerid, E_TERRORIST );
 						GivePlayerScore( playerid, 3 );
 					    GivePlayerWantedLevel( playerid, 24 );
 					    Achievement::HandleJailBlown( playerid );
@@ -17784,9 +17815,8 @@ stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
 	if ( gangid != INVALID_GANG_ID )
 		SaveGangData( gangid ), g_gangData[ gangid ] [ E_SCORE ] += score;
 
-	GivePlayerXP( playerid, score * 10 );
+	//GivePlayerXP_Legacy( playerid, score * 10 );
 	GivePlayerIrresistiblePoints( playerid, score < 0 ? ( score * 1.0 ) : ( score * multiplier ) );
-
 	return SetPlayerScore( playerid, GetPlayerScore( playerid ) + score );
 }
 
@@ -17974,7 +18004,7 @@ stock SetPlayerColorToTeam( playerid )
 	return 1;
 }
 
-stock GivePlayerXP( playerid, amount )
+stock GivePlayerXP_Legacy( playerid, amount )
 {
 	if ( p_PlayerLogged{ playerid } == true )
 	{
@@ -17987,7 +18017,7 @@ stock GivePlayerXP( playerid, amount )
 		p_XP[ playerid ] += amount;
 	    PlayerTextDrawSetString( playerid, p_ExperienceAwardTD[ playerid ], string );
 	    PlayerTextDrawShow( playerid, p_ExperienceAwardTD[ playerid ] );
-		SetTimerEx( "ExperienceTD_hide", 3500, false, "d", playerid );
+		SetTimerEx( "Experience_HideIncrementTD", 3500, false, "d", playerid );
 		if ( p_XP[ playerid ] > 99999999 ) p_XP[ playerid ] = 99999999;
 		autosaveStart( playerid ); // auto-save
 		return 1;
@@ -24851,6 +24881,7 @@ stock SellBusinessProduct( playerid, businessid, locationid )
 	UpdateBusinessData( businessid );
 	UpdateBusinessProductionLabel( businessid );
 
+	//GivePlayerExperience( playerid, E_TRANSPORT );
 	GivePlayerScore( playerid, 2 );
 	GivePlayerWantedLevel( playerid, 6 );
 	SendServerMessage( playerid, "You have successfully exported "COL_GOLD"%s"COL_WHITE" worth of product. "COL_ORANGE"(%d/%d)", cash_format( product_amount ), drugsSold, MAX_DROPS );
@@ -25203,6 +25234,7 @@ stock ArrestPlayer( victimid, playerid )
 		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
 		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
 		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
+		GivePlayerExperience( playerid, E_POLICE );
 		GivePlayerCash( playerid, totalCash );
 		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", cash_format( totalCash ), ReturnPlayerName( victimid ), victimid );

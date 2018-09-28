@@ -13,9 +13,6 @@
 	#error "This module requires a V.I.P system!"
 #endif
 
-/* ** Definitions ** */
-#define IsPlayerUsingRadio(%0)		(p_UsingRadio{%0})
-
 /* ** Variables ** */
 enum E_RADIO_DATA
 {
@@ -23,7 +20,7 @@ enum E_RADIO_DATA
 	E_URL                           [ 60 ]
 };
 
-new
+static stock
 	g_RadioData[ ] [ E_RADIO_DATA ] =
 	{
 	    { "Country",		"http://sc3c-sjc.1.fm:7806" },
@@ -98,3 +95,6 @@ CMD:stopradio( playerid, params[ ] )
     StopAudioStreamForPlayer( playerid );
 	return 1;
 }
+
+/* ** Functions ** */
+stock IsPlayerUsingRadio( playerid ) return p_UsingRadio{ playerid };

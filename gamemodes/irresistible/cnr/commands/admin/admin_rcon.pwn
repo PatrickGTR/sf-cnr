@@ -420,14 +420,17 @@ CMD:givexp( playerid, params [ ] )
 {
 	new
 	    pID,
+	    level,
 	    xp
 	;
 	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
-	else if ( sscanf( params, "ud", pID, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [XP_AMOUNT]" );
+	else if ( sscanf( params, "udd", pID, level, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [XP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
-	    GivePlayerXP( pID, xp );
+		if ( ! GivePlayerExperience( pID, E_LEVELS: level, xp, .with_dilation = false ) ) {
+			return SendError( playerid, "You have specified an invalid level." );
+		}
         AddAdminLogLineFormatted( "%s(%d) has given %s(%d) %d XP", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, xp );
 	    SendClientMessageFormatted( pID, -1, ""COL_PINK"[ADMIN]{FFFFFF} %s(%d) has given you %d XP.", ReturnPlayerName( playerid ), playerid, xp );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) %d XP.", ReturnPlayerName( pID ), pID, xp );
