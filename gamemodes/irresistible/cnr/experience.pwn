@@ -120,14 +120,6 @@ CMD:level( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}Player Level - Total Level %d", player_total_lvl ), szLargeString, "Close", "" );
 }
 
-
-CMD:givelevel( playerid, params[ ] ) {
-	new rank, Float: xp;
-	sscanf( params, "df", rank, xp );
-	GivePlayerExperience( playerid, E_LEVELS: rank, xp );
-	return 1;
-}
-
 /* ** SQL Threads ** */
 thread Experience_OnLoad( playerid )
 {
@@ -164,7 +156,7 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	new Float: next_rank_xp = ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * float( next_rank * next_rank );
 
 	if ( g_playerExperience[ playerid ] [ level ] + xp_earned >= next_rank_xp ) {
-		ShowPlayerHelpDialog( playerid, 10000, "~g~~h~Congratulations!~n~~n~~w~Your %s Level is now ~y~%d.", g_levelData[ _: level ] [ E_NAME ], next_rank );
+		ShowPlayerHelpDialog( playerid, 10000, "~y~~h~Congratulations!~n~~n~~w~Your %s Level is now ~y~%d.", g_levelData[ _: level ] [ E_NAME ], next_rank );
 		if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/levelup.mp3" );
 	}
 
@@ -179,11 +171,12 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	SetTimerEx( "Experience_HideIncrementTD", 3500, false, "d", playerid );
 
 	// save to database
-	mysql_format(
-		dbHandle, szBigString, sizeof( szBigString ),
+	format(
+		szBigString, sizeof( szBigString ),
 		"INSERT INTO `USER_LEVELS` (`USER_ID`,`LEVEL_ID`,`EXPERIENCE`) VALUES(%d,%d,%d) ON DUPLICATE KEY UPDATE `EXPERIENCE`=%d",
 		GetPlayerAccountID( playerid ), _: level, g_playerExperience[ playerid ] [ level ], g_playerExperience[ playerid ] [ level ]
 	);
+	mysql_single_query( szBigString );
 	return 1;
 }
 
@@ -191,12 +184,12 @@ function Experience_HideIncrementTD( playerid ) {
 	return PlayerTextDrawHide( playerid, p_ExperienceAwardTD[ playerid ] );
 }
 
-stock GetPlayerTotalLevel( playerid, &level = 0 ) {
+/*stock GetPlayerTotalLevel( playerid, &level = 0 ) {
 	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
 		level += floatround( GetPlayerLevel( playerid, E_LEVELS: l ), floatround_floor );
 	}
 	return level;
-}
+}*/
 
 /* ** Migrations ** */
 /*

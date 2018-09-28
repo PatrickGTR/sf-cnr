@@ -59,54 +59,51 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Commands ** */
-CMD:sellcoins( playerid, params[ ] )
+hook cmd_ic( playerid, params[ ] )
 {
-	if ( ! IsPlayerSecurityVerified( playerid ) )
-		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+	if ( ! IsPlayerSecurityVerified( playerid ) ) {
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" ), Y_HOOKS_BREAK_RETURN_1;
+	}
 
-	new
-		Float: quantity, price;
-
-	if ( GetPlayerVIPLevel( playerid ) < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-	else if ( sscanf( params, "df", price, quantity ) ) return SendUsage( playerid, "/sellcoins [PRICE_PER_COIN] [COINS]" );
-	else if ( quantity < 10.0 ) return SendError( playerid, "The minimum amount you can sell is 10.0 Irresistible Coins." );
-	else if ( quantity > GetPlayerIrresistibleCoins( playerid ) ) return SendError( playerid, "You do not have this many Irresistible Coins." );
-	else if ( ! ( 1000 <= price <= 125000 )) return SendError( playerid, "Selling price must be between $1,000 and $125,000 per coin." );
-	else
+	if ( !strcmp( params, "sell", true, 4 ) )
 	{
 		new
-			Float: sell_volume = float( price ) * quantity;
+			Float: quantity, price;
 
-		if ( ! ( 1000.0 <= sell_volume <= 2000000000.0 ) ) {
-			return SendError( playerid, "The maximum amount of volume per order is $2,000,000,000." ); // prevent bugs
+		if ( GetPlayerVIPLevel( playerid ) < VIP_BRONZE ) SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+		else if ( sscanf( params[ 5 ], "fd", quantity, price ) ) SendUsage( playerid, "/ic sell [COINS] [PRICE_PER_COIN]" );
+		else if ( quantity < 1.0 ) SendError( playerid, "The minimum amount you can sell is 1.0 Irresistible Coins." );
+		else if ( quantity > GetPlayerIrresistibleCoins( playerid ) ) SendError( playerid, "You do not have this many Irresistible Coins." );
+		else if ( ! ( 1000 <= price <= 125000 )) SendError( playerid, "Selling price must be between $1,000 and $125,000 per coin." );
+		else
+		{
+			new
+				Float: sell_volume = float( price ) * quantity;
+
+			if ( ! ( 1000.0 <= sell_volume <= 2000000000.0 ) ) {
+				return SendError( playerid, "The maximum amount of volume per order is $2,000,000,000." ); // prevent bugs
+			}
+
+			// insert into database
+			mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO IC_SELL_ORDERS (USER_ID, ASK_PRICE, AVAILABLE_IC, TOTAL_IC) VALUES (%d, %d, %f, %f)", GetPlayerAccountID( playerid ), price, quantity, quantity );
+			mysql_single_query( szBigString );
+
+			// deduct the coins
+			SendServerMessage( playerid, "Sell order for %s Irresistible Coins (at %s/IC) has been placed. Cancel via "COL_GREY"/ic cancel"COL_WHITE".", number_format( quantity, .decimals = 3 ), cash_format( price ) );
+			GivePlayerIrresistibleCoins( playerid, -quantity );
 		}
-
-		// insert into database
-		mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO IC_SELL_ORDERS (USER_ID, ASK_PRICE, AVAILABLE_IC, TOTAL_IC) VALUES (%d, %d, %f, %f)", GetPlayerAccountID( playerid ), price, quantity, quantity );
-		mysql_single_query( szBigString );
-
-		// deduct the coins
-		SendServerMessage( playerid, "Sell order for %s Irresistible Coins (at %s/IC) has been placed. Cancel via /cancelorders.", number_format( quantity, .decimals = 3 ), cash_format( price ) );
-		GivePlayerIrresistibleCoins( playerid, -quantity );
+		return Y_HOOKS_BREAK_RETURN_1;
 	}
-	return 1;
-}
-
-CMD:buycoins( playerid, params[ ] )
-{
-	if ( ! IsPlayerSecurityVerified( playerid ) )
-		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
-
-	ShowPlayerCoinSellOrders( playerid );
-	return 1;
-}
-
-CMD:cancelorders( playerid, params[ ] )
-{
-	if ( ! IsPlayerSecurityVerified( playerid ) )
-		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
-
-	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `IC_SELL_ORDERS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "PlayerMarket_OnCancelOrders", "d", playerid );
+	else if ( strmatch( params, "buy" ) )
+	{
+		ShowPlayerCoinSellOrders( playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	else if ( strmatch( params, "cancel" ) )
+	{
+		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `IC_SELL_ORDERS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "PlayerMarket_OnCancelOrders", "d", playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
 	return 1;
 }
 
@@ -122,7 +119,7 @@ thread PlayerMarket_OnShowSellOrders( playerid )
 			seller[ 24 ];
 
 		// set headers
-		szHugeString = ""COL_GREY"Player\t"COL_GREY"Quantity Available\t"COL_GREY"Price Per Coin\n";
+		szHugeString = ""COL_GREY"Player\t"COL_GREY"Quantity Available (IC)\t"COL_GREY"Price Per Coin ($)\n";
 
 		for ( new row = 0; row < sizeof ( p_PlayerMarket_SellOrders[ ] ); row ++ )
 		{

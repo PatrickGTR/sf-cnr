@@ -6561,7 +6561,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 	if ( p_accountSecurityData[ playerid ] [ E_ID ] && ! p_accountSecurityData[ playerid ] [ E_VERIFIED ] && p_accountSecurityData[ playerid ] [ E_MODE ] != SECURITY_MODE_DISABLED )
 		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
 
-	if ( isnull( params ) )
+	if ( strmatch( params, "balance" ) )
 	{
 		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ] ) );
 	}
@@ -6598,7 +6598,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		}
 		return 1;
 	}
-	return SendUsage( playerid, "/irresistiblecoins [MARKET/SEND] "COL_GREY"(type /irresistiblecoins to see your coins)" );
+	return SendUsage( playerid, "/irresistiblecoins [BALANCE/BUY/SELL/MARKET/SEND/CANCEL]" );
 }
 
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
@@ -7797,7 +7797,7 @@ CMD:mech( playerid, params[ ] )
 		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 	 	SendServerMessage( playerid, "You have repaired this vehicle." );
-	 	p_AntiMechFixSpam[ playerid ] = g_itime + 5;
+	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 5;
 	 	GivePlayerCash( playerid, -cost );
 	}
 	else if ( strmatch( params, "nos" ) )
@@ -8235,7 +8235,7 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 
 CMD:xpmarket( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %d legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", p_XP[ playerid ] ), "Select", "Cancel");
+	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %s legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", number_format( p_XP[ playerid ] ) ), "Select", "Cancel");
 	return 1;
 }
 
@@ -8381,7 +8381,7 @@ CMD:label( playerid, params[ ] )
 		szLabel[ 32 ]
 	;
 
-	if ( p_XP[ playerid ] < 3500 ) return SendError( playerid, "You need 3,500 XP to use this command." );
+	if ( GetPlayerScore( playerid ) < 500 ) return SendError( playerid, "You need 500 score to use this command." );
 	else if ( sscanf( params, "s[32]", szLabel ) ) return SendUsage( playerid, "/label [MESSAGE]" );
 	else
 	{
@@ -12043,21 +12043,24 @@ stock approveClassSpawned( playerid ) {
 	if ( p_WantedLevel[ playerid ] > 0 && ( IsPlayerPolice( playerid ) || IsPlayerFBI( playerid ) || IsPlayerCIA( playerid ) || GetPlayerSkin( playerid ) == 287 ) )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must not have a wanted level to use this class." ), 0;
 
+	// get player total experience
+	new Float: total_experience = GetPlayerTotalExperience( playerid );
+
 	// bought xp
-	if ( IsPlayerFBI( playerid ) && p_XP[ playerid ] < 10000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 10,000 XP to use this class." ), 0;
+	if ( IsPlayerFBI( playerid ) && total_experience < 10000.0 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 10,000 Total XP to use this class." ), 0;
 
-	if ( IsPlayerArmy( playerid ) && p_XP[ playerid ] < 20000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 20,000 XP to use this class." ), 0;
+	if ( IsPlayerArmy( playerid ) && total_experience < 20000.0 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 20,000 Total XP to use this class." ), 0;
 
-	if ( IsPlayerCIA( playerid ) && p_XP[ playerid ] < 15000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 15,000 XP to use this class." ), 0;
+	if ( IsPlayerCIA( playerid ) && total_experience < 15000.0 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 15,000 Total XP to use this class." ), 0;
 
-	if ( IsPlayerFireman( playerid ) && p_XP[ playerid ] < 1000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 1,000 XP to use this class." ), 0;
+	if ( IsPlayerFireman( playerid ) && total_experience < 1000.0 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 1,000 Total XP to use this class." ), 0;
 
-	if ( IsPlayerMedic( playerid ) && p_XP[ playerid ] < 2000 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 XP to use this class." ), 0;
+	if ( IsPlayerMedic( playerid ) && total_experience < 2000.0 )
+		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 Total XP to use this class." ), 0;
 
 	// job not set
 	if ( !p_JobSet{ playerid } ) // || !p_CitySet{ playerid } )
@@ -14197,7 +14200,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		);
 		return 1;
 	}
-	if ( ( dialogid == DIALOG_PERKS ) && response )
+	/*if ( ( dialogid == DIALOG_PERKS ) && response )
 	{
 		switch( listitem )
 		{
@@ -14293,7 +14296,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	else return SendError( playerid, "You don't have enough XP for this." );
 	        }
 	    }
-	}
+	}*/
 	if ( dialogid == DIALOG_CASINO_REWARDS && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );

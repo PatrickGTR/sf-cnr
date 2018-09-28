@@ -30,10 +30,10 @@
 #define DIALOG_VEHICLE_SPAWN        		1018
 #define DIALOG_ARENAS               		1019
 #define DIALOG_BOUGHT_VEH        			1020
-#define DIALOG_PERKS                		1021
-#define DIALOG_PERKS_P              		1022
+//#define DIALOG_PERKS                		1021
+//#define DIALOG_PERKS_P              		1022
 #define DIALOG_VIP              			1023
-#define DIALOG_PERKS_V              		1024
+//#define DIALOG_PERKS_V              		1024
 #define DIALOG_DONATED           			1025
 #define DIALOG_VEHICLE_LOCATE       		1026
 #define DIALOG_GANG_COLOR           		1027
