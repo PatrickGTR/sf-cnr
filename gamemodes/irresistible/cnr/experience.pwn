@@ -9,9 +9,9 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define EXP_MAX_PLAYER_LEVEL 		( 100.0 )
+#define DIALOG_VIEW_LEVEL			5943
 
-/* ** Double XP ** */
+/* ** Macros ** */
 #define IsDoubleXP() 				( GetGVarInt( "doublexp" ) )
 
 /* ** Constants ** */
@@ -36,7 +36,10 @@ enum E_LEVEL_DATA {
 };
 
 static const
-	g_levelData[ ] [ E_LEVEL_DATA ] =
+	Float: EXP_MAX_PLAYER_LEVEL 	= 100.0;
+
+static const
+	g_levelData 					[ ] [ E_LEVEL_DATA ] =
 	{
 		// Level Name 			Level 100 Req.		XP Dilation (just to confuse user)
 		{ "Police",				7500.0, 			20.0 }, 	// 7.5k arrests
@@ -75,6 +78,14 @@ stock Float: GetPlayerTotalExperience( playerid ) {
 }
 
 /* ** Hooks ** */
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	if ( dialogid == DIALOG_VIEW_LEVEL && response ) {
+		return cmd_level( playerid, sprintf( "%d", GetPVarInt( playerid, "experience_watchingid" ) ) ), 1;
+	}
+	return 1;
+}
+
 hook OnPlayerUpdateEx( playerid )
 {
 	if ( IsPlayerLoggedIn( playerid ) )
@@ -104,20 +115,31 @@ hook OnPlayerDisconnect( playerid, reason ) {
 CMD:level( playerid, params[ ] )
 {
 	new
+	 	watchingid;
+
+	if ( sscanf( params, "u", watchingid ) )
+		watchingid = playerid;
+
+	if ( !IsPlayerConnected( watchingid ) )
+		watchingid = playerid;
+
+	new
 		player_total_lvl = 0;
 
 	szLargeString = ""COL_GREY"Skill\t"COL_GREY"Current Level\t"COL_GREY"XP Till Next Level\n";
 
 	for ( new level_id; level_id < sizeof( g_levelData ); level_id ++ )
 	{
-		new Float: current_rank = GetPlayerLevel( playerid, E_LEVELS: level_id );
+		new Float: current_rank = GetPlayerLevel( watchingid, E_LEVELS: level_id );
 		new Float: next_rank = floatround( current_rank, floatround_floor ) + 1.0;
 		new Float: next_rank_xp = ( g_levelData[ level_id ] [ E_MAX_UNITS ] * g_levelData[ level_id ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * ( next_rank * next_rank );
 
 		player_total_lvl += floatround( current_rank, floatround_floor );
-		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%s%0.0f / %0.0f\t"COL_PURPLE"%0.0f XP\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank >= 100.0 ? ( COL_GREEN ) : ( COL_GREY ), current_rank, EXP_MAX_PLAYER_LEVEL, next_rank_xp - g_playerExperience[ playerid ] [ E_LEVELS: level_id ] );
+		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%s%0.0f / %0.0f\t"COL_PURPLE"%0.0f XP\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank >= 100.0 ? ( COL_GREEN ) : ( COL_GREY ), current_rank, EXP_MAX_PLAYER_LEVEL, next_rank_xp - g_playerExperience[ watchingid ] [ E_LEVELS: level_id ] );
 	}
-	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}Player Level - Total Level %d", player_total_lvl ), szLargeString, "Close", "" );
+
+	SetPVarInt( playerid, "experience_watchingid", watchingid );
+	return ShowPlayerDialog( playerid, DIALOG_VIEW_LEVEL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}%s(%d) Level - Total Level %d", ReturnPlayerName( watchingid ), watchingid, player_total_lvl ), szLargeString, "Refresh", "Close" );
 }
 
 /* ** SQL Threads ** */
@@ -156,7 +178,7 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	new Float: next_rank_xp = ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * float( next_rank * next_rank );
 
 	if ( g_playerExperience[ playerid ] [ level ] + xp_earned >= next_rank_xp ) {
-		ShowPlayerHelpDialog( playerid, 10000, "~y~~h~Congratulations!~n~~n~~w~Your %s Level is now ~y~%d.", g_levelData[ _: level ] [ E_NAME ], next_rank );
+		ShowPlayerHelpDialog( playerid, 10000, "~y~Congratulations!~n~~n~~w~Your %s Level is now ~y~%d.", g_levelData[ _: level ] [ E_NAME ], next_rank );
 		if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/levelup.mp3" );
 	}
 
