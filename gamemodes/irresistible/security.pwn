@@ -71,7 +71,7 @@ hook OnRconLoginAttempt( ip[ ], password[ ], success )
 			GetPlayerName( playerid, name, sizeof( name ) );
 
 			//if( strcmp( name, "Lorenc", true ) && strcmp( name, "Banging7Grams", true ) )
-			if ( GetPlayerAccountID( playerid ) != 1 && GetPlayerAccountID( playerid ) != 277833 )
+			if ( GetPlayerAccountID( playerid ) != 1 && GetPlayerAccountID( playerid ) != 277833 && GetPlayerAccountID( playerid ) != 758617 )
 			{
 				RangeBanPlayer( playerid );
 				return 0;
