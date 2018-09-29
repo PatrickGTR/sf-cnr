@@ -54,7 +54,6 @@ native gpci 						( playerid, serial[ ], len );
 
 new bool: False = false;
 
-// #define IsPlayerPlayingPool(%0)		(False)
 /* ** SF-CNR ** */
 #include 							"irresistible\_main.pwn"
 
@@ -6776,7 +6775,7 @@ thread geteventhost( playerid )
 
 CMD:unbanme( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_UNBAN_CLASS, DIALOG_STYLE_LIST, ""COL_WHITE"Unban Class", ""COL_GOLD"$750,000"COL_WHITE"\tUnban Army Class\n"COL_GOLD"$500,000"COL_WHITE"\tUnban Cop Class\n", "Select", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_UNBAN_CLASS, DIALOG_STYLE_TABLIST, ""COL_WHITE"Unban Class", "Unban Army Class\t"COL_GOLD"$750,000\nUnban Cop Class\t"COL_GOLD"$500,000", "Select", "Close" );
 	return 1;
 }
 
@@ -12201,12 +12200,12 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 				UpdateDynamic3DTextLabelText( g_bribeData[ bribeid ] [ E_LABEL ], COLOR_GOLD, sprintf( "Bribe(%d)\n"COL_RED"Currently Expired!", bribeid ) );
 
 				// Remove a custom wanted level
-				if ( p_WantedLevel[ playerid ] > 1800 ) 		iWanted = 128;
+				if ( p_WantedLevel[ playerid ] > 1800 ) iWanted = 128;
 				else if ( p_WantedLevel[ playerid ] > 1000 ) iWanted = 64;
 				else if ( p_WantedLevel[ playerid ] > 500 )	iWanted = 32;
 				else if ( p_WantedLevel[ playerid ] > 250 )	iWanted = 16;
-				else if ( p_WantedLevel[ playerid ] > 100 ) 	iWanted = 8;
-				else if ( p_WantedLevel[ playerid ] > 50 )	iWanted = 4;
+				else if ( p_WantedLevel[ playerid ] > 100 ) iWanted = 8;
+				else if ( p_WantedLevel[ playerid ] > 50 ) iWanted = 4;
 
 				return GivePlayerWantedLevel( playerid, p_WantedLevel[ playerid ] <= 1 ? -1 : -iWanted );
 		    }
@@ -25430,6 +25429,7 @@ stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 	p_PassiveModeExpireTimer[ playerid ] = -1;
 	p_PassiveModeDisabled{ playerid } = passive_disabled;
 	TextDrawHideForPlayer( playerid, g_PassiveModeTD );
+	return 1;
 }
 
 function PassiveMode_Reset( playerid, time_left )
