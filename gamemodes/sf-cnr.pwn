@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -15112,13 +15112,13 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			case 1:
 			{
 				format( szLargeString, 720,	""COL_GREY"Score:{FFFFFF} %d\n"\
-											""COL_GREY"XP:{FFFFFF} %d\n"\
+											""COL_GREY"XP:{FFFFFF} %s\n"\
 											""COL_GREY"Money:{FFFFFF} %s\n"\
 											""COL_GREY"Bank Money:{FFFFFF} %s\n"\
 											""COL_GREY"Kills:{FFFFFF} %d\n"\
 											""COL_GREY"Deaths:{FFFFFF} %d\n"\
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
-											GetPlayerScore( pID ), GetPlayerTotalExperience( pID ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
+											GetPlayerScore( pID ), number_format( GetPlayerTotalExperience( pID ), .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
 				format( szLargeString, 720,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\
