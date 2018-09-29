@@ -391,7 +391,7 @@ CMD:donate( playerid, params[ ] ) return cmd_vip( playerid, params );
 CMD:vip( playerid, params[ ] )
 {
 	static
-		vip_description[ 1100 ];
+		vip_description[ 1300 ];
 
 	if ( vip_description[ 0 ] == '\0' ) {
 		vip_description = " \t"COL_WHITE"Regular VIP\t"COL_BRONZE"Bronze VIP\t"COL_GOLD"Gold V.I.P\n";
@@ -404,6 +404,7 @@ CMD:vip( playerid, params[ ] )
 		strcat( vip_description, "Armour on spawn\t0%\t100%\t100%\n" );
 		strcat( vip_description, "Coin generation increase\t0%\t10%\t25%\n" );
 		strcat( vip_description, "Ability to transfer coins P2P\tN\tY\tY\n" );
+		strcat( vip_description, "Ability to sell coins on the coin market (/ic sell)\tN\tY\tY\n" );
 		strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tN\tY\n" );
 		strcat( vip_description, "Premium home listing fees waived\tN\tN\tY\n" );
 		strcat( vip_description, "Tax reduction\t0%\t0%\t50%\n" );
