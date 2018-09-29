@@ -22,27 +22,51 @@ static const
 
 /* ** Variables ** */
 static stock
-	p_CurrentListings 				[ MAX_PLAYERS ] [ 50 ]; // TODO: add pagination
+	p_CurrentListings 				[ MAX_PLAYERS ] [ 20 ];
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_HOUSE_LISTINGS && response )
 	{
-		for ( new i = 0, x = 0; i < sizeof ( p_CurrentListings ); i ++ ) if ( p_CurrentListings[ playerid ] [ i ] != -1 )
+		new curr_page = GetPVarInt( playerid, "houselisting_page" );
+		new curr_page_items = GetPVarInt( playerid, "houselisting_rows" );
+
+		// pressed previous
+		if ( listitem >= curr_page_items + 1 )
 		{
-			if ( x == listitem )
-			{
-				ShowPlayerHomeListing( playerid, p_CurrentListings[ playerid ] [ i ] );
-				break;
-			}
-			x ++;
+			return ShowPlayerHomeListings( playerid, curr_page - 1 );
 		}
+
+		// pressed previous (on last page) / next page
+		else if ( listitem == curr_page_items )
+		{
+			// pressed first item, but theres not even 20 items?
+			if ( curr_page_items < sizeof ( p_CurrentListings[ ] ) ) {
+				return ShowPlayerHomeListings( playerid, curr_page - 1 );
+			} else {
+				return ShowPlayerHomeListings( playerid, curr_page + 1 );
+			}
+		}
+
+		else
+		{
+			for ( new i = 0, x = 0; i < sizeof ( p_CurrentListings[ ] ); i ++ ) if ( p_CurrentListings[ playerid ] [ i ] != -1 )
+			{
+				if ( x == listitem )
+				{
+					ShowPlayerHomeListing( playerid, p_CurrentListings[ playerid ] [ i ] );
+					break;
+				}
+				x ++;
+			}
+		}
+		return 1;
 	}
 	else if ( dialogid == DIALOG_HOUSE_LIST_VIEW )
 	{
 		if ( ! response )
-			return ShowPlayerHomeListings( playerid );
+			return ShowPlayerHomeListings( playerid, GetPVarInt( playerid, "houselisting_page" ) );
 
 		new houseid = GetPVarInt( playerid, "house_listing_houseid" );
 		new listingid = GetPVarInt( playerid, "house_listing_viewid" );
@@ -111,12 +135,13 @@ CMD:estate( playerid, params[ ] )
 	}
 	else
 	{
+		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_GOLD ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
 		return ShowPlayerHomeListings( playerid );
 	}
 }
 
 /* ** SQL Threads ** */
-thread HouseListing_OnShowHomes( playerid )
+thread HouseListing_OnShowHomes( playerid, page )
 {
 	new
 		rows = cache_get_row_count( );
@@ -157,7 +182,17 @@ thread HouseListing_OnShowHomes( playerid )
 			}
 		}
 
-		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_GOLD ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
+		if ( rows >= sizeof ( p_CurrentListings[ ] ) ) {
+			strcat( szHugeString, ""COL_GREEN"Next Page\t"COL_GREEN">>>\t"COL_GREEN">>>\t"COL_GREEN">>>\t"COL_GREEN">>>\n" );
+		}
+
+		if ( page ) {
+			strcat( szHugeString, ""COL_ORANGE"Previous Page\t"COL_ORANGE"<<<\t"COL_ORANGE"<<<\t"COL_ORANGE"<<<\t"COL_ORANGE"<<<\n" );
+		}
+
+		SetPVarInt( playerid, "houselisting_page", page );
+		SetPVarInt( playerid, "houselisting_rows", rows );
+
 		return ShowPlayerDialog( playerid, DIALOG_HOUSE_LISTINGS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Premium Home Estate", szHugeString, "Select", "Close" );
 	}
 	else
@@ -249,7 +284,6 @@ thread HouseListing_OnBuyHome( playerid, house_listing_id )
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `COINS` = `COINS` + %f WHERE `ID` = %d", ask_price, owner_account_id ) );
 		}
 
-
 		// show sellers name & house name
 		SendServerMessage( playerid, "You have successfully bought %s's home (%s"COL_WHITE") for "COL_GOLD"%s IC"COL_WHITE"!", g_houseData[ houseid ] [ E_OWNER ], g_houseData[ houseid ] [ E_HOUSE_NAME ], number_format( ask_price, .decimals = 2 ) );
 
@@ -304,8 +338,23 @@ thread HouseListing_OnDeleteListing( playerid, houseid )
 }
 
 /* ** Functions ** */
-stock ShowPlayerHomeListings( playerid ) {
-	return mysql_tquery( dbHandle, "SELECT HL.ID, HL.HOUSE_ID, H.NAME, U.NAME AS OWNER, HL.ASK FROM HOUSE_LISTINGS HL INNER JOIN HOUSES H ON H.ID = HL.HOUSE_ID INNER JOIN USERS U ON U.ID = HL.USER_ID WHERE SALE_DATE IS NULL", "HouseListing_OnShowHomes", "d", playerid );
+stock ShowPlayerHomeListings( playerid, page = 0 )
+{
+	// just incase we get some negative page from user ... reset
+	if ( page < 0 ) {
+		page = 0;
+	}
+
+	// format query, offset according to page
+	format(
+		szBigString, sizeof( szBigString ),
+		"SELECT HL.ID, HL.HOUSE_ID, H.NAME, U.NAME AS OWNER, HL.ASK FROM HOUSE_LISTINGS HL " \
+		"INNER JOIN HOUSES H ON H.ID = HL.HOUSE_ID " \
+		"INNER JOIN USERS U ON U.ID = HL.USER_ID " \
+		"WHERE SALE_DATE IS NULL LIMIT %d OFFSET %d",
+		sizeof( p_CurrentListings[ ] ), page * sizeof( p_CurrentListings[ ] )
+	);
+	return mysql_tquery( dbHandle, szBigString, "HouseListing_OnShowHomes", "dd", playerid, page );
 }
 
 /* ** Migrations ** */
