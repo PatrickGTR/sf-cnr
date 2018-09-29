@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -267,22 +267,6 @@ new
 		{ "Will Be Sign",		3265,	0.9 },
 		{ "Line Closed Sign",	3091,	0.5 }
 	}
-;
-
-/* ** Spike Strips ** */
-#define MAX_SPIKESTRIPS          	( 32 )
-
-enum E_SPIKE_STRIP_DATA
-{
-	E_OBJECT_ID,     				Text3D: E_LABEL,				E_SPHERE,
-	E_CREATOR,
-
-	Float: E_X, 					Float: E_Y, 					Float: E_Z
-};
-
-new
-	g_spikestripData                [ MAX_SPIKESTRIPS ] [ E_SPIKE_STRIP_DATA ],
-	Iterator: spikestrips 			< MAX_SPIKESTRIPS >
 ;
 
 /* ** ATM System ** */
@@ -8811,100 +8795,6 @@ CMD:bj( playerid, params[ ] )
 	return 1;
 }
 
-CMD:dssall( playerid, params[ ] )
-{
-	new removed = 0;
-	new is_admin = p_AdminLevel[ playerid ];
-
-	if ( ! p_inFBI{ playerid } && ! is_admin )
-		return SendError( playerid, "You are not in the FBI." );
-
-	foreach ( new handle : spikestrips )
-	{
-		if ( ! is_admin && g_spikestripData[ handle ] [ E_CREATOR ] != playerid )
-			continue;
-
-		new
-			cur = handle;
-
-		destroySpikeStrip( handle, .remove_iter = false );
-		Iter_SafeRemove( spikestrips, cur, handle );
-		removed ++;
-	}
-
-	if ( removed ) {
-		return SendServerMessage( playerid, "You have removed all your spike strips." );
-	} else {
-		return SendError( playerid, "There are no spike strips to remove by you." );
-	}
-}
-
-CMD:dss( playerid, params[ ] )
-{
-	new
-	    rbID
-	;
-
-	if ( !p_inFBI{ playerid } ) return SendError( playerid, "You are not in the FBI." );
-	else if ( sscanf( params, "d", rbID ) ) return SendUsage( playerid, "/dss [SPIKE_STRIP_ID]" );
-	else if ( rbID < 0 || rbID >= MAX_SPIKESTRIPS ) return SendError( playerid, "Invalid Spike Strip ID." );
-	else if ( !Iter_Contains( spikestrips, rbID ) ) return SendError( playerid, "Invalid Spike Strip ID." );
-	else if ( g_spikestripData[ rbID ] [ E_CREATOR ] != playerid ) return SendError( playerid, "You have not created this spike strip." );
-	else
-	{
-	    destroySpikeStrip( rbID );
-	    SendServerMessage( playerid, "You have succesfully destroyed a spike strip." );
-	}
-	return 1;
-}
-
-
-CMD:spike( playerid, params[ ] ) return cmd_setspike( playerid, params );
-CMD:setspike( playerid, params[ ] )
-{
-	if ( GetPlayerInterior( playerid ) != 0 || GetPlayerVirtualWorld( playerid ) != 0 ) return SendError( playerid, "You cannot use this command inside buildings." );
-	else if ( GetPlayerScore( playerid ) < 250 ) return SendError( playerid, "You need at least 250 score to use this feature." );
-	else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
-	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You are jailed, you cannot do this." );
-	else if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
-	else if ( IsPlayerInWater( playerid ) ) return SendError( playerid, "You cannot use this command since you're in water." );
-	else if ( !p_inFBI{ playerid } ) return SendError( playerid, "You are not in the FBI." );
-	//else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this feature while in a vehicle." );
-	else
-	{
-	  	new
-			Float: X, Float: Y, Float: Z, Float: Angle;
-
-		if ( !IsPlayerInAnyVehicle( playerid ) )
-		{
-			GetXYInFrontOfPlayer( playerid, X, Y, Z, 2.0 );
-			GetPlayerFacingAngle( playerid, Angle );
-		}
-		else
-		{
-			new
-				iVehicle = GetPlayerVehicleID( playerid ),
-				iModel = GetVehicleModel( iVehicle )
-			;
-
-			if ( IsBoatVehicle( iModel ) || IsAirVehicle( iModel ) )
-				return SendError( playerid, "You cannot place a spike strip in this type of vehicle." );
-
-			GetVehiclePos( iVehicle, X, Y, Z );
-			GetVehicleZAngle( iVehicle, Angle );
-
-		 	X -= ( 4.1 * floatsin( -Angle, degrees ) );
-			Y -= ( 4.1 * floatcos( -Angle, degrees ) );
-		}
-
-		if ( CreateSpikeStrip( playerid, X, Y, Z, Angle ) != -1 )
-			SendServerMessage( playerid, "You have succesfully created a spike strip." );
-		else
-			SendError( playerid, "Failed to place a spike strip due to a unexpected error." );
-	}
-	return 1;
-}
-
 CMD:drball( playerid, params[ ] )
 {
 	new removed = 0;
@@ -11796,14 +11686,6 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 	// spikes
     if ( iState == PLAYER_STATE_DRIVER && vehicleid != 0 )
     {
-    	// spike strip system
-		foreach(new i : spikestrips) if ( g_spikestripData[ i ] [ E_SPHERE ] == areaid ) {
-            GetVehicleDamageStatus( vehicleid, panels, doors, lights, tires );
-            UpdateVehicleDamageStatus( vehicleid, panels, doors, lights, ( tires = encode_tires( 1, 1, 1, 1 ) ) );
-			destroySpikeStrip( i );
-			break;
-		}
-
 		// alert player if hes near the drugs
 		if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ))
 		{
@@ -12535,7 +12417,6 @@ public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )
 	else if ( iBefore < 5   && iAfter >= 5 )   ShowAchievement( playerid, "Arrested ~r~5~w~~h~~h~ criminals!", 3 );
 	return 1;
 }
-
 
 public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
@@ -18836,66 +18717,8 @@ stock SetObjectFacePoint(iObjectID, Float: fX, Float: fY, Float: fOffset, bool: 
 	}
 }
 
-stock destroySpikeStrip( i, bool: remove_iter = true )
-{
-	if ( i == -1 )
-	    return 0;
-
-	DestroyDynamicArea			( g_spikestripData[ i ] [ E_SPHERE ] );
-	DestroyDynamicObject		( g_spikestripData[ i ] [ E_OBJECT_ID ] );
-	DestroyDynamic3DTextLabel	( g_spikestripData[ i ] [ E_LABEL ] );
-
-	g_spikestripData[ i ] [ E_SPHERE ]		= 0xFFFF;
-	g_spikestripData[ i ] [ E_OBJECT_ID ]	= INVALID_OBJECT_ID;
-	g_spikestripData[ i ] [ E_LABEL ]		= Text3D: 0xFFFF;
-
-	if ( remove_iter ) Iter_Remove( spikestrips, i );
-	return 1;
-}
-
-stock CreateSpikeStrip( playerid, Float: X, Float: Y, Float: Z, Float: Angle )
-{
-	new
-		bVehicle = IsPlayerInAnyVehicle( playerid ),
-		i = Iter_Free( spikestrips )
-	;
-
-	if ( i != ITER_NONE )
-	{
-		DestroyDynamicArea			( g_spikestripData[ i ] [ E_SPHERE ] );
-		DestroyDynamicObject		( g_spikestripData[ i ] [ E_OBJECT_ID ] );
-		DestroyDynamic3DTextLabel	( g_spikestripData[ i ] [ E_LABEL ] );
-
-		g_spikestripData[ i ] [ E_CREATOR ] = playerid;
-		g_spikestripData[ i ] [ E_X ] = X;
-		g_spikestripData[ i ] [ E_Y ] = Y;
-		g_spikestripData[ i ] [ E_Z ] = Z;
-
-		g_spikestripData[ i ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "Spike Strip(%d)\n"COL_GREY"Placed by %s!", i, ReturnPlayerName( playerid ) ), COLOR_GOLD, X, Y, Z, 20.0 );
-	    g_spikestripData[ i ] [ E_OBJECT_ID ] = CreateDynamicObject( 2899, X, Y, Z - ( bVehicle ? 0.6 : 0.9 ), 0, 0, Angle - 90.0);
-		g_spikestripData[ i ] [ E_SPHERE ] = CreateDynamicCircle( X, Y, 4.0 );
-
-	   	Streamer_Update( playerid );
-	    Iter_Add( spikestrips, i );
-	}
-  	return i;
-}
-
 stock ClearPlayerRoadblocks( playerid, bool: distance_check = true )
 {
-	// remove spike strips
-	foreach ( new handle : spikestrips ) if ( g_spikestripData[ handle ] [ E_CREATOR ] == playerid ) {
-		if ( distance_check && GetPlayerDistanceFromPoint( playerid, g_spikestripData[ handle ] [ E_X ], g_spikestripData[ handle ] [ E_Y ], g_spikestripData[ handle ] [ E_Z ] ) < 75.0 ) {
-			continue;
-		}
-
-		new
-			cur = handle;
-
-		destroySpikeStrip( handle, .remove_iter = false );
-		Iter_SafeRemove( spikestrips, cur, handle );
-	}
-
 	// remove roadblocks
 	foreach ( new handle : roadblocks ) if ( g_roadblockData[ handle ] [ E_CREATOR ] == playerid ) {
 		if ( distance_check && GetPlayerDistanceFromPoint( playerid, g_roadblockData[ handle ] [ E_X ], g_roadblockData[ handle ] [ E_Y ], g_roadblockData[ handle ] [ E_Z ] ) < 100.0 ) {
