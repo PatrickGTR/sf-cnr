@@ -127,6 +127,10 @@ CMD:respawnalluv( playerid, params[ ] )
 	{
 	    for( new i = 0; i < MAX_VEHICLES; i++ ) if ( IsValidVehicle( i ) )
 	    {
+	    	#if defined __cnr__chuffsec
+	    	if ( g_secureTruckVehicle == i ) continue;
+	    	#endif
+
 	    	// keep trailers
 	    	if ( IsTrailerVehicle( GetVehicleModel( i ) ) )
 	    		continue;
@@ -708,6 +712,6 @@ CMD:mutelist( playerid, params[ ] )
 	}
 	if ( count == 0 )
 		return SendError( playerid, "There are no muted players online." );
-	else 
+	else
 		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Muted List", szNormalString, "Close", "" ), 1;
 }
