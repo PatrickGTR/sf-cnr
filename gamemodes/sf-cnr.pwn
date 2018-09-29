@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -47,6 +47,7 @@
 #include 							< MathParser >
 #include 							< mapandreas >
 #include 							< md-sort >
+#include                            < progress2 >
 native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
@@ -3853,7 +3854,7 @@ public OnPlayerDisconnect( playerid, reason )
  	p_Kills			[ playerid ] = 0;
 	p_Deaths		[ playerid ] = 0;
  	p_VIPLevel		[ playerid ] = 0;
-	p_XP			[ playerid ] = 0;
+//	p_XP			[ playerid ] = 0;
 	p_InHouse		[ playerid ] = -1;
 	p_InGarage 		[ playerid ] = -1;
 	p_inMovieMode	{ playerid } = false;
@@ -8233,7 +8234,7 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 	return 1;
 }
 
-CMD:xpmarket( playerid, params[ ] ) return SendServerMessage( playerid, "You can no longer sell your experience anymore." );
+CMD:xpmarket( playerid, params[ ] ) return SendError( playerid, "You can no longer sell your experience anymore." );
 /*{
 	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %s legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", number_format( p_XP[ playerid ] ) ), "Select", "Cancel");
 	return 1;
@@ -13240,7 +13241,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_Kills[ playerid ] 			= cache_get_field_content_int( 0, "KILLS", dbHandle );
 			p_Deaths[ playerid ] 			= cache_get_field_content_int( 0, "DEATHS", dbHandle );
 			p_VIPLevel[ playerid ] 			= cache_get_field_content_int( 0, "VIP_PACKAGE", dbHandle );
-			p_XP[ playerid ] 				= cache_get_field_content_int( 0, "XP", dbHandle );
+			//p_XP[ playerid ] 				= cache_get_field_content_int( 0, "XP", dbHandle );
 			p_VIPExpiretime[ playerid ] 	= cache_get_field_content_int( 0, "VIP_EXPIRE", dbHandle );
 			p_LastSkin[ playerid ] 			= cache_get_field_content_int( 0, "LAST_SKIN", dbHandle );
 			p_Burglaries[ playerid ] 		= cache_get_field_content_int( 0, "BURGLARIES", dbHandle );
@@ -13506,7 +13507,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 SetPlayerScore( playerid, 0 );
 				p_Kills[ playerid ] = 1;
 				p_Deaths[ playerid ] = 1;
-				p_XP[ playerid ] = 0;
+				//p_XP[ playerid ] = 0;
 				//p_CopTutorial{ playerid } = 0;
 				p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
 				p_OwnedHouses[ playerid ] = 0;
@@ -15117,7 +15118,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Kills:{FFFFFF} %d\n"\
 											""COL_GREY"Deaths:{FFFFFF} %d\n"\
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
-											GetPlayerScore( pID ), p_XP[ pID ], cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
+											GetPlayerScore( pID ), GetPlayerTotalExperience( pID ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
 				format( szLargeString, 720,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\
@@ -17374,10 +17375,10 @@ stock SavePlayerData( playerid, bool: logout = false )
 		if ( IsPlayerCuffed( playerid ) || IsPlayerTazed( playerid ) || IsPlayerTied( playerid ) || p_LeftCuffed{ playerid } || p_QuitToAvoidTimestamp[ playerid ] > g_iTime )
 			bQuitToAvoid = true;
 
-        format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`XP`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
+        format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
                                        	GetPlayerScore( playerid ), 	GetPlayerCash( playerid ),		p_AdminLevel[ playerid ],
                                        	p_BankMoney[ playerid ], 		p_OwnedHouses[ playerid ], 		p_Kills[ playerid ],
-										p_Deaths[ playerid ], 			p_VIPLevel[ playerid ], 		p_XP[ playerid ],
+										p_Deaths[ playerid ], 			p_VIPLevel[ playerid ],
 										p_OwnedVehicles[ playerid ], 	g_iTime, 						p_VIPExpiretime[ playerid ],
 										p_LastSkin[ playerid ], 		p_Burglaries[ playerid ], 		p_Uptime[ playerid ],
 									 	p_Arrests[ playerid ],			p_SpawningCity{ playerid },		p_Methamphetamine{ playerid },

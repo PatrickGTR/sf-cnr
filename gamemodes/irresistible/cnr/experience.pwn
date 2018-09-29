@@ -59,7 +59,13 @@ static const
 
 /* ** Variables ** */
 static stock
-	Float: g_playerExperience		[ MAX_PLAYERS ] [ E_LEVELS ]
+	Float: g_playerExperience		[ MAX_PLAYERS ] [ E_LEVELS ],
+
+	PlayerText: p_playerExpTitle 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_playerExpAwardTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerBar: p_playerExpProgress 	[ MAX_PLAYERS ],
+	p_playerExpHideTimer 			[ MAX_PLAYERS ] = { -1, ... }
+
 ;
 
 /* ** Important ** */
@@ -104,6 +110,34 @@ hook OnPlayerLogin( playerid )
 	return 1;
 }
 
+hook OnPlayerConnect( playerid )
+{
+	// progress bar for xp
+ 	p_playerExpProgress[ playerid ] = CreatePlayerProgressBar( playerid, 47.000000, 263.000000, 82.500000, 7.199999, COLOR_GOLD, 100.0000, 0 ); // -2007060993
+
+ 	// title of progress bar
+	p_playerExpTitle[ playerid ] = CreatePlayerTextDraw( playerid, 86.000000, 248.000000, "_" );
+	PlayerTextDrawAlignment( playerid, p_playerExpTitle[ playerid ], 2 );
+	PlayerTextDrawBackgroundColor( playerid, p_playerExpTitle[ playerid ], 255 );
+	PlayerTextDrawFont( playerid, p_playerExpTitle[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, p_playerExpTitle[ playerid ], 0.240000, 1.200000 );
+	PlayerTextDrawColor( playerid, p_playerExpTitle[ playerid ], COLOR_GOLD );
+	PlayerTextDrawSetOutline( playerid, p_playerExpTitle[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, p_playerExpTitle[ playerid ], 1 );
+
+	// general reward
+	p_playerExpAwardTD[ playerid ] = CreatePlayerTextDraw( playerid,319.000000, 167.000000, "+20 XP" );
+	PlayerTextDrawAlignment( playerid,p_playerExpAwardTD[ playerid ], 2 );
+	PlayerTextDrawBackgroundColor( playerid,p_playerExpAwardTD[ playerid ], 255 );
+	PlayerTextDrawFont( playerid,p_playerExpAwardTD[ playerid ], 3 );
+	PlayerTextDrawLetterSize( playerid,p_playerExpAwardTD[ playerid ], 0.450000, 1.599999 );
+	PlayerTextDrawColor( playerid,p_playerExpAwardTD[ playerid ], COLOR_GOLD );
+	PlayerTextDrawSetOutline( playerid,p_playerExpAwardTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid,p_playerExpAwardTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid,p_playerExpAwardTD[ playerid ], 0 );
+	return 1;
+}
+
 hook OnPlayerDisconnect( playerid, reason ) {
 	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
 		g_playerExperience[ playerid ] [ E_LEVELS: l ] = 0;
@@ -134,11 +168,11 @@ CMD:level( playerid, params[ ] )
 	for ( new level_id; level_id < sizeof( g_levelData ); level_id ++ )
 	{
 		new Float: current_rank = GetPlayerLevel( watchingid, E_LEVELS: level_id );
-		new Float: next_rank = floatround( current_rank, floatround_floor ) + 1.0;
-		new Float: next_rank_xp = ( g_levelData[ level_id ] [ E_MAX_UNITS ] * g_levelData[ level_id ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * ( next_rank * next_rank );
+		new Float: next_lvl = floatround( current_rank, floatround_floor ) + 1.0;
+		new Float: next_lvl_xp = ( g_levelData[ level_id ] [ E_MAX_UNITS ] * g_levelData[ level_id ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * ( next_lvl * next_lvl );
 
 		player_total_lvl += floatround( current_rank, floatround_floor );
-		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%s%0.0f / %0.0f\t"COL_PURPLE"%0.0f XP\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank >= 100.0 ? ( COL_GREEN ) : ( COL_GREY ), current_rank, EXP_MAX_PLAYER_LEVEL, next_rank_xp - g_playerExperience[ watchingid ] [ E_LEVELS: level_id ] );
+		format( szLargeString, sizeof( szLargeString ), "%s%s Level\t%s%0.0f / %0.0f\t"COL_PURPLE"%0.0f XP\n", szLargeString, g_levelData[ level_id ] [ E_NAME ], current_rank >= 100.0 ? ( COL_GREEN ) : ( COL_GREY ), current_rank, EXP_MAX_PLAYER_LEVEL, next_lvl_xp - g_playerExperience[ watchingid ] [ E_LEVELS: level_id ] );
 	}
 
 	SetPVarInt( playerid, "experience_watchingid", watchingid );
@@ -177,23 +211,34 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	new Float: xp_earned = default_xp * ( IsDoubleXP( ) ? 2.0 : 1.0 ) * ( with_dilation ? ( g_levelData[ _: level ] [ E_XP_DILATION ] ) : 1.0 );
 
 	// when a player ranks up
-	new next_rank = floatround( GetPlayerLevel( playerid, level ), floatround_floor ) + 1;
-	new Float: next_rank_xp = ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * float( next_rank * next_rank );
+	new next_lvl = floatround( GetPlayerLevel( playerid, level ), floatround_floor ) + 1;
+	new Float: next_lvl_xp = ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) * float( next_lvl * next_lvl );
 
-	if ( g_playerExperience[ playerid ] [ level ] + xp_earned >= next_rank_xp ) {
-		ShowPlayerHelpDialog( playerid, 10000, "~p~Congratulations %s!~n~~n~~w~Your %s Level is now ~p~%d.", ReturnPlayerName( playerid ), g_levelData[ _: level ] [ E_NAME ], next_rank );
+	if ( g_playerExperience[ playerid ] [ level ] + xp_earned >= next_lvl_xp ) {
+		ShowPlayerHelpDialog( playerid, 10000, "~p~Congratulations %s!~n~~n~~w~Your %s Level is now ~p~%d.", ReturnPlayerName( playerid ), g_levelData[ _: level ] [ E_NAME ], next_lvl );
 		if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/levelup.mp3" );
+    	PlayerTextDrawSetString( playerid, p_playerExpTitle[ playerid ], sprintf( "%s Level %d", g_levelData[ _: level ] [ E_NAME ], next_lvl ) );
+		SetPlayerProgressBarValue( playerid, p_playerExpProgress[ playerid ], 100.0 );
+	} else {
+    	PlayerTextDrawSetString( playerid, p_playerExpTitle[ playerid ], sprintf( "%s Level %d", g_levelData[ _: level ] [ E_NAME ], next_lvl - 1 ) );
 	}
 
 	// check if its over 100 anyway
 	if ( ( g_playerExperience[ playerid ] [ level ] += xp_earned ) > g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) {
 		g_playerExperience[ playerid ] [ level ] = g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ];
+		SetPlayerProgressBarValue( playerid, p_playerExpProgress[ playerid ], 100.0 );
+	} else {
+		new Float: progress = floatfract( GetPlayerLevel( playerid, level ) ) * 100.0;
+		SetPlayerProgressBarValue( playerid, p_playerExpProgress[ playerid ], progress );
 	}
 
 	// alert user
-    PlayerTextDrawSetString( playerid, p_ExperienceAwardTD[ playerid ], sprintf( "+%0.0f XP", xp_earned ) );
-    PlayerTextDrawShow( playerid, p_ExperienceAwardTD[ playerid ] );
-	SetTimerEx( "Experience_HideIncrementTD", 3500, false, "d", playerid );
+	KillTimer( p_playerExpHideTimer[ playerid ] );
+	PlayerTextDrawShow( playerid, p_playerExpTitle[ playerid ] );
+    ShowPlayerProgressBar( playerid, p_playerExpProgress[ playerid ] );
+    PlayerTextDrawSetString( playerid, p_playerExpAwardTD[ playerid ], sprintf( "+%0.0f XP", xp_earned ) );
+    PlayerTextDrawShow( playerid, p_playerExpAwardTD[ playerid ] );
+	p_playerExpHideTimer[ playerid ] = SetTimerEx( "Experience_HideIncrementTD", 3500, false, "d", playerid );
 
 	// save to database
 	format(
@@ -204,8 +249,13 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 	return mysql_single_query( szBigString ), 1;
 }
 
-function Experience_HideIncrementTD( playerid ) {
-	return PlayerTextDrawHide( playerid, p_ExperienceAwardTD[ playerid ] );
+function Experience_HideIncrementTD( playerid )
+{
+	p_playerExpHideTimer[ playerid ] = -1;
+    HidePlayerProgressBar( playerid, p_playerExpProgress[ playerid ] );
+	PlayerTextDrawHide( playerid, p_playerExpAwardTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_playerExpTitle[ playerid ] );
+	return 1;
 }
 
 /*stock GetPlayerTotalLevel( playerid, &level = 0 ) {

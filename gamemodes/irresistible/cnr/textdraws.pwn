@@ -43,7 +43,6 @@ new
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_ExperienceTD   	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_ExperienceAwardTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_WantedLevelTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_CoinsTD        	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_PlayerRankTD 		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -551,16 +550,6 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawColor( playerid, p_ExperienceTD[ playerid ], COLOR_GOLD );
 	PlayerTextDrawSetOutline( playerid, p_ExperienceTD[ playerid ], 1 );
 	PlayerTextDrawSetProportional( playerid, p_ExperienceTD[ playerid ], 1 );
-
-	p_ExperienceAwardTD[ playerid ] = CreatePlayerTextDraw( playerid, 338.000000, 149.000000, "+20 XP" );
-	PlayerTextDrawAlignment( playerid, p_ExperienceAwardTD[ playerid ], 2 );
-	PlayerTextDrawBackgroundColor( playerid, p_ExperienceAwardTD[ playerid ], 144 );
-	PlayerTextDrawFont( playerid, p_ExperienceAwardTD[ playerid ], 3 );
-	PlayerTextDrawLetterSize( playerid, p_ExperienceAwardTD[ playerid ], 0.409999, 1.600000 );
-	PlayerTextDrawColor( playerid, p_ExperienceAwardTD[ playerid ], COLOR_GOLD );
-	PlayerTextDrawSetOutline( playerid, p_ExperienceAwardTD[ playerid ], 1 );
-	PlayerTextDrawSetProportional( playerid, p_ExperienceAwardTD[ playerid ], 1 );
-	PlayerTextDrawSetSelectable( playerid, p_ExperienceAwardTD[ playerid ], 0 );
 
 	p_WantedLevelTD[ playerid ] = CreatePlayerTextDraw( playerid, 555.000000, 124.000000, "_" );
 	PlayerTextDrawAlignment( playerid, p_WantedLevelTD[ playerid ], 2 );

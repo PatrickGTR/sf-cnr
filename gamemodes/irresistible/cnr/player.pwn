@@ -56,7 +56,7 @@ new
 	p_Kills                         [ MAX_PLAYERS ],
 	p_Deaths                        [ MAX_PLAYERS ],
 	p_VIPLevel                     	[ MAX_PLAYERS ],
-	p_XP                            [ MAX_PLAYERS ],
+	// p_XP                        	[ MAX_PLAYERS ],
 	p_CureDealer                    [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_CureTick                      [ MAX_PLAYERS ],
 	p_HealDealer					[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
