@@ -25434,6 +25434,11 @@ stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 
 function PassiveMode_Reset( playerid, time_left )
 {
+	// if you happen to die then have a shot synced ... just reset normally
+	if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) {
+		return ResetPlayerPassiveMode( playerid );
+	}
+
 	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
 	{
 		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
