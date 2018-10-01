@@ -186,7 +186,7 @@ new
 	g_isBusinessVehicle 			[ MAX_VEHICLES ] = { -1, ... },
 	g_businessVehicle 				[ MAX_BUSINESSES ] = { INVALID_VEHICLE_ID, ... },
 	bool: g_businessVehicleUnlocked [ MAX_BUSINESSES ] [ MAX_BIZ_VEH_MODELS char ],
-	Iterator: business 				< MAX_BUSINESSES >,
+	Iterator: business 				< MAX_BUSINESSES >
 	//g_BusinessUpdateTickCount		= 0
 ;
 

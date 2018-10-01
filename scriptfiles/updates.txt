@@ -11,5 +11,7 @@
 (/) If you successfully break your cuffs, you get immunity from being tazed for 10 seconds.
 (/) Default 20% success rate breaking cuffs... Increases with more police in the server.
 (/) Simplified "/cp" (alternatively, /settings) dialog.
+(/) Business production requires you or your business associates to be online or it will pause.
+(/) Business production time has been halved.
 (*) Fixed a potential ChuffSec issue with him being without a vehicle.
 (*) Adds pages to "/estate" due to a lot of listings.
