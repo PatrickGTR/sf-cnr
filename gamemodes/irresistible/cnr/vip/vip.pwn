@@ -101,7 +101,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			new
 				Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
 
-			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 && upgrade_cost )
+			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 && upgrade_cost )
 			{
 				p_CoinMarketPage{ playerid } = ICM_PAGE_UPGRADE;
 				return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( upgrade_cost, .decimals = 2 ) ), "Yes", "No" );
@@ -178,7 +178,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		// upgrade player vip
 		if ( p_CoinMarketPage{ playerid } == ICM_PAGE_UPGRADE )
 		{
-			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 )
+			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 )
 			{
 				new Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
 				new new_vip_item = ( current_vip == VIP_BRONZE ? 0 : 1 );
@@ -461,7 +461,7 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 		new
 			Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
 
-		if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 3.0 && upgrade_cost )
+		if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 && upgrade_cost )
 		{
 			format( szMarket, sizeof( szMarket ), "%sUpgrade V.I.P\t"COL_GOLD"%s\n", szMarket, number_format( upgrade_cost, .decimals = 0 ) );
 		}
