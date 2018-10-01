@@ -84,10 +84,10 @@ enum E_BUSINESS_VEHICLE_DATA
 new
 	g_businessInteriorData 			[ 4 ] [ E_BUSINESS_INT_DATA ] =
 	{
-		{ "Weed",	 -1719.1877, -1377.3049, 5874.8721, -1734.094, -1374.4567, 5874.1475, 10000, 12, MAX_WEED_AMOUNT, 2500000,  -1741.97705, -1380.14294, 5873.60009, -90.00000 },
-		{ "Meth",	 2040.54810, 1011.41470, 1513.2777, 2029.2456, 1003.55200, 1510.2416, 18000, 16, MAX_METH_AMOUNT, 4000000,	2031.918945, 1000.044006, 1509.69104, 180.00000 },
-		{ "Coke",  	 2566.50070, -1273.2887, 1143.7203, 2558.5261, -1290.6298, 1143.7242, 50000, 20, MAX_COKE_AMOUNT, 7500000,	2555.145019, -1314.12695, 1143.17395, 180.00000 },
-		{ "Weapons", -6962.5542, -269.4713, 836.5154, -6969.2417, -248.1167, 836.5154, 125000, 48, MAX_WEAPON_AMOUNT, 16000000, -6942.84814, -246.391998, 836.989990, 90.000000 }
+		{ "Weed",	 -1719.1877, -1377.3049, 5874.8721, -1734.094, -1374.4567, 5874.1475, 10000, 6, MAX_WEED_AMOUNT, 2500000,  -1741.97705, -1380.14294, 5873.60009, -90.00000 }, // 12
+		{ "Meth",	 2040.54810, 1011.41470, 1513.2777, 2029.2456, 1003.55200, 1510.2416, 18000, 8, MAX_METH_AMOUNT, 4000000,	2031.918945, 1000.044006, 1509.69104, 180.00000 }, // 16
+		{ "Coke",  	 2566.50070, -1273.2887, 1143.7203, 2558.5261, -1290.6298, 1143.7242, 50000, 10, MAX_COKE_AMOUNT, 7500000,	2555.145019, -1314.12695, 1143.17395, 180.00000 }, // 20
+		{ "Weapons", -6962.5542, -269.4713, 836.5154, -6969.2417, -248.1167, 836.5154, 125000, 24, MAX_WEAPON_AMOUNT, 16000000, -6942.84814, -246.391998, 836.989990, 90.000000 } // 48
 	},
 	g_businessCarModelData[ ] [ E_BUSINESS_VEHICLE_DATA ] =
 	{
@@ -186,7 +186,8 @@ new
 	g_isBusinessVehicle 			[ MAX_VEHICLES ] = { -1, ... },
 	g_businessVehicle 				[ MAX_BUSINESSES ] = { INVALID_VEHICLE_ID, ... },
 	bool: g_businessVehicleUnlocked [ MAX_BUSINESSES ] [ MAX_BIZ_VEH_MODELS char ],
-	Iterator: business 				< MAX_BUSINESSES >
+	Iterator: business 				< MAX_BUSINESSES >,
+	//g_BusinessUpdateTickCount		= 0
 ;
 
 /* ** Hooks ** */
@@ -198,27 +199,52 @@ hook OnScriptInit( )
 
 hook OnServerUpdate( )
 {
+	/*new
+		current_tickcount = GetTickCount( );
+
+	if ( current_tickcount < g_BusinessUpdateTickCount ) {
+		// incase the server update timer is faster than 960ms
+		g_BusinessUpdateTickCount = current_tickcount + 950;
+		return 1;
+	}*/
+
 	// Replenish product
-	foreach (new businessid : business)
+	foreach ( new businessid : business ) if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] )
 	{
-		if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 && g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] < g_iTime ) {
+		new
+			members = 0;
 
-			// update the timestamps and switch stock for product
-			g_businessData[ businessid ] [ E_PRODUCT ] += g_businessData[ businessid ] [ E_SUPPLIES ];
-			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = 0;
-			g_businessData[ businessid ] [ E_SUPPLIES ] = 0;
+		GetOnlineBusinessAssociates( businessid, members );
 
-			// alert any associates
-			foreach (new p : Player) if ( IsBusinessAssociate( p, businessid ) )  {
-				SendClientMessageFormatted( p, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" Production has completed for "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+		if ( members )
+		{
+			// reduce business production time by a second
+			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] --;
+
+			// if the production timestamp is less than 0 ... refuel
+			if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] <= 0 )
+			{
+				// update the timestamps and switch stock for product
+				g_businessData[ businessid ] [ E_PRODUCT ] += g_businessData[ businessid ] [ E_SUPPLIES ];
+				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = 0;
+				g_businessData[ businessid ] [ E_SUPPLIES ] = 0;
+
+				// alert any associates
+				foreach ( new p : Player ) if ( IsBusinessAssociate( p, businessid ) )  {
+					SendClientMessageFormatted( p, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" Production has completed for "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+				}
+
+				// update db
+				UpdateBusinessData( businessid );
+			}
+			else if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] % 60 == 0 ) // every minute that passes, update in the sql
+			{
+				mysql_single_query( sprintf( "UPDATE `BUSINESSES` SET `PROD_TIMESTAMP` = %d WHERE `ID` = %d", g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], businessid ) );
 			}
 
-			// update db
-			UpdateBusinessData( businessid );
+			// update label anyway
+			UpdateBusinessProductionLabel( businessid );
 		}
-
-		// update label anyway
-		UpdateBusinessProductionLabel( businessid );
 	}
 	return 1;
 }
@@ -286,8 +312,8 @@ CMD:business( playerid, params[ ] )
 		{
 			format( szBigString, sizeof( szBigString ), "%s%s\t%s\t"COL_GOLD"%s\n",
 				szBigString, g_businessData[ businessid ] [ E_NAME ],
-				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 ? (secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) ) : ( ""COL_GREEN"Production Finished!" ),
-				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product!" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
+				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] ? ( secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], ", ", 5 ) ) : ( ""COL_GREEN"Production Finished" ),
+				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
 			), has = true;
 		}
 
@@ -1042,17 +1068,17 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
 
-		// check we havent breached any limits
-		if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
-			return ShowBusinessTerminal( playerid ), SendError( playerid, "The business met the limit of %d supplies.", g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
-
-		if ( g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ] > g_iTime )
-			return ShowBusinessTerminal( playerid ), SendError( playerid, "You cannot resupply the business as it is currently in its production phase." );
-
 		switch ( listitem )
 		{
 			case 0:
 			{
+				// check we havent breached any limits
+				if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
+					return ShowBusinessTerminal( playerid ), SendError( playerid, "The business met the limit of %d supplies.", g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+
+				if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] )
+					return ShowBusinessTerminal( playerid ), SendError( playerid, "You cannot resupply the business as it is currently in its production phase." );
+
 				// buy with cash
 				new
 					price = GetResupplyPrice( business_type );
@@ -1105,9 +1131,7 @@ hook OnPlayerDisconnect( playerid, reason )
 		new
 			members = 0;
 
-		foreach (new i : Player) if ( playerid != i && IsBusinessAssociate( i, businessid ) ) {
-			members ++;
-		}
+		GetOnlineBusinessAssociates( playerid, members, playerid );
 
 		// printf ("%d online players for business %d, stopping mission?", members, businessid );
 		if ( members <= 0 ) {
@@ -1394,9 +1418,9 @@ stock StartBusinessDrugProduction( businessid )
 	if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
 	{
 		if ( g_businessData[ businessid ] [ E_UPGRADES ] ) {
-			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = g_iTime + 1800 * g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ]; // doubles time necessary
+			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = 1800 * g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ]; // doubles time necessary
 		} else {
-			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = g_iTime + 3600 * g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ];
+			g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] = 3600 * g_businessInteriorData[ business_type ] [ E_PRODUCTION_TIME ];
 		}
 
 		UpdateBusinessProductionLabel( businessid );
@@ -1499,8 +1523,8 @@ stock UpdateBusinessProductionLabel( businessid )
 		prod_price = g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ), supply_price = g_businessData[ businessid ] [ E_SUPPLIES ] * GetResupplyPrice( g_businessData[ businessid ] [ E_INTERIOR_TYPE ] );
 
 	// check if its processing
-	if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] != 0 && g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] > g_iTime ) {
-		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_ORANGE"%s until production finishes", cash_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], cash_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( supply_price ), secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] - g_iTime, ", ", 5, 0 ) );
+	if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] ) {
+		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_ORANGE"%s until production finishes", cash_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], cash_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( supply_price ), secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], ", ", 5 ) );
 	} else {
 		format( szBigString, sizeof( szBigString ), ""COL_GREEN"Bank:"COL_WHITE" %s\n"COL_GREEN"Product:"COL_WHITE" %d (%s)\n"COL_GREEN"Supplies:"COL_WHITE" %d (%s)\n"COL_GREEN"Production finished", cash_format( g_businessData[ businessid ] [ E_BANK ] ), g_businessData[ businessid ] [ E_PRODUCT ], cash_format( prod_price ), g_businessData[ businessid ] [ E_SUPPLIES ], cash_format( supply_price ) );
 	}
@@ -1943,3 +1967,9 @@ stock IsBusinessAerialVehicle( businessid, vehicleid ) {
 	format( security, sizeof( security ), "%s"COL_GREEN"HIGH\t100%s Safe Security + 0.0%s chance of breaking in\t"COL_GOLD"%s\n", security, "%", "%", cash_format( security_cost ) );
 	return ShowPlayerDialog( playerid, DIALOG_BUSINESS_SECURITY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_GREY"Business System", security, "Purchase", "Back" );
 }*/
+
+stock GetOnlineBusinessAssociates( businessid, &members = 0, playerid = -1 ) {
+	foreach ( new i : Player ) if ( playerid != i && IsBusinessAssociate( i, businessid ) ) {
+		members ++;
+	}
+}

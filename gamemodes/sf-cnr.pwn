@@ -5393,7 +5393,7 @@ public OnProgressCompleted( playerid, progressid, params )
 		{
 			new szLocation[ MAX_ZONE_NAME ];
 			new businessid = GetPVarInt( playerid, "crackpw_biz" );
-		   	g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
+			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
 			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 120; // g_businessSecurityData[ g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ] [ E_BREAKIN_COOLDOWN ];
 
 			if ( random( 100 ) < 75 )
