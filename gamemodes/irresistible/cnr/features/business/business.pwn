@@ -369,7 +369,7 @@ CMD:business( playerid, params[ ] )
 			p_OwnedBusinesses[ playerid ] --;
 			g_businessData[ iBusiness ] [ E_OWNER_ID ] = 0;
 
-			ResetBusiness( iBusiness );
+			ResetBusiness( iBusiness, .hard_reset = true );
 			StopBusinessExportMission( iBusiness );
 			UpdateBusinessData( iBusiness );
 			UpdateBusinessTitle( iBusiness ); // No point querying (add on resale)
@@ -1357,11 +1357,11 @@ stock DestroyBusiness( businessid )
 	DestroyDynamic3DTextLabel( g_businessData[ businessid ] [ E_ENTER_LABEL ] );
 	DestroyDynamic3DTextLabel( g_businessData[ businessid ] [ E_EXIT_LABEL ] );
 	StopBusinessExportMission( businessid );
-	ResetBusiness( businessid );
+	ResetBusiness( businessid, .hard_reset = true );
 	return 1;
 }
 
-stock ResetBusiness( iBusiness )
+stock ResetBusiness( iBusiness, bool: hard_reset = false )
 {
 	// data
 	g_businessData[ iBusiness ] [ E_PRODUCT ] = 0;
@@ -1388,8 +1388,11 @@ stock ResetBusiness( iBusiness )
     	DestroyActor( g_businessActors[ iBusiness ] [ i ] ), g_businessActors[ iBusiness ] [ i ] = -1;
 
     // queries
-	mysql_single_query( sprintf( "DELETE FROM `BUSINESS_VEHICLES` WHERE `BUSINESS_ID`=%d", iBusiness ) );
-	mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `SPAWN`='BIZ %d'", iBusiness ) );
+    if ( hard_reset )
+    {
+		mysql_single_query( sprintf( "DELETE FROM `BUSINESS_VEHICLES` WHERE `BUSINESS_ID`=%d", iBusiness ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `SPAWN`='BIZ %d'", iBusiness ) );
+    }
 }
 
 stock GetBusinessAssociates( businessid ) {
