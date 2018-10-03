@@ -11,7 +11,7 @@
 /* ** Definitions ** */
 #define FACILITY_TAKEOVER_ENABLED 	( false )
 
-#define	MAX_FACILITIES 				( 24 )
+#define	MAX_FACILITIES 				( 32 )
 #define MAX_FACILITY_BOMB 			( 2 )
 
 #define FACILITY_SPAWN_FEE			( 250 )
