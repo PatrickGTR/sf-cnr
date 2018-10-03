@@ -32,7 +32,9 @@ enum E_LEVELS {
 };
 
 enum E_LEVEL_DATA {
-	E_NAME[ 16 ],				Float: E_MAX_UNITS,				Float: E_XP_DILATION
+	E_NAME[ 16 ],					E_COLOUR,
+
+	Float: E_MAX_UNITS,				Float: E_XP_DILATION
 };
 
 static const
@@ -41,10 +43,10 @@ static const
 static const
 	g_levelData 					[ ] [ E_LEVEL_DATA ] =
 	{
-		// Level Name 			Level 100 Req.		XP Dilation (just to confuse user)
-		{ "Police",				7500.0, 			20.0 }, 	// 7.5k arrests
-		{ "Robbery", 			30000.0,			15.0 }, 	// 30K robberies
-		{ "Deathmatch", 		75000.0,			10.0 } 		// 75K kills
+		// Level Name 			Bar Color 		Level 100 Req.		XP Dilation (just to confuse user)
+		{ "Police",				0x3E7EFFFF,		7500.0, 			20.0 }, 	// 7.5k arrests
+		{ "Robbery", 			0xF83245FF, 	30000.0,			15.0 }, 	// 30K robberies
+		{ "Deathmatch", 		0xFF9233FF,		75000.0,			10.0 } 		// 75K kills
 /*
 		{ "Fireman",			10000.0,			9.0 },		// 10k fires
 		{ "Hitman",				1500.0,				4.5 },		// 1.5k contracts
@@ -234,7 +236,9 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 
 	// alert user
 	KillTimer( p_playerExpHideTimer[ playerid ] );
+	PlayerTextDrawColor( playerid, p_playerExpTitle[ playerid ], g_levelData[ _: level ] [ E_COLOUR ] );
 	PlayerTextDrawShow( playerid, p_playerExpTitle[ playerid ] );
+	SetPlayerProgressBarColour( playerid, p_playerExpProgress[ playerid ], g_levelData[ _: level ] [ E_COLOUR ] );
     ShowPlayerProgressBar( playerid, p_playerExpProgress[ playerid ] );
     PlayerTextDrawSetString( playerid, p_playerExpAwardTD[ playerid ], sprintf( "+%0.0f XP", xp_earned ) );
     PlayerTextDrawShow( playerid, p_playerExpAwardTD[ playerid ] );
