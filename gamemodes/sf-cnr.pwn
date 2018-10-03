@@ -4810,10 +4810,10 @@ public OnPlayerDeath( playerid, killerid, reason )
 				Float: default_experience = 1.0;
 
 			switch ( reason ) {
-				case 23: default_experience = 1.5;
-				case 25: default_experience = 1.25;
+				case 24: default_experience = 1.5;
+				case 25, 23: default_experience = 1.25;
 				case 26: default_experience = 0.8;
-				case 34: default_experience = 1.75;
+				case 34, 33: default_experience = 2.0;
 			}
 			GivePlayerExperience( killerid, E_DEATHMATCH, default_experience );
 		}
