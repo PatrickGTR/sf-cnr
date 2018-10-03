@@ -36,7 +36,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	if ( GetPlayerCash( playerid ) < 9900 ) {
-	        		return SendError( playerid, "You do not have enough money for this item ($9,900)" );
+	        		return SendError( playerid, "You do not have enough money for this item ($9,900)." );
 	        	}
 
                 for ( new i = 0; i < MAX_WEAPONS; i++ )
@@ -65,7 +65,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    new
 	    	total_level = GetPlayerTotalLevel( playerid );
 
-
 	    switch( listitem )
 	    {
 	    	case 0:
@@ -75,7 +74,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	if ( GetPlayerCash( playerid ) < 9900 ) {
-	        		return SendError( playerid, "You do not have enough money for this item ($9,900)" );
+	        		return SendError( playerid, "You do not have enough money for this item ($9,900)." );
 	        	}
 
 	            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
@@ -93,7 +92,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	if ( GetPlayerCash( playerid ) < 7500 ) {
-	        		return SendError( playerid, "You do not have enough money for this item ($7,500)" );
+	        		return SendError( playerid, "You do not have enough money for this item ($7,500)." );
 	        	}
 
             	new vehicleid = GetPlayerVehicleID( playerid );
@@ -110,7 +109,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	if ( GetPlayerCash( playerid ) < 3000 ) {
-	        		return SendError( playerid, "You do not have enough money for this item ($3,000)" );
+	        		return SendError( playerid, "You do not have enough money for this item ($3,000)." );
 	        	}
 
                 AddVehicleComponent( GetPlayerVehicleID( playerid ), 1010 );
@@ -125,7 +124,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	if ( GetPlayerCash( playerid ) < 2500 ) {
-	        		return SendError( playerid, "You do not have enough money for this item ($2,500)" );
+	        		return SendError( playerid, "You do not have enough money for this item ($2,500)." );
 	        	}
 
 	            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
@@ -147,5 +146,3 @@ CMD:perks( playerid, params[ ] )
 	}
 	return ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
 }
-
-/* ** Functions ** */
