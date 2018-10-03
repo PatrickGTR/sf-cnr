@@ -258,12 +258,12 @@ function Experience_HideIncrementTD( playerid )
 	return 1;
 }
 
-/*stock GetPlayerTotalLevel( playerid, &level = 0 ) {
+stock GetPlayerTotalLevel( playerid, &level = 0 ) {
 	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
 		level += floatround( GetPlayerLevel( playerid, E_LEVELS: l ), floatround_floor );
 	}
 	return level;
-}*/
+}
 
 /* ** Migrations ** */
 /*

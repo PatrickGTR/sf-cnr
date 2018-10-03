@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -4801,10 +4801,21 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 		}
 
-		if ( p_Class[ killerid ] != CLASS_POLICE ) {
+		if ( p_Class[ killerid ] != CLASS_POLICE )
+		{
 			GivePlayerWantedLevel( killerid, 12 );
 			GivePlayerScore( killerid, 1, .multiplier = 0.2 );
-			GivePlayerExperience( killerid, E_DEATHMATCH );
+
+			new
+				Float: default_experience = 1.0;
+
+			switch ( reason ) {
+				case 23: default_experience = 1.5;
+				case 25: default_experience = 1.25;
+				case 26: default_experience = 0.8;
+				case 34: default_experience = 1.75;
+			}
+			GivePlayerExperience( killerid, E_DEATHMATCH, default_experience );
 		}
 	}
 	else if ( IsPlayerNPC( killerid ) ) SendDeathMessage( killerid, playerid, reason );
@@ -7421,7 +7432,7 @@ CMD:mech( playerid, params[ ] )
 		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 	 	SendServerMessage( playerid, "You have repaired this vehicle." );
-	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 5;
+	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 10;
 	 	GivePlayerCash( playerid, -cost );
 	}
 	else if ( strmatch( params, "nos" ) )
@@ -7482,7 +7493,7 @@ CMD:mech( playerid, params[ ] )
 	 	RepairVehicle( iVehicle );
 		GetVehicleZAngle( iVehicle, vZ ), SetVehicleZAngle( iVehicle, vZ );
 	 	SendServerMessage( playerid, "You have flipped and fixed this vehicle." );
-	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 5;
+	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 10;
 	 	p_AntiMechFlipSpam[ playerid ] =  g_iTime + 5;
 	 	GivePlayerCash( playerid, -cost );
 	}
@@ -7857,12 +7868,6 @@ thread OnPlayerWeeklyTime( playerid, irc, player[ ] )
 	return 1;
 }
 
-CMD:xpmarket( playerid, params[ ] ) return SendError( playerid, "You can no longer sell your experience anymore." );
-/*{
-	ShowPlayerDialog( playerid, DIALOG_XPMARKET, DIALOG_STYLE_INPUT, "{FFFFFF}XP Market", sprintf( ""COL_WHITE"You have %s legacy XP. Current exchange rate is $10 per XP.\n\nHow many would you like to exchange?", number_format( p_XP[ playerid ] ) ), "Select", "Cancel");
-	return 1;
-}*/
-
 CMD:emp( playerid, params[ ] )
 {
 	new
@@ -8177,13 +8182,6 @@ CMD:discordpm( playerid, params[ ] )
 	return 1;
 }
 #endif
-
-CMD:perks( playerid, params[ ] )
-{
-	//if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-    //ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
-	return SendServerMessage( playerid, "/perks is unavailable, become a dirty mechanic instead." );
-}
 
 CMD:viewguns( playerid, params[ ] )
 {
@@ -13542,103 +13540,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		);
 		return 1;
 	}
-	/*if ( ( dialogid == DIALOG_PERKS ) && response )
-	{
-		switch( listitem )
-		{
-			case 0: ShowPlayerDialog( playerid, DIALOG_PERKS_P, DIALOG_STYLE_TABLIST, "{FFFFFF}Game Perks", "Unlimited Ammunition\t"COL_GOLD"100 XP", "Select", "Back" );
-			case 1: ShowPlayerDialog( playerid, DIALOG_PERKS_V, DIALOG_STYLE_TABLIST, "{FFFFFF}Game Perks", "Fix & Flip vehicle\t"COL_GOLD"200 XP\nFlip vehicle\t"COL_GOLD"50 XP\n"COL_WHITE"Add NOS\t"COL_GOLD"80 XP\n"COL_WHITE"Repair Vehicle\t"COL_GOLD"120 XP", "Select", "Back" );
-		}
-	}
-	if ( ( dialogid == DIALOG_PERKS_P ) )
-	{
-	    if ( !response )
-	        return ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
-
-	    switch( listitem )
-	    {
-	        case 0:
-	        {
-	            if ( p_XP[ playerid ] >= 100 )
-	            {
-	                GivePlayerXP_Legacy( playerid, -100 );
-	                for( new i; i < MAX_WEAPONS; i++ )
-					{
-					    if ( IsWeaponInAnySlot( playerid, i ) && i != 0 && !( 16 <= i <= 18 ) && i != 35 && i != 47 && i != WEAPON_BOMB )
-					    {
-					        GivePlayerWeapon( playerid, i, 15000 );
-					    }
-					}
-					SendServerMessage( playerid, "You have bought unlimited ammunition for 100 XP." );
-					SetPlayerArmedWeapon( playerid, 0 );
-					Beep( playerid );
-	            }
-				else return SendError( playerid, "You don't have enough XP for this." );
-	        }
-	    }
-	}
-	if ( ( dialogid == DIALOG_PERKS_V ) )
-	{
-	    if ( !response )
-	        return ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );
-
-		if ( !IsPlayerInAnyVehicle( playerid ) || GetPlayerState( playerid ) != PLAYER_STATE_DRIVER )
-		    return SendError( playerid, "You are not in any vehicle as a driver." );
-
-	    switch( listitem )
-	    {
-	    	case 0:
-	        {
-	        	if ( p_XP[ playerid ] >= 200 )
-	            {
-		            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
-					GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
-					p_DamageSpamCount{ playerid } = 0;
-	                RepairVehicle( vehicleid );
-					GivePlayerXP_Legacy( playerid, -200 );
-					SendServerMessage( playerid, "You have fixed and flipped your vehicle for 200 XP." );
-					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-	            }
-	        	else return SendError( playerid, "You don't have enough XP for this." );
-	        }
-	        case 1:
-	        {
-	        	if ( p_XP[ playerid ] >= 50 )
-	            {
-		            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
-					GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
-					GivePlayerXP_Legacy( playerid, -50 );
-					SendServerMessage( playerid, "You have flipped your vehicle for 50 XP." );
-					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-	            }
-	        	else return SendError( playerid, "You don't have enough XP for this." );
-	        }
-	        case 2:
-	        {
-	        	if ( p_XP[ playerid ] >= 80 )
-	            {
-	                AddVehicleComponent( GetPlayerVehicleID( playerid ), 1010 );
-					GivePlayerXP_Legacy( playerid, -80 );
-					SendServerMessage( playerid, "You have installed nitro on your car for 80 XP." );
-					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-	            }
-	        	else return SendError( playerid, "You don't have enough XP for this." );
-	        }
-	        case 3:
-	        {
-	            if ( p_XP[ playerid ] >= 120 )
-	            {
-	            	new vehicleid = GetPlayerVehicleID( playerid );
-					PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-					p_DamageSpamCount{ playerid } = 0;
-	                RepairVehicle( vehicleid );
-					GivePlayerXP_Legacy( playerid, -120 );
-					SendServerMessage( playerid, "You have repaired your car for 120 XP." );
-	            }
-	        	else return SendError( playerid, "You don't have enough XP for this." );
-	        }
-	    }
-	}*/
 	if ( dialogid == DIALOG_CASINO_REWARDS && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -13829,19 +13730,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     	}
     	else ShowPlayerShopMenu( playerid );
     }
-	/*if ( ( dialogid == DIALOG_XPMARKET ) && response )
-	{
-		if ( !strlen( inputtext ) || !IsNumeric( inputtext ) )
-		    return SendError( playerid, "The input you have entered is invalid, must be a numeric with over 0 characters." ), cmd_xpmarket( playerid, "" ), 1;
-
-		if ( strval( inputtext ) < 0 || strval( inputtext ) > p_XP[ playerid ] || strval( inputtext ) > 99999999 )
-		    return SendError( playerid, "Invalid amount, must be from 0 to the amount of XP you have." ), cmd_xpmarket( playerid, "" ), 1;
-
-		GivePlayerXP_Legacy( playerid, -( strval( inputtext ) ) );
-		GivePlayerCash( playerid, strval( inputtext ) * EXCHANGE_XPCASH );
-		printf( "[xpmarket] %s -> %s", ReturnPlayerName( playerid ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) ); // 8hska7082bmahu
-		SendServerMessage( playerid, "You have successfully exchanged %d XP for %s dollars.", strval( inputtext ), cash_format( strval( inputtext ) * EXCHANGE_XPCASH ) );
-	}*/
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );

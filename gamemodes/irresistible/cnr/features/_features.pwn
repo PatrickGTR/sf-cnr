@@ -28,6 +28,7 @@
 #include "irresistible\cnr\features\gps.pwn"
 #include "irresistible\cnr\features\animations.pwn"
 #include "irresistible\cnr\features\spikestrips.pwn"
+#include "irresistible\cnr\features\perks.pwn"
 // #include "irresistible\cnr\features\pilot.pwn"
 // #include "irresistible\cnr\features\fishing.pwn"
 // #include "irresistible\cnr\features\vote.pwn"
