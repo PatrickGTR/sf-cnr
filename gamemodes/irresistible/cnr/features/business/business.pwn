@@ -1073,8 +1073,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			case 0:
 			{
 				// check we havent breached any limits
-				if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] )
-					return ShowBusinessTerminal( playerid ), SendError( playerid, "The business met the limit of %d supplies.", g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+				if ( g_businessData[ businessid ] [ E_SUPPLIES ] >= g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] ) {
+					if ( ! g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] ) {
+						return StartBusinessDrugProduction( businessid );
+					} else {
+						return ShowBusinessTerminal( playerid ), SendError( playerid, "The business met the limit of %d supplies.", g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
+					}
+				}
 
 				if ( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] )
 					return ShowBusinessTerminal( playerid ), SendError( playerid, "You cannot resupply the business as it is currently in its production phase." );
@@ -1412,7 +1417,7 @@ stock GetBusinessAssociates( businessid ) {
 stock StartBusinessDrugProduction( businessid )
 {
 	if ( ! Iter_Contains( business, businessid ) )
-		return;
+		return 0;
 
 	new
 		business_type = g_businessData[ businessid ] [ E_INTERIOR_TYPE ];
@@ -1434,6 +1439,7 @@ stock StartBusinessDrugProduction( businessid )
 			SendClientMessageFormatted( i, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" Supply levels for "COL_GREY"%s"COL_WHITE" have replenished. Production will commence.", g_businessData[ businessid ] [ E_NAME ] );
 		}
 	}
+	return 1;
 }
 
 stock GetPlayerOwnedBusinesses( playerid )
