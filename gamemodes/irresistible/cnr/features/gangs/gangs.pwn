@@ -86,3 +86,7 @@ stock SetPlayerGang( playerid, joining_gang )
 	SendClientMessageToGang( joining_gang, g_gangData[ joining_gang ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has joined the gang.", ReturnPlayerName( playerid ), playerid );
 	return 1;
 }
+
+stock GiveGangCash( gangid, cash ) {
+	g_gangData[ gangid ] [ E_BANK ] += cash;
+}

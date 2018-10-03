@@ -16207,8 +16207,11 @@ function SetPlayerRandomSpawn( playerid )
 		else if ( strmatch( p_SpawningKey[ playerid ], "GNG" ) )
 		{
 			if ( Iter_Contains( gangs, gangid ) && Iter_Contains( gangfacilities, index ) && g_gangData[ gangid ] [ E_SQL_ID ] == g_gangFacilities[ index ] [ E_GANG_SQL_ID ] ) {
-				SetPlayerToGangFacility( playerid, index );
-				return 1;
+				if ( SetPlayerToGangFacility( playerid, gangid, index ) ) {
+					return 1;
+				} else {
+					SendServerMessage( playerid, "You are unable to spawn at your gang's facility as the gang has no money in its account." );
+				}
 			}
 			else ResetSpawnLocation( playerid );
 		}

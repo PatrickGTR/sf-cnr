@@ -14,6 +14,8 @@
 #define	MAX_FACILITIES 				( 24 )
 #define MAX_FACILITY_BOMB 			( 2 )
 
+#define FACILITY_SPAWN_FEE			( 250 )
+
 #define FACILITY_AMMU_RESPECT 		( 75000.0 )
 #define FACILITY_BLOWUP_TIME 		( 10 )
 
@@ -425,16 +427,24 @@ thread OnGangFaciltiesLoad( )
 }
 
 /* ** Functions ** */
-stock SetPlayerToGangFacility( playerid, handle )
+stock SetPlayerToGangFacility( playerid, gangid, facilityid )
 {
+	if ( g_gangData[ gangid ] [ E_BANK ] < FACILITY_SPAWN_FEE ) {
+		return 0;
+	}
+
 	// preload interior
 	pauseToLoad( playerid );
 	UpdatePlayerEntranceExitTick( playerid );
 
 	// set player position
-	SetPlayerPos( playerid, g_gangFacilities[ handle ] [ E_X ], g_gangFacilities[ handle ] [ E_Y ], g_gangFacilities[ handle ] [ E_Z ] );
+	SetPlayerPos( playerid, g_gangFacilities[ facilityid ] [ E_X ], g_gangFacilities[ facilityid ] [ E_Y ], g_gangFacilities[ facilityid ] [ E_Z ] );
 	SetPlayerVirtualWorld( playerid, 0 );
 	SetPlayerInterior( playerid, 0 );
+
+	// charge the gang per spawn
+	GiveGangCash( gangid, -FACILITY_SPAWN_FEE );
+	return 1;
 }
 
 stock GetFacilityInteriorType( gang_sql_id )
@@ -442,6 +452,13 @@ stock GetFacilityInteriorType( gang_sql_id )
 	#pragma unused gang_sql_id
 	// todo
 	return 0;
+}
+
+stock GetGangIDFromFacilityID( facilityid ) {
+	foreach ( new f : gangs ) if ( g_gangFacilities[ facilityid ] [ E_GANG_SQL_ID ] == g_gangData[ g ] [ E_SQL_ID ] ) {
+		return f;
+	}
+	return ITER_NONE;
 }
 
 #if FACILITY_TAKEOVER_ENABLED == true
@@ -801,7 +818,7 @@ static stock initializeFacilityObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 19787, 241.391006, 1857.465942, 1864.854003, 0.000000, 0.000000, 180.000000, -1, -1, -1 ), 0, 16150, "ufo_bar", "black32", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19787, 243.671005, 1857.465942, 1864.854003, 0.000000, 0.000000, 180.000000, -1, -1, -1 ), 0, 16150, "ufo_bar", "black32", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 11714, 238.455993, 1872.332031, 1859.208984, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 19799, "all_vault", "liftdoorsac256", -16 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 7909, 263.942993, 1861.439941, 1862.397949, 0.000000, 0.000000, -90.000000, -1, -1, -1 ), 0, "The Lost And Damned", 120, "impact", 48, 0, 0xFF964B00, 0, 1 );
+	// SetDynamicObjectMaterialText( CreateDynamicObject( 7909, 263.942993, 1861.439941, 1862.397949, 0.000000, 0.000000, -90.000000, -1, -1, -1 ), 0, "The Lost And Damned", 120, "impact", 48, 0, 0xFF964B00, 0, 1 );
 	tmpVariable = CreateDynamicObject( 19926, 248.494995, 1798.292968, 1856.375976, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	SetDynamicObjectMaterial( tmpVariable, 0, 4552, "ammu_lan2", "newall4-4", 0 );
 	SetDynamicObjectMaterial( tmpVariable, 1, 4552, "ammu_lan2", "newall4-4", 0 );
