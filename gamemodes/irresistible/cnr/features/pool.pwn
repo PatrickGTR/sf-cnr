@@ -8,7 +8,6 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 #include 							< physics >
-#include 							< progress2 >
 
 /* ** Definitions ** */
 #define POCKET_RADIUS 				0.09

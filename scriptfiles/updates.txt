@@ -1,17 +1,5 @@
-(+) Adds an entirely new level and xp system (/level) ... sell your old xp via /xpmarket.
-(+) Adds a system of buying (/ic buy) and selling (/ic sell) Irresistible Coins. 
-(+) Adds a premium real estate listing system, use /estate to see if any homes are interesting.
-(+) Adds passive mode (togglable via /settings). Disables random death matching as an innocent player.
-(+) You can now disable automatic weapon pickup through /settings.
-(+) Admins can now track the hitmarker of spectating players.
-(+) /acmds is now entirely based off dialogs thanks to Stev.
-(+) FBI can deploy spike strips behind their vehicle by pressing LEFT ALT.
-(/) Gold V.I.P costs no more than $18.00 USD a month (1,800 IC).
-(/) Shark cards have been reduced by 10% in price, and a lot of the other items have also been reduced.
-(/) If you successfully break your cuffs, you get immunity from being tazed for 10 seconds.
-(/) Default 20% success rate breaking cuffs... Increases with more police in the server.
-(/) Simplified "/cp" (alternatively, /settings) dialog.
-(/) Business production requires you or your business associates to be online or it will pause.
-(/) Business production time has been halved.
-(*) Fixed a potential ChuffSec issue with him being without a vehicle.
-(*) Adds pages to "/estate" due to a lot of listings.
+(+) "/perks" has been added and is based off your total level.
+(+) Gang bank accounts are charged $250 per spawn in a facility.
+(/) The XP bar has different colours for different levels.
+(/) You need at least 7 days of VIP remaining before you can upgrade it.
+(*) Fix business issue with production not beginning with maxed supplies.
