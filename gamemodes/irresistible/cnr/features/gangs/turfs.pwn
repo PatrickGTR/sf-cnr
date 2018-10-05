@@ -498,7 +498,7 @@ stock Turf_GetFirstTurf( playerid )
 	return -1;
 }
 
-stock Turf_GetProfitability( zoneid, gang_members, Float: default_pay = 4500.0 )
+stock Turf_GetProfitability( zoneid, gang_members, Float: default_pay = 4000.0 )
 {
 	// size adjustments
 	//if ( g_gangzoneData[ zoneid ] [ E_SIZE ] < TURF_SIZE_SMALL ) // lower than 1st quartile, decrease pay
