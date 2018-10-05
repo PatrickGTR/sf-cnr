@@ -18072,16 +18072,6 @@ stock SaveGangData( gangid )
 	mysql_single_query( szLargeString );
 }
 
-stock IsPlayerGangCoLeader( accountid, gangid )
-{
-	for ( new i = 0; i < MAX_COLEADERS; i ++ ) {
-		if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] == accountid )
-			return true;
-	}
-
-	return false;
-}
-
 stock IsPlayerGangLeader( playerid, gangid, only_leader = 0 ) {
 
 	if ( g_gangData[ gangid ] [ E_LEADER ] == p_AccountID[ playerid ] )
