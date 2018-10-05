@@ -34,23 +34,22 @@ static stock
 	g_treeData                      [ MAX_TREES ] [ E_TREE_DATA ],
 	Iterator: trees 				< MAX_TREES >,
  	g_LogCountObject 				= INVALID_OBJECT_ID,
-	g_LogsInStock 					= 0,
-	g_LumberjackCP 					= -1
+	g_LogsInStock 					= 0
 ;
 
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
+	// pickups
+	CreateDynamicPickup( 341, 2, -2327.8730, -100.6307, 35.2878 ); // Chainsaw @Garcia
+	// CreateDynamicPickup( 341, 2, -2069.1431, 1788.9657, 43.7386 ); // Chainsaw @Alcatraz
+
 	// create the sign for wood count
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -2337.8610, -107.4217, 36.2978, 0.0000, 0.0000, 90.0551 ), 0, "Wood Chipper", 130, "impact", 80, 0, -1, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -2336.3244, -113.2057, 40.6778, 0.0000, 0.0000, 179.9560 ), 0, "Lumberjack", 130, "impact", 100, 0, -1, 0, 1 );
 	SetDynamicObjectMaterialText( ( g_LogCountObject = CreateDynamicObject( 3074, -2329.4724, -106.0164, 33.1678, 0.0000, 0.0000, 90.000000 ) ), 0, "0 Logs Ready", 130, "Arial", 0, 1, -1, 0, 1);
 	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.1, -94.00, 34.28, 0.0, 0.0, 270.0, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
 	SetDynamicObjectMaterial( CreateDynamicObject( 12814, -2337.6, -105.3, 34.28, 0.0, 0.0, 90.00, .streamdistance = 500.0, .priority = 100 ), 0, 19381, "all_walls", "desgreengrass" );
-
-	// checkpoint for chainsaw
-	g_LumberjackCP = CreateDynamicCP( -2323.5676, -97.2582, 35.3078, 1.0, -1, -1, -1, 100.0 );
-	CreateDynamic3DTextLabel( "[LUMBERJACK JOB]", COLOR_GOLD, -2323.5676, -97.2582, 35.3078, 20.0 );
 
 	// create the trees near san fierro
 	Lumberjack_CreateTree( -2358.10000000, -84.60000000, 34.10000000 );
@@ -132,35 +131,6 @@ hook OnPlayerDeath( playerid, killerid, reason )
 {
 	if ( Lumberjack_StopDelivery( playerid ) ) {
  		GameTextForPlayer( playerid, "~r~job stopped!", 4000, 0 );
-	}
-	return 1;
-}
-
-hook OnPlayerEnterDynamicCP( playerid, checkpointid )
-{
-	if ( checkpointid == g_Checkpoints[ CP_LUMBERJACK ] )
-	{
-	    if ( p_Class[ playerid ] != CLASS_CIVILIAN )
-	        return SendError( playerid, "Only civilians can access this feature." );
-
-	    szLargeString[ 0 ] = '\0';
-	    strcat( szLargeString, ""COL_WHITE"Welcome to the "COL_ORANGE"Lumberjack"COL_WHITE" job! \n\nHere we cut trees, chop them further then process them into crates.\nWe pay well for cutting a tree down and processing the logs. You can also\nbe a driver that will transport the boxes to the" );
-		strcat( szLargeString, "factory that requires it.\n\nOnly a specific vehicle can be driven to have these boxes delivered.\nIf it's not there and somewhere lost, contact an administrator to bring it back!" );
-		ShowPlayerDialog( playerid, DIALOG_LUMBERJACK, DIALOG_STYLE_MSGBOX, "{FFFFFF}Lumberjack Job", szLargeString, "Join", "Cancel" );
-	    return 1;
-	}
-	return 1;
-}
-
-hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
-{
-	if ( dialogid == DIALOG_LUMBERJACK && response )
-	{
-		if ( IsPlayerJailed( playerid ) )
-			return SendError( playerid, "This feature is disabled if you are jailed." );
-
-		SendServerMessage( playerid, "Thank you for your participation, you have been given a chainsaw!" );
-		GivePlayerWeapon( playerid, 9, 1 );
 	}
 	return 1;
 }
