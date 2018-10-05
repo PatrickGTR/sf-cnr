@@ -9849,40 +9849,38 @@ CMD:gangs( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_GANG_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Gangs List", szHugeString, "Select", "Cancel" );
 }
 
-CMD:turfs( playerid, params[ ] )
-{
-	if ( !Iter_Count( turfs ) )
-		return SendError( playerid, "There is currently no trufs on the server." );
-
-	szHugeString[ 0 ] = '\0';
-
-	foreach( new turfid : turfs )
-	{
-		new 
-			szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
-
-		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
-		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
-
-		GetZoneFromCoordinates( szLocation, min_x, min_y );
-
-	    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
-	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation ); 
-	    }
-	    else {
-	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
-	    }
-	}
-
-	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" );
-}
-
-
 CMD:gang( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 
-	if ( !strcmp( params, "leader", false, 6 ) )
+	if ( !strcmp( params, "turfs", false, 5 ) )
+	{
+		if ( !Iter_Count( turfs ) )
+			return SendError( playerid, "There is currently no trufs on the server." );
+
+		szHugeString[ 0 ] = '\0';
+
+		foreach( new turfid : turfs )
+		{
+			new 
+				szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+			Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+			Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+			GetZoneFromCoordinates( szLocation, min_x, min_y );
+
+		    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
+		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation ); 
+		    }
+		    else {
+		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
+		    }
+		}
+
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" ); 
+	}
+	else if ( !strcmp( params, "leader", false, 6 ) )
 	{
 		new
 		    pID
@@ -18052,6 +18050,16 @@ stock SaveGangData( gangid )
 	mysql_single_query( szLargeString );
 }
 
+stock IsPlayerGangCoLeader( accountid, gangid )
+{
+	for ( new i = 0; i < MAX_COLEADERS; i ++ ) {
+		if ( g_gangData[ gangid ] [ E_COLEADER ] [ i ] == accountid )
+			return true;
+	}
+
+	return false;
+}
+
 stock IsPlayerGangLeader( playerid, gangid, only_leader = 0 ) {
 
 	if ( g_gangData[ gangid ] [ E_LEADER ] == p_AccountID[ playerid ] )
@@ -21072,7 +21080,7 @@ thread OnListGangMembers( playerid, gangid, page )
 		for( i = 0, szLargeString[ 0 ] = '\0'; i < rows; i++ )
 		{
 			cache_get_field_content( i, "NAME", userName );
-			format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName );
+			format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GREY"%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName, IsPlayerGangCoLeader( cache_get_field_content_int( i, "USER_ID", dbHandle ), gangid ) ? () : () );
 		}
 
 		SetPVarInt( playerid, "gang_members_id", gangid );
