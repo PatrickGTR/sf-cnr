@@ -9849,6 +9849,28 @@ CMD:gangs( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_GANG_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Gangs List", szHugeString, "Select", "Cancel" );
 }
 
+CMD:getgang( playerid, params[ ] )
+{
+	new 
+		pID
+	;
+
+	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/getgang [PLAYER_ID]" );
+	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
+	else
+	{
+		if (p_GangID[ pID ] == INVALID_GANG_ID) {
+			SendServerMessage( playerid, ""COL_GREY"%s(%d) is not in a gang.", ReturnPlayerName( pID ), pID );
+		}
+		else {
+			SendServerMessage( playerid, ""COL_GREY"%s(%d) is in {%06x}%s", g_gangData[ p_GangID[ pID ] ] [ E_COLOR ] >>> 8, g_gangData[ p_GangID[ pID ] ][ E_NAME ] );
+		}
+	}
+
+	return 1;
+}
+
 CMD:gang( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
@@ -21080,7 +21102,7 @@ thread OnListGangMembers( playerid, gangid, page )
 		for( i = 0, szLargeString[ 0 ] = '\0'; i < rows; i++ )
 		{
 			cache_get_field_content( i, "NAME", userName );
-			format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GREY"%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName, IsPlayerGangCoLeader( cache_get_field_content_int( i, "USER_ID", dbHandle ), gangid ) ? () : () );
+			format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName );
 		}
 
 		SetPVarInt( playerid, "gang_members_id", gangid );
