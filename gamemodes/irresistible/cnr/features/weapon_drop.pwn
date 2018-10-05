@@ -30,8 +30,6 @@ enum E_WEAPONDROP_DATA {
 static g_weaponDropData 		[ MAX_WEAPON_DROPS ] [ E_WEAPONDROP_DATA ];
 static Iterator: weapondrop 	< MAX_WEAPON_DROPS >;
 
-static const g_rankHealthPayout[ ] = { 100, 75, 50, 45, 40, 35, 30, 25, 20, 15, 10 };
-
 static g_HealthPickup;
 
 /* ** Hooks ** */
@@ -57,10 +55,8 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 		GetPlayerPos( playerid, X, Y, Z );
 
-
 		new
-			killer_rank = GetPlayerRank( killerid ),
-			expire_time = gettime( ) + 180;
+			expire_time = GetServerTime( ) + 180;
 
 		for ( new slotid = 0; slotid < 13; slotid++ )
 		{
@@ -79,8 +75,17 @@ hook OnPlayerDeath( playerid, killerid, reason )
 			}
 		}
 
+		new
+			killer_dm_level = floatround( GetPlayerLevel( killerid, E_DEATHMATCH ) );
+
+		if ( killer_dm_level > 100 ) {
+			killer_dm_level = 100;
+		}
+
 		// health drop
-		CreateWeaponPickup( WEAPON_HEALTH, g_rankHealthPayout[ killer_rank ], 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+		if ( killer_dm_level >= 10 ) {
+			CreateWeaponPickup( WEAPON_HEALTH, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+		}
 	}
 	return 1;
 }
