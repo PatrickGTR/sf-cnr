@@ -9831,7 +9831,6 @@ thread readclans( playerid )
 	return 1;
 }
 
-
 CMD:gangs( playerid, params[ ] )
 {
 	if ( !Iter_Count(gangs) )
@@ -9849,6 +9848,35 @@ CMD:gangs( playerid, params[ ] )
 	}
 	return ShowPlayerDialog( playerid, DIALOG_GANG_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Gangs List", szHugeString, "Select", "Cancel" );
 }
+
+CMD:turfs( playerid, params[ ] )
+{
+	if ( !Iter_Count( turfs ) )
+		return SendError( playerid, "There is currently no trufs on the server." );
+
+	szHugeString[ 0 ] = '\0';
+
+	foreach( new turfid : turfs )
+	{
+		new 
+			szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+		GetZoneFromCoordinates( szLocation, min_x, min_y );
+
+	    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
+	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation ); 
+	    }
+	    else {
+	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
+	    }
+	}
+
+	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" );
+}
+
 
 CMD:gang( playerid, params[ ] )
 {
