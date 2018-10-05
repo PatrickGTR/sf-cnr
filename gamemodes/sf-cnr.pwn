@@ -1943,7 +1943,6 @@ public OnGameModeInit()
 	CreateDynamicPickup( 337, 2, -2744.6367, 1264.8502, 11.77030 ); // Spade @Mining
 	CreateDynamicPickup( 337, 2, 589.440800, 869.86900, -42.4973 ); // Spade @Mining
 	CreateDynamicPickup( 337, 2, -1998.7056, 1777.7448, 43.73860 ); // Spade @Alcatraz
-	// CreateDynamicPickup( 341, 2, -2069.1431, 1788.9657, 43.7386 ); // Chainsaw @Alcatraz
 
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
@@ -23228,7 +23227,7 @@ stock DisablePlayerSpawnProtection( playerid )
 
 stock SetPlayerPassiveMode( playerid )
 {
-	if ( ! IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) )
+	if ( IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) )
 		return 0;
 
 	// reset any labels etc
@@ -23244,7 +23243,7 @@ stock SetPlayerPassiveMode( playerid )
 
 stock IsPlayerPassive( playerid )
 {
-	return IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) && ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
+	return ! IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) && ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
 }
 
 stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )

@@ -19,7 +19,7 @@
 #define CP_BANK_MENU_LS          	( 5 )
 #define CP_PAINTBALL                ( 6 )
 #define CP_AMMUNATION_0            	( 7 )
-#define CP_LUMBERJACK				( 8 )
+//#define CP_LUMBERJACK				( 8 )
 #define CP_FIGHTSTYLE               ( 9 )
 #define CP_AMMUNATION_1       		( 10 )
 #define CP_AMMUNATION_2       		( 11 )
