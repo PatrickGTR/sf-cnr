@@ -9778,8 +9778,18 @@ CMD:takeover( playerid, params[ ] )
 	            g_gangzoneAttackCount[ z ] = 0;
               	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
               	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
-	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) {
-	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
+	            
+	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
+	            {
+	            	new 
+						szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+					GetZoneFromCoordinates( szLocation, min_x, min_y );
+			
+	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory at %s is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
 	            }
 	        }
 	        else
