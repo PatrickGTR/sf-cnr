@@ -9778,8 +9778,18 @@ CMD:takeover( playerid, params[ ] )
 	            g_gangzoneAttackCount[ z ] = 0;
               	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
               	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
-	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID ) {
-	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
+	            
+	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
+	            {
+	            	new 
+						szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+					GetZoneFromCoordinates( szLocation, min_x, min_y );
+			
+	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory at %s is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
 	            }
 	        }
 	        else
@@ -9831,7 +9841,6 @@ thread readclans( playerid )
 	return 1;
 }
 
-
 CMD:gangs( playerid, params[ ] )
 {
 	if ( !Iter_Count(gangs) )
@@ -9850,11 +9859,60 @@ CMD:gangs( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_GANG_LIST, DIALOG_STYLE_TABLIST_HEADERS, "Gangs List", szHugeString, "Select", "Cancel" );
 }
 
+CMD:getgang( playerid, params[ ] )
+{
+	new 
+		pID
+	;
+
+	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/getgang [PLAYER_ID]" );
+	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
+	else
+	{
+		if (p_GangID[ pID ] == INVALID_GANG_ID) {
+			SendServerMessage( playerid, ""COL_GREY"%s(%d) is not in a gang.", ReturnPlayerName( pID ), pID );
+		}
+		else {
+			SendServerMessage( playerid, ""COL_GREY"%s(%d) is in {%06x}%s", g_gangData[ p_GangID[ pID ] ] [ E_COLOR ] >>> 8, g_gangData[ p_GangID[ pID ] ][ E_NAME ] );
+		}
+	}
+
+	return 1;
+}
+
 CMD:gang( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 
-	if ( !strcmp( params, "leader", false, 6 ) )
+	if ( !strcmp( params, "turfs", false, 5 ) )
+	{
+		if ( !Iter_Count( turfs ) )
+			return SendError( playerid, "There is currently no trufs on the server." );
+
+		szHugeString[ 0 ] = '\0';
+
+		foreach( new turfid : turfs )
+		{
+			new 
+				szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+			Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+			Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+			GetZoneFromCoordinates( szLocation, min_x, min_y );
+
+		    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
+		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation ); 
+		    }
+		    else {
+		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
+		    }
+		}
+
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" ); 
+	}
+	else if ( !strcmp( params, "leader", false, 6 ) )
 	{
 		new
 		    pID
