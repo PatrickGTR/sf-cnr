@@ -1567,16 +1567,16 @@ stock GetProductPrice( businessid, bool: hardened = false )
 	switch ( g_businessData[ businessid ] [ E_INTERIOR_TYPE ] )
 	{
 		// (10,125), (100,350)
-		case BUSINESS_WEAPON: price = 111487.4 * floatpower( 1.0115, player_count ); // 111.4874 * 1.0115^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_WEAPON: price = 111487.4 * floatpower( 1.0115, player_count ); // 111487.4 * 1.0115^x for x in [25, 50, 75, 100, 125, 150]
 
 		// (10,50), (100,140)
-		case BUSINESS_COKE: price = 44595.0 * floatpower( 1.0115, player_count ); // 43.2117 * 1.0147^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_COKE: price = 43211.7 * floatpower( 1.0147, player_count ); // 43211.7 * 1.0147^x for x in [25, 50, 75, 100, 125, 150]
 
 		// (10,18), (100,50)
-		case BUSINESS_METH: price = 16068.4 * floatpower( 1.0115, player_count ); // 15757.0 * 1.0134^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_METH: price = 15757.0 * floatpower( 1.0134, player_count ); // 15757.0 * 1.0134^x for x in [25, 50, 75, 100, 125, 150]
 
 		// (10,10), (100,28)
-		case BUSINESS_WEED: price = 8919.0 * floatpower( 1.0115, player_count );  // 8.909 * 1.0116^x for x in [25, 50, 75, 100, 125, 150]
+		case BUSINESS_WEED: price = 8909.0 * floatpower( 1.0116, player_count );  // 8909.0 * 1.0116^x for x in [25, 50, 75, 100, 125, 150]
 	}
 
 	// San Fierro Priority
