@@ -26,3 +26,40 @@
 /* ** Hooks ** */
 
 /* ** Functions ** */
+stock GetJobIDFromName( szJob[ ] )
+{
+	static const
+		g_jobsData[ ] [ MAX_JOB_NAME char ] =
+		{
+			{ !"Rapist" }, { !"Kidnapper" }, { !"Terrorist" }, { !"Hitman" }, { !"Prostitute" },
+			{ !"Weapon Dealer" }, { !"Drug Dealer" }, { !"Dirty Mechanic" }, { !"Burglar" }
+		}
+	;
+
+	for( new iJob = 0; iJob < sizeof( g_jobsData ); iJob++ )
+		if ( strunpack( szNormalString, g_jobsData[ iJob ], MAX_JOB_NAME ) )
+			if ( strfind( szNormalString, szJob, true ) != -1 )
+				return iJob;
+
+	return 0xFE;
+}
+
+stock GetJobName( iJob )
+{
+	new
+		szJob[ MAX_JOB_NAME ] = "unknown";
+
+	switch( iJob )
+	{
+		case JOB_RAPIST: 			szJob = "Rapist";
+		case JOB_KIDNAPPER:			szJob = "Kidnapper";
+		case JOB_TERRORIST: 		szJob = "Terrorist";
+		case JOB_HITMAN: 			szJob = "Hitman";
+		case JOB_PROSTITUTE: 		szJob = "Prostitute";
+		case JOB_WEAPON_DEALER: 	szJob = "Weapon Dealer";
+		case JOB_DRUG_DEALER: 		szJob = "Drug Dealer";
+		case JOB_DIRTY_MECHANIC: 	szJob = "Dirty Mechanic";
+		case JOB_BURGLAR: 			szJob = "Burglar";
+	}
+	return szJob;
+}

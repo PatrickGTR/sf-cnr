@@ -597,41 +597,6 @@ new
 	g_apartmentElevatorDoor2		[ MAX_AFLOORS ] = INVALID_OBJECT_ID
 ;
 
-/* ** Shop Data ** */
-#define LIMIT_SCISSORS				16
-#define LIMIT_PINS					16
-#define LIMIT_ROPES					8
-#define LIMIT_CS 					16 // Caustic Soda
-#define LIMIT_HCL 					16 // Hydrogen Chloride
-#define LIMIT_MU 					16 // Muriatic Acid
-#define LIMIT_FOIL 					8
-#define LIMIT_MELTER 				4
-#define LIMIT_ONE 					1
-
-enum E_SHOP_DATA
-{
-	bool: E_SAVABLE, 	E_NAME[ 24 ], 			E_USAGE[ 32 ],
-	E_LIMIT, 			E_PRICE,				E_ID
-};
-
-new
-	g_shopItemData[ ] [ E_SHOP_DATA ] =
-	{
- 		{ true , "Drain Cleaner", 		"Caustic Soda",				 	LIMIT_CS,		190, 1 }, // 0
- 		{ true , "Stone Cleaner",		"Muriatic Acid", 			 	LIMIT_MU,		275, 2 }, // 1
- 		{ true , "Gas Tank",			"Hydrogen Chloride", 		 	LIMIT_HCL,		330, 3 }, // 2
- 		{ false, "Chastity Belt", 		"Protection from aids", 	 	LIMIT_ONE,		550, 4 }, // 3
- 		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		660, 5 }, // 4
- 		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
- 		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
- 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3400, 9 }, // 9
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
- 		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
- 		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
- 		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
-	}
-;
-
 /* ** Casino Rewards Points ** */
 #define CASINO_REWARDS_PAYOUT_PERCENT	20.0
 #define CASINO_REWARDS_DIVISOR 			10.0 	// 1000 points becomes 1 point
@@ -5957,9 +5922,9 @@ CMD:robitems( playerid, params[ ] )
 			iRandomItem = -1
 		;
 
-		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < LIMIT_PINS ) available_items[ 0 ] = 0;
-		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < LIMIT_SCISSORS ) available_items[ 1 ] = 1;
-		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < LIMIT_ROPES ) available_items[ 2 ] = 2;
+		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < GetShopItemLimit( SHOP_ITEM_BOBBY_PIN ) ) available_items[ 0 ] = 0;
+		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < GetShopItemLimit( SHOP_ITEM_SCISSOR ) ) available_items[ 1 ] = 1;
+		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < GetShopItemLimit( SHOP_ITEM_ROPES ) ) available_items[ 2 ] = 2;
 
 		if ( available_items[ 0 ] == -1 || available_items[ 1 ] == -1 || available_items[ 2 ] == -1 ) {
 			SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[ROB FAIL]{FFFFFF} %s(%d) has failed to rob items off you.", ReturnPlayerName( playerid ), playerid );
@@ -13016,12 +12981,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    			return SendError( playerid, "You need %s rewards points for this item.", points_format( rewards_cost ) );
 
 		    		// shop limits
-		    		if ( g_shopItemData[ i ] [ E_LIMIT ] == LIMIT_ONE )
+		    		if ( g_shopItemData[ i ] [ E_LIMIT ] == 1 )
 		    		{
-		    			if ( g_shopItemData[ i ] [ E_ID ] == 11 ) {
+		    			if ( g_shopItemData[ i ] [ E_ID ] == SHOP_ITEM_DRILL ) {
 		        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
 		        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-		    			} else if ( g_shopItemData[ i ] [ E_ID ] == 10 ) {
+		    			} else if ( g_shopItemData[ i ] [ E_ID ] == SHOP_ITEM_MONEY_CASE ) {
 		        			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
 							if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 		        			p_MoneyBag{ playerid } = true;
@@ -13066,90 +13031,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
 		return 1;
 	}
-	if ( ( dialogid == DIALOG_SHOP_MENU ) && response )
-    {
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-
-        if ( g_shopItemData[ listitem ] [ E_LIMIT ] == LIMIT_ONE )
-        {
-        	ShowPlayerShopMenu( playerid );
-
-        	if ( GetPlayerCash( playerid ) < g_shopItemData[ listitem ] [ E_PRICE ] ) return SendError( playerid, "You don't have enough money for this item." );
-
-        	switch( g_shopItemData[ listitem ] [ E_ID ] )
-        	{
-        		case 4:
-        		{
-        			if ( p_AidsVaccine{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-        			p_AidsVaccine{ playerid } = true;
-        		}
-        		case 5:
-        		{
-        			if ( p_SecureWallet{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-        			p_SecureWallet{ playerid } = true;
-        		}
-        		case 10:
-        		{
-        			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-					if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
-        			p_MoneyBag{ playerid } = true;
-        		}
-        		case 11:
-        		{
-        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
-        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-        		}
-        	}
-			GivePlayerCash( playerid, -( g_shopItemData[ listitem ] [ E_PRICE ] ) );
-			SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_shopItemData[ listitem ] [ E_NAME ], cash_format( g_shopItemData[ listitem ] [ E_PRICE ] ) );
-        }
-        else
-       	{
-       		SetPVarInt( playerid, "shop_item", listitem );
-       		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
-       	}
-    }
-    if ( dialogid == DIALOG_SHOP_AMOUNT )
-    {
-    	if ( response )
-    	{
-	    	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-
-    		new
-    			iAmount = LIMIT_ONE,
-
-    			i = GetPVarInt( playerid, "shop_item" ),
-    			iCurrentQuantity = GetShopItemVariable( playerid, i ),
-
-    			iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] )
-    		;
-
-    		switch( listitem )
-    		{
-    			case 0: iAmount = 1;
-    			case 1: iAmount = 5;
-    			case 2: iAmount = iLimit;
-    		}
-
-    		if ( ( iCurrentQuantity + iAmount ) > iLimit )
-    		{
-    			// Specified more than he can carry!
-    			if ( ( iAmount = iLimit - iCurrentQuantity ) != 0 )
-    				SendServerMessage( playerid, "You've breached the quantity limit therefore we have set it to %d.", iAmount );
-    		}
-
-    		if ( GetPlayerCash( playerid ) < ( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) ) SendError( playerid, "You cannot afford the price of the item(s)." );
-    		else if ( iAmount <= 0 ) SendError( playerid, "You cannot buy anymore of this item." );
-    		else {
-    			SetShopItemVariable( playerid, i, iCurrentQuantity + iAmount );
-    			GivePlayerCash( playerid, -( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-    		}
-
-    		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
-    	}
-    	else ShowPlayerShopMenu( playerid );
-    }
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -18600,60 +18481,6 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 	return 1;
 }
 
-stock GetShopItemVariable( playerid, id )
-{
-	switch( g_shopItemData[ id ] [ E_ID ] )
-	{
-		case 1:  return p_CausticSoda		{ playerid };
-		case 2:  return p_MuriaticAcid		{ playerid };
-		case 3:  return p_HydrogenChloride	{ playerid };
-		case 4:  return p_AidsVaccine		{ playerid };
-		case 5:  return p_SecureWallet		{ playerid };
-		case 6:  return p_Scissors 			[ playerid ];
-		case 8:  return p_BobbyPins 		[ playerid ];
-		case 10: return p_MoneyBag 			{ playerid };
-		case 7:  return p_Ropes 			[ playerid ];
-		case 9:  return p_AntiEMP 			[ playerid ];
-		case 11: return p_drillStrength		[ playerid ];
-		case 12: return p_MetalMelter		[ playerid ];
-	}
-	return 0;
-}
-
-stock SetShopItemVariable( playerid, id, value )
-{
-	switch( g_shopItemData[ id ] [ E_ID ] )
-	{
-		case 1:  return p_CausticSoda		{ playerid } = value;
-		case 2:  return p_MuriaticAcid		{ playerid } = value;
-		case 3:  return p_HydrogenChloride	{ playerid } = value;
-		case 4:  return p_AidsVaccine 		{ playerid } = !!value;
-		case 5:  return p_SecureWallet 		{ playerid } = !!value;
-		case 6:  return p_Scissors			[ playerid ] = value;
-		case 8:  return p_BobbyPins			[ playerid ] = value;
-		case 10: return p_MoneyBag			{ playerid } = !!value;
-		case 7:  return p_Ropes 			[ playerid ] = value;
-		case 9:  return p_AntiEMP 			[ playerid ] = value;
-		case 11: return p_drillStrength		[ playerid ] = value;
-		case 12: return p_MetalMelter 		[ playerid ] = value;
-	}
-	return 0;
-}
-
-stock ShowPlayerShopMenu( playerid )
-{
-	static szString[ 800 ];
-
-	if ( szString[ 0 ] == '\0' )
-	{
-		strcat( szString, " \t"COL_GREY"Grey options do not save!\t \n" );
-		for( new i; i < sizeof( g_shopItemData ); i++ ) {
-	 		format( szString, sizeof( szString ), "%s%s%s\t"COL_ORANGE"%s\t"COL_GOLD"%s\n", szString, g_shopItemData[ i ] [ E_SAVABLE ] ? ( COL_WHITE ) : ( COL_GREY ), g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], cash_format( g_shopItemData[ i ] [ E_PRICE ] ) );
-		}
-	}
-	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
-}
-
 stock KillEveryoneInShamal( vehicleid )
 {
 	static
@@ -19552,44 +19379,6 @@ stock IsDeathmatchProtectedZone( playerid ) {
 
 	return false;
 }*/
-
-stock GetJobIDFromName( szJob[ ] )
-{
-	static const
-		g_jobsData[ ] [ MAX_JOB_NAME char ] =
-		{
-			{ !"Rapist" }, { !"Kidnapper" }, { !"Terrorist" }, { !"Hitman" }, { !"Prostitute" },
-			{ !"Weapon Dealer" }, { !"Drug Dealer" }, { !"Dirty Mechanic" }, { !"Burglar" }
-		}
-	;
-
-	for( new iJob = 0; iJob < sizeof( g_jobsData ); iJob++ )
-		if ( strunpack( szNormalString, g_jobsData[ iJob ], MAX_JOB_NAME ) )
-			if ( strfind( szNormalString, szJob, true ) != -1 )
-				return iJob;
-
-	return 0xFE;
-}
-
-stock GetJobName( iJob )
-{
-	new
-		szJob[ MAX_JOB_NAME ] = "unknown";
-
-	switch( iJob )
-	{
-		case JOB_RAPIST: 			szJob = "Rapist";
-		case JOB_KIDNAPPER:			szJob = "Kidnapper";
-		case JOB_TERRORIST: 		szJob = "Terrorist";
-		case JOB_HITMAN: 			szJob = "Hitman";
-		case JOB_PROSTITUTE: 		szJob = "Prostitute";
-		case JOB_WEAPON_DEALER: 	szJob = "Weapon Dealer";
-		case JOB_DRUG_DEALER: 		szJob = "Drug Dealer";
-		case JOB_DIRTY_MECHANIC: 	szJob = "Dirty Mechanic";
-		case JOB_BURGLAR: 			szJob = "Burglar";
-	}
-	return szJob;
-}
 
 stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] ) {
 	static

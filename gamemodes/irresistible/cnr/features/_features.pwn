@@ -17,6 +17,7 @@
 #include "irresistible\cnr\features\minijobs\_minijobs.pwn"
 
 // other
+#include "irresistible\cnr\features\shop.pwn"
 #include "irresistible\cnr\features\fps.pwn"
 #include "irresistible\cnr\features\radio.pwn"
 #include "irresistible\cnr\features\cash_cards.pwn"
