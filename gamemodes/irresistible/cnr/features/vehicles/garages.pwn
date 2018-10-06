@@ -9,9 +9,6 @@
 #include 							< YSI\y_hooks >
 
 /* ** Macros ** */
-#define UpdateBusinessTitle(%0) \
-	 mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `BUSINESSES` m ON m.`OWNER_ID`=f.`ID` WHERE m.`ID`=%d",%0),true,"OnUpdateBusinessTitle","i",%0)
-
 #define UpdateGarageTitle(%0) \
 	mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `GARAGES` m ON m.`OWNER`=f.`ID` WHERE m.`ID`=%d",(%0)),true,"OnUpdateGarageTitle","i",(%0))
 

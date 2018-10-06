@@ -10,8 +10,9 @@
 // houses
 #include "irresistible\cnr\features\houses\_houses.pwn"
 #include "irresistible\cnr\features\vehicles\_vehicles.pwn"
-#include "irresistible\cnr\features\gangs\_gangs.pwn"
 #include "irresistible\cnr\features\business\_business.pwn"
+#include "irresistible\cnr\features\robbery\_robbery.pwn"
+#include "irresistible\cnr\features\gangs\_gangs.pwn"
 #include "irresistible\cnr\features\visage\_visage.pwn"
 #include "irresistible\cnr\features\minijobs\_minijobs.pwn"
 

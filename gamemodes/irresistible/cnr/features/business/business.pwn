@@ -25,6 +25,10 @@
 #define MAX_COKE_AMOUNT 			( 10 )
 #define MAX_WEAPON_AMOUNT 			( 10 )
 
+/* ** Macros ** */
+#define UpdateBusinessTitle(%0) \
+	 mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `BUSINESSES` m ON m.`OWNER_ID`=f.`ID` WHERE m.`ID`=%d",%0),true,"OnUpdateBusinessTitle","i",%0)
+
 /* ** Variables ** */
 enum E_BUSINESS_DATA
 {
@@ -1354,7 +1358,7 @@ stock DestroyBusiness( businessid )
 	mysql_single_query( sprintf( "DELETE FROM `BUSINESSES` WHERE `ID`=%d", businessid ) );
 
 	Iter_Remove(business, businessid);
-	DestroyRobberyCheckpoint( g_businessData[ businessid ] [ E_ROBBERY_ID ] );
+	// DestroyRobberyCheckpoint( g_businessData[ businessid ] [ E_ROBBERY_ID ] );
 	g_businessData[ businessid ] [ E_OWNER_ID ] = 0;
 	DestroyDynamicCP( g_businessData[ businessid ] [ E_ENTER_CP ] );
 	DestroyDynamicCP( g_businessData[ businessid ] [ E_EXIT_CP ] );
