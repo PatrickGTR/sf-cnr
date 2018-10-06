@@ -36,8 +36,6 @@ hook OnScriptInit( )
 	// Custom Interiors
 	mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
 
-	// CreateEntrance( "[SEWER]",				-1990.7736, 1033.7378, 55.7266, 3638.4670, 5215.5024, 1203.3168, 		1,   1, true, true, -1 ); // Milky
-
 	// San Fierro
 	CreateEntrance( "[BANK]", 				-1493.1296, 920.1409, 7.1875, -1444.2537, 831.0490, 985.7027, 			0,  GetBankVaultWorld( CITY_SF ), true, false, 52 );
 	CreateEntrance( "[VICTIM]", 			-1694.4019, 951.0486, 24.8906, 227.3678, -8.3722, 1002.2109, 			5,   1, false, false, 45 );
@@ -299,7 +297,7 @@ thread OnEntrancesLoad( )
 			);
 		}
 	}
-	printf( "[ENTRANCES]: %d extra entrances have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
+	printf( "[ENTRANCES]: %d entrances have been loaded. (Tick: %dms)", Iter_Count( entrances ), GetTickCount( ) - loadingTick );
 	return 1;
 }
 

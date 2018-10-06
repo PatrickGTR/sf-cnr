@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -1477,10 +1477,6 @@ public OnGameModeInit()
 	// Remove 25% of wealth off 2 weeks inactive players.
 	// mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 8 );
 #endif
-
-	/* ** Houses/Bribes/ETC **/
-	printf( "[ENTRANCES]: %d entrances have been successfully loaded.", Iter_Count(entrances) );
-	printf( "[ROBBERIES]: %d robberies have been successfully loaded.", Iter_Count(RobberyCount) );
 
 	// mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );

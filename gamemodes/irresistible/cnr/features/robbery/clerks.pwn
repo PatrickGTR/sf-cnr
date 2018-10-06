@@ -11,7 +11,7 @@
 
 /* ** Definitions ** */
 #define ENABLED_NPC_ROBBERIES		( true )
-#define MAX_ROBBERY_NPCS 			( 50 ) //( MAX_ROBBERIES )
+#define MAX_ROBBERY_NPCS 			( MAX_ROBBERIES ) // ( 50 )
 #define MAX_CIVILIANS				( 50 )
 
 /* ** Variables ** */
@@ -506,7 +506,7 @@ function OnPlayerHoldupStore( playerid, clerkid, step )
 	}
 	else
 	{
-		new
+		/*new
 			targetplayerid = GetPlayerTargetPlayer( playerid );
 
 		// If the player aint aiming at the assistant, whip out a gun
@@ -522,7 +522,7 @@ function OnPlayerHoldupStore( playerid, clerkid, step )
 		else
 		{
 			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is scared" );
-		}
+		}*/
 
 		new
 			amount = RandomEx( 250, 500 ),
@@ -560,6 +560,7 @@ function OnPlayerHoldupStore( playerid, clerkid, step )
 			return SendError( playerid, "A money exploit occurred. Contact Lorenc ASAP." );
 
 		GivePlayerCash( playerid, amount );
+		GivePlayerExperience( playerid, E_ROBBERY, 0.8 );
 		SetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ), robbedNpc );
 		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", cash_format( robbedNpc ) ) );
 	}
@@ -591,7 +592,6 @@ function RobberyNpcShootCheck( clerkid, playerid )
 
 	return ( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid ) ), 1;
 }
-
 
 stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 16 ], const Float: position[ 4 ], worldid, interior, bool: hostile = true, numSkins = sizeof( skinId ) )
 {
