@@ -47,6 +47,61 @@ function initializeServerObjects( )
 	SetDynamicObjectMaterialText( tmpVariable, 2, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
 	SetDynamicObjectMaterialText( tmpVariable, 3, "SF-CNR", 130, "IMPACT", 70, 0, -16777216, 0, 1 );
 
+	// Misc
+	CreateDynamicObject(1498, 308.68, 312.10, 1002.30, 0.00, 0.00, 0.00); // Michelle's interior door
+	CreateDynamicObject(19312, 191.16823, 1870.02869, 21.45658, 0.00, 0.00, 0.00); // Area 51
+	CreateDynamicObject(1535, 968.46094, -53.96051, 1000.04688,   0.00000, 0.00000, 90.00000); // Brothel
+	CreateDynamicObject(19364, 968.48914, -53.16937, 1001.84052,  0.00000, 0.00000, 0.00000); // Brothel
+	CreateDynamicObject(1503, 2200.23975, 2065.48755, 10.19629,   0.00000, 0.00000, 90.00000); // Random LV Ramp
+	CreateDynamicObject(8493, 1957.39600, 1510.48401, 24.97500,   0.00000, 0.00000, -159.14101); // [LVA] Pirateship
+	CreateDynamicObject(9159, 1957.35095, 1510.50696, 24.95900,   0.00000, 0.00000, 200.78101);
+	CreateDynamicObject(3886, 1991.42395, 1540.09497, 11.60500,   0.00000, 0.00000, 293.84100);
+	CreateDynamicObject(3886, 1984.21106, 1536.94897, 11.58000,   0.00000, 0.00000, 112.57700);
+	CreateDynamicObject(3886, 1962.28796, 1527.29602, 11.70500,   0.00000, 0.00000, 113.46300);
+	CreateDynamicObject(3886, 1969.43604, 1530.47705, 11.68000,   0.00000, 0.00000, 293.84100); // [LVA] End of Pirateship
+	CreateDynamicObject(19362, 1417.20593, 7.58543, 1008.36200,   0.00000, 0.00000, 90.00000); // Warehouse 1 Door
+
+	// Parking
+ 	CreateDynamicObject( 19485, -1909.55, 497.22, 25.71, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 1 );
+
+ 	// Random replacements made by sa-mp
+	CreateDynamicObject( 19794, 1787.13281, -1565.67969, 11.96880, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19484, -1875.02344, -65.328130, 15.06250, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19595, 1160.96094, -1180.57813, 70.41406, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+	CreateDynamicObject( 19798, 1160.96094, -1180.57813, 20.50000, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
+
+	// V.I.P Lounge
+	CreateDynamicObject( 3532, -1881.90, 823.73, 40.22, 0.00, 0.00, -48.84 );
+	CreateDynamicObject( 3532, -1877.85, 824.96, 40.22, 0.00, 0.00, -103.02 );
+	CreateDynamicObject( 3532, -1883.50, 819.35, 40.22, 0.00, 0.00, 8.82 );
+	CreateDynamicObject( 18652, -1881.10, 822.92, 40.04, 0.00, 0.00, -49.68 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1882.8883, 824.6093, 40.3129, 0.0000, 0.0000, 133.4854 ), 0, "VIP LOUNGE", 90, "Impact", 64, 0, 0xFFFFFFFF, 0, 1 ); //0xFFFFDC2E
+
+	// The Lost And Damned
+	tmpVariable = CreateDynamicObject( 10447, -2550.173339, 54.568466, 14.390675, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
+	SetDynamicObjectMaterial( tmpVariable, 8, 10969, "scum_sfse", "ws_apartmentbrown1", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 14, 10969, "scum_sfse", "ws_apartmentbrown2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 5, 8399, "vgs_shops", "vegasclubmural_128", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 6, 8399, "vgs_shops", "vegasclubmural_128", 0 );
+	SetDynamicObjectMaterialText( tmpVariable, 7, "The Lost", 120, "Arial", 80, 1, -1, -11980516, 1 );
+	CreateDynamicObject( 1536, -2587.711425, 58.402435, 3.336049, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	CreateDynamicObject( 1536, -2587.741455, 61.402610, 3.336049, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	tmpVariable = CreateDynamicObject( 3525, -2588.295654, 58.166000, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
+	tmpVariable = CreateDynamicObject( 3525, -2588.345703, 61.656021, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	tmpVariable = CreateDynamicObject( 3524, -2587.017578, 59.971229, 4.842026, 35.399997, 0.000000, -90.000000, -1, -1, -1 );
+	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
+	SetDynamicObjectMaterialText( tmpVariable, 1, "a", 0, "arial", 0, 0, 0, 0, 0 );
+
+	// Mining
+	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = -1.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
+
+	// Open warehouse near driving school
+	CreateDynamicObject( 19486, -2111.13, -27.23, 36.95, 0.00, 0.00, -90.00 );
+
 	// V.I.P Lounge
 	CreateDynamicObject( 18981, -1936.689331, 860.416503, 1207.932006, 0.000000, 90.000000, 0.000000 );
 	CreateDynamicObject( 18981, -1936.689331, 835.437072, 1207.932006, 0.000000, 90.000000, 0.000000 );

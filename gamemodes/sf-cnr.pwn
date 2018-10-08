@@ -81,14 +81,11 @@ new bool: False = false;
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
-//#define MAX_WEAPONS                 54
 #define MAX_CLASS_BAN_WARNS			3
 #define MAX_BURGLARY_SLOTS          8
 #define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
-
-#define EXCHANGE_XPCASH             10 // Per 1 XP for cash.
 
 #define VW_SHAMAL 					220
 
@@ -1023,20 +1020,6 @@ public OnGameModeInit()
 		ChangeVehicleModel( g_TrolleyVehicles[ i ], 1349, 270.0 + 180.0 );
 
 	/* ** Objects ** */
-	// MISC
-	CreateDynamicObject(1498, 308.68, 312.10, 1002.30, 0.00, 0.00, 0.00); // Michelle's interior door
-	CreateDynamicObject(19312, 191.16823, 1870.02869, 21.45658, 0.00, 0.00, 0.00); // Area 51
-	CreateDynamicObject(1535, 968.46094, -53.96051, 1000.04688,   0.00000, 0.00000, 90.00000); // Brothel
-	CreateDynamicObject(19364, 968.48914, -53.16937, 1001.84052,  0.00000, 0.00000, 0.00000); // Brothel
-	CreateDynamicObject(1503, 2200.23975, 2065.48755, 10.19629,   0.00000, 0.00000, 90.00000); // Random LV Ramp
-	CreateDynamicObject(8493, 1957.39600, 1510.48401, 24.97500,   0.00000, 0.00000, -159.14101); // [LVA] Pirateship
-	CreateDynamicObject(9159, 1957.35095, 1510.50696, 24.95900,   0.00000, 0.00000, 200.78101);
-	CreateDynamicObject(3886, 1991.42395, 1540.09497, 11.60500,   0.00000, 0.00000, 293.84100);
-	CreateDynamicObject(3886, 1984.21106, 1536.94897, 11.58000,   0.00000, 0.00000, 112.57700);
-	CreateDynamicObject(3886, 1962.28796, 1527.29602, 11.70500,   0.00000, 0.00000, 113.46300);
-	CreateDynamicObject(3886, 1969.43604, 1530.47705, 11.68000,   0.00000, 0.00000, 293.84100); // [LVA] End of Pirateship
-	CreateDynamicObject(19362, 1417.20593, 7.58543, 1008.36200,   0.00000, 0.00000, 90.00000); // Warehouse 1 Door
-
 	// Billboards
 	CreateBillboard( "Want V.I.P? Consider Donating!\n"COL_GREY"donate.sfcnr.com", -2016.22, 326.580, 37.950, 48.9000 );
 	CreateBillboard( "Save us on your favourites!\n"#SERVER_IP"", -1809.64, -590.29, 19.360, -147.30 );
@@ -1050,22 +1033,6 @@ public OnGameModeInit()
 	// Signs - User friendly addition
 	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-
-	// Parking
- 	CreateDynamicObject( 19485, -1909.55, 497.22, 25.71, 0.00, 0.00, 0.00, .streamdistance = 500.0, .priority = 1 );
-
- 	// Random replacements made by sa-mp
-	CreateDynamicObject( 19794, 1787.13281, -1565.67969, 11.96880, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
-	CreateDynamicObject( 19484, -1875.02344, -65.328130, 15.06250, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
-	CreateDynamicObject( 19595, 1160.96094, -1180.57813, 70.41406, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
-	CreateDynamicObject( 19798, 1160.96094, -1180.57813, 20.50000, 0.00000, 0.00000, 0.00000, .streamdistance = 500.0, .priority = 1 );
-
-	// V.I.P Lounge
-	CreateDynamicObject( 3532, -1881.90, 823.73, 40.22, 0.00, 0.00, -48.84 );
-	CreateDynamicObject( 3532, -1877.85, 824.96, 40.22, 0.00, 0.00, -103.02 );
-	CreateDynamicObject( 3532, -1883.50, 819.35, 40.22, 0.00, 0.00, 8.82 );
-	CreateDynamicObject( 18652, -1881.10, 822.92, 40.04, 0.00, 0.00, -49.68 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1882.8883, 824.6093, 40.3129, 0.0000, 0.0000, 133.4854 ), 0, "VIP LOUNGE", 90, "Impact", 64, 0, 0xFFFFFFFF, 0, 1 ); //0xFFFFDC2E
 
 	// Apartments
 	CreateDynamicObject( 4587, -1971.51, 1356.26, 65.32,   0.00, 0.00, -180.00, .priority = 1 );
@@ -1088,31 +1055,6 @@ public OnGameModeInit()
 		g_apartmentElevatorDoor1[ level ] = CreateDynamicObject( 18756, -1955.05, 1361.64, Z, 0.00, 0.00, -90.00 );
 		g_apartmentElevatorDoor2[ level ] = CreateDynamicObject( 18757, -1955.05, 1361.64, Z, 0.00, 0.00, -90.00 );
 	}
-
-	// The Lost And Damned
-	tmpVariable = CreateDynamicObject( 10447, -2550.173339, 54.568466, 14.390675, 0.000000, 0.000000, 0.000000, .streamdistance = 500.0, .priority = 100 );
-	SetDynamicObjectMaterial( tmpVariable, 8, 10969, "scum_sfse", "ws_apartmentbrown1", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 14, 10969, "scum_sfse", "ws_apartmentbrown2", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 5, 8399, "vgs_shops", "vegasclubmural_128", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 6, 8399, "vgs_shops", "vegasclubmural_128", 0 );
-	SetDynamicObjectMaterialText( tmpVariable, 7, "The Lost", 120, "Arial", 80, 1, -1, -11980516, 1 );
-	CreateDynamicObject( 1536, -2587.711425, 58.402435, 3.336049, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
-	CreateDynamicObject( 1536, -2587.741455, 61.402610, 3.336049, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
-	tmpVariable = CreateDynamicObject( 3525, -2588.295654, 58.166000, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
-	tmpVariable = CreateDynamicObject( 3525, -2588.345703, 61.656021, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
-	SetDynamicObjectMaterial( tmpVariable, 1, 17298, "weefarmcuntw", "sjmbigold2", 0 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
-	tmpVariable = CreateDynamicObject( 3524, -2587.017578, 59.971229, 4.842026, 35.399997, 0.000000, -90.000000, -1, -1, -1 );
-	SetDynamicObjectMaterial( tmpVariable, 2, 8463, "vgseland", "tiadbuddhagold", 0 );
-	SetDynamicObjectMaterialText( tmpVariable, 1, "a", 0, "arial", 0, 0, 0, 0, 0 );
-
-	// Mining
-	SetDynamicObjectMaterial( CreateDynamicObject( 9864, -2724.33, 1230.44, 30.70, 0.0, 0.0, 0.0, .streamdistance = -1.0, .priority = 100 ), 3, 4845, "griffobs_las", "dirt64b2" );
-
-	// Open warehouse near driving school
-	CreateDynamicObject( 19486, -2111.13, -27.23, 36.95, 0.00, 0.00, -90.00 );
 
 	// Bank
 	g_bankvaultData[ CITY_SF ] [ E_OBJECT ] = CreateDynamicObject( 18766, -1412.565063, 859.274536, 983.132873, 0.000000, 90.000000, 90.000000 );

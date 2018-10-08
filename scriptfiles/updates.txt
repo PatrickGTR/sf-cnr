@@ -2,7 +2,7 @@
 (+) Gang bank accounts are charged $500 per spawn in a facility.
 (+) Picking safe / thermal drill speeds improve if you increase your robbery level.
 (+) Adds an option to disable paintball chatting.
-(+) You can now preview vehicle components before you buy them.
+(+) You can now preview vehicle components and toys before you buy them.
 (+) Adds multiple other /highscores including hits, fires, burglaries, blown jails and blown vaults.
 (+) You can now export burglared items at local pawn stores in LV and LS.
 (+) Adds /smoke animation.
