@@ -11,8 +11,8 @@
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-	static const ROBBERY_BOT_PAY = 2000; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 4500; // max pay from robbing safes
+	static const ROBBERY_BOT_PAY = 2250; // max pay from robbing bots
+	static const ROBBERY_SAFE_PAY = 5000; // max pay from robbing safes
 
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
 	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );

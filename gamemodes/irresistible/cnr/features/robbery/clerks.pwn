@@ -274,7 +274,7 @@ stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: 
 		if ( clerkid != ITER_NONE )
 		{
 			new
-				randomMaxLoot = RandomEx( max_loot - 100, max_loot + 100 ),
+				randomMaxLoot = RandomEx( max_loot - 250, max_loot + 250 ),
 				worldid = getarg( i );
 
 			Iter_Add(RobberyNpc, clerkid);
