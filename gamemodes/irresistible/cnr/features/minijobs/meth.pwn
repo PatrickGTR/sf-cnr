@@ -112,7 +112,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			}
 			else
 			{
-				if ( GetGVarType( "meth_chef", vehicleid ) != GLOBAL_VARTYPE_NONE && IsPlayerConnected( GetGVarInt( "meth_chef", vehicleid ) ) && GetGVarType( "meth_cooktimer", vehicleid ) == GLOBAL_VARTYPE_NONE && !p_ProgressStarted{ playerid } )
+				if ( GetGVarType( "meth_chef", vehicleid ) != GLOBAL_VARTYPE_NONE && IsPlayerConnected( GetGVarInt( "meth_chef", vehicleid ) ) && GetGVarType( "meth_cooktimer", vehicleid ) == GLOBAL_VARTYPE_NONE && ! IsPlayerProgressBarStarted( playerid ) )
 				{
 					if ( IsPlayerAimingAt( playerid, 2083.489990, 1234.743041, 414.821014, fAimDistance ) )
 					{

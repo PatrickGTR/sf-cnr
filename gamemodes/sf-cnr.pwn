@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -47,7 +47,6 @@
 #include 							< MathParser >
 #include 							< mapandreas >
 #include 							< md-sort >
-#include                            < progress2 >
 native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
@@ -71,8 +70,6 @@ new bool: False = false;
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 
 /* Beast Functions */
-#define SendClientMessageToCops(%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_POLICE)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToFireman(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_FIREMAN)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToVips(%1,%2,%3) \
@@ -105,26 +102,6 @@ enum E_DONATION_DATA
 	E_PURPOSE[ 64 ],
 	E_DATE
 }
-
-/* ** Progress Bars ** */
-#define PROGRESS_CRACKING 			0
-#define PROGRESS_MINING				3
-#define PROGRESS_ROBBING			4
-#define PROGRESS_SAFEPICK 			5
-#define PROGRESS_CRACKING_BIZ 		8
-
-/* ** Jobs ** */
-#define MAX_JOB_NAME 				( 16 )
-
-#define JOB_RAPIST                  ( 0 )
-#define JOB_KIDNAPPER               ( 1 )
-#define JOB_TERRORIST               ( 2 )
-#define JOB_HITMAN                  ( 3 )
-#define JOB_PROSTITUTE          	( 4 )
-#define JOB_WEAPON_DEALER           ( 5 )
-#define JOB_DRUG_DEALER           	( 6 )
-#define JOB_DIRTY_MECHANIC         	( 7 )
-#define JOB_BURGLAR              	( 8 )
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -195,47 +172,6 @@ new
 
 	// Iterator
 	Iterator:gates<MAX_GATES>
-;
-
-/* ** Robbery Data **/
-#define MAX_ROBBERIES 				( 500 )
-#define MAX_ROBBERY_WAIT            ( 300 )
-#define MAX_DRILL_STRENGTH 			( 200 )
-#define ROBBERY_MONEYCASE_BONUS		( 1.4 )
-
-#define STATE_NONE 					( 0 )
-#define STATE_ROBBED 				( 1 )
-#define STATE_PICKED 				( 2 )
-
-enum E_ROBBERY_SYSTEM
-{
-	E_NAME[ 32 ],       E_ROB_VALUE, 	 		E_WORLD,
-	E_ROB_TIME, 		bool: E_ROBBED,     	E_STATE,
-
-	E_SAFE,				E_SAFE_DOOR,			E_SAFE_MONEY,
-	E_SAFE_LOOT,		E_ROBTIMER,				bool: E_OPEN,
-
-	E_C4,				bool: E_C4_SLOT,
-	E_DRILL,			E_DRILL_PLACER,			E_DRILL_EFFECT,
-
-	Float: E_DOOR_X, 	Float: E_DOOR_Y, 		Float: E_DOOR_Z,
-	Float: E_DOOR_ROT,
-
-	Text3D: E_LABEL,	Float: E_MULTIPLIER, 	E_BUSINESS_ID
-};
-
-enum
-{
-	ROBBERY_TYPE_DRILL,
-	ROBBERY_TYPE_C4,
-	ROBBERY_TYPE_LABOR
-};
-
-new
-	g_robberyData					[ MAX_ROBBERIES ] [ E_ROBBERY_SYSTEM ],
-	p_drillStrength					[ MAX_PLAYERS ],
-
-	Iterator:RobberyCount<MAX_ROBBERIES>
 ;
 
 /* ** Road Blocks ** */
@@ -351,32 +287,6 @@ new
 	g_weedData                      [ MAX_WEED ] [ E_WEED_DATA ]
 ;
 
-/* ** Enter/Exit System ** */
-#define MAX_ENTERS                  ( 300 )
-enum E_ENTER_DATA
-{
-	E_WORLD,					E_INTERIOR, 				bool: E_VIP,
-	Float: E_EX,    			Float: E_EY, 				Float: E_EZ,
-	Float: E_LX,    			Float: E_LY, 				Float: E_LZ,
-	E_ENTER,            		E_EXIT,						bool: E_CUSTOM,
-	Text3D:  E_ENTER_LABEL,		Text3D: E_EXIT_LABEL,		bool: E_SAVED,
-	E_SQL_ID
-};
-
-new
-	g_entranceData					[ MAX_ENTERS ] [ E_ENTER_DATA ],
-
-	// Hardcoded
-	//g_Ammunation 					= -1,
-	g_SupaSave 						= -1,
-	//g_Hospital					= -1,
-	//g_PoliceDepartment 			= -1,
-	g_VIPLounge[ 3 ] 				= { -1, ... },
-
-	// Iterator
-	Iterator:entrances<MAX_ENTERS>
-;
-
 /* ** Copten Codes ** */
 enum E_TEN_CODES
 {
@@ -440,214 +350,6 @@ new
 	}
 ;
 
-/* ** Toy System ** */
-#define MAX_TOYS                ( sizeof( g_ToyData ) )
-#define MAX_TOY_UNLOCKS 		( 200 ) // should be ideally MAX_TOYS
-
-#define CATEGORY_WATCHES 		( 0 )
-#define CATEGORY_BERETS 		( 1 )
-#define CATEGORY_HATS 			( 2 )
-#define CATEGORY_HEADPHONES 	( 3 )
-#define CATEGORY_MASKS 			( 4 )
-#define CATEGORY_MOTORCYCLE 	( 5 )
-#define CATEGORY_GUITARS		( 6 )
-#define CATEGORY_GLASSES 		( 7 )
-#define CATEGORY_HANDHELD 		( 8 )
-#define CATEGORY_WEAPONS 		( 9 )
-#define CATEGORY_MISC 			( 10 )
-#define CATEGORY_VIP 			( 11 )
-
-enum E_ATTACHED_DATA
-{
-	E_ENABLED, 			E_MODELID, 		E_BONE,
-	Float: E_OX,		Float: E_OY, 	Float: E_OZ,
-	Float: E_RX, 		Float: E_RY, 	Float: E_RZ,
-	Float: E_SX, 		Float: E_SY, 	Float: E_SZ,
-	E_COLOR, 			E_SQL_ID
-};
-
-enum E_TOY_DATA
-{
-	E_CATEGORY, 		E_ID,			E_NAME[ 24 ],
-	E_MODEL, 			E_PRICE,		E_DEFAULT_BONE
-};
-
-new
-	g_ToyCategory[ ] [ ] =
-	{
-		{ "Watches" },  { "Berets" }, { "Hats" }, { "Headphones" }, { "Masks" },
-		{ "Motorcycle Helmets" }, { "Guitars" }, { "Glasses" }, { "Handheld" },
-		{ "Weapons" }, { "Miscellaneous" }, { "V.I.P" }
-	},
- 	g_ToyData[ ] [ E_TOY_DATA ] =
-	{
-		// WATCHES
-		{ CATEGORY_WATCHES, 0, 	"Rolex Datejust II", 		19039, 220000,	5 },
-		{ CATEGORY_WATCHES, 1, 	"Rolex Datejust I", 		19042, 160000,	5 },
-		{ CATEGORY_WATCHES, 2, 	"Rolex Explorer", 			19040, 140800,	5 },
-		{ CATEGORY_WATCHES, 3, 	"Rolex Sky-Dweller", 	 	19041, 95000,	5 },
-		{ CATEGORY_WATCHES, 4, 	"G-Shock Camo", 	 		19053, 25000,	5 },
-		{ CATEGORY_WATCHES, 5, 	"G-Shock Navy Camo", 	 	19048, 20000,	5 },
-		{ CATEGORY_WATCHES, 6, 	"G-Shock Pink Camo", 	 	19049, 17500,	5 },
-		{ CATEGORY_WATCHES, 7, 	"G-Shock Orange Camo", 		19051, 17500,	5 },
-		{ CATEGORY_WATCHES, 8, 	"G-Shock Purple", 	 		19047, 10000,	5 },
-		{ CATEGORY_WATCHES, 9, 	"G-Shock Pink", 	 		19045, 10000,	5 },
-		{ CATEGORY_WATCHES, 10, "G-Shock Green", 			19046, 5000,	5 },
-
-		// BERET
-		{ CATEGORY_BERETS, 11, 	"Camo Beret", 				18924, 750,		2 },
-		// { CATEGORY_BERETS, 12,	"Gucci Black", 				18921, 340,		2 },
-		// { CATEGORY_BERETS, 13,	"Gucci Red", 				18922, 340,		2 },
-		// { CATEGORY_BERETS, 14,	"Gucci Blue", 				18923, 340,		2 },
-
-		// HATS
-		{ CATEGORY_HATS, 126,	"Witch Hat",				19528, 6666,	2 }, // special
-		{ CATEGORY_HATS, 93,	"Santa Hat",				19064, 5000,	2 }, // special
-		{ CATEGORY_HATS, 15,	"Gangsta Beanie", 			19067, 1300, 	2 },
-		{ CATEGORY_HATS, 16,	"Snake Skin Hat", 			18973, 1000, 	2 },
-		{ CATEGORY_HATS, 17,	"Tiger Print Hat", 			18970, 1000, 	2 },
-		{ CATEGORY_HATS, 18,	"Skull Beanie", 			19069, 1000, 	2 },
-		{ CATEGORY_HATS, 19,	"Boxing Helmet", 			18952, 900, 	2 },
-		// { CATEGORY_HATS, 20,	"Knit Cap Grey", 			18954, 800, 	2 },
-		// { CATEGORY_HATS, 21,	"Knit Cap Black", 			18953, 800, 	2 },
-		{ CATEGORY_HATS, 22,	"Dukes Hat", 				18972, 800, 	2 },
-		{ CATEGORY_HATS, 23,	"Cowboy Hat", 				18962, 800, 	2 },
-		{ CATEGORY_HATS, 24,	"Trucker Cap", 				18961, 700, 	2 },
-		//{ CATEGORY_HATS, 25,	"Black Bowler", 			18944, 500, 	2 },
-		{ CATEGORY_HATS, 26,	"White Fedora", 			19488, 500, 	2 },
-		//{ CATEGORY_HATS, 27,	"Blue Bowler", 				18945, 500, 	2 },
-		{ CATEGORY_HATS, 28,	"Island Fedora", 				18946, 500, 	2 },
-		{ CATEGORY_HATS, 29,	"Bloody Fedora", 				18950, 500, 	2 },
-		// { CATEGORY_HATS, 30,	"Yellow Bowler", 			18951, 500, 	2 },
-		{ CATEGORY_HATS, 31,	"Skater Bucket Hat", 		18968, 500, 	2 },
-		//{ CATEGORY_HATS, 32,	"Fishing Cap", 				18969, 500, 	2 },
-		{ CATEGORY_HATS, 33,	"Black Top Hat", 			19352, 500, 	2 },
-		{ CATEGORY_HATS, 34,	"White Top Hat", 			19487, 500, 	2 },
-		{ CATEGORY_HATS, 35,	"Fireman Helmet", 			19330, 400, 	2 },
-		{ CATEGORY_HATS, 36,	"Sheriff Hat", 				19099, 300, 	2 },
-		{ CATEGORY_HATS, 37,	"Camo Cap", 				18926, 240, 	2 },
-		{ CATEGORY_HATS, 38,	"Chicken Hat",				19137, 240,		2 },
-		{ CATEGORY_HATS, 39,	"BurgerShot Hat", 			19094, 240, 	2 },
-		{ CATEGORY_HATS, 40,	"Police Cap", 				18636, 240, 	2 },
-		{ CATEGORY_HATS, 41,	"Gas Mask",					19472, 240,		2 },
-
-		// HEADPHONES
-		{ CATEGORY_HEADPHONES, 41,	"White Beats", 			19421, 550, 	2 },
-		{ CATEGORY_HEADPHONES, 42,	"Black Beats", 			19422, 550, 	2 },
-		{ CATEGORY_HEADPHONES, 43,	"Red Beats", 			19423, 550, 	2 },
-		{ CATEGORY_HEADPHONES, 44,	"Blue Beats", 			19424, 550, 	2 },
-
-		// MASKS
-		{ CATEGORY_MASKS, 96, 	"Gucci Balaclava",			19801, 	10000,	2 },
-		{ CATEGORY_MASKS, 45,	"Black Mask",				18912, 	6000,	2 },
-		{ CATEGORY_MASKS, 46,	"Green Mask",				18913, 	5200,	2 },
-		{ CATEGORY_MASKS, 47,	"Weed Bandana",				18894, 	4500,	2 },
-		{ CATEGORY_MASKS, 48,	"Gimp Mask",				19163, 	300,	2 },
-		{ CATEGORY_MASKS, 49,	"Hockey Mask White",		19036, 	250,	2 },
-		{ CATEGORY_MASKS, 50,	"Hockey Mask Red",			19037, 	250,	2 },
-		{ CATEGORY_MASKS, 51,	"Blue Bandana",				18897, 	100,	2 },
-		{ CATEGORY_MASKS, 53,	"Grove Mask",				18913, 	200,	2 },
-		{ CATEGORY_MASKS, 54,	"Zorro Mask",				18974, 	100,	2 },
-
-		// MOTORCYCLE HELMETS
-		{ CATEGORY_MOTORCYCLE, 87, "Fire Flame Helmet",		18645, 	1000,	2 },
-		{ CATEGORY_MOTORCYCLE, 88, "Blue Helmet",			18976, 	800,	2 },
-		{ CATEGORY_MOTORCYCLE, 89, "Red Helmet",			18977, 	700,	2 },
-		{ CATEGORY_MOTORCYCLE, 90, "White Helmet",			18978, 	700,	2 },
-		{ CATEGORY_MOTORCYCLE, 91, "Pink Helmet",			18979, 	500,	2 },
-
-		// GUITARS
-		{ CATEGORY_GUITARS, 55,	"Warlock Guitar",			19319, 	1250,	1 },
-		{ CATEGORY_GUITARS, 56,	"Flying Guitar",			19318, 	800,	1 },
-		{ CATEGORY_GUITARS, 57,	"Bass Guitar",				19317, 	400,	1 },
-
-		// GLASSES
-		{ CATEGORY_GLASSES, 58,	"Oakley Ferrari", 			19006, 900, 	2 },
-		{ CATEGORY_GLASSES, 59,	"Armani Aviator Classic", 	19022, 840, 	2 },
-		// { CATEGORY_GLASSES, 61,	"Armani Aviator Blue" , 	19023, 840, 	2 },
-		// { CATEGORY_GLASSES, 62,	"Armani Aviator Purple", 	19024, 840, 	2 },
-		{ CATEGORY_GLASSES, 63,	"Armani Aviator Pink", 		19025, 840, 	2 },
-		// { CATEGORY_GLASSES, 64,	"Armani Aviator Orange", 	19027, 840, 	2 },
-		// { CATEGORY_GLASSES, 65,	"Armani Aviator Yellow", 	19028, 840, 	2 },
-		// { CATEGORY_GLASSES, 65,	"Armani Aviator Green", 	19029, 840, 	2 },
-		// { CATEGORY_GLASSES, 66,	"Gucci Techno Yellow" , 	19017, 650, 	2 },
-		// { CATEGORY_GLASSES, 67,	"Gucci Techno Salmon" , 	19018, 650, 	2 },
-		{ CATEGORY_GLASSES, 68,	"Gucci Techno Red" , 		19019, 650, 	2 },
-		{ CATEGORY_GLASSES, 69,	"Gucci Techno Blue" , 		19020, 650, 	2 },
-		{ CATEGORY_GLASSES, 70,	"Gucci Techno Green" , 		19021, 650, 	2 },
-		// { CATEGORY_GLASSES, 71,	"Versace Vintage", 			19033, 520, 	2 },
-		// { CATEGORY_GLASSES, 72,	"Versace Havana Wrap", 		19030, 490, 	2 },
-		{ CATEGORY_GLASSES, 73,	"Oakley Whisker", 			19008, 400, 	2 },
-		{ CATEGORY_GLASSES, 76,	"Versace Marble Square", 	19035, 380, 	2 },
-
-		// HANDHELD
-		{ CATEGORY_HANDHELD, 100, "Antique Sword", 			19590, 	15000, 	6 },
-		{ CATEGORY_HANDHELD, 101, "Microphone", 			19610, 	900, 	6 },
-		{ CATEGORY_HANDHELD, 102, "Police Radio", 			19942, 	750, 	6 },
-		{ CATEGORY_HANDHELD, 103, "Left Boxing Glove", 		19555, 	250, 	6 },
-		{ CATEGORY_HANDHELD, 104, "Right Boxing Glove", 	19556, 	250, 	5 },
-		{ CATEGORY_HANDHELD, 105, "Briefcase", 				19624, 	100, 	6 },
-
-		// WEAPONS
-		{ CATEGORY_WEAPONS, 125, "RPG", 					359, 13337, 1 },
-		{ CATEGORY_WEAPONS, 124, "Heatseeker", 				360, 13337, 1 },
-		{ CATEGORY_WEAPONS, 123, "Minigun", 				362, 13337, 1 },
-		{ CATEGORY_WEAPONS, 121, "Spas 12", 				351, 9000, 1 },
-		{ CATEGORY_WEAPONS, 122, "M4", 						356, 9000, 1 },
-		{ CATEGORY_WEAPONS, 119, "Sawn-off Shotgun", 		350, 8000, 1 },
-		{ CATEGORY_WEAPONS, 120, "Sniper", 					358, 8000, 1 },
-		{ CATEGORY_WEAPONS, 118, "Shotgun", 				349, 6000, 1 },
-		{ CATEGORY_WEAPONS, 117, "Desert Eagle", 			348, 5000, 1 },
-		{ CATEGORY_WEAPONS, 116, "Rifle", 					357, 3000, 1 },
-		{ CATEGORY_WEAPONS, 115, "Tec 9", 					372, 2900, 1 },
-		{ CATEGORY_WEAPONS, 114, "Mac 10", 					352, 2500, 1 },
-		{ CATEGORY_WEAPONS, 109, "Purple Dildo", 			321, 690, 1 },
-		{ CATEGORY_WEAPONS, 108, "Parachute", 				371, 600, 1 },
-		{ CATEGORY_WEAPONS,	107, "Pool Cue",				338, 400, 1 },
-		{ CATEGORY_WEAPONS, 106, "Brass Knuckles", 			331, 250, 1 },
-
-		// MISC
-		{ CATEGORY_MISC, 99, "Gold Bar", 					19941, 	38000,	1 },
-		{ CATEGORY_MISC, 74, "Cowboy Boots",				11735, 	3000,	1 },
-		{ CATEGORY_MISC, 77, "Marijuana Roll",				2901, 	2000, 	1 },
-		{ CATEGORY_MISC, 75, "Pistol Holster",				19773, 	1000,	1 },
-		{ CATEGORY_MISC, 79, "Police Light",   				19419, 	600,	1 },
-		{ CATEGORY_MISC, 94, "Xmas Box 1",					19054,  500,	1 },
-		{ CATEGORY_MISC, 95, "Xmas Box 2",					19056,  500,	1 },
-		{ CATEGORY_MISC, 80, "Surf Board",					2406,  	250,	1 },
-		{ CATEGORY_MISC, 97, "Skateboard",					19878, 	200, 	1 },
-		{ CATEGORY_MISC, 81, "Glider",         				2512, 	150,	1 },
-		{ CATEGORY_MISC, 82, "Plane",          				2510, 	120,	1 },
-		{ CATEGORY_MISC, 98, "Hiker Backpack", 				19559, 	100, 	1 },
-		{ CATEGORY_MISC, 78, "Backpack",					3026,	90,		1 },
-		{ CATEGORY_MISC, 83, "Rubbish Bin",   				1343, 	80,		1 },
-		{ CATEGORY_MISC, 84, "Chainsaw Dildo",				19086, 	69,		5 },
-		{ CATEGORY_MISC, 85, "Easter Egg",					19344, 	50,		2 },
-		{ CATEGORY_MISC, 86, "Hippobin",					1371, 	50,		1 },
-		{ CATEGORY_MISC, 92, "Pumpkin",						19320, 	10,		1 },
-
-		// VIP
-		{ CATEGORY_VIP, -1,	"Small Fire",     				18688,	0,		1 },
-		{ CATEGORY_VIP, -1,	"Dynamite",      				1654,	0,		6 },
-		{ CATEGORY_VIP, -1,	"Caution Barrel", 				1218,	0,		1 },
-		{ CATEGORY_VIP, -1,	"Gas Tank",    					918,	0,		1 },
-		{ CATEGORY_VIP, -1,	"Parrot",         				19079, 	0,	   15 },
-		{ CATEGORY_VIP, -1,	"Money Stack", 					1212, 	0,		6 },
-		{ CATEGORY_VIP, -1,	"Turtle", 						1609, 	0,		1 },
-		{ CATEGORY_VIP, -1,	"S.W.A.T Helmet", 				19141, 	0,		2 },
-		{ CATEGORY_VIP, -1,	"S.W.A.T Armour", 				19142, 	0,		1 },
-		{ CATEGORY_VIP, -1, "Construction Vest",			19904, 	0,		1 },
-		{ CATEGORY_VIP, -1, "Sledge Hammer", 				19631, 	0,		5 },
-		{ CATEGORY_VIP, -1, "Laser Sight", 					18643, 	0,		5 },
-		{ CATEGORY_VIP, -1,	"Better Santa Hat",     		19065,	0,		2 }
-	},
-	p_AttachedObjectsData     	[ MAX_PLAYERS ] [ 3 ] [ E_ATTACHED_DATA ],
-	p_ToySlotSelected			[ MAX_PLAYERS char ],
-	p_ToyCategorySelected 		[ MAX_PLAYERS char ],
-	p_ToyIDSelected 			[ MAX_PLAYERS char ],
-	bool: p_ToyUnlocked     	[ MAX_PLAYERS ] [ MAX_TOY_UNLOCKS char ]
-;
-
 /* ** C4 Data ** */
 #define MAX_C4                      ( 10 )
 enum E_C4_DATA
@@ -677,41 +379,6 @@ new
     g_apartmentElevatorLevel        = 0,
 	g_apartmentElevatorDoor1		[ MAX_AFLOORS ]	= INVALID_OBJECT_ID,
 	g_apartmentElevatorDoor2		[ MAX_AFLOORS ] = INVALID_OBJECT_ID
-;
-
-/* ** Shop Data ** */
-#define LIMIT_SCISSORS				16
-#define LIMIT_PINS					16
-#define LIMIT_ROPES					8
-#define LIMIT_CS 					16 // Caustic Soda
-#define LIMIT_HCL 					16 // Hydrogen Chloride
-#define LIMIT_MU 					16 // Muriatic Acid
-#define LIMIT_FOIL 					8
-#define LIMIT_MELTER 				4
-#define LIMIT_ONE 					1
-
-enum E_SHOP_DATA
-{
-	bool: E_SAVABLE, 	E_NAME[ 24 ], 			E_USAGE[ 32 ],
-	E_LIMIT, 			E_PRICE,				E_ID
-};
-
-new
-	g_shopItemData[ ] [ E_SHOP_DATA ] =
-	{
- 		{ true , "Drain Cleaner", 		"Caustic Soda",				 	LIMIT_CS,		190, 1 }, // 0
- 		{ true , "Stone Cleaner",		"Muriatic Acid", 			 	LIMIT_MU,		275, 2 }, // 1
- 		{ true , "Gas Tank",			"Hydrogen Chloride", 		 	LIMIT_HCL,		330, 3 }, // 2
- 		{ false, "Chastity Belt", 		"Protection from aids", 	 	LIMIT_ONE,		550, 4 }, // 3
- 		{ false, "Secure Wallet", 		"Protection from robberies",  	LIMIT_ONE,		660, 5 }, // 4
- 		{ true , "Scissors", 			"Automatically cut ties", 		LIMIT_SCISSORS,	1100, 6 }, // 5
- 		{ true , "Rope", 				"/tie", 					 	LIMIT_ROPES,	2250, 7 }, // 8 [1500]
- 		{ true , "Aluminium Foil", 		"Automatically deflect EMP",	LIMIT_FOIL,		3400, 9 }, // 9
- 		{ true , "Bobby Pin", 			"Automatically break cuffs", 	LIMIT_PINS,		3900, 8 }, // 6 [1000] -makecopgreatagain
- 		{ false, "Money Case", 			"Increases robbing amount", 	LIMIT_ONE,		4500, 10 }, // 7 [1250]
- 		{ true , "Thermal Drill", 		"Halves safe cracking time",  	LIMIT_ONE,		5000, 11 }, // 10
- 		{ true , "Metal Melter", 		"/breakout", 				 	LIMIT_MELTER,	7500, 12 }  // 11
-	}
 ;
 
 /* ** Casino Rewards Points ** */
@@ -813,27 +480,6 @@ new
 	g_alcatrazTimestamp 			= 0
 ;
 
-/* ** Bank Vault ** */
-#define VAULT_BOAT 					( 3 )
-
-enum E_BANKDOOR_DATA
-{
-	E_NAME[ 18 ],
-	E_OBJECT,					bool: E_DISABLED,
-	E_TIMESTAMP,				E_TIMESTAMP_CLOSE,			E_WORLD,
-	Float: E_EXPLODE_POS[ 3 ],	Float: E_OPEN_POS[ 3 ],		Float: E_OPEN_ROT[ 3 ]
-}
-
-new
-	g_bankvaultData					[ ] [ E_BANKDOOR_DATA ] =
-	{
-		{ "San Fierro Bank", 	INVALID_OBJECT_ID, false, 0, 0, 23, { -1413.956, 859.16560, 984.71260 }, { -1412.56506, 859.2745360, 978.6328730 }, { -1000.000, -1000.00, -1000.0000 } },
-		{ "Las Venturas Bank", 	INVALID_OBJECT_ID, false, 0, 0, 52, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
-		{ "Los Santos Bank", 	INVALID_OBJECT_ID, false, 0, 0, 56, { 2116.3513, 1233.0250, 1017.1369 }, { 2113.391357, 1233.155273, 1016.122619 }, { 90.000000, 0.000000, -90.000000 } },
-		{ "Militia Ship", 		INVALID_OBJECT_ID, false, 0, 0, 0, { -2372.6223, 1551.3984, 2.1172000 }, { -2371.41699, 1552.027709, -0.75281000 }, { 0.0000000, 0.000000, 28.0000000 } }
-	}
-;
-
 /* ** Information System ** */
 enum E_INFO_PICKUP_DATA
 {
@@ -912,38 +558,6 @@ new
 	p_streakData[ MAX_PLAYERS ] [ MAX_STREAKS ] [ E_STREAK_DATA ]
 ;
 
-/* ** Robbery NPCs ** */
-#define ENABLED_NPC_ROBBERIES		( true )
-#define MAX_ROBBERY_NPCS 			( 50 ) //( MAX_ROBBERIES )
-#define MAX_CIVILIANS				( 50 )
-
-#if ENABLED_NPC_ROBBERIES == true
-#include <FCNPC>
-
-enum E_ROBBERY_NPC_DATA
-{
-	E_NPC_NAME[ 24 ], 			E_NPC_ID,						E_TIMEOUT,
-	E_HOLDUP_TIMER,				bool: E_PROVOKED,				Float: E_RZ,
- 	E_WORLD,					E_MAX_LOOT, 					E_LOOT,
- 	Text3D: E_LABEL,			E_SHOOTING_TIMER,				Float: E_SHOOTING_OFFSET
-};
-
-enum E_CIVILIAN_DATA
-{
-	E_CLERK_ID,				E_NPC_NAME[ 24 ],
-	E_WEAPON_ID,				E_ANIM_LIB[ 16 ], E_ANIM_NAME[ 16 ], E_NPC_ID,
-	E_WORLD, E_INTERIOR, Float: E_RZ, bool: E_HOSTILE, bool: E_PROVOKED, E_TIMEOUT
-};
-
-new
-	g_robberyNpcData[ MAX_ROBBERY_NPCS ] [ E_ROBBERY_NPC_DATA ],
-	Iterator:RobberyNpc< MAX_ROBBERY_NPCS >,
-
-	g_civilianNpcData[ MAX_CIVILIANS ] [ E_CIVILIAN_DATA ],
-	Iterator:CivilianNpc< MAX_CIVILIANS >
-;
-#endif
-
 /* ** Informed Robbery System ** */
 #define MAX_INFORMED_ROBBERIES				( 25 )
 
@@ -1016,30 +630,8 @@ public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
-public OnPlayerProgressUpdate( playerid, progressid, params );
-public OnProgressCompleted( playerid, progressid, params );
 public OnPlayerUnjailed( playerid, reasonid );
-public onSafeBust( playerid, robberyid, type, index );
-public OnPlayerHoldupStore( playerid, clerkid, step );
 public OnPlayerAccessEntrance( playerid, entranceid );
-
-/* ** Functions ** */
-stock Float: distanceFromSafe( iPlayer, iRobbery, &Float: fDistance = Float: 0x7F800000 )
-{
-    static
-    	Float: fX, Float: fY, Float: fZ;
-
-    if ( ! Iter_Contains( RobberyCount, iRobbery ) )
-    	return fDistance;
-
-	if ( g_robberyData[ iRobbery ] [ E_WORLD ] != -1 && g_robberyData[ iRobbery ] [ E_WORLD ] != GetPlayerVirtualWorld( iPlayer ) )
-		return fDistance;
-
-    if ( GetDynamicObjectPos( g_robberyData[ iRobbery ] [ E_SAFE ], fX, fY, fZ ) )
-		fDistance = GetPlayerDistanceFromPoint( iPlayer, fX, fY, fZ );
-
-    return fDistance;
-}
 
 main()
 {
@@ -1193,391 +785,6 @@ public OnGameModeInit()
 
 	DCC_SendChannelMessage( discordGeneralChan, "**The discord plugin has been initiaized.**" );
 	#endif
-
-	/* ** Robbery Points ** */
-	static const ROBBERY_BOT_PAY = 2000; // max pay from robbing bots
-	static const ROBBERY_SAFE_PAY = 6500; // max pay from robbing safes
-
-	CreateMultipleRobberies( "Bank of San Fierro - Safe 1", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 862.858947, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of San Fierro - Safe 2", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 861.179321, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of San Fierro - Safe 3", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 856.086791, 985.07251, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of San Fierro - Safe 4", floatround( float( ROBBERY_SAFE_PAY ) * 1.85 ), -1400.941772, 858.614074, 984.17200, -90.00000, g_bankvaultData[ CITY_SF ] [ E_WORLD ] );
-
-	CreateMultipleRobberies( "Desperado Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 2113.085693, -1784.66638, 12.95044, 180.00000, -1 );
-	CreateMultipleRobberies( "Ahmyy's Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 2540.658691, 2013.840209, 10.289649, 90.000000, -1 );
-	CreateMultipleRobberies( "Nibble Cafe", 		floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), 1978.945312, 2066.297607, 10.285301, 90.000000, -1 );
-	CreateMultipleRobberies( "Le Flawless Cafe", 	floatround( float( ROBBERY_SAFE_PAY ) * 0.5 ), -1968.052612, 107.914459, 27.092870, 0.0000000, -1 );
-
-	CreateMultipleRobberies( "Hospital", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.25 ), -2638.146484, 662.669677, 969.852905, -90.0000, -1 );
-
-	CreateMultipleRobberies( "Sex Shop", 			ROBBERY_SAFE_PAY, -108.273361, -8.523513, 1000.188232, 90.000000, 16, 32, 51, 64 );
-	//CreateRobberyNPC( "Sex Shop Clerk",				ROBBERY_BOT_PAY, -104.7642, -8.9156, 1000.7188, 181.2191, 126, 16, 32, 51, 64 );
-
-	CreateMultipleRobberies( "Off Track Betting", 	ROBBERY_SAFE_PAY, 822.206787, 8.124695, 1004.423278, 169.80003, -1 );
-	//CreateRobberyNPC( "Betting Clerk",				ROBBERY_BOT_PAY, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
-
-	CreateMultipleRobberies( "Zero's RC Shop", 		ROBBERY_SAFE_PAY, -2221.724365, 132.967208, 1035.223022, 180.00000, 6 );
-	//CreateRobberyNPC( "Zero",						ROBBERY_BOT_PAY, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
-
-	CreateMultipleRobberies( "Prolaps", 			ROBBERY_SAFE_PAY, 204.282577, -126.326202, 1002.937255, 0.0000000, 39, 36 );
-	//CreateRobberyNPC( "Prolaps Clerk",				ROBBERY_BOT_PAY, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
-
-	CreateMultipleRobberies( "Disco", 				ROBBERY_SAFE_PAY, 503.633575, -24.120403, 1000.119323, 270.00000, 17, 71 );
-	//CreateRobberyNPC( "Disco Bartender",			ROBBERY_BOT_PAY, 501.6992,-20.5021,1000.6797,89.2442, 46, 17, 71 );
-
-	CreateMultipleRobberies( "Restaurant", 			ROBBERY_SAFE_PAY, -221.279922, 1407.674072, 27.22343200, 0.0000000, 53, 54 );
-	//CreateRobberyNPC( "Restaurant Owner",			ROBBERY_BOT_PAY, -223.3083,1403.9852,27.7734,91.9926, 168, 53, 54 );
-
-	CreateMultipleRobberies( "Brothel", 			ROBBERY_SAFE_PAY, 971.980346, -44.324848, 1001.677368, 270.00000, 42 );
-	//CreateRobberyNPC( "Brothel Manager",			ROBBERY_BOT_PAY, 970.8360, -44.8730, 1001.1172, 92.0651, 113, 42 );
-
-	CreateMultipleRobberies( "Ammu-Nation", 		ROBBERY_SAFE_PAY, 299.776275, -41.373123, 1000.945068, -137.0001, 15 );
-	CreateRobberyNPC( "Gunsdealer",					ROBBERY_BOT_PAY, 296.4001,-40.2152,1001.5156,0.9079, 179, 15 );
-
-	CreateMultipleRobberies( "Ammu-Nation", 		ROBBERY_SAFE_PAY, 293.567565, -83.653007, 1000.905151, 90.000000, 41, 74 );
-	CreateRobberyNPC( "Gunsdealer",					ROBBERY_BOT_PAY, 295.4592,-82.5274,1001.5156,359.9681, 179, 41, 74 );
-
-	CreateMultipleRobberies( "Ammu-Nation", 		ROBBERY_SAFE_PAY, 313.717559, -168.976150, 999.0332640, -90.00000, 42, 45, 47, 5, 75, 32, 23, 27 );
-	CreateRobberyNPC( "Gunsdealer",					ROBBERY_BOT_PAY, 312.8466,-167.7639,999.5938,359.6548, 179, 42, 45, 47, 5, 75, 32, 23, 27 );
-
-	CreateMultipleRobberies( "ZIP", 				ROBBERY_SAFE_PAY, 163.303283, -79.763473, 1001.274536, -90.00000, 3, 45, 59, 27 );
-	//CreateRobberyNPC( "ZIP Clerk",					ROBBERY_BOT_PAY, 162.7249, -81.1920,1001.8047, 182.6196, 217, 3, 45, 59, 27 );
-
-	CreateMultipleRobberies( "Binco", 				ROBBERY_SAFE_PAY, 207.486953, -96.336982, 1004.707275, 0.0000000, 12, 47, 48, 53 );
-	//CreateRobberyNPC( "Binco Clerk",				ROBBERY_BOT_PAY, 208.8378,-98.7054,1005.2578,183.2461, 217, 12, 47, 48, 53 );
-
-	CreateMultipleRobberies( "Victim", 				ROBBERY_SAFE_PAY, 200.075378, -5.995379, 1000.650390, 180.00000, 1, 21, 49 );
-	//CreateRobberyNPC( "Victim Clerk",				ROBBERY_BOT_PAY, 204.6066, -9.2214, 1001.2109, 268.2160, 211, 1, 21, 49 );
-
-	CreateMultipleRobberies( "Suburban", 			ROBBERY_SAFE_PAY, 204.337600, -42.450820, 1001.254699, 180.00000, 21, 41, 39 );
-	//CreateRobberyNPC( "Suburban Clerk",				ROBBERY_BOT_PAY, 203.2509,-41.6712, 1001.8047, 178.8591, 211, 21, 41, 39 );
-
-	CreateMultipleRobberies( "Bar", 				ROBBERY_SAFE_PAY, 498.197845, -80.120513, 999.3255610, 180.00000, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
-	//CreateRobberyNPC( "Bartender",					ROBBERY_BOT_PAY, 497.0969,-77.5612,998.7651,1.5118, 124, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );
-
-	CreateMultipleRobberies( "Burger Shot", 		ROBBERY_SAFE_PAY, 381.988861, -56.370349, 1000.957275, 0.0000000, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
-	//CreateRobberyNPC( "Burger Worker",				ROBBERY_BOT_PAY, 376.5223,-65.8494,1001.5078,182.3066, 205, 4, 9, 13, 32, 33, 34, 35, 25, 71, 82 );
-
-	CreateMultipleRobberies( "Cluckin' Bell", 		ROBBERY_SAFE_PAY, 371.999816, -2.711749, 1002.278808, 0.0000000, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
-	//CreateRobberyNPC( "Chicken Worker",				ROBBERY_BOT_PAY, 368.1003,-4.4928,1001.8516,182.3297, 168, 5, 14, 35, 36, 62, 60, 23, 39, 13, 16, 12, 70 );
-
-	CreateMultipleRobberies( "Well Stacked Pizza", 	ROBBERY_SAFE_PAY, 380.231140, -116.337081, 1000.951721, -90.00000, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
-	//CreateRobberyNPC( "Pizza Worker",				ROBBERY_BOT_PAY, 374.6979,-117.2789,1001.4922,182.6662, 155, 2, 20, 43, 44, 46, 12, 31, 75, 66, 14 );
-
-	CreateMultipleRobberies( "24/7",      			ROBBERY_SAFE_PAY, -8.180466, -180.865447, 1002.996337, 180.00000, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
-	//CreateRobberyNPC( "24/7 Worker",				ROBBERY_BOT_PAY, -27.9842,-186.8359,1003.5469,359.3645, 170, 37, 38, 39, 40, 41, 42, 43, 44, 47, 49 ,51, 48, 11 );
-
-	CreateMultipleRobberies( "Barber", 				ROBBERY_SAFE_PAY, 408.697540, -56.145412, 1001.337951, 180.00000, 23, 24, 48, 21, 18, 22, 20 );
-	//CreateRobberyNPC( "Barber",						ROBBERY_BOT_PAY, 408.9915,-53.8337,1001.8984,270.7148, 176, 23, 24, 48, 21, 18, 22, 20 );
-
-	CreateMultipleRobberies( "Donut Shop", 			ROBBERY_SAFE_PAY, 382.413513, -186.959243, 1001.132995, -90.00000, 19, 20, 10 );
-	//CreateRobberyNPC( "Donut Worker",				ROBBERY_BOT_PAY, 380.7286,-189.1152,1000.6328,182.3538, 8, 19, 20, 10 );
-
-	CreateMultipleRobberies( "Strip Club", 			ROBBERY_SAFE_PAY, 1211.948974, -16.412891, 1001.421752, 180.00000, 3, 22 );
-	//CreateRobberyNPC( "Stripper",					ROBBERY_BOT_PAY, 1214.2621,-15.2605,1000.9219,359.1004, 246, 3, 22 );
-
-	CreateMultipleRobberies( "Otto's cars", 		ROBBERY_SAFE_PAY, -1657.916870, 1206.418701, 6.709994000, 180.00000, 0 );
-	//CreateRobberyNPC( "Otto",						ROBBERY_BOT_PAY, -1656.4574,1207.9980,7.2500,329.9846, 113, 0 );
-
-	CreateMultipleRobberies( "Wang Cars", 			ROBBERY_SAFE_PAY, -1950.600952, 302.176483, 34.91876200, -90.00000, 0 );
-	//CreateRobberyNPC( "Salesman",					ROBBERY_BOT_PAY, -1955.2711,302.1761,35.4688,89.4329, 17, 0 );
-
-	CreateMultipleRobberies( "Jizzy's", 			ROBBERY_SAFE_PAY, -2664.599853, 1425.926391, 906.3808590, -90.00000, 18 );
-	//CreateRobberyNPC( "Jizzy",						ROBBERY_BOT_PAY, -2655.5063,1407.4214,906.2734,268.8851, 296, 18 );
-
-	CreateMultipleRobberies( "Didier Sachs", 		ROBBERY_SAFE_PAY, 206.808502, -154.612808, 999.953369, 0.0000000, 14 );
-	//CreateRobberyNPC( "Didier Sach Clerk",			ROBBERY_BOT_PAY, 203.2169,-157.8303,1000.5234,180.5475, 211, 14 );
-
-	CreateMultipleRobberies( "Steakhouse", 			ROBBERY_SAFE_PAY, 441.640106, -81.971298, 999.0115, 90.00000, 53, 54, 23, 27, 22 );
-	//CreateRobberyNPC( "Steakhouse Owner",			ROBBERY_BOT_PAY, 449.4273, -82.2324, 999.5547, 179.9200, 168, 53, 54, 23, 27, 22 );
-
-	CreateMultipleRobberies( "Church", 				ROBBERY_SAFE_PAY, 1964.069335, -349.456512, 1096.640380, 0.0000000, 1 );
-	//CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 1964.0864,-371.6995,1093.7289,358.7696, 68, 1 );
-
-	CreateMultipleRobberies( "Church", 				ROBBERY_SAFE_PAY, 2390.926757, 3195.784179, 1016.920837, -90.00000, 39, 40, 41, 62, 24 );
-	//CreateRobberyNPC( "Priest",						ROBBERY_BOT_PAY, 2383.1968,3193.2842,1017.7320,1.0113, 68, 39, 40, 41, 62, 24 );
-
-	CreateMultipleRobberies( "Hotel de Solanum", 	ROBBERY_SAFE_PAY, -1967.766357, 1367.773925, 6.879500000, 86.700000, 0 );
-	//CreateRobberyNPC( "Hotel Bartender",			ROBBERY_BOT_PAY, -1944.5562,1362.2947,7.3546,86.4801, 126, 0 );
-
-	CreateMultipleRobberies( "Vehicle Dealership",	ROBBERY_SAFE_PAY, -1862.799682, -652.836608, 1001.578125, -89.80000, 0 );
-	//CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -1864.9419,-648.5046,1002.1284,357.5644, 186, 0 );
-
-	CreateMultipleRobberies( "Vehicle Dealership",	ROBBERY_SAFE_PAY, -125.972930, 122.111770, 1004.083740, 0.000000, 31, 32 );
-	//CreateRobberyNPC( "Vehicle Dealer",				ROBBERY_BOT_PAY, -125.2779,121.3010,1004.7233,345.3443, 186, 31, 32 );
-
-	CreateMultipleRobberies( "Bank",				ROBBERY_SAFE_PAY, 2165.008544, 1649.773925, 1041.061889, 90.000000, 45, 24, 25, 78 );
-	//CreateRobberyNPC( "Banker",						ROBBERY_BOT_PAY, 2157.9255,1647.9972,1041.6124,270.1911, 17, 45, 24, 25, 78 );
-
-	CreateMultipleRobberies( "Pawnshop", 			ROBBERY_SAFE_PAY, 1331.349731, -1079.761108, 967.495605, -90.00000, 11, 22, 33 );
-	//CreateRobberyNPC( "Pawnbroker",					ROBBERY_BOT_PAY, 1330.7424,-1081.0117,968.0360,270.1916, 261, 11, 22, 33 );
-
-	CreateMultipleRobberies( "Gas Station",      	ROBBERY_SAFE_PAY, -20.583150, -58.166736, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
-	//CreateRobberyNPC( "Gas Cashier",				ROBBERY_BOT_PAY, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
-
-	CreateMultipleRobberies( "Drug House", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.5 ), 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
-	CreateRobberyNPC( "Triad Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
-	CreateRobberyNPC( "Mafia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
-
-	CreateRobberyNPC( "Militia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.5 ), -2376.437011, 1554.111572, 2.117187, 180.000000, 127, -1 ); // Mafia
-	CreateMultipleRobberies( "Militia Ship - Safe 1", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.723388, 1554.588500, 1.567188, -60.8000000, -1 );
-	CreateMultipleRobberies( "Militia Ship - Safe 2", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.303466, 1553.833862, 2.517187, -60.8000000, -1 );
-
-	CreateMultipleRobberies( "Film Studio", 		ROBBERY_SAFE_PAY, 2327.151123, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
-	CreateMultipleRobberies( "Grotti Cars", 		ROBBERY_SAFE_PAY, 542.361816, -1303.610351, 16.725925, 180.00000, -1 );
-	CreateMultipleRobberies( "Supa Save", 			ROBBERY_SAFE_PAY, -2396.877929, 769.194396, 1056.135864, 0.00000, -1 );
-	CreateMultipleRobberies( "Driving School", 		ROBBERY_SAFE_PAY, -2036.206176, -116.898040, 1034.611328, 90.000000, -1 ); // needs mapping
-	CreateMultipleRobberies( "Tattoo Parlour", 		ROBBERY_SAFE_PAY, -200.169479, -22.932298, 1001.712890, -90.00000, 22, 46, 42 ); // needs mapping
-	CreateMultipleRobberies( "Gym", 				ROBBERY_SAFE_PAY, 755.036743, -18.894632, 1000.045532, 90.000000, 8 ); // needs mapping
-
-	#if ENABLE_CITY_LV == true
-	CreateMultipleRobberies( "Bank of Las Venturas - Safe 1", 	ROBBERY_SAFE_PAY, 2105.442138, 1246.264648, 1016.50110, 0.00000, g_bankvaultData[ CITY_LV ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Las Venturas - Safe 2", 	ROBBERY_SAFE_PAY, 2110.461425, 1246.264648, 1016.50110, 0.00000, g_bankvaultData[ CITY_LV ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Las Venturas - Safe 3", 	ROBBERY_SAFE_PAY, 2108.793701, 1246.264648, 1017.41492, 0.00000, g_bankvaultData[ CITY_LV ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Las Venturas - Safe 4", 	ROBBERY_SAFE_PAY, 2107.122802, 1246.264648, 1017.41492, 0.00000, g_bankvaultData[ CITY_LV ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Caligulas Casino - Safe 1", 	  	ROBBERY_SAFE_PAY, 2143.757568, 1642.740478, 993.93701, 0.0, -1 );
-	CreateMultipleRobberies( "Caligulas Casino - Safe 2", 	  	ROBBERY_SAFE_PAY, 2145.476562, 1642.832275, 993.02612, 0.0, -1 );
-	CreateMultipleRobberies( "4 Dragons Casino", 				ROBBERY_SAFE_PAY * 2, 1953.887329, 1018.131591, 991.9517800, -90.00000, -1 );
-	CreateMultipleRobberies( "Gym", 							ROBBERY_SAFE_PAY, 760.740173, -78.840095, 1000.094909, 180.00000, 9 );
-	#endif
-
-	#if ENABLE_CITY_LS == true
-	CreateMultipleRobberies( "Bank of Los Santos - Safe 1", ROBBERY_SAFE_PAY, 2105.442138, 1246.264648, 1016.50110, 0.00000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Los Santos - Safe 2", ROBBERY_SAFE_PAY, 2110.461425, 1246.264648, 1016.50110, 0.00000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Los Santos - Safe 3", ROBBERY_SAFE_PAY, 2108.793701, 1246.264648, 1017.41492, 0.00000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Bank of Los Santos - Safe 4", ROBBERY_SAFE_PAY, 2107.122802, 1246.264648, 1017.41492, 0.00000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
-	CreateMultipleRobberies( "Gym", 						ROBBERY_SAFE_PAY, 755.438659, 7.457976, 1000.139587, 90.00000, 10 );
-	#endif
-	/* ** Entrances/Exits ** */
-
-	// Custom Interiors
-	// CreateEntrance( "[SEWER]",				-1990.7736, 1033.7378, 55.7266, 3638.4670, 5215.5024, 1203.3168, 		1,   1, true, true, -1 ); // Milky
-	CreateEntrance( "[BANK]", 				-1493.1296, 920.1409, 7.1875, -1444.2537, 831.0490, 985.7027, 			0,  g_bankvaultData[ CITY_SF ] [ E_WORLD ], true, false, 52 );
-
-	// San Fierro
-	CreateEntrance( "[VICTIM]", 			-1694.4019, 951.0486, 24.8906, 227.3678, -8.3722, 1002.2109, 			5,   1, false, false, 45 );
-	CreateEntrance( "[PIZZA]", 				-1808.6377, 945.8018, 24.8906, 372.2738, -133.5248, 1001.4922, 			5,   2, false, false, 29 );
-	CreateEntrance( "[ZIP]", 				-1882.4294, 866.1778, 35.1719, 161.2982, -97.1033, 1001.8047, 			18,  3, false, false, 45 );
-	CreateEntrance( "[BURGER SHOT]", 		-1912.2883, 828.0681, 35.2204, 362.8823, -75.1634, 1001.5078, 			10,  4, false, false, 10 );
-	CreateEntrance( "[CLUCKING BELL]", 		-1816.5820, 618.0572, 35.1719, 364.9896, -11.8441, 1001.8516, 			9,   5, false, false, 14 );
-	CreateEntrance( "[ZERO'S RC SHOP]", 	-2241.9248, 128.5363, 35.3203, -2240.7827,137.2215,1035.4141, 			6,   6, false, false, 47 );
-	CreateEntrance( "[MISTY'S]", 			-2242.1438, -88.0866, 35.3203, 501.9013, -67.5635, 998.7578, 			11,  7, false, false, 49 );
-	CreateEntrance( "[GYM]", 				-2270.6448, -155.983, 35.3203, 774.1244, -50.4720, 1000.5859, 			6,   8, false, false, 54 );
-	CreateEntrance( "[BURGER SHOT]", 		-2336.8657, -166.889, 35.5547, 362.8823, -75.1634, 1001.5078, 			10,  9, false, false, 10 );
-	CreateEntrance( "[DRIVING SCHOOL]",		-2026.6505, -102.0638, 35.1641, -2026.8767, -103.6028, 1035.1831, 		3,  10, false, false, 36 );
-	CreateEntrance( "[DRUG HOUSE]", 		-2203.2300, 1043.400, 80.0131, 2196.8398, -1204.4272, 1049.0234, 		6,  11, false, false, 24 );
-	CreateEntrance( "[BINCO]", 				-2373.8457, 910.1376, 45.4453, 207.6674,-111.2659,1005.1328, 			15, 12, false, false, 45 );
-	CreateEntrance( "[BURGER SHOT]", 		-2355.8369, 1008.2708, 50.8984, 362.8823, -75.1634, 1001.5078, 			10, 13, false, false, 10 );
-	CreateEntrance( "[CLUCKING BELL]", 		-2672.2297, 258.2861, 4.6328, 364.9896, -11.8441, 1001.8516, 			9,  14, false, false, 14 );
-	CreateEntrance( "[BARBER]", 			-2571.3015, 246.8040, 10.4512, 411.8917,-54.4434,1001.8984, 			12, 23, false, false,  7 );
-	CreateEntrance( "[DISCO]", 				-2551.0127, 194.3636, 6.2266, 493.4810, -24.9531, 1000.6719, 			17, 17, false, false, 48 );
-	CreateEntrance( "[JIZZY'S]", 			-2625.4006, 1412.331, 7.0938, -2636.7698, 1402.4551, 906.4609, 			3,  18, false, false, 49 );
-	CreateEntrance( "[RUSTY BROWN DONUT]", -2767.8628, 788.7215, 52.7813, 377.1306, -193.3048, 1000.6328, 			17, 19, false, false, 17 );
-	CreateEntrance( "[PIZZA]", 				-1720.9558, 1359.7795, 7.1853, 372.2738, -133.5248, 1001.4922, 			5,  20, false, false, 29 );
-	CreateEntrance( "[SUBURBAN]", 			-2489.9392, -29.0578, 25.6172, 203.8414, -50.6566, 1001.8047, 			1,  21, false, false, 45 );
-	CreateEntrance( "[TATTOO]", 			-2490.9966, -38.7627, 25.6172, -204.4172,-27.3470,1002.2734, 			16, 22, false, false, 39 );
-	CreateEntrance( "[CHURCH]", 			-1989.7933, 1117.9083, 54.4688, 1964.0679, -349.6309, 1092.9454, 		1,   1, true , false, -1 );
-	CreateEntrance( "[CITY HALL]", 			-2766.4087, 375.5447, 6.3347, 390.7462, 173.7627, 1008.3828, 			3,   1, false, false, -1 );
-	CreateEntrance( "[DRUG HOUSE]", 		-2027.8260, -40.6628, 38.8047, 2196.8398, -1204.4272, 1049.0234, 		6,  26, false, false, 24 );
-	CreateEntrance( "[DRUG HOUSE]", 		-2552.3325,55.2304,16.4219, 2196.8398, -1204.4272, 1049.0234, 			6,  27, false, false, 24 );
-	CreateEntrance( "[GAS STATION]", 		-2420.1538, 969.8716, 45.2969, -27.2923, -58.0535, 1003.5469, 			6,  28, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		-1676.1494, 432.2187, 7.1797, -27.2923, -58.0535, 1003.5469, 			6,  29, false, false, 55 );
-	CreateEntrance( "[REVELATION CHURCH]",  -2482.0703, 2406.6750, 17.1094, 2013.3900, 1589.8300, 977.0594, 		1,   1, false, false, -1 );
-	CreateEntrance( "[VEHICLE DEALERSHIP]", -2521.1895, -624.9482, 132.7838, -1868.0262, -617.5386, 1002.1284, 		9,  32, true , false, 55 );
-	CreateEntrance( "[SOCCER STADIUM]",		-2109.6680, -444.1471, 38.7344, -1807.8997, 435.8948, 1039.4382, 		9,  32, true , false, 33 );
-	CreateEntrance( "[BOXING STADIUM]",		-2051.5239, -407.7723, 38.7344, -281.8263, 10.5794, 2217.3096, 			9,  32, true , false, 33 );
-	CreateEntrance( "[FILM STUDIO]",		-2591.4668, 170.4937, 4.7348, 2330.5608, 897.3838, 1054.8489, 			1,  21, true , false, 38 );
-	CreateEntrance( "[FREEFALL]", 			-1749.2736, 871.2025, 25.0859, -1753.7821, 883.8984, 295.6010, 			0,   0, false, false, -1 );
-	CreateEntrance( "[PAWNSHOP]", 			-2490.2256, -16.9206, 25.6172, 1329.7720, -1084.7529, 968.0360, 		2,  11, true , false, 25 );
-	CreateEntrance( "[AMMU-NATION]", 		-2626.6299, 208.2514, 4.8125, 285.4629, -41.7990, 1001.5156, 			1,  15, false, false,  6 );
-	CreateEntrance( "[POLICE DEPT.]", 		-1605.3304, 711.6586, 13.8672, 246.3872, 107.3055, 1003.2188, 			10, 30, true , false, 30 ); // The jail world (30) needs to be changed otherwise gg.
-	CreateEntrance( "[HOSPITAL]",			-2655.0923, 640.1625, 14.4545, -2656.3079, 640.9360, 970.4332, 			1,  22, true , false, 22 );
-
-	// Hardcoded
-	g_SupaSave = 			CreateEntrance( "[SUPA SAVE]",			-2442.5710, 754.6293, 35.1719, -2418.3743, 772.8492, 1056.7056, 		1,   1, true , false, 62 );
-
-	// VIP Lounge
-	g_VIPLounge[ CITY_SF ] = CreateEntrance( "[V.I.P Lounge]", 		-1880.7598, 822.3964, 35.1778, -1971.5508, 825.5823, 1209.4420, 		18, 25, true , true , 33 ); // SF
-	g_VIPLounge[ CITY_LS ] = CreateEntrance( "[V.I.P Lounge]", 		1797.444091, -1578.955810, 14.085495, 39.7270, 105.4883, 1015.2939, 	18, 92, true , true , 33 ); // LS
-	g_VIPLounge[ CITY_LV ] = CreateEntrance( "[V.I.P Lounge]", 		1965.0455, 1623.2230, 12.8620, 39.7270, 105.4883, 1015.2939, 			18, 25, true , true , 33 ); // LV
-
-	#if ENABLE_CITY_LV == true
-	// Las Venturas
-	CreateEntrance( "[BANK]", 				2447.6885, 2376.2515, 12.1635, 2162.4661, 1226.5592, 1017.1369, 		1,  g_bankvaultData[ CITY_LV ] [ E_WORLD ], true ,false, 52 );
-	CreateEntrance( "[BURGER SHOT]", 		2367.0581, 2071.0891, 10.8203, 362.8823, -75.1634, 1001.5078, 			10, 32, false, false, 10 );
-	CreateEntrance( "[BURGER SHOT]", 		2472.8640, 2034.1476, 11.0625, 362.8823, -75.1634, 1001.5078, 			10, 33, false, false, 10 );
-	CreateEntrance( "[BURGER SHOT]", 		1139.5267, 2080.2134, 11.0547, 362.8823, -75.1634, 1001.5078, 			10, 34, false, false, 10 );
-	CreateEntrance( "[BURGER SHOT]", 		2169.4082, 2795.8718, 10.8203, 362.8823, -75.1634, 1001.5078, 			10, 25, false, false, 10 );
-	CreateEntrance( "[BURGER SHOT]", 		1872.2546, 2071.8691, 11.0625, 362.8823, -75.1634, 1001.5078, 			10, 82, false, false, 10 );
-	CreateEntrance( "[CLUCKING BELL]", 		2393.2661, 2041.5591, 10.8203, 364.9896, -11.8441, 1001.8516, 			9,  35, false, false, 14 );
-	CreateEntrance( "[CLUCKING BELL]", 		2101.8945, 2228.8604, 11.0234, 364.9896, -11.8441, 1001.8516, 			9,  36, false, false, 14 );
-	CreateEntrance( "[CLUCKING BELL]", 		2638.5894, 1671.8162, 11.0234, 364.9896, -11.8441, 1001.8516, 			9,  70, false, false, 14 );
-	CreateEntrance( "[24/7]", 				2452.4753, 2065.1895, 10.8203, -25.9472, -188.2597, 1003.5469, 			17, 37, false, false, 61 );
-	CreateEntrance( "[24/7]", 				2097.6931, 2224.7014, 11.0234, -25.9472, -188.2597, 1003.5469, 			17, 38, false, false, 61 );
-	CreateEntrance( "[24/7]", 				2247.6357, 2396.1694, 10.8203, -25.9472, -188.2597, 1003.5469, 			17, 39, false, false, 61 );
-	CreateEntrance( "[24/7]", 				1937.8262, 2307.2012, 10.8203, -25.9472, -188.2597, 1003.5469, 			17, 40, false, false, 61 );
-	CreateEntrance( "[24/7]", 				2194.9402, 1991.0054, 12.2969, -25.9472, -188.2597, 1003.5469, 			17, 41, false, false, 61 );
-	CreateEntrance( "[24/7]", 				2546.5657, 1972.6659, 10.8203, -25.9472, -188.2597, 1003.5469, 			17, 49, false, false, 61 );
-	CreateEntrance( "[CHURCH]", 			2519.4944, 2033.3417, 11.1719, 2383.1277, 3204.1130, 1017.516, 			2,  39, true , false, -1 );
-	CreateEntrance( "[CHURCH]", 			2225.0847, 2522.8762, 11.2222, 2383.1277, 3204.1130, 1017.516, 			2,  40, true , false, -1 );
-	CreateEntrance( "[AMMU-NATION]", 		2159.5447, 943.24390, 10.8203, 285.8562, -86.7820, 1001.5229, 			4,  41, false, false,  6 );
-	CreateEntrance( "[AMMU-NATION]", 		2539.5420, 2084.0510, 10.8203, 316.3490, -170.2974, 999.5938, 			6,  42, false, false,  6 );
-	CreateEntrance( "[PIZZA]", 				2083.3840, 2224.6987, 11.0234, 372.2738, -133.5248, 1001.4922, 			5,  43, false, false, 29 );
-	CreateEntrance( "[PIZZA]", 				2351.7537, 2533.6287, 10.8203, 372.2738, -133.5248, 1001.4922, 			5,  44, false, false, 29 );
-	CreateEntrance( "[PIZZA]", 				2638.7852, 1849.8058, 11.0234, 372.2738, -133.5248, 1001.4922, 			5,  14, false, false, 29 );
-	CreateEntrance( "[ZIP]", 				2090.5588, 2224.7007, 11.0234, 161.2982, -97.1033, 1001.8047, 			18, 45, false, false, 45 );
-	CreateEntrance( "[ZIP]", 				2572.0657, 1904.9449, 11.0234, 161.2982, -97.1033, 1001.8047, 			18, 59, false, false, 45 );
-	CreateEntrance( "[TATTOO]", 			2094.7612, 2122.8645, 10.8203, -204.417, -27.3470, 1002.2734, 			16, 46, false, false, 39 );
-	CreateEntrance( "[BINCO]", 				1657.0360, 1733.3674, 10.8281, 207.6674, -111.2659, 1005.1328, 			15, 47, false, false, 45 );
-	CreateEntrance( "[BINCO]", 				2101.8931, 2257.4358, 11.0234, 207.6674, -111.2659, 1005.1328, 			15, 48, false, false, 45 );
-	CreateEntrance( "[BINCO]", 				2101.8931, 2257.4358, 11.0234, 207.6674, -111.2659, 1005.1328, 			15, 48, false, false, 45 );
-	CreateEntrance( "[GAS STATION]", 		2117.4756, 896.77590, 11.1797, -27.2923, -58.0535, 1003.5469, 			6,  49, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		2150.7961, 2733.8657, 11.1763, -27.2923, -58.0535, 1003.5469, 			6,  20, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		2187.7136, 2469.6372, 11.2422, -27.2923, -58.0535, 1003.5469, 			6,  56, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		1598.9939, 2221.7271, 11.0625, -27.2923, -58.0535, 1003.5469, 			6,  73, false, false, 55 );
-	CreateEntrance( "[POLICE DEPT.]", 		2337.0854, 2459.3132, 14.9742, 288.8254, 166.9291, 1007.1719, 			3,  30, false, false, 30 );
-	CreateEntrance( "[POLICE DEPT.]", 		2287.0601, 2432.3679, 10.8203, 238.7245, 138.6265, 1003.0234, 			3,  30, false, false, -1 );
-	CreateEntrance( "[SEX SHOP]", 			2085.1206, 2074.0837, 11.0547, -100.3562, -25.0387, 1000.7188, 			3,  51, false, false, 21 );
-	CreateEntrance( "[CALIGULAS CASINO]",	2196.9648, 1677.1042, 12.3672, 2233.9617, 1714.6832, 1012.3828, 		1,  82, false, false, 25 );
-	CreateEntrance( "[STEAKHOUSE]", 		2369.2261, 1984.2435, 10.8203, 460.5569, -88.6348, 999.5547, 			4,  53, false, false, 50 );
-	CreateEntrance( "[STEAKHOUSE]", 		1694.1072, 2208.9211, 11.0692, 460.5569, -88.6348, 999.5547, 			4,  23, false, false, 50 );
-	CreateEntrance( "[THE CRAW BAR]", 		2441.1377, 2065.4844, 10.8203, 501.9013, -67.5635, 998.7578, 			11, 54, false, false, 49 );
-	CreateEntrance( "[4 DRAGONS CASINO]",	2019.3126, 1007.6581, 10.8203, 2019.0719, 1017.8998, 996.8750, 			10, 23, false, false, 43 );
-	CreateEntrance( "[CITY HALL]", 			2412.5024, 1123.8776, 10.8203, 390.7462, 173.7627, 1008.3828, 			3,   2, false, false, -1 );
-	CreateEntrance( "[BARBER]", 			2080.3018, 2122.8655, 10.8203, 411.8917,-54.4434, 1001.8984, 			12, 20, false, false,  7 );
-	CreateEntrance( "[PD ROOFTOP]",			2282.1907, 2423.1160, 3.4766, 2279.8276, 2458.7380, 38.6875, 			0,   0, false, false, -1 );
-	CreateEntrance( "[GYM]", 				1968.7761, 2295.8728, 16.4559, 773.9163, -78.8474, 1000.6628, 			7,   9, false, false, 54 );
-	CreateEntrance( "[VEHICLE DEALERSHIP]", 1948.6849, 2068.6914, 11.0610, -126.9255, 98.1966, 1004.7233, 			10, 31, true , false, 55 );
-	CreateEntrance( "[PAWNSHOP]", 			2482.4395, 1326.4077, 10.8203, 1329.7720, -1084.7529, 968.0360, 		2,  22, true , false, 25 );
-
-	// Creek
-	CreateEntrance( "[CLUCKING BELL]", 		2838.3081, 2407.5620, 11.0690, 364.9896, -11.8441, 1001.8516, 			9,  23, false, false, 14 );
-	CreateEntrance( "[24/7]", 				2884.5488, 2454.0413, 11.0690, -25.9472, -188.2597, 1003.5469, 			17, 47, false, false, 61 );
-	CreateEntrance( "[VICTIM]", 			2802.8586, 2430.7910, 11.0625, 227.3678, -8.3722, 1002.2109, 			5,  21, false, false, 45 );
-	CreateEntrance( "[SUBURBAN]", 			2779.7080, 2453.9395, 11.0625, 203.8414, -50.6566, 1001.8047, 			1,  41, false, false, 45 );
-	CreateEntrance( "[PIZZA]", 				2756.7673, 2477.3511, 11.0625, 372.2738, -133.5248, 1001.4922, 			5,  46, false, false, 29 );
-	CreateEntrance( "[PROLAPS]", 			2826.0977, 2407.5505, 11.0625, 207.0255, -140.3765, 1003.5078, 			3,  36, false, false, 45 );
-	#endif
-
-	#if ENABLE_CITY_LS == true
-	// Los Santos
-	CreateEntrance( "[BANK]", 				595.380371, -1250.299194, 18.278293, 2162.4661, 1226.5592, 1017.1369, 			2,  g_bankvaultData[ CITY_LS ] [ E_WORLD ], true , false, 52 );
-	CreateEntrance( "[GYM]", 				2229.9028, -1721.258, 13.5612, 772.3065, -5.51570, 1000.7285, 			 		5,  10, false, false, 54 );
-	CreateEntrance( "[TEN GREEN BOTTLES]",	2309.987548, -1643.436279, 14.827047, 501.9013, -67.5635, 998.7578, 			11, 58, false, false, 49 );
-	CreateEntrance( "[CLUCKING BELL]", 		2397.816650, -1899.185058, 13.546875, 364.9896, -11.8441, 1001.8516, 			9,  39, false, false, 14 );
-	CreateEntrance( "[CLUCKING BELL]", 		928.915588, -1353.043823, 13.343750, 364.9896, -11.8441, 1001.8516, 			9,  13, false, false, 14 );
-	CreateEntrance( "[CLUCKING BELL]", 		2419.702636, -1509.045654, 24.000000, 364.9896, -11.8441, 1001.8516, 			9,  16, false, false, 14 );
-	CreateEntrance( "[BINCO]", 				2244.381347, -1665.566650, 15.476562, 207.6674, -111.2659, 1005.1328, 			15, 53, false, false, 45 );
-	CreateEntrance( "[AMMU-NATION]", 		2400.493408, -1981.995605, 13.546875, 285.8562, -86.7820, 1001.5229, 			4,  74, false, false,  6 );
-	CreateEntrance( "[AMMU-NATION]", 		1369.000122, -1279.712646, 13.546875, 316.3490, -170.2974, 999.5938, 			6,  75, false, false,  6 );
-	CreateEntrance( "[SEX SHOP]", 			1940.006225, -2115.978027, 13.695312, -100.3562, -25.0387, 1000.7188, 			3,  64, false, false, 21 );
-	CreateEntrance( "[SEX SHOP]", 			1087.683471, -922.481994, 43.390625, -100.3562, -25.0387, 1000.7188, 			3,  32, false, false, 21 );
-	CreateEntrance( "[GAS STATION]", 		1928.580932, -1776.264892, 13.546875, -27.2923, -58.0535, 1003.5469, 			6,  68, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		-78.360862, -1169.870605, 2.135507, -27.2923, -58.0535, 1003.5469, 				6,  92, false, false, 55 );
-	CreateEntrance( "[BURGER SHOT]", 		810.484741, -1616.128906, 13.546875, 362.8823, -75.1634, 1001.5078, 			10, 35, false, false, 10 );
-	CreateEntrance( "[BURGER SHOT]", 		1199.256347, -918.142150, 43.123218, 362.8823, -75.1634, 1001.5078, 			10, 71, false, false, 10 );
-	CreateEntrance( "[BARBER]", 			824.059570, -1588.316894, 13.543567, 411.8917,-54.4434,1001.8984, 				12, 21, false, false,  7 );
-	CreateEntrance( "[BARBER]", 			2070.632568, -1793.837036, 13.546875, 411.8917,-54.4434,1001.8984, 				12, 22, false, false,  7 );
-	CreateEntrance( "[POLICE DEPT.]", 		1555.501220, -1675.639038, 16.195312, 246.8373,62.3343,1003.6406, 				6,  30, false, false, 30 );
-	CreateEntrance( "[PIZZA]", 				2105.488281, -1806.570434, 13.554687, 372.2738, -133.5248, 1001.4922, 			5,  12, false, false, 29 );
-	CreateEntrance( "[STRIP CLUB]", 		2421.597900, -1219.242675, 25.561447, 1204.7625,-13.8523,1000.9219, 			2,  22, false, false, -1 );
-	CreateEntrance( "[DISCO]", 				1837.038696, -1682.395996, 13.322851, 493.4810, -24.9531, 1000.6719, 			17, 71, false, false, 48 );
-	CreateEntrance( "[24/7]", 				1833.777343, -1842.623657, 13.578125, -25.9472, -188.2597, 1003.5469, 			17, 51, false, false, 61 );
-	CreateEntrance( "[24/7]", 				1000.593017, -919.916809, 42.328125, -25.9472, -188.2597, 1003.5469, 			17, 48, false, false, 61 );
-	CreateEntrance( "[TATTOO]", 			2068.582763, -1779.853881, 13.559624, -204.417, -27.3470, 1002.2734, 			16, 42, false, false, 39 );
-	//CreateEntrance( "[VEHICLE DEALERSHIP]", 542.2485000, -1293.922200, 17.242000, -126.9255, 98.1966, 1004.7233, 			11, 32, true , false, 55 );
-	CreateEntrance( "[SUBURBAN]", 			2112.8643, -1211.4548, 23.9629, 203.8414, -50.6566, 1001.8047, 					1,  39, false, false, 45 );
-	CreateEntrance( "[VICTIM]", 			461.707031, -1500.845092, 31.044902, 227.3678, -8.3722, 1002.2109, 				5,  49, false, false, 45 );
-	CreateEntrance( "[DRUG HOUSE]", 		1449.219360, -1849.375000, 13.973744, 2196.8398, -1204.4272, 1049.0234, 		6,  94, false, false, 24 );
-	CreateEntrance( "[DRUG HOUSE]", 		2290.139404, -1796.005371, 13.546875, 2196.8398, -1204.4272, 1049.0234, 		6,  31, false, false, 24 );
-	CreateEntrance( "[DRUG HOUSE]", 		2165.931152, -1671.195190, 15.073156, 2196.8398, -1204.4272, 1049.0234, 		6,  44, false, false, 24 );
-	CreateEntrance( "[DRUG HOUSE]", 		2486.490722, -1644.531616, 14.077178, 2196.8398, -1204.4272, 1049.0234, 		6,  10, false, false, 24 );
-	CreateEntrance( "[DRUG HOUSE]", 		2351.937255, -1170.664672, 28.074649, 2196.8398, -1204.4272, 1049.0234, 		6,  15, false, false, 24 );
-	CreateEntrance( "[JIM'S STICKY DONUTS]",1038.096191, -1340.726074, 13.745031, 377.1306, -193.3048, 1000.6328, 			17, 10, false, false, 17 );
-	CreateEntrance( "[CITY HALL]", 			1481.037719, -1772.312622, 18.795755, 390.7462, 173.7627, 1008.3828, 			3,   5, false, false, -1 );
-	CreateEntrance( "[JEFFERSON MOTEL]", 	2233.292968, -1159.849243, 25.890625, 2214.3845, -1150.4780, 1025.7969, 		15, 21, false, false, -1 );
-	CreateEntrance( "[PROLAPS]", 			499.5353000, -1360.6348, 16.3690, 207.0255, -140.3765, 1003.5078, 				3,  39, false, false, 45 );
-	CreateEntrance( "[ZIP]", 				1457.0670, -1137.1027, 23.9441, 161.2982, -97.1033, 1001.8047, 					18, 27, false, false, 45 );
-	CreateEntrance( "[PAWNSHOP]", 			2507.3076, -1724.6044, 13.5469, 1329.7720, -1084.7529, 968.0360, 				2,  33, true , false, 25 );
-	CreateEntrance( "[DIDIER SACHS]",		454.2061, -1477.9880, 30.8142, 204.3547, -168.8608, 1000.5234, 					14, 14, true , false, 22 );
-
-	// Angel Pine
-	CreateEntrance( "[AMMU-NATION]", 		-2093.670898, -2464.938964, 30.625000, 316.3490, -170.2974, 999.5938, 			6,  32, false, false,  6 );
-	CreateEntrance( "[CLUCKING BELL]", 		-2155.283447, -2460.122070, 30.851562, 364.9896, -11.8441, 1001.8516, 			9,  12, false, false, 14 );
-	CreateEntrance( "[GAS STATION]", 		-2231.472900, -2558.297119, 31.921875, -27.2923, -58.0535, 1003.5469, 			6,  74, false, false, 55 );
-	CreateEntrance( "[STEAKHOUSE]", 		-2103.568603, -2342.283203, 30.625000, 460.5569, -88.6348, 999.5547, 			4,  27, false, false, 50 );
-
-	// Blueberry
-	CreateEntrance( "[STEAKHOUSE]", 		293.340881, -195.475814, 1.778619, 460.5569, -88.6348, 999.5547, 				4,  22, false, false, 50 );
-	CreateEntrance( "[AMMU-NATION]", 		243.294967, -178.334701, 1.582162, 316.3490, -170.2974, 999.5938, 				6,  23, false, false,  6 );
-	CreateEntrance( "[PIZZA]", 				203.481597, -201.936798, 1.578125, 372.2738, -133.5248, 1001.4922, 				5,  31, false, false, 29 );
-
-	// Dillimore
-	CreateEntrance( "[BAR]", 				681.612243, -473.346771, 16.536296, 501.9013, -67.5635, 998.7578, 				11, 17, false, false, 49 );
-	CreateEntrance( "[BARBER]", 			672.088317, -496.847564, 16.335937, 411.8917,-54.4434,1001.8984, 				12, 18, false, false,  7 );
-	CreateEntrance( "[24/7]", 				694.930969, -500.131072, 16.335937, -25.9472, -188.2597, 1003.5469, 			17, 11, false, false, 61 );
-
-	// Montgomery
-	CreateEntrance( "[PIZZA]", 				1367.548950, 248.235580, 19.566932, 372.2738, -133.5248, 1001.4922, 			5,  75, false, false, 29 );
-	CreateEntrance( "[GAS STATION]", 		1383.270507, 465.549926, 20.191875, -27.2923, -58.0535, 1003.5469, 				6,  77, false, false, 55 );
-	CreateEntrance( "[BAR]", 				1359.643920, 205.083831, 19.755516, 501.9013, -67.5635, 998.7578, 				11, 36, false, false, 49 );
-	CreateEntrance( "[BAR]", 				1244.703735, 205.342956, 19.645431, 501.9013, -67.5635, 998.7578, 				11, 41, false, false, 49 );
-
-	// Palomino Creek
-	CreateEntrance( "[PIZZA]", 				2331.810058, 75.064132, 26.620975, 372.2738, -133.5248, 1001.4922, 				5,  66, false, false, 29 );
-	CreateEntrance( "[AMMU-NATION]", 		2333.088867, 61.584743, 26.705789, 316.3490, -170.2974, 999.5938, 				6,  27, false, false,  6 );
-	CreateEntrance( "[BANK]", 				2303.827880, -16.152278, 26.484375, 2155.0652,1651.0916,1041.6198, 				69, 78, true , false, 52 );
-	CreateEntrance( "[SEX SHOP]", 			2304.576416, 14.248206, 26.484375, -100.3562, -25.0387, 1000.7188, 				3,  16, false, false, 21 );
-	CreateEntrance( "[BAR]", 				2332.996337, -17.302047, 26.484375, 501.9013, -67.5635, 998.7578, 				11, 22, false, false, 49 );
-	CreateEntrance( "[CHURCH]", 			2256.691406, -44.642879, 26.883434, 2383.1277, 3204.1130, 1017.516, 			2,  41, true , false, -1 );
-	#endif
-
-	// Fort Carson
-	CreateEntrance( "[RESTAURANT]", 		-53.82020, 1188.7482, 19.3594, -229.2946, 1401.1322, 27.7656, 			18, 53, false, false, 50 );
-	CreateEntrance( "[LIL' PROBE INN]", 	-89.61480, 1378.2664, 10.4698, -229.2946, 1401.1322, 27.7656, 			18, 54, false, false, 50 );
-	CreateEntrance( "[BANK]", 				-179.1860, 1133.1830, 19.7422, 2155.0652,1651.0916,1041.6198, 			69, 45, true , false, 52 );
-	CreateEntrance( "[CHURCH]", 			-207.8720, 1119.1965, 20.4297, 2383.1277, 3204.1130, 1017.516, 			2,  24, true , false, -1 );
-	CreateEntrance( "[CACTUS BAR]", 		-179.6980, 1087.5027, 19.7422, 501.9013, -67.5635, 998.7578, 			11, 56, false, false, 49 );
-	CreateEntrance( "[24/7]", 				-180.7307, 1034.8035, 19.7422, -25.9472, -188.2597, 1003.5469, 			17, 42, false, false, 61 );
-	CreateEntrance( "[KING RING DONUTS]", 	-144.0186, 1225.2097, 19.8992, 377.1306, -193.3048, 1000.6328, 			17, 20, false, false, 17 );
-	CreateEntrance( "[BARBER]", 			-206.1856, 1062.1968, 19.7422, 411.8917,-54.4434,1001.8984, 			12, 48, false, false,  7 );
-	CreateEntrance( "[AMMU-NATION]", 		-316.1613, 829.79550, 14.2422, 316.3490, -170.2974, 999.5938, 			6,   5, false, false,  6 );
-
-	// El Casillo del Diablo
-	CreateEntrance( "[CHURCH]", 			-361.7441, 2222.3257, 43.0078, 2383.1277, 3204.1130, 1017.516, 			1,  62, true , false, -1 );
-	CreateEntrance( "[BAR]", 				-384.8090, 2206.1194, 42.4235, 501.9013, -67.5635, 998.7578, 			11, 10, false, false, 49 );
-
-	// Bone Country
-	CreateEntrance( "[AMMU-NATION]", 		776.72050, 1871.4076, 4.90660, 316.3490, -170.2974, 999.5938, 			6,  45, false, false,  6 );
-	CreateEntrance( "[BROTHEL]", 			693.69150, 1967.6844, 5.53910, 968.1353, -53.2577, 1001.1246, 			3,  42, false, false, 49 );
-	CreateEntrance( "[GAS STATION]", 		663.14670, 1716.3582, 7.18750, -27.2923, -58.0535, 1003.5469, 			6,  32, false, false, 55 );
-	CreateEntrance( "[CLUCKING BELL]", 		172.98640, 1177.1807, 14.7578, 364.9896, -11.8441, 1001.8516, 			9,  62, false, false, 14 );
-
-	// Tierra Robada
-	CreateEntrance( "[CLUCKING BELL]", 		-1213.7229, 1830.2632, 41.9297, 364.9896, -11.8441, 1001.8516, 			9,  60, false, false, 14 );
-	CreateEntrance( "[GAS STATION]", 		-1320.5590, 2698.6082, 50.2663, -27.2923, -58.0535, 1003.5469, 			6,  33, false, false, 55 );
-	CreateEntrance( "[GAS STATION]", 		-1465.8094, 1873.4160, 32.6328, -27.2923, -58.0535, 1003.5469, 			6,  34, false, false, 55 );
-	CreateEntrance( "[TIERRA BAR]", 		-1271.3542, 2713.3086, 50.2663, 501.9013, -67.5635, 998.7578, 			11, 55, false, false, 49 );
-	CreateEntrance( "[JAY'S BAR]", 			-1942.1311, 2379.4358, 49.7031, 501.9013, -67.5635, 998.7578, 			11, 15, false, false, 49 );
-
-	// Las Barrancas
-	CreateEntrance( "[STEAKHOUSE]", 		-857.9400, 1535.3420, 22.5870, 460.5569, -88.6348, 999.5547, 			4,  54, false, false, 50 );
-	CreateEntrance( "[BANK]", 				-828.1797, 1504.5967, 19.8528, 2155.0652,1651.0916,1041.6198, 			69, 24, true , false, 52 );
-	CreateEntrance( "[24/7]", 				-780.3192, 1501.4674, 23.7957, -25.9472, -188.2597, 1003.5469, 			17, 43, false, false, 61 );
-
-	// El Quebrados
-	CreateEntrance( "[AMMU-NATION]", 		-1508.8550, 2610.7004, 55.8359, 316.3490, -170.2974, 999.5938, 			6,  47, false, false,  6 );
-	CreateEntrance( "[BAR]", 				-1519.1434, 2610.3274, 55.8359, 501.9013, -67.5635, 998.7578, 			11, 50, false, false, 49 );
-	CreateEntrance( "[BARBER]", 			-1449.8353, 2591.9045, 55.8359, 411.8917,-54.4434,1001.8984, 			12, 24, false, false,  7 );
-	CreateEntrance( "[24/7]", 				-1480.8905, 2591.6638, 55.8359, -25.3519, -188.1018, 1003.5469, 		17,  44, false, false, 61 );
-
-	// Las Payasadas
-	CreateEntrance( "[BANK]", 				-288.8788, 2689.7905, 62.8125, 2155.0652,1651.0916,1041.6198, 			69, 25, true , false, 52 );
-	CreateEntrance( "[BAR]", 				-255.1494, 2603.2395, 62.8582, 501.9013, -67.5635, 998.7578, 			11, 52, false, false, 49 );
-
-	// Unknown
-	CreateEntrance( "[BAR]", 				-314.0455, 1774.7166, 43.6406, 501.9013, -67.5635, 998.7578, 			11, 21, false, false, 49 );
-	CreateEntrance( "[GAS STATION]", 		-736.2042, 2747.8445, 47.2266, -27.2923, -58.0535, 1003.5469, 			6,  52, false, false, 55 );
 
 	/* ** Map Icons ** */
 	CreateDynamicMapIcon( -1547.4066, 123.6555, 3.55470,  9, 0, -1, -1, -1, 750.0 ); // ShipYard
@@ -2018,17 +1225,12 @@ public OnGameModeInit()
 	// mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 8 );
 #endif
 
-	/* ** Houses/Bribes/ETC **/
-	printf( "[ENTRANCES]: %d entrances have been successfully loaded.", Iter_Count(entrances) );
-	printf( "[ROBBERIES]: %d robberies have been successfully loaded.", Iter_Count(RobberyCount) );
-	printf( "[ROBBERIES]: %d robbery NPCs have been successfully loaded.", Iter_Count(RobberyNpc) );
-
 	// mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "OnApartmentLoad", "" );
 	// mysql_function_query( dbHandle, "SELECT * FROM `FURNITURE`", true, "OnFurnitureLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
-	mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
+	//mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
 	//mysql_function_query( dbHandle, "SELECT * FROM `CASINO_POOLS`", true, "OnCasinoPoolsLoad", "" );
 	//mysql_function_query( dbHandle, "SELECT * FROM `BUSINESSES`", true, "OnBusinessLoad", "" );
 
@@ -2424,45 +1626,6 @@ public OnServerUpdateTimer( )
 				ShowPlayerHelpDialog( playerid, 6000, "You have aimed your weapon at a law enforcement officer! ~n~~n~~r~~h~You are now wanted." );
 			}
 
-		#if ENABLED_NPC_ROBBERIES == true
-			if ( FCNPC_IsValid( aiming_player ) && p_Class[ playerid ] != CLASS_POLICE )
-			{
-				new clerkid = GetRobberyNpcFromPlayer( aiming_player );
-
-				if ( clerkid != -1 )
-				{
-					new weaponid = GetPlayerWeapon( playerid );
-					new Float: distance = GetDistanceBetweenPlayers( playerid, aiming_player, .bAllowNpc = true );
-					new is_melee = ( weaponid == 0 || weaponid == 1 || weaponid == 7 || 10 <= weaponid <= 18 );
-
-					if ( g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] < g_iTime && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_robberyNpcData[ clerkid ] [ E_LOOT ] && ! g_robberyNpcData[ clerkid ] [ E_PROVOKED ] && distance < 10.0 && ! is_melee )
-					{
-						GivePlayerWantedLevel( playerid, 6 );
-						PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~y~~h~Clerk is confused" );
-						PlayerTextDrawShow( playerid, p_RobberyRiskTD[ playerid ] );
-						PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], "Robbed ~g~~h~$0" );
-						PlayerTextDrawShow( playerid, p_RobberyAmountTD[ playerid ] );
-
-						FCNPC_ApplyAnimation( aiming_player, "SHOP", "SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
-						FCNPC_SetAnimationByName( aiming_player, "SHOP:SHP_Rob_React", 4.1, 0, 1, 1, 1, 0 );
-						g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 2300, false, "ddd", playerid, clerkid, 0 );
-
-						TriggerClosestCivilians( playerid, clerkid );
-					}
-				}
-				else
-				{
-					new
-						civilianid = GetCivilianNpcFromPlayer( aiming_player );
-
-					if ( civilianid != -1 ) {
-						TriggerClosestCivilians( playerid, GetClosestRobberyNPC( getClosestRobberySafe( playerid ) ) );
-					}
-				}
-			}
-
-		#endif
-
 			// AFK Players
 			if ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 45000 )
 			{
@@ -2714,40 +1877,6 @@ public OnServerUpdateTimer( )
 		else g_gangData[ gangid ] [ E_SOFT_DELETE_TS ] = 0;
 	}
 
-	// Make civilians react
-	foreach (new civilianid : CivilianNpc)
-	{
-		if ( g_civilianNpcData[ civilianid ] [ E_HOSTILE ] && g_civilianNpcData[ civilianid ] [ E_PROVOKED ] )
-		{
-			new
-				Float: distance = FLOAT_INFINITY,
-				closestid = GetClosestPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], distance );
-
-			if ( IsPlayerConnected( closestid ) && 0.0 < distance < 5625 )
-				FCNPC_AimAtPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], closestid, .shoot = true );
-
-			else
-			{
-				if ( ! g_civilianNpcData[ civilianid ] [ E_TIMEOUT ] )
-					g_civilianNpcData[ civilianid ] [ E_TIMEOUT ] = g_iTime + 30;
-
-				if ( g_civilianNpcData[ civilianid ] [ E_TIMEOUT ] != 0 && g_iTime > g_civilianNpcData[ civilianid ] [ E_TIMEOUT ] ) {
-					// Reset civilian variables
-					g_civilianNpcData[ civilianid ] [ E_TIMEOUT ] = 0;
-					g_civilianNpcData[ civilianid ] [ E_PROVOKED ] = false;
-
-					// Respawn
-					if ( FCNPC_IsDead( g_civilianNpcData[ civilianid ] [ E_NPC_ID ] ) ) {
-						FCNPC_Respawn( g_civilianNpcData[ civilianid ] [ E_NPC_ID ] );
-					} else {
-						FCNPC_NeutralState( g_civilianNpcData[ civilianid ] [ E_NPC_ID ] );
-						FCNPC_SetAngle( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], g_civilianNpcData[ civilianid ] [ E_RZ ] );
-					}
-				}
-			}
-		}
-	}
-
 	// Restore and Replenish Stuff
     if ( g_iTime > g_RestoreRobberiesBribes )
     {
@@ -2759,14 +1888,6 @@ public OnServerUpdateTimer( )
     	// Replenish Bribes
 		foreach(new bribeid : BribeCount) if ( ( GetTickCount( ) - g_bribeData[ bribeid ] [ E_TIMESTAMP ] ) > MAX_BRIBE_WAIT && g_bribeData[ bribeid ] [ E_DISABLED ] == true )
 			UpdateDynamic3DTextLabelText( g_bribeData[ bribeid ] [ E_LABEL ], COLOR_GOLD, sprintf( "Bribe(%d)", bribeid ) ), g_bribeData[ bribeid ] [ E_DISABLED ] = false;
-
-		// Replenish Robberies
-		foreach(new robberyid : RobberyCount) if ( g_iTime > g_robberyData[ robberyid ] [ E_ROB_TIME ] && g_robberyData[ robberyid ] [ E_ROBBED ] )
- 			setSafeReplenished( robberyid );
-
-		// Replenish NPC Robberies
-		foreach(new clerkid : RobberyNpc) if ( g_iTime > g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] && ! g_robberyNpcData[ clerkid ] [ E_LOOT ] )
- 			ReplenishRobberyNpc( clerkid );
 
  		// Replenish Atms
  		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] && g_iTime > g_atmData[ i ] [ E_TIMESTAMP ] ) {
@@ -3308,17 +2429,6 @@ thread OnPlayerDuplicateAccountCheck( playerid )
 
 public OnNpcConnect( npcid )
 {
-	static
-		npc_ip[ 16 ];
-
-    GetPlayerIp( npcid, npc_ip, sizeof( npc_ip ) );
-
-	#if ENABLED_NPC_ROBBERIES == true
-		if ( strmatch( npc_ip, "127.0.0.1" ) ) {
-			SetPlayerColor( npcid, 0xFFFFFF20 );
-			return 1;
-		}
-	#endif
 	return Kick( npcid ), 1;
 }
 
@@ -3711,16 +2821,11 @@ public OnPlayerDisconnect( playerid, reason )
     DestroyAllPlayerC4s( playerid, true );
 	KillTimer( p_JailTimer[ playerid ] );
 	KillTimer( p_CuffAbuseTimer[ playerid ] );
-	p_ProgressStarted{ playerid } = false;
-	p_CancelProgress{ playerid } = false;
 	ResetPlayerCash( playerid );
 	if ( !GetPVarInt( playerid, "banned_connection" ) ) SendDeathMessage( INVALID_PLAYER_ID, playerid, 201 );
 	DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 	p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
 	jailDoors( playerid, .remove = true, .set_closed = false );
-	resetPlayerToys( playerid, 0 );
-	resetPlayerToys( playerid, 1 );
-	resetPlayerToys( playerid, 2 );
 	DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 0 ] ), p_HighrollersBarrier[ playerid ] [ 0 ] = -1;
 	DestroyDynamicObject( p_HighrollersBarrier[ playerid ] [ 1 ] ), p_HighrollersBarrier[ playerid ] [ 1 ] = -1;
 
@@ -3743,7 +2848,6 @@ public OnPlayerDisconnect( playerid, reason )
 		if ( i < MAX_WEAPONS ) 	p_WeaponKills[ playerid ] [ i ] = 0;
 		if ( i < MAX_RACES )	p_raceInvited[ playerid ] [ i ] = false;
 		if ( i < MAX_STREAKS ) 	p_streakData[ playerid ] [ i ] [ E_BEST_STREAK ] = 0, p_streakData[ playerid ] [ i ] [ E_STREAK ] = 0;
-		if ( i < MAX_TOY_UNLOCKS ) p_ToyUnlocked[ playerid ] { i } = false;
 
 		p_BlockedPM[ playerid ] [ i ] = false;
 	}
@@ -3796,7 +2900,6 @@ public OnPlayerSpawn( playerid )
 	p_InGarage[ playerid ] = -1;
 	StopSound( playerid );
 	CancelEdit( playerid );
-	reloadPlayerToys( playerid );
 
 	// Approved spawn?
 	if ( !approveClassSpawned( playerid ) ) {
@@ -5253,13 +4356,10 @@ public OnPlayerLeaveGang( playerid, gangid, reason )
 	return 1;
 }
 
-public OnPlayerProgressUpdate( playerid, progressid, params )
+public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 {
 	static
-		Float: X, Float: Y, Float: Z, bool: canceled;
-
-	canceled = p_CancelProgress{ playerid };
-	p_CancelProgress{ playerid } = false;
+		Float: X, Float: Y, Float: Z;
 
 	if ( progressid == PROGRESS_CRACKING || progressid == PROGRESS_BRUTEFORCE ) {
         if ( !IsPlayerSpawned( playerid ) || !IsPlayerInDynamicCP( playerid, g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CHECKPOINT ] [ 0 ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled )
@@ -5547,7 +4647,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				Float: distance = distanceFromSafe( playerid, robberyid )
 			;
 
-			if ( robberyid != -1 && distance < 2.5 || distance > 0.0 )
+			if ( robberyid != -1 && 0.0 < distance <= 2.5 )
 			{
 				if ( !g_robberyData[ robberyid ] [ E_ROBBED ] && !IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
 				{
@@ -6594,9 +5694,9 @@ CMD:robitems( playerid, params[ ] )
 			iRandomItem = -1
 		;
 
-		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < LIMIT_PINS ) available_items[ 0 ] = 0;
-		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < LIMIT_SCISSORS ) available_items[ 1 ] = 1;
-		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < LIMIT_ROPES ) available_items[ 2 ] = 2;
+		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < GetShopItemLimit( SHOP_ITEM_BOBBY_PIN ) ) available_items[ 0 ] = 0;
+		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < GetShopItemLimit( SHOP_ITEM_SCISSOR ) ) available_items[ 1 ] = 1;
+		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < GetShopItemLimit( SHOP_ITEM_ROPES ) ) available_items[ 2 ] = 2;
 
 		if ( available_items[ 0 ] == -1 || available_items[ 1 ] == -1 || available_items[ 2 ] == -1 ) {
 			SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[ROB FAIL]{FFFFFF} %s(%d) has failed to rob items off you.", ReturnPlayerName( playerid ), playerid );
@@ -7309,25 +6409,6 @@ CMD:vipjob( playerid, params[ ] )
 	else SendClientMessage( playerid, -1, ""COL_GOLD"[VIP]"COL_WHITE" You have disabled your VIP job." );
 
     p_VIPJob{ playerid } = iJob;
-	return 1;
-}
-
-CMD:toys( playerid, params[ ] )
-{
-	if ( !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You cannot use this command while you are not spawned." );
-
-	new
-		iToy[ 3 ] [ 24 ] = { { "None" }, { "None" }, { "None" } };
-
-	for( new i = 0; i < sizeof( g_ToyData ); i++ ) {
- 		for( new x = 0; x < sizeof( iToy ); x++ ) {
-			if ( g_ToyData[ i ] [ E_MODEL ] == p_AttachedObjectsData[ playerid ] [ x ] [ E_MODELID ] )
-				strcpy( iToy[ x ], g_ToyData[ i ] [ E_NAME ] );
- 		}
- 	}
-
-	format( szNormalString, sizeof( szNormalString ), ""COL_GREY"Disable All Toys\nSlot 1 (%s)\nSlot 2 (%s)\nSlot 3 (%s)", iToy[ 0 ], iToy[ 1 ], iToy[ 2 ] );
-	ShowPlayerDialog( playerid, DIALOG_TOYS_MAIN, DIALOG_STYLE_LIST, "{FFFFFF}Toys", szNormalString, "Select", "Close" );
 	return 1;
 }
 
@@ -9778,17 +8859,17 @@ CMD:takeover( playerid, params[ ] )
 	            g_gangzoneAttackCount[ z ] = 0;
               	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
               	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
-	            
+
 	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
 	            {
-	            	new 
+	            	new
 						szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
 
 					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
 					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
 
 					GetZoneFromCoordinates( szLocation, min_x, min_y );
-			
+
 	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory at %s is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
 	            }
 	        }
@@ -9861,7 +8942,7 @@ CMD:gangs( playerid, params[ ] )
 
 CMD:getgang( playerid, params[ ] )
 {
-	new 
+	new
 		pID
 	;
 
@@ -9894,7 +8975,7 @@ CMD:gang( playerid, params[ ] )
 
 		foreach( new turfid : turfs )
 		{
-			new 
+			new
 				szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
 
 			Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
@@ -9903,14 +8984,14 @@ CMD:gang( playerid, params[ ] )
 			GetZoneFromCoordinates( szLocation, min_x, min_y );
 
 		    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
-		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation ); 
+		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation );
 		    }
 		    else {
 		    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
 		    }
 		}
 
-		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" ); 
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" );
 	}
 	else if ( !strcmp( params, "leader", false, 6 ) )
 	{
@@ -10925,12 +10006,12 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 	return SyncSpectation( playerid, newstate );
 }
 
-public OnPlayerLeaveDynamicCP(playerid, checkpointid)
+public OnPlayerLeaveDynamicCP( playerid, checkpointid )
 {
 	return 1;
 }
 
-public OnPlayerEnterDynamicCP(playerid, checkpointid)
+public OnPlayerEnterDynamicCP( playerid, checkpointid )
 {
 	static
 		aPlayer[ 1 ];
@@ -11007,9 +10088,6 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 
 	if ( checkpointid == g_Checkpoints[ CP_247_MENU ] )
 		return cmd_shop( playerid, "" );
-
-	if ( checkpointid == g_Checkpoints[ CP_PAWNSHOP ] )
-		return ShowPlayerDialog( playerid, DIALOG_TOYS_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Purchase Toys", getToyCategories( .pawnshop = true ), "Select", "Cancel" );
 
 	new
 		houseid = p_InHouse[ playerid ];
@@ -11109,7 +10187,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 		if ( ! IsPlayerInAnyVehicle( playerid ) )
 		{
 			// Enter Business
-			foreach (new b : business)
+			foreach ( new b : business )
 			{
 				if ( checkpointid == g_businessData[ b ] [ E_ENTER_CP ] )
 				{
@@ -11198,7 +10276,7 @@ public OnPlayerEnterDynamicCP(playerid, checkpointid)
 				}
 			}
 
-			foreach(new i : entrances)
+			foreach ( new i : entrances )
 			{
 		        if ( checkpointid == g_entranceData[ i ] [ E_ENTER ] )
 				{
@@ -12197,16 +11275,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
  			DetachTrailerFromVehicle( iVehicle );
  	}
 
-	else if ( PRESSED( KEY_CROUCH ) )
-	{
-		if ( p_ProgressStarted{ playerid } && !p_CancelProgress{ playerid } )
-		{
-			SendServerMessage( playerid, "You have canceled this operation." );
-			p_CancelProgress{ playerid } = true;
-			return 1;
-		}
-	}
-
 	else if ( PRESSED( KEY_ACTION ) )
 	{
 		if ( IsPlayerInAnyVehicle( playerid ) && GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && GetVehicleModel( iVehicle ) == 525 ) {
@@ -12528,55 +11596,6 @@ public OnPlayerUpdate( playerid )
 	return fix_NightThermalVisionHack( playerid );
 }
 
-public OnPlayerEditAttachedObject( playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ )
-{
-	new slot = p_ToySlotSelected{ playerid };
-	new color = p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ];
-
-	if ( response )
-	{
-		new bool: modded;
-
-	    if ( fScaleX < 0.1 || fScaleX > 2.5 ) fScaleX = 1.0, modded = true;
-	    if ( fScaleY < 0.1 || fScaleY > 2.5 ) fScaleY = 1.0, modded = true;
-	    if ( fScaleZ < 0.1 || fScaleZ > 2.5 ) fScaleZ = 1.0, modded = true;
-	    if ( modded ) SendServerMessage( playerid, "Some scaling parts were either too small, or too big. They have been scaled to the default size." );
-
-	   	p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ] = boneid;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_OX ] = fOffsetX;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_OY ] = fOffsetY;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_OZ ] = fOffsetZ;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_RX ] = fRotX;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_RY ] = fRotY;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_RZ ] = fRotZ;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ] = fScaleX;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ] = fScaleY;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ] = fScaleZ;
-		p_AttachedObjectsData[ playerid ] [ slot ] [ E_MODELID ] = modelid;
-
-		RemovePlayerAttachedObject( playerid, index );
-		SetPlayerAttachedObject( playerid, index, modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, color, color );
-
-		format( szBigString, sizeof( szBigString ), "UPDATE `TOYS` SET `OX`=%f,`OY`=%f,`OZ`=%f,`RX`=%f,`RY`=%f,`RZ`=%f,`SX`=%f,`SY`=%f,`SZ`=%f WHERE `ID`=%d", fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] );
-		mysql_single_query( szBigString );
-
-		//printf("SetPlayerAttachedObject( playerid, %d, %d, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f );",index, modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ );
-	}
-	else
-	{
-		// User Cancelled
-		RemovePlayerAttachedObject( playerid, index );
-		SetPlayerAttachedObject( playerid, index, p_AttachedObjectsData[ playerid ] [ slot ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ],
-			p_AttachedObjectsData[ playerid ] [ slot ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_OZ ],
-			p_AttachedObjectsData[ playerid ] [ slot ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_RZ ],
-			p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ],
-			color, color
-		);
-	}
-	showToyEditMenu( playerid, slot );
-	return 1;
-}
-
 public OnPlayerStreamIn(playerid, forplayerid)
 {
 	return 1;
@@ -12757,12 +11776,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnVehicleLoad", "d", playerid );
-
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOY_UNLOCKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnToyLoad", "d", playerid );
-
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `TOYS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnToyOffsetLoad", "d", playerid );
 
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `STREAKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnStreaksLoad", "d", playerid );
@@ -13653,12 +12666,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    			return SendError( playerid, "You need %s rewards points for this item.", points_format( rewards_cost ) );
 
 		    		// shop limits
-		    		if ( g_shopItemData[ i ] [ E_LIMIT ] == LIMIT_ONE )
+		    		if ( g_shopItemData[ i ] [ E_LIMIT ] == 1 )
 		    		{
-		    			if ( g_shopItemData[ i ] [ E_ID ] == 11 ) {
+		    			if ( g_shopItemData[ i ] [ E_ID ] == SHOP_ITEM_DRILL ) {
 		        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
 		        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-		    			} else if ( g_shopItemData[ i ] [ E_ID ] == 10 ) {
+		    			} else if ( g_shopItemData[ i ] [ E_ID ] == SHOP_ITEM_MONEY_CASE ) {
 		        			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
 							if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
 		        			p_MoneyBag{ playerid } = true;
@@ -13703,90 +12716,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS` = %f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
 		return 1;
 	}
-	if ( ( dialogid == DIALOG_SHOP_MENU ) && response )
-    {
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-
-        if ( g_shopItemData[ listitem ] [ E_LIMIT ] == LIMIT_ONE )
-        {
-        	ShowPlayerShopMenu( playerid );
-
-        	if ( GetPlayerCash( playerid ) < g_shopItemData[ listitem ] [ E_PRICE ] ) return SendError( playerid, "You don't have enough money for this item." );
-
-        	switch( g_shopItemData[ listitem ] [ E_ID ] )
-        	{
-        		case 4:
-        		{
-        			if ( p_AidsVaccine{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-        			p_AidsVaccine{ playerid } = true;
-        		}
-        		case 5:
-        		{
-        			if ( p_SecureWallet{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-        			p_SecureWallet{ playerid } = true;
-        		}
-        		case 10:
-        		{
-        			if ( p_MoneyBag{ playerid } == true ) return SendError( playerid, "You have already purchased this item." );
-					if ( p_Class[ playerid ] != CLASS_POLICE ) SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
-        			p_MoneyBag{ playerid } = true;
-        		}
-        		case 11:
-        		{
-        			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
-        			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-        		}
-        	}
-			GivePlayerCash( playerid, -( g_shopItemData[ listitem ] [ E_PRICE ] ) );
-			SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_shopItemData[ listitem ] [ E_NAME ], cash_format( g_shopItemData[ listitem ] [ E_PRICE ] ) );
-        }
-        else
-       	{
-       		SetPVarInt( playerid, "shop_item", listitem );
-       		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
-       	}
-    }
-    if ( dialogid == DIALOG_SHOP_AMOUNT )
-    {
-    	if ( response )
-    	{
-	    	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-
-    		new
-    			iAmount = LIMIT_ONE,
-
-    			i = GetPVarInt( playerid, "shop_item" ),
-    			iCurrentQuantity = GetShopItemVariable( playerid, i ),
-
-    			iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] )
-    		;
-
-    		switch( listitem )
-    		{
-    			case 0: iAmount = 1;
-    			case 1: iAmount = 5;
-    			case 2: iAmount = iLimit;
-    		}
-
-    		if ( ( iCurrentQuantity + iAmount ) > iLimit )
-    		{
-    			// Specified more than he can carry!
-    			if ( ( iAmount = iLimit - iCurrentQuantity ) != 0 )
-    				SendServerMessage( playerid, "You've breached the quantity limit therefore we have set it to %d.", iAmount );
-    		}
-
-    		if ( GetPlayerCash( playerid ) < ( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) ) SendError( playerid, "You cannot afford the price of the item(s)." );
-    		else if ( iAmount <= 0 ) SendError( playerid, "You cannot buy anymore of this item." );
-    		else {
-    			SetShopItemVariable( playerid, i, iCurrentQuantity + iAmount );
-    			GivePlayerCash( playerid, -( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-    		}
-
-    		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );
-    	}
-    	else ShowPlayerShopMenu( playerid );
-    }
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -13882,265 +12811,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				SendServerMessage( playerid, "You have paid $9,000 and learnt "COL_ORANGE"Kungfu{FFFFFF}." );
 			}
 		}
-	}
-	if ( ( dialogid == DIALOG_TOYS_MAIN ) && response )
-	{
-		if ( !listitem )
-		{
-			if ( !p_AttachedObjectsData[ playerid ] [ 0 ] [ E_ENABLED ] && !p_AttachedObjectsData[ playerid ] [ 1 ] [ E_ENABLED ] && !p_AttachedObjectsData[ playerid ] [ 2 ] [ E_ENABLED ] )
-				return SendError( playerid, "All attached toys are already disabled." );
-
-			format( szNormalString, sizeof( szNormalString ), "UPDATE `TOYS` SET `ENABLED`=0 WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_single_query( szNormalString );
-
-			RemovePlayerAttachedObject( playerid, 9 );
-			RemovePlayerAttachedObject( playerid, 8 );
-			RemovePlayerAttachedObject( playerid, 7 );
-			p_AttachedObjectsData[ playerid ] [ 0 ] [ E_ENABLED ] = 0;
-			p_AttachedObjectsData[ playerid ] [ 1 ] [ E_ENABLED ] = 0;
-			p_AttachedObjectsData[ playerid ] [ 2 ] [ E_ENABLED ] = 0;
-			return SendServerMessage( playerid, "All attached toys have been disabled." );
-		}
-
-		p_ToySlotSelected{ playerid } = listitem - 1;
-		if ( p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_BONE ] ) {
-			showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
-		} else {
-          	ShowPlayerDialog( playerid, DIALOG_TOYS, DIALOG_STYLE_LIST, "{FFFFFF}Toys", getToyCategories( ), "Select", "Back" );
-      	}
-	}
-	if ( ( dialogid == DIALOG_TOYS_ITEMS ) )
-	{
-	    if ( !response )
-	    	return ShowPlayerDialog( playerid, DIALOG_TOYS, DIALOG_STYLE_LIST, "{FFFFFF}Toys", getToyCategories( ), "Select", "Back" );
-
-		for( new id, x = 0; id < MAX_TOYS; id++ )
-		{
-			if ( g_ToyData[ id ] [ E_CATEGORY ] == p_ToyCategorySelected{ playerid } )
-			{
-		       	if ( x == listitem )
-		      	{
-		      		p_ToyIDSelected{ playerid } = id;
-
-				    if ( g_ToyData[ id ] [ E_ID ] == -1 )
-				    {
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid } );
-
-				    	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
-				        	return SendError( playerid, "You must be a V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" ), 1;
-
-						if ( ( ( p_VIPExpiretime[ playerid ] - g_iTime ) / 86400 ) < 3 )
-							return SendError( playerid, "You need more than 3 days of V.I.P in order to complete this." ), 1;
-				    }
-
-				    if ( g_ToyData[ id ] [ E_ID ] != -1 && !p_ToyUnlocked[ playerid ] { g_ToyData[ id ] [ E_ID ] } )
-				    {
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid } );
-						return SendError( playerid, "You have not unlocked this toy." );
-				    }
-
-		      		SendServerMessage( playerid, "You have selected "COL_GREY"%s"COL_WHITE". Proceed with bone selection to place the toy.", g_ToyData[ id ] [ E_NAME ] );
-		      		ShowPlayerDialog( playerid, DIALOG_TOYS_BONE, DIALOG_STYLE_LIST, "{FFFFFF}Toys - Bones", ""COL_GREY"Use Default Bone\nSpine\nHead\nLeft Upper Arm\nRight Upper Arm\nLeft Hand\nRight Hand\nLeft Thigh\nRight Thigh\nLeft Foot\nRight Foot\nRight Calf\nLeft Calf\nLeft Forearm\nRight Forearm\nLeft Clavicle\nRight Clavicle\nNeck\nJaw", "Select", "Back" );
-					break;
-		   		}
-		      	x ++;
-			}
-		}
-	}
-	if ( ( dialogid == DIALOG_TOYS_ITEMS_BUY ) )
-	{
-	    if ( !response )
-	    	return ShowPlayerDialog( playerid, DIALOG_TOYS_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Purchase Toys", getToyCategories( .pawnshop = true ), "Select", "Cancel" );
-
-		for( new id, x = 0; id < MAX_TOYS; id++ )
-		{
-			if ( g_ToyData[ id ] [ E_CATEGORY ] == p_ToyCategorySelected{ playerid } )
-			{
-		       	if ( x == listitem )
-		      	{
-				    if ( p_ToyUnlocked[ playerid ] { g_ToyData[ id ] [ E_ID ] } )
-				    {
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-						return SendError( playerid, "You have already bought this toy." );
-				    }
-
-		      		if ( GetPlayerCash( playerid ) < g_ToyData[ id ] [ E_PRICE ] )
-		      		{
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-						return SendError( playerid, "You cannot afford this toy." );
-		      		}
-
-				    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
-				    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
-					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-		      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], cash_format( g_ToyData[ id ] [ E_PRICE ] ) );
-		      		break;
-		   		}
-		      	x ++;
-			}
-		}
-	}
-	if ( dialogid == DIALOG_TOYS_BONE || dialogid == DIALOG_TOYS_BONE_EDIT )
-	{
-		new
-			iSlot = p_ToySlotSelected{ playerid };
-
-	    if ( !response && dialogid == DIALOG_TOYS_BONE )
-			return showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid } );
-
-	    if ( !response && dialogid == DIALOG_TOYS_BONE_EDIT )
-			return showToyEditMenu( playerid, iSlot );
-
-	    if ( !listitem ) {
-    		p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ] = g_ToyData[ p_ToyIDSelected{ playerid } ] [ E_DEFAULT_BONE ];
-	        SendServerMessage( playerid, "You have now placed your toy on the default bone." );
-	    }
-	    else {
-	        p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ] = listitem;
-	        SendServerMessage( playerid, "You have now placed your toy on this bone." );
-	    }
-
-		RemovePlayerAttachedObject( playerid, 7 + iSlot );
-	    SetPlayerAttachedObject( playerid, 7 + iSlot, g_ToyData[ p_ToyIDSelected{ playerid } ] [ E_MODEL ], p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ] );
-
-	    p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_ENABLED ] = 1;
-		p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_MODELID ] = g_ToyData[ p_ToyIDSelected{ playerid } ] [ E_MODEL ];
-
-	    if ( dialogid == DIALOG_TOYS_BONE ) {
-			format( szBigString, sizeof( szBigString ), "INSERT INTO `TOYS`(`USER_ID`,`SLOT_ID`,`ENABLED`,`MODEL_ID`,`BONE`) VALUES (%d,%d,1,%d,%d)", p_AccountID[ playerid ], iSlot, g_ToyData[ p_ToyIDSelected{ playerid } ] [ E_MODEL ], p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ] );
-			mysql_function_query( dbHandle, szBigString, true, "OnPlayerAddToy", "dd", playerid, iSlot );
-	    } else {
-			format( szNormalString, sizeof( szNormalString ), "UPDATE `TOYS` SET `BONE`=%d,`OX`=0,`OY`=0,`OZ`=0,`RX`=0,`RY`=0,`RZ`=0,`SX`=1,`SY`=1,`SZ`=1 WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SQL_ID ] );
-			mysql_single_query( szNormalString );
-	    }
-
-		showToyEditMenu( playerid, iSlot );
-	}
-	if ( dialogid == DIALOG_TOYS_COLOR )
-	{
-		new
-			slot = p_ToySlotSelected{ playerid };
-
-	    if ( !response )
-			return showToyEditMenu( playerid, slot );
-
-		new
-			hexcode[ 7 ];
-
-		if ( sscanf( inputtext, "S(000000)[7]", hexcode ) ) SendError( playerid, "Please ensure your hex is 6 characters at maximum (RRGGBB)." );
-		else if ( ! isHex( hexcode ) ) SendError( playerid, "This is not a valid hex code." );
-		else
-		{
-			if ( strmatch( hexcode, "000000" ) )
-			{
-		    	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = 0;
-		    	mysql_single_query( sprintf( "UPDATE `TOYS` SET `COLOR`=0 WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] ) );
-				SendServerMessage( playerid, "You have reset your toy's color." );
-			}
-			else
-			{
-				new
-					final_hex;
-
-				if ( ! sscanf( sprintf( "0xFF%s", hexcode ), "h", final_hex ) )
-				{
-			    	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = final_hex;
-			    	mysql_single_query( sprintf( "UPDATE `TOYS` SET `COLOR`=%d WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ slot ] [ E_SQL_ID ] ) );
-					SendServerMessage( playerid, "You have set your toy's color to {%s}%s"COL_WHITE".", hexcode, hexcode );
-				}
-				else SendError( playerid, "This is not a valid hex code." );
-			}
-			return reloadPlayerToys( playerid );
-		}
-		return showToyEditMenu( playerid, slot );
-	}
-	if ( ( dialogid == DIALOG_TOYS_EDIT ) )
-	{
-		if ( !response )
-			return cmd_toys( playerid, "" );
-
-		switch( listitem )
-		{
-			case 0:
-			{
-				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] ) {
-					SendError( playerid, "You cannot edit a disabled toy." );
-					return showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
-				}
-
-			    EditAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid } );
-			    SendServerMessage( playerid, "You are now editing a toy." );
-			}
-			case 1:
-			{
-				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] ) {
-					SendError( playerid, "You cannot reselect a bone of a disabled toy." );
-					return showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
-				}
-
-				ShowPlayerDialog( playerid, DIALOG_TOYS_BONE_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys - Bones", ""COL_GREY"Use Default Bone\nSpine\nHead\nLeft Upper Arm\nRight Upper Arm\nLeft Hand\nRight Hand\nLeft Thigh\nRight Thigh\nLeft Foot\nRight Foot\nRight Calf\nLeft Calf\nLeft Forearm\nRight Forearm\nLeft Clavicle\nRight Clavicle\nNeck\nJaw", "Select", "Back" );
-			    SendServerMessage( playerid, "You are now reselecting your toy's bone." );
-			}
-			case 2:
-			{
-				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] ) {
-					SendError( playerid, "You cannot set the color of a disabled toy." );
-					return showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
-				}
-
-				ShowPlayerDialog( playerid, DIALOG_TOYS_COLOR, DIALOG_STYLE_INPUT, "{FFFFFF}Toys - Color", ""COL_WHITE"Please specify the color (hex) code as "COL_RED"RR"COL_GREEN"GG"COL_BLUE"BB"COL_WHITE" below:", "Select", "Back" );
-			    SendServerMessage( playerid, "You are now editing your toy's color, enter nothing or 000000 to reset it." );
-			}
-			case 3:
-			{
-				p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] = !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ];
-
-				if ( !p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ] )
-				{
-					RemovePlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid } );
-					SendServerMessage( playerid, "You have disabled this toy." );
-				}
-				else
-				{
-					RemovePlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid } ); // Just incase.
-					SetPlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid }, p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_BONE ],
-						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_OZ ],
-						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_RZ ],
-						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SZ ],
-						p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_COLOR ]
-					);
-					SendServerMessage( playerid, "You have enabled this toy." );
-				}
-
-				format( szNormalString, sizeof( szNormalString ), "UPDATE `TOYS` SET `ENABLED`=%d WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_ENABLED ], p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SQL_ID ] );
-				mysql_single_query( szNormalString );
-
-				showToyEditMenu( playerid, p_ToySlotSelected{ playerid } );
-			}
-			case 4:
-			{
-				RemovePlayerAttachedObject( playerid, 7 + p_ToySlotSelected{ playerid } );
-			   	p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_BONE ] = 0;
-				p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_MODELID ] = 0;
-
-				format( szNormalString, sizeof( szNormalString ), "DELETE FROM `TOYS` WHERE `ID`=%d", p_AttachedObjectsData[ playerid ] [ p_ToySlotSelected{ playerid } ] [ E_SQL_ID ] );
-				mysql_single_query( szNormalString );
-
-				SendServerMessage( playerid, "You have removed this toy." );
-				cmd_toys( playerid, "" );
-			}
-		}
-	}
-	if ( ( dialogid == DIALOG_TOYS ) ) {
-		if ( !response )
-			return cmd_toys( playerid, "" );
-
-		p_ToyCategorySelected{ playerid } = listitem;
-		showToyCategoryItems( playerid, listitem );
-	}
-	if ( ( dialogid == DIALOG_TOYS_BUY ) && response ) {
-		p_ToyCategorySelected{ playerid } = listitem;
-		showToyCategoryItems( playerid, listitem, .pawnshop = true );
 	}
 	if ( ( dialogid == DIALOG_VIP_WEP ) && response )
 	{
@@ -16987,508 +15657,6 @@ stock GetVehicleSeatCount(iModel)
     return 0xF;
 }
 
-stock CreateMultipleRobberies( szName[ 32 ], iRobValue, Float: fX, Float: fY, Float: fZ, Float: rotation, ... ) {
-	for( new i = 6; i < numargs( ); i++ ) {
-		new worldid = getarg( i );
-		CreateRobberyCheckpoint( szName, iRobValue, fX, fY, fZ, rotation, worldid );
-		if ( worldid == -1 ) break;
-	}
-}
-
-stock CreateRobberyCheckpoint( szName[ 32 ], iRobValue, Float: fX, Float: fY, Float: fZ, Float: rotation, worldid )
-{
-	new Float: offsetX, Float: offsetY;
-	new rID = Iter_Free( RobberyCount );
-
-	if ( rID != ITER_NONE )
-	{
-		Iter_Add( RobberyCount, rID );
-
-		//fX += 0.1 * floatsin( rotation, degrees );
-		//fY += 0.1 * floatcos( rotation, degrees );
-		g_robberyData[ rID ] [ E_SAFE ] = CreateDynamicObject( 19618, fX, fY, fZ, 0, 0, rotation, worldid );
-
-		offsetX = 0.48 * floatsin( -( rotation + 119 ), degrees );
-		offsetY = 0.48 * floatcos( -( rotation + 119 ), degrees );
-
-		// SAFE DOOR
-		g_robberyData[ rID ] [ E_DOOR_X ] = fX + offsetX;
-		g_robberyData[ rID ] [ E_DOOR_Y ] = fY + offsetY;
-		g_robberyData[ rID ] [ E_DOOR_Z ] = fZ;
-		g_robberyData[ rID ] [ E_DOOR_ROT ] = rotation;
-
-		g_robberyData[ rID ] [ E_SAFE_DOOR ] = CreateDynamicObject( 19619, fX + offsetX, fY + offsetY, fZ, 0, 0, rotation, worldid );
-
-		// SetDynamicObjectMaterial( g_robberyData[ rID ] [ E_SAFE ], 5, 1829, "kbmiscfrn2", "man_mny1", 0 );
-		// SetDynamicObjectMaterial( g_robberyData[ rID ] [ E_SAFE_DOOR ], 2, 0, "none", "none", -1 );
-
-		g_robberyData[ rID ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s\n"COL_WHITE"Left ALT To Crack Safe", szName ), COLOR_GREY, fX, fY, fZ, 15.0, .testlos = 0, .worldid = worldid );
-	    format( g_robberyData[ rID ] [ E_NAME ], 32, "%s", szName );
-
-	    g_robberyData[ rID ] [ E_WORLD ] 		= worldid;
-	    g_robberyData[ rID ] [ E_ROB_VALUE ] 	= iRobValue;
-	    g_robberyData[ rID ] [ E_ROBBED ] 		= false;
-	    g_robberyData[ rID ] [ E_STATE ] 		= STATE_NONE;
-	    g_robberyData[ rID ] [ E_ROBTIMER ] 	= 0xFFFF;
-	    g_robberyData[ rID ] [ E_DRILL_PLACER ] = INVALID_PLAYER_ID;
-	    g_robberyData[ rID ] [ E_DRILL_EFFECT ] = INVALID_OBJECT_ID;
-	    g_robberyData[ rID ] [ E_MULTIPLIER ] 	= 1.0;
-	    g_robberyData[ rID ] [ E_BUSINESS_ID ] 	= -1;
-	    return rID;
-	}
-	else
-	{
-		static surplus;
-		printf("Too many robberies created. Increase MAX_BUSINESSES to %d", ++surplus + MAX_BUSINESSES );
-	}
-   	return ITER_NONE; // if there's multiple, we will return none
-}
-
-stock DestroyRobberyCheckpoint( rID ) {
-	Iter_Remove( RobberyCount, rID );
-	DestroyDynamicObject( g_robberyData[ rID ] [ E_SAFE ] ), g_robberyData[ rID ] [ E_SAFE ] = -1;
-	DestroyDynamicObject( g_robberyData[ rID ] [ E_SAFE_DOOR ] ), g_robberyData[ rID ] [ E_SAFE_DOOR ] = -1;
-	DestroyDynamicObject( g_robberyData[ rID ] [ E_SAFE_MONEY ] ), g_robberyData[ rID ] [ E_SAFE_MONEY ] = -1;
-	DestroyDynamic3DTextLabel( g_robberyData[ rID ] [ E_LABEL ] ), g_robberyData[ rID ] [ E_LABEL ] = Text3D: INVALID_3DTEXT_ID;
-}
-
-stock GetXYInFrontOfSafe( robberyid, &Float: X, &Float: Y, &Float: Z, Float: distance = 1.1 ) // old 1.25
-{
-	static
-		Float: iFloat;
-
-	GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], X, Y, Z );
-	GetDynamicObjectRot( g_robberyData[ robberyid ] [ E_SAFE ], iFloat, iFloat, iFloat );
-
-	X += distance * -floatsin( -iFloat, degrees );
-	Y += distance * -floatcos( -iFloat, degrees );
-}
-
-stock AttachToRobberySafe( robberyid, playerid, type )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0xFFFF; // Not connected
-
-	if (!Iter_Contains(RobberyCount, robberyid))
-		return 0xAA; // Invalid Robbery
-
-	if ( ( g_robberyData[ robberyid ] [ E_C4_SLOT ] == true && type == ROBBERY_TYPE_DRILL ) || ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID && type == ROBBERY_TYPE_C4 ) )
-		return 0x1B; // Is occupied?
-
-	if ( g_robberyData[ robberyid ] [ E_ROBBED ] || g_robberyData[ robberyid ] [ E_OPEN ] || g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF )
-		return 0x2C; // It's been robbed/opened!
-
-	if ( p_Class[ playerid ] == CLASS_POLICE )
-		return 0xBB; // Not civilian
-
-	if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) || g_robberyData[ robberyid ] [ E_STATE ] )
-		return 0xBC; // Currently picking/being robbed/being picked
-
-	//if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] )
-	//	return 0xBF; // has $0 in bank as biz
-
-	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) )
-		return 0xCB; // must be burglar to rob safe
-
-	if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) )
-		return 0xCA; // is biz associate
-
-	static
-		Float: fX, Float: fY, Float: fZ,
-		Float: offsetX, Float: offsetY, Float: rotation
-	;
-
-	GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], fX, fY, fZ );
-	GetDynamicObjectRot( g_robberyData[ robberyid ] [ E_SAFE ], rotation, rotation, rotation );
-
-	if ( g_Debugging )
-	{
-		printf("[DEBUG] [ROBBERY] [%d] AttachToRobberySafe( %d, %d, %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s,  state : %d }",
-				robberyid, robberyid, playerid, type,
-				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-	}
-
-	// start the drill/c4
-	switch( type )
-	{
-		case ROBBERY_TYPE_DRILL:
-		{
-			if ( p_drillStrength[ playerid ] <= 0 )
-				return 0xA1;
-
-			if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) )
-				return 0x2B; // Valid drill/driller already on?
-
-			// DRILL
-			offsetX = 0.8 * floatsin( -( rotation + 200 ), degrees );
-			offsetY = 0.8 * floatcos( -( rotation + 200 ), degrees );
-
-			g_robberyData[ robberyid ] [ E_DRILL_PLACER ] = playerid;
-			g_robberyData[ robberyid ] [ E_DRILL ] = CreateDynamicObject( 341, fX + offsetX, fY + offsetY, fZ, 0, 24.0, rotation + 90, g_robberyData[ robberyid ] [ E_WORLD ] );
-
-			offsetX = -1.4 * floatsin( -( rotation + 170 ), degrees );
-			offsetY = -1.4 * floatcos( -( rotation + 170 ), degrees );
-			g_robberyData[ robberyid ] [ E_DRILL_EFFECT ] = CreateDynamicObject( 18718, fX + offsetX, fY + offsetY, fZ, 90, 0, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
-
-			g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 7500, false, "dddd", playerid, robberyid, type, 0 );
-
-			p_drillStrength[ playerid ] -= 10;
-			Streamer_Update( playerid );
-			return 1;
-		}
-
-		case ROBBERY_TYPE_C4:
-		{
-			if ( g_robberyData[ robberyid ] [ E_C4_SLOT ] == false )
-			{
-				// slot 1 = orignally 185 degrees
-				offsetX = 0.35 * floatsin( -( rotation + 180 ), degrees );
-				offsetY = 0.35 * floatcos( -( rotation + 180 ), degrees );
-				//case 0: g_robberyData[ robberyid ] [ E_C4 ] [ 0 ] = CreateDynamicObject( 363, fX + offsetX, fY + offsetY, fZ + 0.18534, 0, 0, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
-				//case 1: g_robberyData[ robberyid ] [ E_C4 ] [ 1 ] = CreateDynamicObject( 363, fX + offsetX, fY + offsetY, fZ + 0.44483, 0, 90, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
-				//case 2: g_robberyData[ robberyid ] [ E_C4 ] [ 2 ] = CreateDynamicObject( 363, fX + offsetX, fY + offsetY, fZ - 0.06090, 0, 90, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
-				g_robberyData[ robberyid ] [ E_C4 ] = CreateDynamicObject( 363, fX + offsetX, fY + offsetY, fZ + 0.18534, 0, 0, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
-				g_robberyData[ robberyid ] [ E_C4_SLOT ] = true;
-				g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 960, false, "dddd", playerid, robberyid, type, 0 );
-				return 1;
-			}
-		}
-	}
-	return -1;
-}
-
-stock getClosestRobberySafe( playerid, &Float: dis = 99999.99 )
-{
-	new
-		Float: dis2,
-		object = INVALID_OBJECT_ID,
-		Float: X, Float: Y, Float: Z,
-		world = GetPlayerVirtualWorld( playerid )
-	;
-	foreach(new i : RobberyCount)
-	{
-		if ( world != 0 && g_robberyData[ i ] [ E_WORLD ] != -1 && g_robberyData[ i ] [ E_WORLD ] != world ) continue;
-		GetDynamicObjectPos( g_robberyData[ i ] [ E_SAFE ], X, Y, Z );
-    	dis2 = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
-    	if ( dis2 < dis && dis2 != -1.00 ) {
-    	    dis = dis2;
-    	    object = i;
-		}
-	}
-	return object;
-}
-
-stock RemoveRobberyAttachments( robberyid )
-{
-	if (!Iter_Contains(RobberyCount, robberyid))
-		return; // Invalid Robbery
-
-	DestroyDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] );
-	DestroyDynamicObject( g_robberyData[ robberyid ] [ E_DRILL_EFFECT ] );
-	DestroyDynamicObject( g_robberyData[ robberyid ] [ E_C4 ] );
-	g_robberyData[ robberyid ] [ E_C4_SLOT ] = false;
-	g_robberyData[ robberyid ] [ E_C4 ] = INVALID_OBJECT_ID;
-	g_robberyData[ robberyid ] [ E_DRILL ] = INVALID_OBJECT_ID;
-	g_robberyData[ robberyid ] [ E_DRILL_PLACER ] = INVALID_PLAYER_ID;
-	g_robberyData[ robberyid ] [ E_DRILL_EFFECT ] = INVALID_OBJECT_ID;
-
-	if ( g_Debugging )
-	{
-		printf("[DEBUG] [ROBBERY] [%d] RemoveRobberyAttachments { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-				robberyid,
-				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-	}
-}
-
-stock createRobberyLootInstance( playerid, robberyid, type )
-{
-	if (!Iter_Contains(RobberyCount, robberyid))
-		return; // Invalid Robbery
-
-	static Float: fX, Float: fY, Float: fZ, Float: fRotation;
-
-	GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], fX, fY, fZ );
-	GetDynamicObjectRot( g_robberyData[ robberyid ] [ E_SAFE ], fRotation, fRotation, fRotation );
-
-	new businessid = g_robberyData[ robberyid ] [ E_BUSINESS_ID ];
-	new bool: business_robbery = businessid != -1;
-	new Float: random_chance = fRandomEx( 0.0, 101.0 );
-	new Float: probability = 90.0;
-
-	if ( business_robbery )
-	{
-		switch ( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] )
-		{
-			case 0: probability = 25.0;
-			case 1: probability = 50.0;
-			case 2: probability = 75.0;
-			case 3: probability = 101.0; // must be over 100.0%
-		}
-	}
-
-	// printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
-	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 100.0 : random_chance ) > 5.0 )
-	{
-		new Float: iRobAmount = float( g_robberyData[ robberyid ] [ E_ROB_VALUE ] );
-		new Float: iLoot = fRandomEx( iRobAmount / 2.0, iRobAmount );
-
-		// Apply multiplier
-		iLoot *= g_robberyData[ robberyid ] [ E_MULTIPLIER ];
-		g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.0;
-
-		// check if this is a business safe
-		if ( business_robbery )
-		{
-			new Float: final_bank = float( g_businessData[ businessid ] [ E_BANK ] );
-			switch ( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] )
-			{
-				case 0: iLoot = floatround( final_bank * 0.75 );
-				case 1: iLoot = floatround( final_bank * 0.5 );
-				case 2: iLoot = floatround( final_bank * 0.25 );
-				case 3: iLoot = 0; // floatround( final_bank * 0.1 );
-			}
-
-			// update business data
-            g_businessData[ businessid ] [ E_BANK ] -= floatround( iLoot );
-            UpdateBusinessData( businessid );
-
-            // tax 10 percent for me
-            iLoot *= 0.9;
-
-            // add loot anyway under 3k
-            if ( iLoot < 3000 ) iLoot = RandomEx( 1500, 3000 );
-		}
-
-		// Loose 50% because of impact
-		// if ( type == ROBBERY_TYPE_C4 ) iLoot *= 0.50;
-
-		// money offset
-		fX += 0.07 * floatsin( -fRotation, degrees );
-		fY += 0.07 * floatcos( -fRotation, degrees );
-
-		DestroyDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] );
-		g_robberyData[ robberyid ] [ E_SAFE_MONEY ] = CreateDynamicObject( 2005, fX, fY, fZ - 0.1, 0, 0, g_robberyData[ robberyid ] [ E_DOOR_ROT ], g_robberyData[ robberyid ] [ E_WORLD ] );
-		SetDynamicObjectMaterial( g_robberyData[ robberyid ] [ E_SAFE_MONEY ], 0, 2005, "cr_safe_cash", "man_mny2", 0xFF98FB98 );
-
-		g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = floatround( iLoot );
-		if ( IsPlayerConnected( playerid ) ) Streamer_Update( playerid );
-	}
-	else
-	{
-		if ( IsPlayerConnected( playerid ) && p_Class[ playerid ] != CLASS_POLICE )
-		{
-		    new
-				szLocation[ MAX_ZONE_NAME ],
-				id = p_LastEnteredEntrance[ playerid ],
-				business_id = g_robberyData[ robberyid ] [ E_BUSINESS_ID ]
-			;
-
-			if ( id != -1 ) // Sometimes the player isn't even inside a home.
-				GetZoneFromCoordinates( szLocation, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] );
-			else if ( business_id != -1 )
-				GetZoneFromCoordinates( szLocation, g_businessData[ business_id ] [ E_X ], g_businessData[ business_id ] [ E_Y ], g_businessData[ business_id ] [ E_Z ] );
-
-			if ( GetPlayerInterior( playerid ) != 0 )
-		    	SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s"COL_WHITE" near %s.", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ], szLocation );
-			else
-				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing %s"COL_WHITE".", ReturnPlayerName( playerid ), g_robberyData[ robberyid ] [ E_NAME ] );
-
-			SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" No loot, and the alarm went off. Cops have been alerted." );
-			GivePlayerWantedLevel( playerid, 6 );
-			CreateCrimeReport( playerid );
-		}
-		g_robberyData[ robberyid ] [ E_ROB_TIME ] = g_iTime + MAX_ROBBERY_WAIT;
-		g_robberyData[ robberyid ] [ E_ROBBED ] = true;
-	}
-
-	if ( g_Debugging )
-	{
-		printf("[DEBUG] [ROBBERY] [%d] createRobberyLootInstance( %d, %d, %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-				robberyid, playerid, robberyid, type,
-				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-	}
-}
-
-public onSafeBust( playerid, robberyid, type, index )
-{
-	new
-		bConnected = IsPlayerConnected( playerid );
-
-	switch( type )
-	{
-		case ROBBERY_TYPE_C4:
-		{
-			if ( index < 3 )
-			{
-				if ( bConnected ) {
-					PlayerPlaySound( playerid, 1056, g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ] );
-	        		GameTextForPlayer( playerid, "~r~Fall back!~n~c4 in detonation!", 4000, 3 );
-	        	}
-				g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 960, false, "dddd", playerid, robberyid, type, index + 1 );
-			}
-			else
-			{
-				if ( bConnected ) {
-        			GameTextForPlayer( playerid, "~g~We're in!", 4000, 3 );
-					PlayerPlaySound( playerid, 1057, g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ] );
-				}
-
-				g_robberyData[ robberyid ] [ E_STATE ]    = STATE_NONE;
-				g_robberyData[ robberyid ] [ E_ROBTIMER ] = 0xFFFF;
-
-				RemoveRobberyAttachments( robberyid );
-				ControlRobberySafe( robberyid, true );
-				createRobberyLootInstance( playerid, robberyid, type );
-
-				CreateExplosionEx( g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ], 12, 0.0, g_robberyData[ robberyid ] [ E_WORLD ], -1 );
-			}
-		}
-
-		case ROBBERY_TYPE_DRILL, ROBBERY_TYPE_LABOR:
-		{
-			g_robberyData[ robberyid ] [ E_STATE ]    = STATE_NONE;
-			g_robberyData[ robberyid ] [ E_ROBTIMER ] = 0xFFFF;
-			RemoveRobberyAttachments( robberyid );
-			ControlRobberySafe( robberyid, true );
-			createRobberyLootInstance( playerid, robberyid, type );
-			if ( type == ROBBERY_TYPE_LABOR ) SetTimerEx( "handlePlayerRobbery", 1350, false, "ddd", playerid, KEY_WALK, KEY_SPRINT );
-		}
-	}
-
-	if ( g_Debugging )
-	{
-		printf("[DEBUG] [ROBBERY] [%d] onSafeBust( %d, %d, %d, %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-				robberyid, playerid, robberyid, type, index,
-				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-	}
-}
-
-stock ControlRobberySafe( rID, bool: open )
-{
-	static
-		Float: Z;
-
-	if (Iter_Contains(RobberyCount, rID))
-	{
-		GetDynamicObjectPos( g_robberyData[ rID ] [ E_SAFE_DOOR ], Z, Z, Z );
-
-		if ( g_robberyData[ rID ] [ E_OPEN ] == true && open == true )
-		{
-			printf("[GM:WARNING] Safe %d was stopped from opening twice.", rID );
-			return;
-		}
-
-		if ( open )
-		{
-			// Must close it
-			SetDynamicObjectPos( g_robberyData[ rID ] [ E_SAFE_DOOR ], g_robberyData[ rID ] [ E_DOOR_X ], g_robberyData[ rID ] [ E_DOOR_Y ], Z );
-			SetDynamicObjectRot( g_robberyData[ rID ] [ E_SAFE_DOOR ], 0.0, 0.0, g_robberyData[ rID ] [ E_DOOR_ROT ] );
-			SetTimerEx( "Physics_OpenSafe", 450, false, "dd", rID, 0 );
-		}
-		else
-		{
-			SetDynamicObjectPos( g_robberyData[ rID ] [ E_SAFE_DOOR ], g_robberyData[ rID ] [ E_DOOR_X ], g_robberyData[ rID ] [ E_DOOR_Y ], Z );
-			SetDynamicObjectRot( g_robberyData[ rID ] [ E_SAFE_DOOR ], 0.0, 0.0, g_robberyData[ rID ] [ E_DOOR_ROT ] );
-			g_robberyData[ rID ] [ E_OPEN ] = false;
-		}
-
-		if ( g_Debugging )
-		{
-			new robberyid = rID; printf("[DEBUG] [ROBBERY] [%d] ControlRobberySafe( %d, %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-					robberyid, rID, open,
-					g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-					g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-					g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-		}
-	}
-}
-
-function Physics_OpenSafe( handle, time_elapsed )
-{
-	// two seconds elapsed
-	if ( time_elapsed >= 2000 ) {
-		g_robberyData[ handle ] [ E_OPEN ] = true;
-		return 1;
-	}
-	new Float: angle = 50.0 * floatlog( ( time_elapsed + 167.5 ) / 3.0, 2.72 ) - 200.0; // natural log (use https://www.geogebra.org/graphing)
-	SetDynamicObjectRot( g_robberyData[ handle ] [ E_SAFE_DOOR ], 0.0, 0.0, g_robberyData[ handle ] [ E_DOOR_ROT ] - angle );
-	return SetTimerEx( "Physics_OpenSafe", 15, false, "dd", handle, time_elapsed + 15 );
-}
-
-stock setSafeReplenished( rID )
-{
-	static
-		Float: Z;
-
-	if (Iter_Contains(RobberyCount, rID))
-	{
-		DestroyDynamicObject( g_robberyData[ rID ] [ E_SAFE_MONEY ] );
-
-		g_robberyData[ rID ] [ E_ROBBED ] 		= false;
-		g_robberyData[ rID ] [ E_ROBTIMER ] 	= 0xFFFF;
-		g_robberyData[ rID ] [ E_DRILL_PLACER ] = INVALID_PLAYER_ID;
-		g_robberyData[ rID ] [ E_DRILL_EFFECT ] = INVALID_OBJECT_ID;
-		g_robberyData[ rID ] [ E_ROB_TIME ] 	= -1;
-		g_robberyData[ rID ] [ E_ROBBED ] 		= false;
-		g_robberyData[ rID ] [ E_STATE ] 		= STATE_NONE;
-		g_robberyData[ rID ] [ E_OPEN ] 		= false;
-		g_robberyData[ rID ] [ E_SAFE_MONEY ] 	= 0xFFFF;
-		g_robberyData[ rID ] [ E_SAFE_LOOT ] 	= 0;
-
-		StopDynamicObject( g_robberyData[ rID ] [ E_SAFE_DOOR ] );
-		GetDynamicObjectPos( g_robberyData[ rID ] [ E_SAFE_DOOR ], Z, Z, Z );
-		SetDynamicObjectPos( g_robberyData[ rID ] [ E_SAFE_DOOR ], g_robberyData[ rID ] [ E_DOOR_X ], g_robberyData[ rID ] [ E_DOOR_Y ], Z );
-		SetDynamicObjectRot( g_robberyData[ rID ] [ E_SAFE_DOOR ], 0.0, 0.0, g_robberyData[ rID ] [ E_DOOR_ROT ] );
-
-		if ( g_Debugging )
-		{
-			new robberyid = rID; printf("[DEBUG] [ROBBERY] [%d] setSafeReplenished( %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-					robberyid, rID,
-					g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-					g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-					g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-		   	//SendClientMessageToAdmins( -1, ""COL_ORANGE"[DEBUG]"COL_GREY" Robbery "COL_GREY"%s(%d)"COL_GREY" has been replenished!", g_robberyData[ rID ] [ E_NAME ], rID );
-		}
-	   	return 1;
-	}
-	printf( "[WARNING] Invalid safe %d is being set for replenishment.", rID );
-	return 0;
-}
-
-stock haltRobbery( rID )
-{
-	KillTimer( g_robberyData[ rID ] [ E_ROBTIMER ] );
-
-	g_robberyData[ rID ] [ E_ROBTIMER ] = 0xFFFF;
-
-	RemoveRobberyAttachments( rID );
-
-	if ( g_Debugging )
-	{
-		printf("[DEBUG] [ROBBERY] [%d] haltRobbery( %d ) { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-				robberyid, rID,
-				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-	}
-}
-
-stock truncateDrills( playerid )
-{
-	foreach(new i : RobberyCount)
-	{
-		if ( g_robberyData[ i ] [ E_DRILL_PLACER ] == playerid )
-			haltRobbery( i );
-	}
-}
 
 stock IsPointToPoint(Float: fRadius, Float: fX1, Float: fY1, Float: fZ1, Float: fX2, Float: fY2, Float: fZ2)
     return ((-fRadius < floatabs(fX2 - fX1) < fRadius) && (-fRadius < floatabs(fY2 - fY1) < fRadius) && (-fRadius < floatabs(fZ2 - fZ1) < fRadius));
@@ -18907,98 +17075,6 @@ stock IsVehicleUpsideDown(vehicleid)
     return (120.0 < atan2(2.0 * ((q_Y * q_Z) + (q_X * q_W)), (-(q_X * q_X) - (q_Y * q_Y) + (q_Z * q_Z) + (q_W * q_W))) > -120.0);
 }
 
-stock ShowProgressBar( playerid, title[ ], pID, update = 1000, color, params = 0 )
-{
-	if ( !IsPlayerConnected( playerid ) )
-	    return 0;
-
-	new time_interval = floatround( float( update ) / ( ( 388.0 - 249.0 ) / 13.0 ) );
-
-	if ( p_ProgressStarted{ playerid } )
-	{
-    	StopProgressBar( playerid );
-		p_CancelProgress{ playerid } = true; // Cancel.
-		//SendClientMessageFormatted( playerid, COLOR_PINK, "RESTARTING PROGRESS %d (params [OLD:%d,NEW:%d]", pID, GetPVarInt( playerid, "progress_lastparams" ), params );
-		CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, GetPVarInt( playerid, "progress_lastid" ), GetPVarInt( playerid, "progress_lastparams" ) );
-		return ShowProgressBar( playerid, title, pID, time_interval, color, params ), 1;
-	}
-
-    if ( p_ProgressUpdateTimer[ playerid ] != 0xFFFF ) {
- 		KillTimer( p_ProgressUpdateTimer[ playerid ] );
-		p_ProgressUpdateTimer[ playerid ] = 0xFFFF;
-    }
-
-	p_ProgressStarted{ playerid } = true;
-    p_ProgressStatus[ playerid ]  = 249.0;
-
-    TextDrawHideForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-	TextDrawTextSize( p_ProgressBoxTD[ playerid ], p_ProgressStatus[ playerid ], 14.000000 );
-	TextDrawSetString( p_ProgressTitleTD[ playerid ], title );
-	TextDrawBoxColor( p_ProgressBoxTD[ playerid ], color );
-	TextDrawBoxColor( p_ProgressBoxOutsideTD[ playerid ], ( color & 0xFFFFFF00 ) | ( 0x66 & ( ( color & 0x000000FF ) / 2 ) ) );
-
-    TextDrawShowForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawShowForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-    SetPVarInt( playerid, "progress_lastparams", params );
-    SetPVarInt( playerid, "progress_lastid", 	 pID );
-
-    KillTimer( p_ProgressUpdateTimer[ playerid ] );
-	p_ProgressUpdateTimer[ playerid ] = SetTimerEx( "ProgressBar_Update", time_interval, false, "dddd", playerid, pID, time_interval, params );
-	return 1;
-}
-
-stock StopProgressBar( playerid )
-{
-	KillTimer( p_ProgressUpdateTimer[ playerid ] );
-
-	p_ProgressUpdateTimer	[ playerid ] = 0xFFFF;
-	p_ProgressStarted		{ playerid } = false;
-    p_ProgressStatus		[ playerid ] = 249.0;
-
-    TextDrawHideForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-	return ClearAnimations( playerid ), 1;
-}
-
-function ProgressBar_Update( playerid, progressid, tickrate, params )
-{
-	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_ProgressStarted{ playerid } == false )
-	{
-    	StopProgressBar( playerid );
-		p_CancelProgress{ playerid } = true; // Cancel.
-		//SendClientMessageFormatted( playerid, COLOR_ORANGE, "STOPPING PROGRESS %d", progressid );
-		CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, progressid, params );
-	    return 0;
-	}
-
-	p_ProgressStatus[ playerid ] += 13.0;
-	if ( p_ProgressStatus[ playerid ] >= 388 ) p_ProgressStatus[ playerid ] = 388;
-
-	TextDrawTextSize( p_ProgressBoxTD[ playerid ], p_ProgressStatus[ playerid ], 14.000000 );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-
-	CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, progressid, params );
-
-	if ( p_ProgressStatus[ playerid ] >= 388 )
-	{
-    	StopProgressBar( playerid );
-    	CallLocalFunction( "OnProgressCompleted", "ddd", playerid, progressid, params );
-    	return 1;
- 	}
- 	KillTimer( p_ProgressUpdateTimer[ playerid ] ); // Just incase.
-	return ( p_ProgressUpdateTimer[ playerid ] = SetTimerEx( "ProgressBar_Update", tickrate, false, "dddd", playerid, progressid, tickrate, params ) );
-}
-
 stock ResetVehicleBurglaryData( vehicleid )
 {
     if ( GetVehicleModel( vehicleid ) != 498 )
@@ -19665,7 +17741,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 
 					if ( success == 0xBF ) SendError( playerid, "There is no money to rob from this business safe." );
 					else if ( success == 1 ) {
-						SendServerMessage( playerid, "You have attached your thermal drill on this "COL_ORANGE"safe"COL_WHITE"." ), p_UsingRobberySafe[ playerid ] = robberyid;
+						p_UsingRobberySafe[ playerid ] = robberyid;
 					}
 				}
 				else
@@ -19703,11 +17779,17 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 						// trigger the robbery bot
 						TriggerRobberyForClerks( playerid, robberyid );
 
-						SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C or type /stoprob to cancel the operation." );
-						g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
+						new
+							Float: speed_up = GetPlayerLevel( playerid, E_ROBBERY ) * 50.0;
 
-						//SendClientMessageFormatted( playerid, COLOR_RED, "beginning - robbery %d", robberyid );
-						ShowProgressBar( playerid, "Picking Safe", PROGRESS_SAFEPICK, 10000, COLOR_RED, robberyid );
+						if ( speed_up >= 50.0 ) {
+							SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe (%0.1f%s faster), please wait until you've finished. Press C to stop.", ( speed_up / 10000.0 ) * 100.0, "%%" );
+						} else {
+							SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C to stop." );
+						}
+
+						g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
+						ShowProgressBar( playerid, "Picking Safe", PROGRESS_SAFEPICK, 10000 - floatround( speed_up ), COLOR_WANTED12, robberyid );
 					}
 				}
 			}
@@ -19737,60 +17819,6 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 		}
  	}
 	return 1;
-}
-
-stock GetShopItemVariable( playerid, id )
-{
-	switch( g_shopItemData[ id ] [ E_ID ] )
-	{
-		case 1:  return p_CausticSoda		{ playerid };
-		case 2:  return p_MuriaticAcid		{ playerid };
-		case 3:  return p_HydrogenChloride	{ playerid };
-		case 4:  return p_AidsVaccine		{ playerid };
-		case 5:  return p_SecureWallet		{ playerid };
-		case 6:  return p_Scissors 			[ playerid ];
-		case 8:  return p_BobbyPins 		[ playerid ];
-		case 10: return p_MoneyBag 			{ playerid };
-		case 7:  return p_Ropes 			[ playerid ];
-		case 9:  return p_AntiEMP 			[ playerid ];
-		case 11: return p_drillStrength		[ playerid ];
-		case 12: return p_MetalMelter		[ playerid ];
-	}
-	return 0;
-}
-
-stock SetShopItemVariable( playerid, id, value )
-{
-	switch( g_shopItemData[ id ] [ E_ID ] )
-	{
-		case 1:  return p_CausticSoda		{ playerid } = value;
-		case 2:  return p_MuriaticAcid		{ playerid } = value;
-		case 3:  return p_HydrogenChloride	{ playerid } = value;
-		case 4:  return p_AidsVaccine 		{ playerid } = !!value;
-		case 5:  return p_SecureWallet 		{ playerid } = !!value;
-		case 6:  return p_Scissors			[ playerid ] = value;
-		case 8:  return p_BobbyPins			[ playerid ] = value;
-		case 10: return p_MoneyBag			{ playerid } = !!value;
-		case 7:  return p_Ropes 			[ playerid ] = value;
-		case 9:  return p_AntiEMP 			[ playerid ] = value;
-		case 11: return p_drillStrength		[ playerid ] = value;
-		case 12: return p_MetalMelter 		[ playerid ] = value;
-	}
-	return 0;
-}
-
-stock ShowPlayerShopMenu( playerid )
-{
-	static szString[ 800 ];
-
-	if ( szString[ 0 ] == '\0' )
-	{
-		strcat( szString, " \t"COL_GREY"Grey options do not save!\t \n" );
-		for( new i; i < sizeof( g_shopItemData ); i++ ) {
-	 		format( szString, sizeof( szString ), "%s%s%s\t"COL_ORANGE"%s\t"COL_GOLD"%s\n", szString, g_shopItemData[ i ] [ E_SAVABLE ] ? ( COL_WHITE ) : ( COL_GREY ), g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], cash_format( g_shopItemData[ i ] [ E_PRICE ] ) );
-		}
-	}
-	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
 }
 
 stock KillEveryoneInShamal( vehicleid )
@@ -19961,6 +17989,7 @@ stock GetPlayerBankCity( playerid )
 	}
 	return -1;
 }
+
 stock getClosestPoliceStation( playerid )
 {
 	static const
@@ -19983,9 +18012,7 @@ stock getClosestPoliceStation( playerid )
 		if ( ( iEntrance = p_LastEnteredEntrance[ playerid ] ) == -1 ) GetPlayerPos( playerid, X, Y, Z );
 		else
 		{
-			X = g_entranceData[ iEntrance ] [ E_EX ];
-			Y = g_entranceData[ iEntrance ] [ E_EY ];
-			Z = g_entranceData[ iEntrance ] [ E_EZ ];
+			GetEntrancePos( iEntrance, X, Y, Z );
 		}
    	}
 
@@ -20481,161 +18508,6 @@ stock isNotNearPlayer( playerid, nearid, Float: distance = 200.0 )
 	return fDistance > distance ? 1 : 0;
 }
 
-stock getToyCategories( bool: pawnshop = false )
-{
-	static
-		szToyCategory[ 150 ],
-		szPawnCategory[ 150 ];
-
-	if ( szToyCategory[ 0 ] == '\0' ) {
-		for( new i = 0; i < sizeof( g_ToyCategory ); i++ )
-			format( szToyCategory, sizeof( szToyCategory ), "%s%s\n", szToyCategory, g_ToyCategory[ i ] );
-	}
-
-	if ( szPawnCategory[ 0 ] == '\0' ) {
-		for( new i = 0; i < sizeof( g_ToyCategory ); i++ ) if ( i != CATEGORY_VIP )
-			format( szPawnCategory, sizeof( szPawnCategory ), "%s%s\n", szPawnCategory, g_ToyCategory[ i ] );
-	}
-
-	return pawnshop ? szPawnCategory : szToyCategory;
-}
-
-stock showToyCategoryItems( playerid, category, bool: pawnshop = false )
-{
-	erase( szLargeString );
-
-	for( new i = 0; i < sizeof( g_ToyData ); i++ )
-	{
-		if ( g_ToyData[ i ] [ E_CATEGORY ] == category )
-		{
-			if ( pawnshop ) {
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t"COL_GOLD"%s\n", szLargeString, p_ToyUnlocked[ playerid ] { g_ToyData[ i ] [ E_ID ] } ? ( #COL_LGREEN ) : ( #COL_WHITE ), g_ToyData[ i ] [ E_NAME ], cash_format( g_ToyData[ i ] [ E_PRICE ] ) );
-			} else {
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, g_ToyData[ i ] [ E_ID ] != -1 ? ( !p_ToyUnlocked[ playerid ] { g_ToyData[ i ] [ E_ID ] } ? ( "{3D3D3D}" ) : ( "{FFFFFF}" ) ) : ( COL_GOLD ), g_ToyData[ i ] [ E_NAME ] );
-			}
-		}
-	}
-
-	if ( pawnshop ) {
-		return ShowPlayerDialog( playerid, DIALOG_TOYS_ITEMS_BUY, DIALOG_STYLE_TABLIST, pawnshop ? ( "{FFFFFF}Purchase Toys" ) : ( "{FFFFFF}Toys" ), szLargeString, "Select", "Back" );
-	} else {
-		return ShowPlayerDialog( playerid, DIALOG_TOYS_ITEMS, DIALOG_STYLE_LIST, pawnshop ? ( "{FFFFFF}Purchase Toys" ) : ( "{FFFFFF}Toys" ), szLargeString, "Select", "Back" );
-	}
-}
-
-stock UnlockPlayerToy( playerid, toy_id )
-{
-	if ( toy_id > MAX_TOY_UNLOCKS )
-		return;
-
-	p_ToyUnlocked[ playerid ] { toy_id } = true;
-	format( szNormalString, 72, "INSERT INTO `TOY_UNLOCKS`(`USER_ID`, `TOY_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], toy_id);
-	mysql_single_query( szNormalString );
-}
-
-stock resetPlayerToys( playerid, slot ) {
-   	p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] = 0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_MODELID ] = 0;
-   	p_AttachedObjectsData[ playerid ] [ slot ] [ E_BONE ] = 0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_OX ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_OY ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_OZ ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_RX ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_RY ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_RZ ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SX ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SY ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_SZ ] = 0.0;
-	p_AttachedObjectsData[ playerid ] [ slot ] [ E_COLOR ] = 0;
-}
-
-thread OnToyLoad( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0;
-
-	new
-		rows, fields, i = -1
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows ) {
-		while( ++i < rows ) {
-			new iToy = cache_get_field_content_int( i, "TOY_ID", dbHandle );
-
-			if ( iToy < MAX_TOY_UNLOCKS ) // Must be something wrong otherwise...
-				p_ToyUnlocked[ playerid ] { iToy } = true;
-		}
-	}
-	return 1;
-}
-
-thread OnToyOffsetLoad( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0;
-
-	new
-		rows, fields, i = -1
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows ) {
-		while( ++i < rows ) {
-			new
-				iSlot = cache_get_field_content_int( i, "SLOT_ID", dbHandle );
-
-			if ( iSlot < sizeof( p_AttachedObjectsData[ ] ) ) {
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SQL_ID ] = cache_get_field_content_int( i, "ID", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_ENABLED ] = cache_get_field_content_int( i, "ENABLED", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_MODELID ] = cache_get_field_content_int( i, "MODEL_ID", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_BONE ] = cache_get_field_content_int( i, "BONE", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_OX ] = cache_get_field_content_float( i, "OX", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_OY ] = cache_get_field_content_float( i, "OY", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_OZ ] = cache_get_field_content_float( i, "OZ", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_RX ] = cache_get_field_content_float( i, "RX", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_RY ] = cache_get_field_content_float( i, "RY", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_RZ ] = cache_get_field_content_float( i, "RZ", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SX ] = cache_get_field_content_float( i, "SX", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SY ] = cache_get_field_content_float( i, "SY", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_SZ ] = cache_get_field_content_float( i, "SZ", dbHandle );
-				p_AttachedObjectsData[ playerid ] [ iSlot ] [ E_COLOR ] = cache_get_field_content_int( i, "COLOR", dbHandle );
-			}
-		}
-	}
-	return 1;
-}
-
-thread OnPlayerAddToy( playerid, slotid ) {
-	p_AttachedObjectsData[ playerid ] [ slotid ] [ E_SQL_ID ] = cache_insert_id( );
-	return 1;
-}
-
-stock showToyEditMenu( playerid, slot )
-{
-	if ( p_AttachedObjectsData[ playerid ] [ slot ] [ E_ENABLED ] ) {
-		return ShowPlayerDialog( playerid, DIALOG_TOYS_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys", ""COL_WHITE"Edit Toy Position\n"COL_WHITE"Edit Toy Bone\n"COL_WHITE"Edit Toy Color\nDisable Toy\n"COL_LRED"Remove Toy", "Select", "Back" );
-	} else {
-		return ShowPlayerDialog( playerid, DIALOG_TOYS_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Toys", ""COL_BLACK"Edit Toy Position\n"COL_BLACK"Edit Toy Bone\n"COL_BLACK"Edit Toy Color\nEnable Toy", "Select", "Back" );
-	}
-}
-
-stock reloadPlayerToys( playerid )
-{
-	for ( new i = 0; i < sizeof ( p_AttachedObjectsData[ ] ); i ++ ) {
-		if ( p_AttachedObjectsData[ playerid ] [ i ] [ E_ENABLED ] ) {
-			RemovePlayerAttachedObject( playerid, 7 + i );
-			SetPlayerAttachedObject( playerid, 7 + i, p_AttachedObjectsData[ playerid ] [ i ] [ E_MODELID ], p_AttachedObjectsData[ playerid ] [ i ] [ E_BONE ],
-				p_AttachedObjectsData[ playerid ] [ i ] [ E_OX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_OY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_OZ ],
-				p_AttachedObjectsData[ playerid ] [ i ] [ E_RX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_RY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_RZ ],
-				p_AttachedObjectsData[ playerid ] [ i ] [ E_SX ], p_AttachedObjectsData[ playerid ] [ i ] [ E_SY ], p_AttachedObjectsData[ playerid ] [ i ] [ E_SZ ],
-				p_AttachedObjectsData[ playerid ] [ i ] [ E_COLOR ], p_AttachedObjectsData[ playerid ] [ i ] [ E_COLOR ]
-			);
-		}
-	}
-	return 1;
-}
-
 stock GetVehicleDriver( vehicleid )
 {
 	foreach(new i : Player)
@@ -20693,44 +18565,6 @@ stock IsDeathmatchProtectedZone( playerid ) {
 	return false;
 }*/
 
-stock GetJobIDFromName( szJob[ ] )
-{
-	static const
-		g_jobsData[ ] [ MAX_JOB_NAME char ] =
-		{
-			{ !"Rapist" }, { !"Kidnapper" }, { !"Terrorist" }, { !"Hitman" }, { !"Prostitute" },
-			{ !"Weapon Dealer" }, { !"Drug Dealer" }, { !"Dirty Mechanic" }, { !"Burglar" }
-		}
-	;
-
-	for( new iJob = 0; iJob < sizeof( g_jobsData ); iJob++ )
-		if ( strunpack( szNormalString, g_jobsData[ iJob ], MAX_JOB_NAME ) )
-			if ( strfind( szNormalString, szJob, true ) != -1 )
-				return iJob;
-
-	return 0xFE;
-}
-
-stock GetJobName( iJob )
-{
-	new
-		szJob[ MAX_JOB_NAME ] = "unknown";
-
-	switch( iJob )
-	{
-		case JOB_RAPIST: 			szJob = "Rapist";
-		case JOB_KIDNAPPER:			szJob = "Kidnapper";
-		case JOB_TERRORIST: 		szJob = "Terrorist";
-		case JOB_HITMAN: 			szJob = "Hitman";
-		case JOB_PROSTITUTE: 		szJob = "Prostitute";
-		case JOB_WEAPON_DEALER: 	szJob = "Weapon Dealer";
-		case JOB_DRUG_DEALER: 		szJob = "Drug Dealer";
-		case JOB_DIRTY_MECHANIC: 	szJob = "Dirty Mechanic";
-		case JOB_BURGLAR: 			szJob = "Burglar";
-	}
-	return szJob;
-}
-
 stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] ) {
 	static
 		Float: X, Float: Y, Float: Z;
@@ -20742,7 +18576,7 @@ stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] ) {
 			iGarage = p_InGarage[ iPlayer ]
 		;
 
-	    if ( iEntrance != -1 ) X = g_entranceData[ iEntrance ] [ E_EX ], Y = g_entranceData[ iEntrance ] [ E_EY ], Z = g_entranceData[ iEntrance ] [ E_EZ ];
+	    if ( iEntrance != -1 ) GetEntrancePos( iEntrance, X, Y, Z );
 	    else if ( iGarage != -1 ) X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
 	    else if ( iHouse != -1 ) X = g_houseData[ iHouse ] [ E_EX ], Y = g_houseData[ iHouse ] [ E_EY ], Z = g_houseData[ iHouse ] [ E_EZ ];
 		else return false;
@@ -21408,99 +19242,6 @@ function ope_Unfreeze( a )
 	TogglePlayerControllable( a, 1 );
 }
 
-stock CreateEntrance( name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: lY, Float: lZ, interior, world, bool: custom = false, bool: viponly = false, mapicon = -1, savedId = 0 )
-{
-	new
-		ID = Iter_Free(entrances);
-
-	if ( ID != ITER_NONE )
-	{
-		Iter_Add(entrances, ID);
-	    g_entranceData[ ID ] [ E_WORLD ] = world;
-	    g_entranceData[ ID ] [ E_INTERIOR ] = interior;
-	    g_entranceData[ ID ] [ E_EX ] = X;
-	    g_entranceData[ ID ] [ E_EY ] = Y;
-	    g_entranceData[ ID ] [ E_EZ ] = Z;
-	    g_entranceData[ ID ] [ E_LX ] = lX;
-	    g_entranceData[ ID ] [ E_LY ] = lY;
-	    g_entranceData[ ID ] [ E_LZ ] = lZ;
-	    g_entranceData[ ID ] [ E_SQL_ID ] = savedId;
-	    g_entranceData[ ID ] [ E_CUSTOM ] = custom;
-	    g_entranceData[ ID ] [ E_VIP ] = viponly;
-	    g_entranceData[ ID ] [ E_SAVED ] = savedId != 0;
-	    g_entranceData[ ID ] [ E_ENTER ] = CreateDynamicCP( X, Y, Z, 1.5 );
-	    g_entranceData[ ID ] [ E_EXIT ] = CreateDynamicCP( lX, lY, lZ, 1.0, world, interior );
-		g_entranceData[ ID ] [ E_ENTER_LABEL ] = CreateDynamic3DTextLabel( name, COLOR_GOLD, X, Y, Z, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1 );
-		g_entranceData[ ID ] [ E_EXIT_LABEL ] = CreateDynamic3DTextLabel( "[EXIT]", COLOR_GOLD, lX, lY, lZ, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1, world, interior );
-	   	if ( mapicon != -1 ) CreateDynamicMapIcon( X, Y, Z, mapicon, 0, -1, -1, -1, 750.0 );
-	}
-	return ID;
-}
-
-thread OnEntrancesLoad( )
-{
-	new
-		rows, fields, i = -1, label[ 32 ],
-	    loadingTick = GetTickCount( )
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows )
-	{
-		while( ++i < rows )
-		{
-			// Save label
-			cache_get_field_content( i, "LABEL", label );
-
-			// Create entrance
-			CreateEntrance( label,
-				cache_get_field_content_float( i, "X", dbHandle ),
-				cache_get_field_content_float( i, "Y", dbHandle ),
-				cache_get_field_content_float( i, "Z", dbHandle ),
-				cache_get_field_content_float( i, "EX", dbHandle ),
-				cache_get_field_content_float( i, "EY", dbHandle ),
-				cache_get_field_content_float( i, "EZ", dbHandle ),
-				cache_get_field_content_int( i, "INTERIOR", dbHandle ),
-				cache_get_field_content_int( i, "WORLD", dbHandle ),
-				!!cache_get_field_content_int( i, "CUSTOM", dbHandle ),
-				!!cache_get_field_content_int( i, "VIP_ONLY", dbHandle ),
-				cache_get_field_content_int( i, "MAP_ICON", dbHandle ),
-				.savedId = cache_get_field_content_int( i, "ID", dbHandle )
-			);
-		}
-	}
-	printf( "[ENTRANCES]: %d extra entrances have been loaded. (Tick: %dms)", rows, GetTickCount( ) - loadingTick );
-	return 1;
-}
-
-stock DestroyEntrance( entranceid )
-{
-	if ( !Iter_Contains( entrances, entranceid ) )
-		return;
-
-	Iter_Remove(entrances, entranceid);
-	DestroyDynamicCP( g_entranceData[ entranceid ] [ E_ENTER ] );
-	DestroyDynamicCP( g_entranceData[ entranceid ] [ E_EXIT ] );
-	DestroyDynamic3DTextLabel( g_entranceData[ entranceid ] [ E_ENTER_LABEL ] );
-	DestroyDynamic3DTextLabel( g_entranceData[ entranceid ] [ E_EXIT_LABEL ] );
-	mysql_single_query( sprintf( "DELETE FROM `ENTRANCES` WHERE `ID`=%d", g_entranceData[ entranceid ] [ E_SQL_ID ] ) );
-}
-
-stock GetClosestEntrance( playerid, &Float: distance = FLOAT_INFINITY ) {
-    new
-    	iCurrent = -1, Float: fTmp;
-
-	foreach(new id : entrances)
-	{
-        if ( 0.0 < ( fTmp = GetDistanceFromPlayerSquared( playerid, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] ) ) < distance ) // Y_Less mentioned there's no need to sqroot
-        {
-            distance = fTmp;
-            iCurrent = id;
-        }
-    }
-    return iCurrent;
-}
-
 stock SendClientMessageToAdmins( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
@@ -21522,542 +19263,6 @@ stock TextDrawShowForAllSpawned( Text: textdrawid ) {
 	}
 }
 
-stock GetClosestRobberyNPC( robberyid, &Float: distance = FLOAT_INFINITY ) {
-    new
-    	iCurrent = -1, Float: fTmp;
-
-    if ( 0 <= robberyid < MAX_ROBBERIES )
-    {
-		foreach(new clerkid : RobberyNpc)
-		{
-	        if ( g_robberyData[ robberyid ] [ E_WORLD ] && g_robberyNpcData[ clerkid ] [ E_WORLD ] && g_robberyNpcData[ clerkid ] [ E_WORLD ] != g_robberyData[ robberyid ] [ E_WORLD ] )
-	        	continue;
-
-            if ( 0.0 < ( fTmp = GetPlayerDistanceFromPoint( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ] ) ) < distance )
-            {
-                distance = fTmp;
-                iCurrent = clerkid;
-            }
-	    }
-    }
-    return iCurrent;
-}
-
-stock TriggerRobberyForClerks( playerid, robberyid )
-{
-	new Float: distance = FLOAT_INFINITY;
-	new	clerkid = GetClosestRobberyNPC( robberyid, distance );
-
-	if ( clerkid != -1 && distance < 50.0 )
-	{
-		new
-			npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
-
-		if ( FCNPC_IsDead( npcid ) || g_robberyNpcData[ clerkid ] [ E_PROVOKED ] || ! g_robberyNpcData[ clerkid ] [ E_LOOT ] )
-			return;
-
-		StopPlayerNpcRobbery( playerid );
-		FCNPC_ShootAtPlayer( playerid, npcid, .weaponid = 25, .clerkid = clerkid );
-		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-		KillTimer( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] ), g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
-		TriggerClosestCivilians( playerid, clerkid );
-		SendServerMessage( playerid, "You have committed a robbery while the clerk is concious! "COL_ORANGE"The police have been informed." );
-	}
-}
-
-stock CreateRobberyNPC( name[ ], max_loot, Float: X, Float: Y, Float: Z, Float: rZ, skinid, ... )
-{
-	static const
-		Float: drugDealerPositions[ 5 ] [ 2 ] [ 4 ] =
-		{
-			// Fiddle
-			{
-				{ 2182.2810, -1204.4282, 1049.0234, 91.1168 },
-				{ 2194.7588, -1201.1827, 1049.0234, 313.135 }
-			},
-
-			// Lean
-			{
-				{ 2194.5054, -1207.9854, 1049.0234, 360.0000 },
-				{ 2187.7302, -1206.4150, 1049.0308, 270.0000 }
-			},
-
-			// Lay
-			{
-				{ 2191.0098, -1206.1421, 1049.5361, 41.4342 },
-				{ 2195.3901, -1206.0587, 1049.5361, 317.403 }
-			},
-
-			// Leaning
-			{
-				{ 2196.0134, -1218.3213, 1049.0234, 270.0000 },
-				{ 2196.0159, -1213.3755, 1049.0234, 270.0000 }
-			},
-
-			// Cross arms
-			{
-				{ 2193.2097, -1219.9078, 1049.0234, 1.4630 },
-				{ 2191.6738, -1214.6738, 1049.0234, 270.7185 }
-			}
-		}
-	;
-
-	new
-		szBotName[ MAX_PLAYER_NAME ];
-
-	format( szBotName, sizeof( szBotName ), "%s", name );
-	strreplacechar( szBotName, ' ', '\0' );
-	strreplacechar( szBotName, '/', '\0' );
-
-	for( new i = 7; i < numargs( ); i++ )
-    {
-		new
-			clerkid = Iter_Free(RobberyNpc);
-
-		if ( clerkid != ITER_NONE )
-		{
-			new
-				randomMaxLoot = RandomEx( max_loot - 100, max_loot + 100 ),
-				worldid = getarg( i );
-
-			Iter_Add(RobberyNpc, clerkid);
-
-			if ( strlen( worldid != -1 ? sprintf( "[BOT]%s%d", szBotName, clerkid ) : sprintf( "[BOT]%s", szBotName )  ) >= MAX_PLAYER_NAME )
-				printf( "Warning: NPC name is too long (%s)", worldid != -1 ? sprintf( "[BOT]%s%d", szBotName, clerkid ) : sprintf( "[BOT]%s", szBotName ) );
-
-			format( g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], MAX_PLAYER_NAME, "%s", name );
-			g_robberyNpcData[ clerkid ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s\n"COL_WHITE"Aim To Start Robbery", name ), COLOR_GOLD, X, Y, Z, 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0, .worldid = worldid );
-			g_robberyNpcData[ clerkid ] [ E_NPC_ID ] = FCNPC_Create( worldid != -1 ? sprintf( "[BOT]%s%d", szBotName, clerkid ) : sprintf( "[BOT]%s", szBotName ) );
-			g_robberyNpcData[ clerkid ] [ E_WORLD ] = worldid == -1 ? 0 : worldid;
-			g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
-			g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ] = randomMaxLoot;
-			g_robberyNpcData[ clerkid ] [ E_LOOT ] = randomMaxLoot;
-			g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = -1;
-			FCNPC_Spawn( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], skinid, X, Y, Z );
-			FCNPC_SetAngle( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], ( g_robberyNpcData[ clerkid ] [ E_RZ ] = rZ ) );
-
-			// Create Civilians
-			if ( strmatch( name, "Triad Boss" ) )
-			{
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Triad", { 117, 118, 121, 122, 123 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-			}
-			else if ( strmatch( name, "Mafia Boss" ) )
-			{
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "INT_HOUSE", "wash_up", drugDealerPositions[ 0 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 1 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "BEACH", "bather", drugDealerPositions[ 2 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "GANGS", "leanIDLE", drugDealerPositions[ 3 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-				CreateCivilianNpc( "Soldier", { 111, 112, 124, 125, 126, 127 }, clerkid, "COP_AMBIENT", "Coplook_loop", drugDealerPositions[ 4 ] [ random( sizeof( drugDealerPositions[ ] ) ) ], worldid, .interior = 6 );
-			}
-			else if ( strmatch( name, "Militia Boss" ) )
-			{
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2379.767333, 1554.927001, 2.117187, -150.0000 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_think", Float: { -2422.314697, 1549.529541, 2.117187, 120.00000 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_watch", Float: { -2417.101562, 1546.823608, 2.117187, 79.399986 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_think", Float: { -2402.885986, 1550.987548, 2.117187, 99.200134 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2389.123535, 1552.664794, 2.117187, 132.69992 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_watch", Float: { -2400.807861, 1544.349975, 2.117187, -75.30000 }, 0, 0 );
-				CreateCivilianNpc( "Militia", { 125, 127, 272, 273, 299 }, clerkid, "COP_AMBIENT", "Coplook_loop", Float: { -2394.430664, 1536.986572, 2.117187, 96.699829 }, 0, 0 );
-			}
-		}
-	}
-}
-
-stock ReplenishRobberyNpc( clerkid, bool: fullreplenish = true )
-{
-	if ( 0 <= clerkid < MAX_ROBBERY_NPCS )
-	{
-		new
-			Float: X, Float: Y, Float: Z,
-			npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
-
-		// Get NPC Pos
-		GetPlayerPos( npcid, X, Y, Z );
-
-		// Reset NPC
-		if ( FCNPC_IsDead( npcid ) ) {
-			FCNPC_Respawn( npcid );
-		} else {
-			FCNPC_NeutralState( npcid );
-			FCNPC_SetAngle( npcid, g_robberyNpcData[ clerkid ] [ E_RZ ] );
-		}
-
-		// Make NPC vulernable
-		FCNPC_SetInvulnerable( npcid, false );
-
-		// Reset NPC Data
-		g_robberyNpcData[ clerkid ] [ E_LOOT ] = 0;
-		g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] = 0;
-		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = false;
-
-		KillTimer( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] ), g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
-		UpdateDynamic3DTextLabelText( g_robberyNpcData[ clerkid ] [ E_LABEL ], COLOR_GOLD, sprintf( "%s\n"COL_WHITE"Aim To Start Robbery", g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] ) );
-
-		// Options
-		if ( fullreplenish ) {
-			g_robberyNpcData[ clerkid ] [ E_LOOT ] = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
-		}
-	}
-}
-
-stock GetRobberyNpcFromPlayer( playerid )
-{
-	foreach(new i : RobberyNpc)
-		if ( g_robberyNpcData[ i ] [ E_NPC_ID ] == playerid )
-			return i;
-
-	return -1;
-}
-
-public OnPlayerHoldupStore( playerid, clerkid, step )
-{
-	if ( !( 0 <= clerkid < MAX_ROBBERY_NPCS )  )
-		return 1;
-
-	new npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
-	new Float: fX, Float: fY, Float: fZ, Float: distance;
-	new szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
-
-	GetPlayerPos( npcid, fX, fY, fZ );
-	distance = GetDistanceFromPlayerSquared( playerid, fX, fY, fZ );
-
-	if ( ! g_robberyNpcData[ clerkid ] [ E_LOOT ] || !( 0.0 < distance < 625.0 ) || !IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || IsPlayerTied( playerid ) || IsPlayerInAnyVehicle( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_WASTED || IsPlayerAFK( playerid ) || p_Class[ playerid ] == CLASS_POLICE )
-		return StopPlayerNpcRobbery( playerid, clerkid );
-
-	// Enough loot? Else finish.
-	if ( g_robberyNpcData[ clerkid ] [ E_LOOT ] <= 0 )
-		return StopPlayerNpcRobbery( playerid, clerkid );
-
-	if ( step == 0 )
-	{
-		if ( GetPlayerLocation( playerid, szCity, szLocation ) ) {
-			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s began robbing "COL_GREY"%s"COL_WHITE" near %s in %s.", ReturnPlayerName( playerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
-		} else {
-			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s began robbing "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( playerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
-		}
-
-		CreateCrimeReport( playerid );
-		DeletePVar( playerid, sprintf( "robbedNpc_%d", clerkid ) );
-		PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is scared" );
-		UpdateDynamic3DTextLabelText( g_robberyNpcData[ clerkid ] [ E_LABEL ], COLOR_GOLD, sprintf( "%s\n"COL_GREY"Currently Being Robbed", g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] ) );
-	}
-	else
-	{
-		new
-			targetplayerid = GetPlayerTargetPlayer( playerid );
-
-		// If the player aint aiming at the assistant, whip out a gun
-		if ( targetplayerid != npcid || 0 < GetPlayerWeapon( playerid ) < 1 || !( 0.0 < distance < 25.0 ) ) {
-			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~r~~h~~h~Clerk might draw out gun" );
-
-			// Shoot player
-			if ( random( 101 ) < 20 && p_Robberies[ playerid ] > 10 ) {
-				g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-				return StopPlayerNpcRobbery( playerid ), FCNPC_ShootAtPlayer( playerid, npcid, .weaponid = 25, .clerkid = clerkid );
-			}
-		}
-		else
-		{
-			PlayerTextDrawSetString( playerid, p_RobberyRiskTD[ playerid ], "~g~~h~Clerk is scared" );
-		}
-
-		new
-			amount = RandomEx( 250, 500 ),
-			robbedNpc = GetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ) ) + amount
-		;
-
-		g_robberyNpcData[ clerkid ] [ E_LOOT ] -= amount;
-
-		if ( g_robberyNpcData[ clerkid ] [ E_LOOT ] < 0 )
-		{
-			amount += g_robberyNpcData[ clerkid ] [ E_LOOT ];
-			robbedNpc = g_robberyNpcData[ clerkid ] [ E_MAX_LOOT ];
-
-			if ( GetPlayerLocation( playerid, szCity, szLocation ) ) {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
-			} else {
-				SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a %s!", ReturnPlayerName( playerid ), playerid, cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
-			}
-
-			/*new Float: safeDistance = 99999.99;
-			new robberyid = getClosestRobberySafe( playerid, safeDistance );
-			if ( robberyid != INVALID_OBJECT_ID && safeDistance < 100.0 && !g_robberyData[ robberyid ] [ E_STATE ] ) {
-				//g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.1;
-				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], "%%" );
-			} else {
-				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
-			}*/
-
-			PlayerPlaySound( playerid, 5201, 0.0, 0.0, 0.0 );
-		} else {
-			PlayerPlaySound( playerid, 5205, 0.0, 0.0, 0.0 );
-		}
-
-		if ( !( 0 <= amount < 10000 ) )
-			return SendError( playerid, "A money exploit occurred. Contact Lorenc ASAP." );
-
-		GivePlayerCash( playerid, amount );
-		SetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ), robbedNpc );
-		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", cash_format( robbedNpc ) ) );
-	}
-
-	FCNPC_ApplyAnimation( npcid, "SHOP", "SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
-	FCNPC_SetAnimationByName( npcid, "SHOP:SHP_Rob_GiveCash", 4.1, 0, 1, 1, 1, 0 );
-	return ( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = SetTimerEx( "OnPlayerHoldupStore", 800, false, "ddd", playerid, clerkid, step + 1 ) ), 1;
-}
-
-stock StopPlayerNpcRobbery( playerid, clerkid = -1, bool: cower = true )
-{
-	// Reset variables
-	DeletePVar( playerid, sprintf( "robbedNpc_%d", clerkid ) );
-
-	// Hide textdraws
-	PlayerTextDrawHide( playerid, p_RobberyRiskTD[ playerid ] );
-	PlayerTextDrawHide( playerid, p_RobberyAmountTD[ playerid ] );
-
-	// Reset clerk variables
-	if ( clerkid != -1 )
-	{
-		new
-			npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
-
-		FCNPC_StopAim( npcid );
-		FCNPC_SetWeapon( npcid, 0 );
-		FCNPC_SetInvulnerable( npcid, true );
-
-		if ( cower ) {
-			FCNPC_ApplyAnimation( npcid, "PED", "cower", 3.0, 0, 1, 1, 1, 0 );
-			FCNPC_SetAnimationByName( npcid, "PED:cower", 3.0, 0, 1, 1, 1, 0 );
-		}
-
-		// Reset loot
-		g_robberyNpcData[ clerkid ] [ E_LOOT ] = 0;
-		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = false;
-		g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] = g_iTime + 180;
-		g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = -1;
-
-		// Reset timer
-		KillTimer( g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] ), g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] = -1;
-		UpdateDynamic3DTextLabelText( g_robberyNpcData[ clerkid ] [ E_LABEL ], COLOR_GOLD, sprintf( "%s\n"COL_RED"Unavailable For Robbery", g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] ) );
-	}
-	return 1;
-}
-
-stock FCNPC_ShootAtPlayer( playerid, npcid, weaponid = 25, clerkid = -1, bool: weapon_accurate = false )
-{
-	// Auto aim on crouch for store clerks
-	if ( clerkid != -1 )
-	{
-		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.6;
-		KillTimer( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] );
-		g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid );
-	}
-	else if ( ! weapon_accurate ) // Civilians should have inaccuracy
-	{
-		FCNPC_SetWeaponAccuracy( npcid, weaponid, 0.5 );
-		FCNPC_SetWeaponSkillLevel( npcid, WEAPONSKILL_AK47, 8 );
-	}
-	FCNPC_ResetAnimation( npcid );
-	FCNPC_ClearAnimations( npcid );
-	FCNPC_SetWeapon( npcid, weaponid );
-	FCNPC_ToggleInfiniteAmmo( npcid, true );
-	FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.6 );
-	return 1;
-}
-
-function RobberyNpcShootCheck( clerkid, playerid )
-{
-	new
-		npcid = g_robberyNpcData[ clerkid ] [ E_NPC_ID ];
-
-	if ( ! IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || FCNPC_IsDead( npcid ) ) {
-		return StopPlayerNpcRobbery( playerid, clerkid, .cower = true );
-	}
-
-	new
-		specialAnimation = GetPlayerSpecialAction( playerid );
-
-	if ( specialAnimation == SPECIAL_ACTION_DUCK && g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] != 0.1 ) {
-		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.1;
-		FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.1 );
-	} else if ( specialAnimation != SPECIAL_ACTION_DUCK && g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] != 0.6 ) {
-		g_robberyNpcData[ clerkid ] [ E_SHOOTING_OFFSET ] = 0.6;
-		FCNPC_AimAtPlayer( npcid, playerid, .shoot = true, .shoot_delay = -1, .setangle = true, .offset_x = 0.0, .offset_y = 0.0, .offset_z = 0.6 );
-	}
-
-	return ( g_robberyNpcData[ clerkid ] [ E_SHOOTING_TIMER ] = SetTimerEx( "RobberyNpcShootCheck", 1500, false, "dd", clerkid, playerid ) ), 1;
-}
-
-public FCNPC_OnDeath(npcid, killerid, weaponid)
-{
-	if ( !IsPlayerConnected( killerid ) )
-		return 1;
-
-	new
-		clerkid = GetRobberyNpcFromPlayer( npcid )
-	;
-
-	if ( 0 <= clerkid < MAX_ROBBERY_NPCS )
-	{
-		StopPlayerNpcRobbery( killerid, clerkid, .cower = false );
-
-		if ( g_robberyNpcData[ clerkid ] [ E_PROVOKED ] )
-			return 1;
-
-	    new
-			szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
-
-		if ( GetPlayerLocation( killerid, szCity, szLocation ) )
-			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE" near %s in %s.", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ], szLocation, szCity );
-		else
-			SendClientMessageToCops( -1, ""COL_BLUE"[POLICE RADIO]"COL_WHITE" %s has murdered "COL_GREY"%s"COL_WHITE".", ReturnPlayerName( killerid ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
-
-		CreateCrimeReport( killerid );
-		GivePlayerWantedLevel( killerid, 6 );
-		SendServerMessage( killerid, "You have killed the clerk! "COL_RED"The cops have been informed." );
-	}
-	return 1;
-}
-
-public FCNPC_OnSpawn( npcid )
-{
-	new
-		clerkid = GetRobberyNpcFromPlayer( npcid );
-
-	if ( 0 <= clerkid < MAX_ROBBERY_NPCS )
-	{
-		FCNPC_ApplyAnimation( npcid, "SHOP", "null", 0.0, 0, 0, 0, 0, 0 );
-		FCNPC_ApplyAnimation( npcid, "PED", "null", 0.0, 0, 0, 0, 0, 0 );
-		FCNPC_SetVirtualWorld( g_robberyNpcData[ clerkid ] [ E_NPC_ID ], g_robberyNpcData[ clerkid ] [ E_WORLD ] );
-	}
-	else
-	{
-		new
-			civilianid = GetCivilianNpcFromPlayer( npcid );
-
-		if ( 0 <= civilianid < MAX_CIVILIANS )
-		{
-			FCNPC_SetVirtualWorld( npcid, g_civilianNpcData[ civilianid ] [ E_WORLD ] );
-			FCNPC_SetInterior( npcid, g_civilianNpcData[ civilianid ] [ E_INTERIOR ] );
-
-			// animations
-			FCNPC_ApplyAnimation( npcid, g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], "null", 0.0, 0, 0, 0, 0, 0 );
-			FCNPC_ApplyAnimation( npcid, g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ], 3.0, 1, 1, 1, 1, 0 );
-			FCNPC_SetAnimationByName( npcid, sprintf( "%s:%s", g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ] ), 3.0, 1, 1, 1, 1, 0 );
-		}
-	}
-	return 1;
-}
-
-public FCNPC_OnTakeDamage( npcid, damagerid, weaponid, bodypart, Float: health_loss )
-{
-	new civilianid = GetCivilianNpcFromPlayer( npcid );
-	new clerkid = GetRobberyNpcFromPlayer( npcid );
-
-	// trigger npcs
-	if ( civilianid != -1 ) {
-		TriggerClosestCivilians( damagerid, GetClosestRobberyNPC( getClosestRobberySafe( damagerid ) ) );
-	}
-
-	// no damage for bots
-	if ( 0 <= clerkid < MAX_ROBBERY_NPCS && 0 <= damagerid < MAX_PLAYERS && p_Class[ damagerid ] == CLASS_POLICE ) {
-		return 0;
-	}
-	return 1;
-}
-
-stock CreateCivilianNpc( name[ ], skinId[ ], clerkId, animlib[ 16 ], animname[ 16 ], const Float: position[ 4 ], worldid, interior, bool: hostile = true, numSkins = sizeof( skinId ) )
-{
-	new
-		szBotName[ MAX_PLAYER_NAME ];
-
-	format( szBotName, sizeof( szBotName ), "%s", name );
-	strreplacechar( szBotName, ' ', '\0' );
-	strreplacechar( szBotName, '/', '\0' );
-
-	new
-		civilianid = Iter_Free(CivilianNpc);
-
-	if ( civilianid != ITER_NONE )
-	{
-		new
-			randomSkin = random( numSkins );
-
-		Iter_Add(CivilianNpc, civilianid);
-
-		format( g_civilianNpcData[ civilianid ] [ E_ANIM_LIB ], 16, "%s", animlib );
-		format( g_civilianNpcData[ civilianid ] [ E_ANIM_NAME ], 16, "%s", animname );
-		format( g_civilianNpcData[ civilianid ] [ E_NPC_NAME ], MAX_PLAYER_NAME, "%s", name );
-		CreateDynamic3DTextLabel( sprintf( "%s", name ), 0xFFFFFF25, position[ 0 ], position[ 1 ], position[ 2 ], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, .testlos = 0, .worldid = worldid );
-		g_civilianNpcData[ civilianid ] [ E_NPC_ID ] = FCNPC_Create( worldid != -1 ? sprintf( "[BOT]%s%d", szBotName, civilianid ) : sprintf( "[BOT]%s", szBotName ) );
-		g_civilianNpcData[ civilianid ] [ E_WORLD ] = worldid == -1 ? 0 : worldid;
-		g_civilianNpcData[ civilianid ] [ E_INTERIOR ] = interior == -1 ? 0 : interior;
-		g_civilianNpcData[ civilianid ] [ E_CLERK_ID ] = clerkId;
-		g_civilianNpcData[ civilianid ] [ E_HOSTILE ] = hostile;
-		FCNPC_Spawn( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], skinId[ randomSkin ], position[ 0 ], position[ 1 ], position[ 2 ] );
-		FCNPC_SetAngle( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], ( g_civilianNpcData[ civilianid ] [ E_RZ ] = position[ 3 ] ) );
-	}
-	else print( "[ERROR] Civilian cannot be added due to small limit, please raise." );
-}
-
-stock GetCivilianNpcFromPlayer( playerid )
-{
-	foreach(new i : CivilianNpc)
-		if ( g_civilianNpcData[ i ] [ E_NPC_ID ] == playerid )
-			return i;
-
-	return -1;
-}
-
-stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 50.0, &Float: distance = FLOAT_INFINITY )
-{
-    if ( ! IsPlayerConnected( playerid ) )
-    	return;
-
-    new
-    	Float: X, Float: Y, Float: Z,
-    	worldid = GetPlayerVirtualWorld( playerid )
-    ;
-
-    GetPlayerPos( playerid, X, Y, Z );
-
-	foreach (new civilianid : CivilianNpc) if ( ! g_civilianNpcData[ civilianid ] [ E_PROVOKED ] && g_civilianNpcData[ civilianid ] [ E_WORLD ] == worldid )
-	{
-		if ( ( clerkid != -1 && g_civilianNpcData[ civilianid ] [ E_CLERK_ID ] == clerkid ) || GetPlayerDistanceFromPoint( g_civilianNpcData[ civilianid ] [ E_NPC_ID ], X, Y, Z ) < radius )
-		{
-			if ( g_civilianNpcData[ civilianid ] [ E_HOSTILE ] )
-			{
-				new
-					closestid = GetClosestPlayer( g_civilianNpcData[ civilianid ] [ E_NPC_ID ] );
-
-				g_civilianNpcData[ civilianid ] [ E_PROVOKED ] = true;
-				FCNPC_ShootAtPlayer( closestid, g_civilianNpcData[ civilianid ] [ E_NPC_ID ], 30, .weapon_accurate = strmatch( g_civilianNpcData[ civilianid ] [ E_NPC_NAME ], "Militia" ) );
-			}
-		}
-    }
-
-    // Trigger the robbery NPC TOO!
-	if ( clerkid != -1 && g_robberyNpcData[ clerkid ] [ E_HOLDUP_TIMER ] == -1 && g_iTime > g_robberyNpcData[ clerkid ] [ E_TIMEOUT ] && ! g_robberyNpcData[ clerkid ] [ E_PROVOKED ] )
-	{
-		g_robberyNpcData[ clerkid ] [ E_PROVOKED ] = true;
-		FCNPC_ShootAtPlayer( playerid, g_robberyNpcData[ clerkid ] [ E_NPC_ID ], 24, clerkid );
-		StopPlayerNpcRobbery( playerid );
-	}
-}
-
-stock FCNPC_NeutralState( npcid )
-{
-	FCNPC_StopAim( npcid );
-	FCNPC_ResetAnimation( npcid );
-	FCNPC_ClearAnimations( npcid );
-	FCNPC_SetWeapon( npcid, 0 );
-}
-
-///////
 stock CreateCrimeReport( playerid )
 {
 	if ( !( 0 <= playerid < MAX_PLAYERS ) )
@@ -22085,7 +19290,7 @@ stock CreateCrimeReport( playerid )
 		if ( GetPlayerInterior( playerid ) != 0 )
 		{
 		    if ( iEntrance != -1 )
-		  		X = g_entranceData[ iEntrance ] [ E_EX ], Y = g_entranceData[ iEntrance ] [ E_EY ], Z = g_entranceData[ iEntrance ] [ E_EZ ];
+		    	GetEntrancePos( iEntrance, X, Y, Z );
 
 		  	else if ( iGarage != -1 )
 		  		X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
@@ -23332,6 +20537,19 @@ function PassiveMode_Reset( playerid, time_left )
     	UpdateDynamic3DTextLabelText( p_PassiveModeLabel[ playerid ], COLOR_RED, sprintf( "Passive Mode Disabled In %d Seconds", time_left ) );
 		p_PassiveModeExpireTimer[ playerid ] = SetTimerEx( "PassiveMode_Reset", 980, false, "dd", playerid, time_left );
  		ShowPlayerHelpDialog( playerid, 1500, "Passive mode disabled in ~r~%d seconds.", time_left );
+	}
+	return 1;
+}
+
+stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+{
+    static
+		out[ 144 ];
+
+    va_format( out, sizeof( out ), format, va_start<2> );
+
+	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_POLICE ) {
+		SendClientMessage( i, colour, out );
 	}
 	return 1;
 }

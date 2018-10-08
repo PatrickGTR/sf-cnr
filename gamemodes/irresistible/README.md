@@ -30,5 +30,7 @@
     - Called when a player spawns for the first time
 - `OnPlayerMovieMode( playerid, toggled )`
     - Called when player toggles movie mode
+- `OnPlayerAccessEntrance( playerid, entranceid )`
+    - Called when a player accesses an entrance id
 
 

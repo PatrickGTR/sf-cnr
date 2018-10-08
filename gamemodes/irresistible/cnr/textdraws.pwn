@@ -22,7 +22,6 @@ new
 	Text:  g_WorldDayTD       		= Text: INVALID_TEXT_DRAW,
 	Text:  g_AchievementTD          [ 4 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
-	Text:  g_ProgressBoxTD        	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
 	Text:  g_PassiveModeTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_VehiclePreviewBoxTD 	= Text: INVALID_TEXT_DRAW,
@@ -34,11 +33,6 @@ new
 	Text:  g_CurrentCoinsTD 		= Text: INVALID_TEXT_DRAW,
 	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
-
-	// Server Player Textdraws (Needs Converting)
-	Text:  p_ProgressBoxOutsideTD	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_ProgressBoxTD        	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
-	Text:  p_ProgressTitleTD      	[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -241,18 +235,6 @@ hook OnScriptInit( )
 	TextDrawSetProportional(g_VehiclePreviewTxtTD, 1);
 	TextDrawSetSelectable(g_VehiclePreviewTxtTD, 0);
 
-	g_ProgressBoxTD = TextDrawCreate(250.000000, 220.000000, "_");
-	TextDrawBackgroundColor(g_ProgressBoxTD, 255);
-	TextDrawFont(g_ProgressBoxTD, 1);
-	TextDrawLetterSize(g_ProgressBoxTD, 0.500000, 1.000000);
-	TextDrawColor(g_ProgressBoxTD, -1);
-	TextDrawSetOutline(g_ProgressBoxTD, 0);
-	TextDrawSetProportional(g_ProgressBoxTD, 1);
-	TextDrawSetShadow(g_ProgressBoxTD, 1);
-	TextDrawUseBox(g_ProgressBoxTD, 1);
-	TextDrawBoxColor(g_ProgressBoxTD, 255);
-	TextDrawTextSize(g_ProgressBoxTD, 390.000000, 10.000000);
-
 	g_AdminLogTD = TextDrawCreate(150.000000, 360.000000, "_");
 	TextDrawBackgroundColor(g_AdminLogTD, 255);
 	TextDrawFont(g_AdminLogTD, 1);
@@ -418,43 +400,6 @@ hook OnScriptInit( )
 	TextDrawColor(g_PassiveModeTD, COLOR_GREEN);
 	TextDrawSetOutline(g_PassiveModeTD, 1);
 	TextDrawSetProportional(g_PassiveModeTD, 1);
-
-	/* ** Player TextDraws ** */
-	for(new playerid; playerid != MAX_PLAYERS; playerid ++)
-	{
-		p_ProgressBoxOutsideTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
-		TextDrawBackgroundColor(p_ProgressBoxOutsideTD[ playerid ], 255);
-		TextDrawFont(p_ProgressBoxOutsideTD[ playerid ], 1);
-		TextDrawLetterSize(p_ProgressBoxOutsideTD[ playerid ], 0.359999, 0.599999);
-		TextDrawColor(p_ProgressBoxOutsideTD[ playerid ], -1);
-		TextDrawSetOutline(p_ProgressBoxOutsideTD[ playerid ], 0);
-		TextDrawSetProportional(p_ProgressBoxOutsideTD[ playerid ], 1);
-		TextDrawSetShadow(p_ProgressBoxOutsideTD[ playerid ], 1);
-		TextDrawUseBox(p_ProgressBoxOutsideTD[ playerid ], 1);
-		TextDrawBoxColor(p_ProgressBoxOutsideTD[ playerid ], -154);
-		TextDrawTextSize(p_ProgressBoxOutsideTD[ playerid ], 388.000000, 14.000000);
-
-		p_ProgressBoxTD[ playerid ] = TextDrawCreate(252.000000, 222.000000, "_");
-		TextDrawBackgroundColor(p_ProgressBoxTD[ playerid ], 255);
-		TextDrawFont(p_ProgressBoxTD[ playerid ], 1);
-		TextDrawLetterSize(p_ProgressBoxTD[ playerid ], 0.559999, 0.599999);
-		TextDrawColor(p_ProgressBoxTD[ playerid ], -1);
-		TextDrawSetOutline(p_ProgressBoxTD[ playerid ], 0);
-		TextDrawSetProportional(p_ProgressBoxTD[ playerid ], 1);
-		TextDrawSetShadow(p_ProgressBoxTD[ playerid ], 1);
-		TextDrawUseBox(p_ProgressBoxTD[ playerid ], 1);
-		TextDrawBoxColor(p_ProgressBoxTD[ playerid ], -1);
-		TextDrawTextSize(p_ProgressBoxTD[ playerid ], 378.000000, 14.000000);
-
-		p_ProgressTitleTD[ playerid ] = TextDrawCreate(320.000000, 205.000000, "____");
-		TextDrawAlignment(p_ProgressTitleTD[ playerid ], 2);
-		TextDrawBackgroundColor(p_ProgressTitleTD[ playerid ], 255);
-		TextDrawFont(p_ProgressTitleTD[ playerid ], 0);
-		TextDrawLetterSize(p_ProgressTitleTD[ playerid ], 0.559999, 1.700000);
-		TextDrawColor(p_ProgressTitleTD[ playerid ], -1);
-		TextDrawSetOutline(p_ProgressTitleTD[ playerid ], 1);
-		TextDrawSetProportional(p_ProgressTitleTD[ playerid ], 1);
-	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
