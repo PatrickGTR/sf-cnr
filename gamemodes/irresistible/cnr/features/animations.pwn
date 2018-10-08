@@ -119,6 +119,7 @@ CMD:animlist( playerid, params[ ] )
 	SendClientMessage( playerid, -1, "/dance, /piss, /wank, /sit, /groundsit, /lay, /deal, /laugh, /gangsign" );
 	SendClientMessage( playerid, -1, "/slapass, /sex, /crossarms, /wave, /lookout, /strip, /aimthreat, /kiss" );
 	SendClientMessage( playerid, -1, "/chat, /fuckoff, /shout, /chant, /handsup, /cower, /sleep, /lean, /fiddle" );
+	SendClientMessage( playerid, -1, "/smoke" );
 	return 1;
 }
 
