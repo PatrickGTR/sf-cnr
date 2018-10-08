@@ -551,7 +551,6 @@ function OnPlayerHoldupStore( playerid, clerkid, step )
 				SendServerMessage( playerid, "You have successfully robbed "COL_GOLD"%s"COL_WHITE" from "COL_GREY"%s"COL_WHITE".", cash_format( robbedNpc ), g_robberyNpcData[ clerkid ] [ E_NPC_NAME ] );
 			}*/
 
-			GivePlayerExperience( playerid, E_ROBBERY, 0.8 );
 			PlayerPlaySound( playerid, 5201, 0.0, 0.0, 0.0 );
 		} else {
 			PlayerPlaySound( playerid, 5205, 0.0, 0.0, 0.0 );
@@ -561,6 +560,7 @@ function OnPlayerHoldupStore( playerid, clerkid, step )
 			return SendError( playerid, "A money exploit occurred. Contact Lorenc ASAP." );
 
 		GivePlayerCash( playerid, amount );
+		GivePlayerExperience( playerid, E_ROBBERY, 0.2 ); // give 10% of what it normally does, since it does this for like 4-5 times
 		SetPVarInt( playerid, sprintf( "robbedNpc_%d", clerkid ), robbedNpc );
 		PlayerTextDrawSetString( playerid, p_RobberyAmountTD[ playerid ], sprintf( "Robbed ~g~~h~%s", cash_format( robbedNpc ) ) );
 	}
