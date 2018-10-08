@@ -13,6 +13,7 @@
 #include "irresistible\cnr\classes.pwn"
 #include "irresistible\cnr\jobs.pwn"
 #include "irresistible\cnr\textdraws.pwn"
+#include "irresistible\cnr\progress.pwn"
 #include "irresistible\cnr\spawn.pwn"
 #include "irresistible\cnr\dialog_ids.pwn"
 #include "irresistible\cnr\entrances.pwn"

@@ -47,7 +47,6 @@
 #include 							< MathParser >
 #include 							< mapandreas >
 #include 							< md-sort >
-#include                            < progress2 >
 native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
@@ -103,13 +102,6 @@ enum E_DONATION_DATA
 	E_PURPOSE[ 64 ],
 	E_DATE
 }
-
-/* ** Progress Bars ** */
-#define PROGRESS_CRACKING 			0
-#define PROGRESS_MINING				3
-#define PROGRESS_ROBBING			4
-#define PROGRESS_SAFEPICK 			5
-#define PROGRESS_CRACKING_BIZ 		8
 
 /* ** Discord ** */
 //#include <discord-connector>
@@ -638,8 +630,6 @@ public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
-public OnPlayerProgressUpdate( playerid, progressid, params );
-public OnProgressCompleted( playerid, progressid, params );
 public OnPlayerUnjailed( playerid, reasonid );
 public OnPlayerAccessEntrance( playerid, entranceid );
 
@@ -2831,8 +2821,6 @@ public OnPlayerDisconnect( playerid, reason )
     DestroyAllPlayerC4s( playerid, true );
 	KillTimer( p_JailTimer[ playerid ] );
 	KillTimer( p_CuffAbuseTimer[ playerid ] );
-	p_ProgressStarted{ playerid } = false;
-	p_CancelProgress{ playerid } = false;
 	ResetPlayerCash( playerid );
 	if ( !GetPVarInt( playerid, "banned_connection" ) ) SendDeathMessage( INVALID_PLAYER_ID, playerid, 201 );
 	DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
@@ -4368,13 +4356,10 @@ public OnPlayerLeaveGang( playerid, gangid, reason )
 	return 1;
 }
 
-public OnPlayerProgressUpdate( playerid, progressid, params )
+public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 {
 	static
-		Float: X, Float: Y, Float: Z, bool: canceled;
-
-	canceled = p_CancelProgress{ playerid };
-	p_CancelProgress{ playerid } = false;
+		Float: X, Float: Y, Float: Z;
 
 	if ( progressid == PROGRESS_CRACKING || progressid == PROGRESS_BRUTEFORCE ) {
         if ( !IsPlayerSpawned( playerid ) || !IsPlayerInDynamicCP( playerid, g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CHECKPOINT ] [ 0 ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled )
@@ -11290,16 +11275,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
  			DetachTrailerFromVehicle( iVehicle );
  	}
 
-	else if ( PRESSED( KEY_CROUCH ) )
-	{
-		if ( p_ProgressStarted{ playerid } && !p_CancelProgress{ playerid } )
-		{
-			SendServerMessage( playerid, "You have canceled this operation." );
-			p_CancelProgress{ playerid } = true;
-			return 1;
-		}
-	}
-
 	else if ( PRESSED( KEY_ACTION ) )
 	{
 		if ( IsPlayerInAnyVehicle( playerid ) && GetPlayerState( playerid ) == PLAYER_STATE_DRIVER && GetVehicleModel( iVehicle ) == 525 ) {
@@ -17098,98 +17073,6 @@ stock IsVehicleUpsideDown(vehicleid)
     ;
     GetVehicleRotationQuat(vehicleid, q_W, q_X, q_Y, q_Z);
     return (120.0 < atan2(2.0 * ((q_Y * q_Z) + (q_X * q_W)), (-(q_X * q_X) - (q_Y * q_Y) + (q_Z * q_Z) + (q_W * q_W))) > -120.0);
-}
-
-stock ShowProgressBar( playerid, title[ ], pID, update = 1000, color, params = 0 )
-{
-	if ( !IsPlayerConnected( playerid ) )
-	    return 0;
-
-	new time_interval = floatround( float( update ) / ( ( 388.0 - 249.0 ) / 13.0 ) );
-
-	if ( p_ProgressStarted{ playerid } )
-	{
-    	StopProgressBar( playerid );
-		p_CancelProgress{ playerid } = true; // Cancel.
-		//SendClientMessageFormatted( playerid, COLOR_PINK, "RESTARTING PROGRESS %d (params [OLD:%d,NEW:%d]", pID, GetPVarInt( playerid, "progress_lastparams" ), params );
-		CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, GetPVarInt( playerid, "progress_lastid" ), GetPVarInt( playerid, "progress_lastparams" ) );
-		return ShowProgressBar( playerid, title, pID, time_interval, color, params ), 1;
-	}
-
-    if ( p_ProgressUpdateTimer[ playerid ] != 0xFFFF ) {
- 		KillTimer( p_ProgressUpdateTimer[ playerid ] );
-		p_ProgressUpdateTimer[ playerid ] = 0xFFFF;
-    }
-
-	p_ProgressStarted{ playerid } = true;
-    p_ProgressStatus[ playerid ]  = 249.0;
-
-    TextDrawHideForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-	TextDrawTextSize( p_ProgressBoxTD[ playerid ], p_ProgressStatus[ playerid ], 14.000000 );
-	TextDrawSetString( p_ProgressTitleTD[ playerid ], title );
-	TextDrawBoxColor( p_ProgressBoxTD[ playerid ], color );
-	TextDrawBoxColor( p_ProgressBoxOutsideTD[ playerid ], ( color & 0xFFFFFF00 ) | ( 0x66 & ( ( color & 0x000000FF ) / 2 ) ) );
-
-    TextDrawShowForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawShowForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-    SetPVarInt( playerid, "progress_lastparams", params );
-    SetPVarInt( playerid, "progress_lastid", 	 pID );
-
-    KillTimer( p_ProgressUpdateTimer[ playerid ] );
-	p_ProgressUpdateTimer[ playerid ] = SetTimerEx( "ProgressBar_Update", time_interval, false, "dddd", playerid, pID, time_interval, params );
-	return 1;
-}
-
-stock StopProgressBar( playerid )
-{
-	KillTimer( p_ProgressUpdateTimer[ playerid ] );
-
-	p_ProgressUpdateTimer	[ playerid ] = 0xFFFF;
-	p_ProgressStarted		{ playerid } = false;
-    p_ProgressStatus		[ playerid ] = 249.0;
-
-    TextDrawHideForPlayer( playerid, g_ProgressBoxTD );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxOutsideTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-    TextDrawHideForPlayer( playerid, p_ProgressTitleTD[ playerid ] );
-
-	return ClearAnimations( playerid ), 1;
-}
-
-function ProgressBar_Update( playerid, progressid, tickrate, params )
-{
-	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_ProgressStarted{ playerid } == false )
-	{
-    	StopProgressBar( playerid );
-		p_CancelProgress{ playerid } = true; // Cancel.
-		//SendClientMessageFormatted( playerid, COLOR_ORANGE, "STOPPING PROGRESS %d", progressid );
-		CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, progressid, params );
-	    return 0;
-	}
-
-	p_ProgressStatus[ playerid ] += 13.0;
-	if ( p_ProgressStatus[ playerid ] >= 388 ) p_ProgressStatus[ playerid ] = 388;
-
-	TextDrawTextSize( p_ProgressBoxTD[ playerid ], p_ProgressStatus[ playerid ], 14.000000 );
-    TextDrawShowForPlayer( playerid, p_ProgressBoxTD[ playerid ] );
-
-	CallLocalFunction( "OnPlayerProgressUpdate", "ddd", playerid, progressid, params );
-
-	if ( p_ProgressStatus[ playerid ] >= 388 )
-	{
-    	StopProgressBar( playerid );
-    	CallLocalFunction( "OnProgressCompleted", "ddd", playerid, progressid, params );
-    	return 1;
- 	}
- 	KillTimer( p_ProgressUpdateTimer[ playerid ] ); // Just incase.
-	return ( p_ProgressUpdateTimer[ playerid ] = SetTimerEx( "ProgressBar_Update", tickrate, false, "dddd", playerid, progressid, tickrate, params ) );
 }
 
 stock ResetVehicleBurglaryData( vehicleid )
