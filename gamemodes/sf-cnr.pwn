@@ -15814,7 +15814,7 @@ stock GetRandomCreatedHouse( )
 		return -1;
 	}
 
-	static szCity[ MAX_ZONE_NAME ];
+	//static szCity[ MAX_ZONE_NAME ];
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
 	// first find homes to ignore
@@ -15833,11 +15833,11 @@ stock GetRandomCreatedHouse( )
 		}
 
 		// San Fierro only
-		Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
-		if ( ! strmatch( szCity, "San Fierro" ) )  {
-			ignoredHomes[ i ] = i;
-			continue;
-		}
+		// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+		// if ( ! strmatch( szCity, "San Fierro" ) )  {
+		// 	ignoredHomes[ i ] = i;
+		// 	continue;
+		// }
 	}
 
 	new
