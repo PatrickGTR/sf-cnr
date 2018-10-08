@@ -24,7 +24,7 @@ enum E_PAINTBALL_DATA
 	E_LIMIT,			E_WEAPONS[ 3 ],			E_PLAYERS,
 	E_ARENA, 			Float: E_ARMOUR, 		Float: E_HEALTH,
 	bool: E_ACTIVE,		bool: E_PASSWORDED, 	bool: E_REFILLER,
-	E_CD_TIMER,			bool: E_HEADSHOT
+	E_CD_TIMER,			bool: E_HEADSHOT, 		bool: E_CHAT
 };
 
 enum E_PAINTBALL_ARENAS
@@ -176,6 +176,13 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new iLobby = p_PaintBallArena{ playerid };
 					g_paintballData[ iLobby ] [ E_HEADSHOT ] = !g_paintballData[ iLobby ] [ E_HEADSHOT ];
 					SendClientMessageToPaintball( iLobby, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" Headshot mode has been %s.", g_paintballData[ iLobby ] [ E_HEADSHOT ] == false ? ( "un-toggled" ) : ( "toggled" ) );
+					showPaintBallLobbyData( playerid, iLobby );
+				}
+				case 11:
+				{
+					new iLobby = p_PaintBallArena{ playerid };
+					g_paintballData[ iLobby ] [ E_CHAT ] = !g_paintballData[ iLobby ] [ E_CHAT ];
+					SendClientMessageToPaintball( iLobby, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" Upon death, armour and/or health will%s be restored.", g_paintballData[ iLobby ] [ E_CHAT ] == false ? ( " not" ) : ( "" ) );
 					showPaintBallLobbyData( playerid, iLobby );
 				}
 			}
@@ -417,12 +424,21 @@ stock listPaintBallLobbies( playerid )
 
 stock showPaintBallLobbyData( playerid, id, second_button[ ] = "Join Game" )
 {
-	format( szLargeString, sizeof( szLargeString ), "Lobby Name\t\t"COL_GREY"%s"COL_WHITE"\nLobby Password\t%s"COL_WHITE"\nPlayer Capacity\t\t"COL_GREY"%d"COL_WHITE"\nHealth\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nArmour\t\t\t"COL_GREY"%0.2f%%"COL_WHITE"\nRefill Health/Armour\t%s"COL_WHITE"\nArena\t\t\t"COL_GREY"%s"COL_WHITE"\nPrimary Weapon\t"COL_GREY"%s"COL_WHITE"\nSecondary Weapon\t"COL_GREY"%s"COL_WHITE"\nTertiary Weapon\t"COL_GREY"%s"COL_WHITE"\nHeadshot Mode\t"COL_GREY"%s",
-		g_paintballData[ id ] [ E_NAME ], g_paintballData[ id ] [ E_PASSWORDED ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ), g_paintballData[ id ] [ E_LIMIT ], g_paintballData[ id ] [ E_HEALTH ], g_paintballData[ id ] [ E_ARMOUR ], g_paintballData[ id ] [ E_REFILLER ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ), g_paintballArenaData[ g_paintballData[ id ] [ E_ARENA ] ] [ E_NAME ],
-		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 0 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 1 ] ), ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 2 ] ),
-		g_paintballData[ id ] [ E_HEADSHOT ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" )
+	format( szLargeString, sizeof( szLargeString ), "Lobby Name\t"COL_GREY"%s"COL_WHITE"\nLobby Password\t%s"COL_WHITE"\nPlayer Capacity\t"COL_GREY"%d"COL_WHITE"\nHealth\t"COL_GREY"%0.2f%%"COL_WHITE"\nArmour\t"COL_GREY"%0.2f%%"COL_WHITE"\nRefill Health/Armour\t%s"COL_WHITE"\nArena\t"COL_GREY"%s"COL_WHITE"\nPrimary Weapon\t"COL_GREY"%s"COL_WHITE"\nSecondary Weapon\t"COL_GREY"%s"COL_WHITE"\nTertiary Weapon\t"COL_GREY"%s"COL_WHITE"\nHeadshot Mode\t"COL_GREY"%s"COL_WHITE"\nChat\t"COL_GREY"%s",
+		g_paintballData[ id ] [ E_NAME ],
+		g_paintballData[ id ] [ E_PASSWORDED ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ),
+		g_paintballData[ id ] [ E_LIMIT ],
+		g_paintballData[ id ] [ E_HEALTH ],
+		g_paintballData[ id ] [ E_ARMOUR ],
+		g_paintballData[ id ] [ E_REFILLER ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ),
+		g_paintballArenaData[ g_paintballData[ id ] [ E_ARENA ] ] [ E_NAME ],
+		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 0 ] ),
+		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 1 ] ),
+		ReturnWeaponName( g_paintballData[ id ] [ E_WEAPONS ] [ 2 ] ),
+		g_paintballData[ id ] [ E_HEADSHOT ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" ),
+		g_paintballData[ id ] [ E_CHAT ] == true ? ( ""COL_GREEN"ENABLED" ) : ( ""COL_RED"DISABLED" )
 	);
-	ShowPlayerDialog( playerid, DIALOG_PAINTBALL_EDIT, DIALOG_STYLE_LIST, "{FFFFFF}Paintball - Lobby Settings", szLargeString, "Change", second_button );
+	ShowPlayerDialog( playerid, DIALOG_PAINTBALL_EDIT, DIALOG_STYLE_TABLIST, "{FFFFFF}Paintball - Lobby Settings", szLargeString, "Change", second_button );
 }
 
 stock ShowPlayerPaintballArenas( playerid )
@@ -644,6 +660,7 @@ CMD:p( playerid, params[ ] )
 
 	if ( sscanf( params, "s[90]", msg ) ) return SendUsage( playerid, "/p [MESSAGE]" );
 	else if ( textContainsIP( msg ) ) return SendServerMessage( playerid, "Please do not advertise." );
+    else if ( !g_paintballData[ id ] [ E_CHAT ] ) return SendError( playerid, "Paintball chat is disabled in this lobby." );
     else
 	{
 		SendClientMessageToPaintball( id, -1, ""COL_GREY"<Paintball Chat> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );

@@ -1463,6 +1463,8 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
         	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 		}
 	}
+
+
 	return 1;
 }
 
@@ -5338,7 +5340,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults", "Select", "Close" );
 	return 1;
 }
 
@@ -8870,7 +8872,7 @@ CMD:takeover( playerid, params[ ] )
 
 					GetZoneFromCoordinates( szLocation, min_x, min_y );
 
-	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]{FFFFFF} Our territory at %s is being attacked by "COL_GREY"%s"COL_WHITE", defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ] );
+	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]"COL_WHITE" Our territory is being attacked by "COL_GREY"%s"COL_WHITE" in %s, defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ], szLocation );
 	            }
 	        }
 	        else
@@ -9886,15 +9888,54 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		format( szSmallString, sizeof( szSmallString ), "vburg_%d_items", vehicleid );
 		if ( GetGVarInt( szSmallString ) > 0 )
 		{
+			new 
+				Float: X, Float: Y, Float: Z,
+				Float: pX, Float: pY, Float: pZ;
+
+			GetPlayerPos( playerid, pX, pY, pZ );
+
 			Beep( playerid );
 			GameTextForPlayer( playerid, "Go to the truck blip on your radar for money!", 3000, 1 );
 			SendServerMessage( playerid, "Note! You have %d stolen goods that you can export for money!", GetGVarInt( szSmallString ) );
 
-			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( -2480.2461, 6.0720, 25.6172, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
+			static 
+				szCity[ MAX_ZONE_NAME ], 
+				aPlayer[ 1 ];
 
-			p_PawnStoreExport[ playerid ] = CreateDynamicRaceCP( 1, -2480.2461, 6.0720, 25.6172, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
+			aPlayer[ 0 ] = playerid;
+			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
+
+			//static ;
+			// San Fierro only
+			// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+			// if ( ! strmatch( szCity, "San Fierro" ) )  {
+			// 	ignoredHomes[ i ] = i;
+			// 	continue;
+			// }
+
+			Get2DCity( szCity, pX, pY, pZ );
+
+			if ( strmatch( szCity, "San Fierro" ) )
+			{
+				X = -2480.2461;
+				Y = 6.0720;
+				Z = 25.6172;
+			}
+			else if ( strmatch( szCity, "Los Santos" ) )
+			{
+				X = 2522.1677;
+				Y = -1717.4137;
+				Z = 13.6086;
+			}
+			else if ( strmatch( szCity, "Las Venturas" ) )
+			{
+				X = 2481.6812;
+				Y = 1315.8477;
+				Z = 10.6797;
+			}
+
+			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( X, Y, Z, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
+			p_PawnStoreExport[ playerid ] = CreateDynamicRaceCP( 1, X, Y, Z, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
 		}
 	}
 
@@ -11415,7 +11456,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	// taze mechanism
 	else if ( PRESSED( KEY_LOOK_BEHIND ) )
 	{
-		if ( p_Class[ playerid ] == CLASS_POLICE )
+		if ( p_Class[ playerid ] == CLASS_POLICE && p_AntiSpawnKillEnabled{ playerid })
 		{
 			new
 				closestid = GetClosestPlayer( playerid );
@@ -14352,10 +14393,25 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			// total robberies
 			case 4: mysql_function_query( dbHandle, "SELECT `NAME`, `ROBBERIES` as `SCORE_VAL` FROM `USERS` ORDER BY `ROBBERIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 4 );
 
+			// hits completed
+			case 5: mysql_function_query( dbHandle, "SELECT `NAME`, `CONTRACTS` as `SCORE_VAL` FROM `USERS` ORDER BY `CONTRACTS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 5 );
+		
+			// fires
+			case 6: mysql_function_query( dbHandle, "SELECT `NAME`, `FIRES` as `SCORE_VAL` FROM `USERS` ORDER BY `FIRES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 6 );
+
+			// burglaries
+			case 7: mysql_function_query( dbHandle, "SELECT `NAME`, `BURGLARIES` as `SCORE_VAL` FROM `USERS` ORDER BY `BURGLARIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 7 );
+			
+			// blown jails
+			case 8: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_JAILS` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_JAILS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 8 );
+			
+			// blown vaults
+			case 9: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_VAULT` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_VAULT` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 9 );
+
 		}
 	}
 	if ( dialogid == DIALOG_HIGHSCORES_BACK && ! response ) {
-		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
+		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults", "Select", "Close" );
 	}
 	return 1;
 }
@@ -14381,6 +14437,11 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		case 2: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Kills\n", szSmallString = "Top 25 Kills";
 		case 3: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Arrests\n", szSmallString = "Top 25 Arrests";
 		case 4: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Robberies\n", szSmallString = "Top 25 Robberies";
+		case 5: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Contracts\n", szSmallString = "Top 25 Hits Completed";
+		case 6: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Fires\n", szSmallString = "Top 25 Fires Extinguished";
+		case 7: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Burglaries\n", szSmallString = "Top 25 Burglaries";
+		case 8: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Jailes\n", szSmallString = "Top 25 Blown Jails";
+		case 9: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Vaults\n", szSmallString = "Top 25 Blown Vaults";
 	}
 
 	for ( new row = 0; row < rows; row ++ )
@@ -15792,7 +15853,7 @@ stock GetRandomCreatedHouse( )
 		return -1;
 	}
 
-	static szCity[ MAX_ZONE_NAME ];
+	//static szCity[ MAX_ZONE_NAME ];
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
 	// first find homes to ignore
@@ -15811,11 +15872,11 @@ stock GetRandomCreatedHouse( )
 		}
 
 		// San Fierro only
-		Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
-		if ( ! strmatch( szCity, "San Fierro" ) )  {
-			ignoredHomes[ i ] = i;
-			continue;
-		}
+		// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+		// if ( ! strmatch( szCity, "San Fierro" ) )  {
+		// 	ignoredHomes[ i ] = i;
+		// 	continue;
+		// }
 	}
 
 	new

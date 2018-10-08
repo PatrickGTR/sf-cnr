@@ -89,6 +89,7 @@ hook OnPlayerFirstSpawn( playerid )
     PreloadAnimationLibrary( playerid, "INT_HOUSE" );
 	PreloadAnimationLibrary( playerid, "MISC" );
 	PreloadAnimationLibrary( playerid, "POOL" );
+	PreloadAnimationLibrary( playerid, "SMOKING" );
 	return 1;
 }
 
@@ -272,6 +273,12 @@ CMD:chant( playerid, params[ ] )
 CMD:handsup( playerid, params[ ] )
 {
     CreateLoopingAnimation( playerid, "PED", "null", 4.0, 1, 0, 0, 0, 0, SPECIAL_ACTION_HANDSUP );
+	return 1;
+}
+
+CMD:smoke( playerid, params[ ] )
+{
+	CreateLoopingAnimation( playerid, "SMOKING", "M_smk_in", 4.0, 1, 0, 0, 0, 0 );
 	return 1;
 }
 
