@@ -10667,40 +10667,14 @@ public OnPlayerObjectMoved(playerid, objectid)
 	return 1;
 }
 
-
 public OnPlayerClickTextDraw(playerid, Text: clickedid)
 {
-	// Pressed ESC
-	if ( clickedid == Text: INVALID_TEXT_DRAW ) {
-		if ( GetPVarInt( playerid, "recently_previewed" ) < GetTickCount( ) && GetPVarInt( playerid, "viewing_vehicle" ) )
-			return CancelVehicleView( playerid, 0 );
-	}
 	return 1;
 }
 
 public OnPlayerClickPlayerTextDraw(playerid, PlayerText: playertextid)
 {
     return 1;
-}
-
-stock CancelVehicleView( playerid, cancel=1 )
-{
-	if ( cancel ) CancelSelectTextDraw( playerid );
-
-	TextDrawHideForPlayer( playerid, g_VehiclePreviewBoxTD );
-	TextDrawHideForPlayer( playerid, g_VehiclePreviewTxtTD );
-	TextDrawHideForPlayer( playerid, p_VehiclePreviewCloseTD );
-
-	for( new i; i < sizeof p_VehiclePreviewTD; i++ )
-		PlayerTextDrawDestroy( playerid, p_VehiclePreviewTD[ i ] );
-
-	cmd_moviemode( playerid, "" ); // Show textdraws :3
-
-	DeletePVar( playerid, "viewing_vehicle" );
-	SetPVarInt( playerid, "recently_previewed", GetTickCount( ) + 100 );
-
-	SendServerMessage( playerid, "You have finished looking at the vehicle's preview." );
-	return ShowPlayerDialog( playerid, DIALOG_VEHDEALER_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", "Purchase This Vehicle\nPreview Vehicle", "Select", "Back" );
 }
 
 public OnPlayerPickUpDynamicPickup( playerid, pickupid )

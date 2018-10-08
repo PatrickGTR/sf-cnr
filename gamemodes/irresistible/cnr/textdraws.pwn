@@ -24,9 +24,6 @@ new
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
 	Text:  g_PassiveModeTD 			= Text: INVALID_TEXT_DRAW,
-	Text:  g_VehiclePreviewBoxTD 	= Text: INVALID_TEXT_DRAW,
-	Text:  g_VehiclePreviewTxtTD	= Text: INVALID_TEXT_DRAW,
-	Text:  p_VehiclePreviewCloseTD	= Text: INVALID_TEXT_DRAW,
 	Text:  g_DoubleXPTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
@@ -52,9 +49,7 @@ new
 	PlayerText: p_GPSInformation	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_AchievementTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_FireDistance1		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_FireDistance2		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-
-	PlayerText: p_VehiclePreviewTD 	[ 7 ] = { PlayerText: INVALID_TEXT_DRAW, ... }
+	PlayerText: p_FireDistance2		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... }
 ;
 
 /* ** Hooks ** */
@@ -209,31 +204,6 @@ hook OnScriptInit( )
 	TextDrawColor(g_DoubleXPTD, -1);
 	TextDrawSetOutline(g_DoubleXPTD, 1);
 	TextDrawSetProportional(g_DoubleXPTD, 1);
-
-	p_VehiclePreviewCloseTD = TextDrawCreate(191.000000, 319.000000, "Press your ESCAPE KEY to close the preview.");
-	TextDrawBackgroundColor(p_VehiclePreviewCloseTD, 255);
-	TextDrawFont(p_VehiclePreviewCloseTD, 2);
-	TextDrawLetterSize(p_VehiclePreviewCloseTD, 0.259999, 1.399999);
-	TextDrawColor(p_VehiclePreviewCloseTD, -1);
-	TextDrawSetOutline(p_VehiclePreviewCloseTD, 1);
-	TextDrawSetProportional(p_VehiclePreviewCloseTD, 1);
-
-	g_VehiclePreviewBoxTD = TextDrawCreate(500.000000, 150.000000, "__");
-	TextDrawBackgroundColor(g_VehiclePreviewBoxTD, 255);
-	TextDrawLetterSize(g_VehiclePreviewBoxTD, 0.500000, 17.000000);
-	TextDrawColor(g_VehiclePreviewBoxTD, -1);
-	TextDrawUseBox(g_VehiclePreviewBoxTD, 1);
-	TextDrawBoxColor(g_VehiclePreviewBoxTD, 112);
-	TextDrawTextSize(g_VehiclePreviewBoxTD, 139.000000, 50.000000);
-
-	g_VehiclePreviewTxtTD = TextDrawCreate(130.000000, 135.000000, "Vehicle Preview");
-	TextDrawBackgroundColor(g_VehiclePreviewTxtTD, 255);
-	TextDrawFont(g_VehiclePreviewTxtTD, 0);
-	TextDrawLetterSize(g_VehiclePreviewTxtTD, 0.720000, 2.000000);
-	TextDrawColor(g_VehiclePreviewTxtTD, -1);
-	TextDrawSetOutline(g_VehiclePreviewTxtTD, 1);
-	TextDrawSetProportional(g_VehiclePreviewTxtTD, 1);
-	TextDrawSetSelectable(g_VehiclePreviewTxtTD, 0);
 
 	g_AdminLogTD = TextDrawCreate(150.000000, 360.000000, "_");
 	TextDrawBackgroundColor(g_AdminLogTD, 255);

@@ -32,5 +32,5 @@
     - Called when player toggles movie mode
 - `OnPlayerAccessEntrance( playerid, entranceid )`
     - Called when a player accesses an entrance id
-
-
+- `OnPlayerEndModelPreview( playerid, handleid )`
+	- Called when a player closes a model preview

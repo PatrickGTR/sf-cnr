@@ -28,6 +28,8 @@
 #define CATEGORY_MILITARY_ITEMS 	( 11 )
 #define CATEGORY_MISCELLANEOUS		( 12 )
 
+#define PREVIEW_MODEL_COMPONENT 	( 10 ) // some random number
+
 enum E_CAR_MODS
 {
 	E_CATEGORY,						E_LIMIT,						E_MODEL_ID,
@@ -336,7 +338,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		else
 		{
-			return cmd_garage( playerid, "vehicle pimp" ); 
+			return cmd_garage( playerid, "vehicle pimp" );
 		}
 	}
 
@@ -428,117 +430,14 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				}
 				case 1:
 				{
-					new model = -1;
-
 					for( new i = 0, x = 0; i < sizeof( g_vehicleComponentsData ); i++ ) if ( g_vehicleComponentsData[ i ] [ E_CATEGORY ] == iComponent )
 					{
 						if ( iItem == x++ )
 						{
-							model = g_vehicleComponentsData[ i ] [ E_MODEL_ID ];
+							return ShowPlayerModelPreview( playerid, PREVIEW_MODEL_COMPONENT, "Component Preview", g_vehicleComponentsData[ i ] [ E_MODEL_ID ], .bgcolor = 0xFFFFFF70 );
 						}
 					}
 
-					p_VehiclePreviewTD[ 0 ] = CreatePlayerTextDraw(playerid,289.000000, 230.000000, "preview 2");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 0 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 0 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 0 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 0 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 0 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 0 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 0 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 0 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 0 ], -16.000000, 0.000000, 0.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 0 ], 0);
-
-					p_VehiclePreviewTD[ 1 ] = CreatePlayerTextDraw(playerid,358.000000, 160.000000, "preview 3");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 1 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 1 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 1 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 1 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 1 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 1 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 1 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 1 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 1 ], -16.000000, 0.000000, 270.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 1 ], 0);
-
-					p_VehiclePreviewTD[ 2 ] = CreatePlayerTextDraw(playerid,358.000000, 230.000000, "preview 4");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 2 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 2 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 2 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 2 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 2 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 2 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 2 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 2 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 2 ], -16.000000, 0.000000, 90.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 2 ], 0);
-
-					p_VehiclePreviewTD[ 3 ] = CreatePlayerTextDraw(playerid,428.000000, 160.000000, "preview 4");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 3 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 3 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 3 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 3 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 3 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 3 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 3 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 3 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 3 ], 270.000000, 0.000000, 0.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 3 ], 0);
-
-					p_VehiclePreviewTD[ 4 ] = CreatePlayerTextDraw(playerid,428.000000, 230.000000, "preview 5");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 4 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 4 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 4 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 4 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 4 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 4 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 4 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 4 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 4 ], 90.000000, 0.000000, 0.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 4 ], 0);
-
-					p_VehiclePreviewTD[ 5 ] = CreatePlayerTextDraw(playerid,150.000000, 160.000000, "big preview");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 5 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 5 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 5 ], 0.500000, 1.000000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 5 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 5 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 5 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 5 ], 130.000000, 130.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 5 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 5 ], -16.000000, 0.000000, 45.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 5 ], 0);
-
-					p_VehiclePreviewTD[ 6 ] = CreatePlayerTextDraw(playerid,289.000000, 160.000000, "preview 6");
-					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 6 ], 112);
-					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 6 ], 5);
-					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 6 ], 0.500000, 4.400000);
-					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 6 ], -1);
-					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 6 ], 1);
-					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 6 ], 0);
-					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 6 ], 60.000000, 60.000000);
-					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 6 ], model);
-					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 6 ], -16.000000, 0.000000, 180.000000, 1.000000);
-					PlayerTextDrawSetSelectable(playerid, p_VehiclePreviewTD[ 6 ], 0);
-
-					TextDrawShowForPlayer( playerid, g_VehiclePreviewBoxTD );
-					TextDrawSetString( g_VehiclePreviewTxtTD, "Component Preview" );
-					TextDrawShowForPlayer( playerid, g_VehiclePreviewTxtTD );
-					TextDrawShowForPlayer( playerid, p_VehiclePreviewCloseTD );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 0 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 1 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 2 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 3 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 4 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 5 ] );
-					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 6 ] );
-
-					p_inMovieMode{ playerid } = false;
-					cmd_moviemode( playerid, "" ); // Hide textdraws :3
-
-					SelectTextDraw( playerid, COLOR_RED );
-					SetPVarInt( playerid, "viewing_component", 1 );
 				}
 			}
 		}
@@ -825,35 +724,13 @@ stock ShowVehicleComponentCategories( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_COMPONENTS_CATEGORY, DIALOG_STYLE_LIST, "Pimp My Ride - Categories", szCategory, "Select", "Cancel" );
 }
 
-
-hook OnPlayerClickTextDraw(playerid, Text: clickedid)
+hook OnPlayerEndModelPreview( playerid, handleid )
 {
-	// Pressed ESC
-	if ( clickedid == Text: INVALID_TEXT_DRAW ) {
-		if ( GetPVarInt( playerid, "recently_previewed" ) < GetTickCount( ) && GetPVarInt( playerid, "viewing_component" ) )
-			return CancelComponentView( playerid, 0 );
+	if ( handleid == PREVIEW_MODEL_COMPONENT )
+	{
+		SendServerMessage( playerid, "You have finished looking at this vehicle modification preview." );
+		ShowPlayerDialog(playerid, DIALOG_COMPONENTS_RESPONSE, DIALOG_STYLE_LIST, ""COL_WHITE"Pimp My Ride", "Purchase Component\nPreview Component", "Select", "Back" );
+		return Y_HOOKS_BREAK_RETURN_1;
 	}
 	return 1;
-}
-
-
-stock CancelComponentView( playerid, cancel = 1 )
-{
-	if ( cancel )
-		CancelSelectTextDraw( playerid );
-
-	TextDrawHideForPlayer( playerid, g_VehiclePreviewBoxTD );
-	TextDrawHideForPlayer( playerid, g_VehiclePreviewTxtTD );
-	TextDrawHideForPlayer( playerid, p_VehiclePreviewCloseTD );
-
-	for( new i; i < sizeof p_VehiclePreviewTD; i++ )
-		PlayerTextDrawDestroy( playerid, p_VehiclePreviewTD[ i ] );
-
-	cmd_moviemode( playerid, "" ); // Show textdraws :3
-
-	DeletePVar( playerid, "viewing_component" );
-	SetPVarInt( playerid, "recently_previewed", GetTickCount( ) + 100 );
-
-	SendServerMessage( playerid, "You have finished looking at this vehicle modification preview." );
-	return ShowPlayerDialog(playerid, DIALOG_COMPONENTS_RESPONSE, DIALOG_STYLE_LIST, ""COL_WHITE"Pimp My Ride", "Purchase Component\nPreview Component", "Select", "Back" );
 }

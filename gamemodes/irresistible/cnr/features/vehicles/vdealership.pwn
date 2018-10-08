@@ -23,6 +23,8 @@
 #define BV_TYPE_BOATS				( 12 )
 #define BV_TYPE_UNIQUE				( 13 )
 
+#define PREVIEW_MODEL_VEHICLE 		( 5 )
+
 /* ** Variables ** */
 enum E_BV_DATA
 {
@@ -364,108 +366,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 			case 1:
 			{
-				new model = g_BuyableVehicleData[ GetPVarInt( playerid, "buying_vehicle" ) ] [ E_MODEL ];
-
-				p_VehiclePreviewTD[ 0 ] = CreatePlayerTextDraw(playerid,289.000000, 230.000000, "preview 2");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 0 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 0 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 0 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 0 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 0 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 0 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 0 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 0 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 0 ], -16.000000, 0.000000, 0.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 0 ], 0);
-
-				p_VehiclePreviewTD[ 1 ] = CreatePlayerTextDraw(playerid,358.000000, 160.000000, "preview 3");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 1 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 1 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 1 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 1 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 1 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 1 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 1 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 1 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 1 ], -16.000000, 0.000000, 270.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 1 ], 0);
-
-				p_VehiclePreviewTD[ 2 ] = CreatePlayerTextDraw(playerid,358.000000, 230.000000, "preview 4");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 2 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 2 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 2 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 2 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 2 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 2 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 2 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 2 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 2 ], -16.000000, 0.000000, 90.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 2 ], 0);
-
-				p_VehiclePreviewTD[ 3 ] = CreatePlayerTextDraw(playerid,428.000000, 160.000000, "preview 4");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 3 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 3 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 3 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 3 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 3 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 3 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 3 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 3 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 3 ], 270.000000, 0.000000, 0.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 3 ], 0);
-
-				p_VehiclePreviewTD[ 4 ] = CreatePlayerTextDraw(playerid,428.000000, 230.000000, "preview 5");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 4 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 4 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 4 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 4 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 4 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 4 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 4 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 4 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 4 ], 90.000000, 0.000000, 0.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 4 ], 0);
-
-				p_VehiclePreviewTD[ 5 ] = CreatePlayerTextDraw(playerid,150.000000, 160.000000, "big preview");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 5 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 5 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 5 ], 0.500000, 1.000000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 5 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 5 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 5 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 5 ], 130.000000, 130.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 5 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 5 ], -16.000000, 0.000000, 45.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 5 ], 0);
-
-				p_VehiclePreviewTD[ 6 ] = CreatePlayerTextDraw(playerid,289.000000, 160.000000, "preview 6");
-				PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 6 ], 112);
-				PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 6 ], 5);
-				PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 6 ], 0.500000, 4.400000);
-				PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 6 ], -1);
-				PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 6 ], 1);
-				PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 6 ], 0);
-				PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 6 ], 60.000000, 60.000000);
-				PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 6 ], model);
-				PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 6 ], -16.000000, 0.000000, 180.000000, 1.000000);
-				PlayerTextDrawSetSelectable(playerid, p_VehiclePreviewTD[ 6 ], 0);
-
-				TextDrawShowForPlayer( playerid, g_VehiclePreviewBoxTD );
-				TextDrawShowForPlayer( playerid, g_VehiclePreviewTxtTD );
-				TextDrawShowForPlayer( playerid, p_VehiclePreviewCloseTD );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 0 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 1 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 2 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 3 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 4 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 5 ] );
-				PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 6 ] );
-
-				p_inMovieMode{ playerid } = false;
-				cmd_moviemode( playerid, "" ); // Hide textdraws :3
-
-				SelectTextDraw( playerid, COLOR_RED );
-				SetPVarInt( playerid, "viewing_vehicle", 1 );
+				return ShowPlayerModelPreview( playerid, PREVIEW_MODEL_VEHICLE, "Vehicle Preview", g_BuyableVehicleData[ GetPVarInt( playerid, "buying_vehicle" ) ] [ E_MODEL ] );
 			}
 		}
 	}
@@ -478,6 +379,17 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		SendServerMessage( playerid, "Please read this thoroughly so you know what you can be facing. %d seconds left.", GetPVarInt( playerid, "bought_veh_ts" ) - g_iTime );
 		ShowPlayerDialog( playerid, DIALOG_BOUGHT_VEH, DIALOG_STYLE_MSGBOX, "{FFFFFF}You've purchased a vehicle!", "{FFFFFF}Glad to see you've purchased a vehicle. Please ensure you read:\n\n* Vehicles are kept until you sell them or go two months inactive. This is not refundable.\n* Do not mispark your vehicle or it can be removed/impounded.\n* Check out /v for vehicle commands.\n* Find an acceptable place to park your new vehicle such as your house or a parking lot.", "Okay", "" );
+	}
+	return 1;
+}
+
+hook OnPlayerEndModelPreview( playerid, handleid )
+{
+	if ( handleid == PREVIEW_MODEL_VEHICLE )
+	{
+		SendServerMessage( playerid, "You have finished looking at the vehicle's preview." );
+		ShowPlayerDialog( playerid, DIALOG_VEHDEALER_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", "Purchase This Vehicle\nPreview Vehicle", "Select", "Back" );
+		return Y_HOOKS_BREAK_RETURN_1;
 	}
 	return 1;
 }
