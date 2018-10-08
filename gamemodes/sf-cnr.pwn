@@ -9888,15 +9888,54 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		format( szSmallString, sizeof( szSmallString ), "vburg_%d_items", vehicleid );
 		if ( GetGVarInt( szSmallString ) > 0 )
 		{
+			new 
+				Float: X, Float: Y, Float: Z,
+				Float: pX, Float: pY, Float: pZ;
+
+			GetPlayerPos( playerid, pX, pY, pZ );
+
 			Beep( playerid );
 			GameTextForPlayer( playerid, "Go to the truck blip on your radar for money!", 3000, 1 );
 			SendServerMessage( playerid, "Note! You have %d stolen goods that you can export for money!", GetGVarInt( szSmallString ) );
 
-			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( -2480.2461, 6.0720, 25.6172, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
+			static 
+				szCity[ MAX_ZONE_NAME ], 
+				aPlayer[ 1 ];
 
-			p_PawnStoreExport[ playerid ] = CreateDynamicRaceCP( 1, -2480.2461, 6.0720, 25.6172, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
+			aPlayer[ 0 ] = playerid;
+			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
+
+			//static ;
+			// San Fierro only
+			// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+			// if ( ! strmatch( szCity, "San Fierro" ) )  {
+			// 	ignoredHomes[ i ] = i;
+			// 	continue;
+			// }
+
+			Get2DCity( szCity, pX, pY, pZ );
+
+			if ( strmatch( szCity, "San Fierro" ) )
+			{
+				X = -2480.2461;
+				Y = 6.0720;
+				Z = 25.6172;
+			}
+			else if ( strmatch( szCity, "Los Santos" ) )
+			{
+				X = 2522.1677;
+				Y = -1717.4137;
+				Z = 13.6086;
+			}
+			else if ( strmatch( szCity, "Las Venturas" ) )
+			{
+				X = 2481.6812;
+				Y = 1315.8477;
+				Z = 10.6797;
+			}
+
+			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( X, Y, Z, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
+			p_PawnStoreExport[ playerid ] = CreateDynamicRaceCP( 1, X, Y, Z, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
 		}
 	}
 
