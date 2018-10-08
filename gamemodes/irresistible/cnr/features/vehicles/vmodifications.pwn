@@ -329,82 +329,216 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	else if ( dialogid == DIALOG_COMPONENTS )
 	{
+		SetPVarInt( playerid, "components_item", listitem );
+		if ( response )
+		{
+			ShowPlayerDialog(playerid, DIALOG_COMPONENTS_RESPONSE, DIALOG_STYLE_LIST, ""COL_WHITE"Pimp My Ride", "Purchase Component\nPreview Component", "Select", "Back" );
+		}
+		else
+		{
+			return cmd_garage( playerid, "vehicle pimp" ); 
+		}
+	}
+
+	else if ( dialogid == DIALOG_COMPONENTS_RESPONSE )
+	{
 		new
+			iItem = GetPVarInt( playerid, "components_item" ),
 			iComponent = GetPVarInt( playerid, "components_category" );
 
 		if ( response )
 		{
-			for( new i = 0, x = 0; i < sizeof( g_vehicleComponentsData ); i++ ) if ( g_vehicleComponentsData[ i ] [ E_CATEGORY ] == iComponent )
+			switch( listitem )
 			{
-				if ( listitem == x++ )
+				case 0:
 				{
-				    if ( !IsPlayerInAnyVehicle( playerid ) )
-				    	return SendError( playerid, "You need to be in a vehicle to use this command." );
-
-					if ( GetPlayerCash( playerid ) < g_vehicleComponentsData[ i ] [ E_PRICE ] )
-						return SendError( playerid, "You need %s to purchase this vehicle component.", cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
-
-				    if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER )
-				    	return SendError( playerid, "You need to be a driver to use this command." );
-
-			        new
-			        	ownerid = INVALID_PLAYER_ID,
-			        	vehicleid = getVehicleSlotFromID( GetPlayerVehicleID( playerid ), ownerid )
-					;
-
-					if ( vehicleid == -1 )
-						return SendError( playerid, "This vehicle isn't a buyable vehicle." );
-
-					if ( playerid != ownerid )
-						return SendError( playerid, "This vehicle does not belong to you." );
-
-					if ( GetVehicleCustomComponents( ownerid, vehicleid ) >= GetPlayerPimpVehicleSlots( ownerid ) )
-						return SendError( playerid, "You cannot purchase more than %d vehicle components.", GetPlayerPimpVehicleSlots( ownerid ) );
-
-					new
-						slotid = GetVehicleComponentSlot( ownerid, vehicleid );
-
-					if ( slotid == -1 )
-						return SendError( playerid, "You cannot add more than %d components to your vehicle.", MAX_PIMPS );
-
-					// make sure the person is above the limit
-					if ( g_vehicleComponentsData[ i ] [ E_LIMIT ] != 0 )
+					for( new i = 0, x = 0; i < sizeof( g_vehicleComponentsData ); i++ ) if ( g_vehicleComponentsData[ i ] [ E_CATEGORY ] == iComponent )
 					{
-						new
-							instances = 0;
+						if ( iItem == x++ )
+						{
+						    if ( !IsPlayerInAnyVehicle( playerid ) )
+						    	return SendError( playerid, "You need to be in a vehicle to use this command." );
 
-						for( new p = 0; p < MAX_PIMPS; p++ )
-							if ( g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_CREATED ] [ p ] && g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_MODEL ] [ p ] == g_vehicleComponentsData[ i ] [ E_MODEL_ID ] )
-								instances ++;
+							if ( GetPlayerCash( playerid ) < g_vehicleComponentsData[ i ] [ E_PRICE ] )
+								return SendError( playerid, "You need %s to purchase this vehicle component.", cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
 
-						if ( instances >= g_vehicleComponentsData[ i ] [ E_LIMIT ] )
-							return SendError( playerid, "You can place a %s a maximum of %d time(s).", g_vehicleComponentsData[ i ] [ E_NAME ], g_vehicleComponentsData[ i ] [ E_LIMIT ] );
+						    if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER )
+						    	return SendError( playerid, "You need to be a driver to use this command." );
+
+					        new
+					        	ownerid = INVALID_PLAYER_ID,
+					        	vehicleid = getVehicleSlotFromID( GetPlayerVehicleID( playerid ), ownerid )
+							;
+
+							if ( vehicleid == -1 )
+								return SendError( playerid, "This vehicle isn't a buyable vehicle." );
+
+							if ( playerid != ownerid )
+								return SendError( playerid, "This vehicle does not belong to you." );
+
+							if ( GetVehicleCustomComponents( ownerid, vehicleid ) >= GetPlayerPimpVehicleSlots( ownerid ) )
+								return SendError( playerid, "You cannot purchase more than %d vehicle components.", GetPlayerPimpVehicleSlots( ownerid ) );
+
+							new
+								slotid = GetVehicleComponentSlot( ownerid, vehicleid );
+
+							if ( slotid == -1 )
+								return SendError( playerid, "You cannot add more than %d components to your vehicle.", MAX_PIMPS );
+
+							// make sure the person is above the limit
+							if ( g_vehicleComponentsData[ i ] [ E_LIMIT ] != 0 )
+							{
+								new
+									instances = 0;
+
+								for( new p = 0; p < MAX_PIMPS; p++ )
+									if ( g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_CREATED ] [ p ] && g_vehiclePimpData[ playerid ] [ vehicleid ] [ E_MODEL ] [ p ] == g_vehicleComponentsData[ i ] [ E_MODEL_ID ] )
+										instances ++;
+
+								if ( instances >= g_vehicleComponentsData[ i ] [ E_LIMIT ] )
+									return SendError( playerid, "You can place a %s a maximum of %d time(s).", g_vehicleComponentsData[ i ] [ E_NAME ], g_vehicleComponentsData[ i ] [ E_LIMIT ] );
+							}
+
+							new
+								Float: X, Float: Y, Float: Z;
+
+							GivePlayerCash( playerid, -g_vehicleComponentsData[ i ] [ E_PRICE ] );
+
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ slotid ] = true;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_DISABLED ] [ slotid ] = false;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ slotid ] = g_vehicleComponentsData[ i ] [ E_MODEL_ID ];
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_X ] [ slotid ] = 0.0;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_Y ] [ slotid ] = 0.0;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_Z ] [ slotid ] = 1.0;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RX ] [ slotid ] = 0.0;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RY ] [ slotid ] = 0.0;
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RZ ] [ slotid ] = 0.0;
+
+							format( szNormalString, sizeof( szNormalString ), "INSERT INTO `COMPONENTS` (`VEHICLE_ID`,`MODEL`,`X`,`Y`,`Z`,`RX`,`RY`,`RZ`) VALUES (%d,%d,0.0,0.0,1.0,0.0,0.0,0.0)", g_vehicleData[ ownerid ] [ vehicleid ] [ E_SQL_ID ], g_vehicleComponentsData[ i ] [ E_MODEL_ID ] );
+							mysql_function_query( dbHandle, szNormalString, true, "OnPlayerCreateVehicleComponent", "ddd", playerid, vehicleid, slotid );
+
+							GetVehiclePos( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], X, Y, Z );
+							SetVehiclePos( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], X, Y, Z + 0.05 );
+
+							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ] = CreateDynamicObject( g_vehicleComponentsData[ i ] [ E_MODEL_ID ], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = GetVehicleVirtualWorld( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ]) );
+							AttachDynamicObjectToVehicle( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ], g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
+							return SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ i ] [ E_NAME ], cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
+						}
+					}
+				}
+				case 1:
+				{
+					new model = -1;
+
+					for( new i = 0, x = 0; i < sizeof( g_vehicleComponentsData ); i++ ) if ( g_vehicleComponentsData[ i ] [ E_CATEGORY ] == iComponent )
+					{
+						if ( iItem == x++ )
+						{
+							model = g_vehicleComponentsData[ i ] [ E_MODEL_ID ];
+						}
 					}
 
-					new
-						Float: X, Float: Y, Float: Z;
+					p_VehiclePreviewTD[ 0 ] = CreatePlayerTextDraw(playerid,289.000000, 230.000000, "preview 2");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 0 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 0 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 0 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 0 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 0 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 0 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 0 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 0 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 0 ], -16.000000, 0.000000, 0.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 0 ], 0);
 
-					GivePlayerCash( playerid, -g_vehicleComponentsData[ i ] [ E_PRICE ] );
+					p_VehiclePreviewTD[ 1 ] = CreatePlayerTextDraw(playerid,358.000000, 160.000000, "preview 3");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 1 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 1 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 1 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 1 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 1 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 1 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 1 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 1 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 1 ], -16.000000, 0.000000, 270.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 1 ], 0);
 
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ slotid ] = true;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_DISABLED ] [ slotid ] = false;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ slotid ] = g_vehicleComponentsData[ i ] [ E_MODEL_ID ];
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_X ] [ slotid ] = 0.0;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_Y ] [ slotid ] = 0.0;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_Z ] [ slotid ] = 1.0;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RX ] [ slotid ] = 0.0;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RY ] [ slotid ] = 0.0;
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_RZ ] [ slotid ] = 0.0;
+					p_VehiclePreviewTD[ 2 ] = CreatePlayerTextDraw(playerid,358.000000, 230.000000, "preview 4");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 2 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 2 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 2 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 2 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 2 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 2 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 2 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 2 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 2 ], -16.000000, 0.000000, 90.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 2 ], 0);
 
-					format( szNormalString, sizeof( szNormalString ), "INSERT INTO `COMPONENTS` (`VEHICLE_ID`,`MODEL`,`X`,`Y`,`Z`,`RX`,`RY`,`RZ`) VALUES (%d,%d,0.0,0.0,1.0,0.0,0.0,0.0)", g_vehicleData[ ownerid ] [ vehicleid ] [ E_SQL_ID ], g_vehicleComponentsData[ i ] [ E_MODEL_ID ] );
-					mysql_function_query( dbHandle, szNormalString, true, "OnPlayerCreateVehicleComponent", "ddd", playerid, vehicleid, slotid );
+					p_VehiclePreviewTD[ 3 ] = CreatePlayerTextDraw(playerid,428.000000, 160.000000, "preview 4");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 3 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 3 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 3 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 3 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 3 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 3 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 3 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 3 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 3 ], 270.000000, 0.000000, 0.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 3 ], 0);
 
-					GetVehiclePos( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], X, Y, Z );
-					SetVehiclePos( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], X, Y, Z + 0.05 );
+					p_VehiclePreviewTD[ 4 ] = CreatePlayerTextDraw(playerid,428.000000, 230.000000, "preview 5");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 4 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 4 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 4 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 4 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 4 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 4 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 4 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 4 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 4 ], 90.000000, 0.000000, 0.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 4 ], 0);
 
-					g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ] = CreateDynamicObject( g_vehicleComponentsData[ i ] [ E_MODEL_ID ], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = GetVehicleVirtualWorld( g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ]) );
-					AttachDynamicObjectToVehicle( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ slotid ], g_vehicleData[ ownerid ] [ vehicleid ] [ E_VEHICLE_ID ], 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 );
-					return SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ i ] [ E_NAME ], cash_format( g_vehicleComponentsData[ i ] [ E_PRICE ] ) );
+					p_VehiclePreviewTD[ 5 ] = CreatePlayerTextDraw(playerid,150.000000, 160.000000, "big preview");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 5 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 5 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 5 ], 0.500000, 1.000000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 5 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 5 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 5 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 5 ], 130.000000, 130.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 5 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 5 ], -16.000000, 0.000000, 45.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid,p_VehiclePreviewTD[ 5 ], 0);
+
+					p_VehiclePreviewTD[ 6 ] = CreatePlayerTextDraw(playerid,289.000000, 160.000000, "preview 6");
+					PlayerTextDrawBackgroundColor(playerid,p_VehiclePreviewTD[ 6 ], 112);
+					PlayerTextDrawFont(playerid,p_VehiclePreviewTD[ 6 ], 5);
+					PlayerTextDrawLetterSize(playerid,p_VehiclePreviewTD[ 6 ], 0.500000, 4.400000);
+					PlayerTextDrawColor(playerid,p_VehiclePreviewTD[ 6 ], -1);
+					PlayerTextDrawUseBox(playerid,p_VehiclePreviewTD[ 6 ], 1);
+					PlayerTextDrawBoxColor(playerid,p_VehiclePreviewTD[ 6 ], 0);
+					PlayerTextDrawTextSize(playerid,p_VehiclePreviewTD[ 6 ], 60.000000, 60.000000);
+					PlayerTextDrawSetPreviewModel(playerid, p_VehiclePreviewTD[ 6 ], model);
+					PlayerTextDrawSetPreviewRot(playerid, p_VehiclePreviewTD[ 6 ], -16.000000, 0.000000, 180.000000, 1.000000);
+					PlayerTextDrawSetSelectable(playerid, p_VehiclePreviewTD[ 6 ], 0);
+
+					TextDrawShowForPlayer( playerid, g_VehiclePreviewBoxTD );
+					TextDrawSetString( g_VehiclePreviewTxtTD, "Component Preview" );
+					TextDrawShowForPlayer( playerid, g_VehiclePreviewTxtTD );
+					TextDrawShowForPlayer( playerid, p_VehiclePreviewCloseTD );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 0 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 1 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 2 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 3 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 4 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 5 ] );
+					PlayerTextDrawShow( playerid, p_VehiclePreviewTD[ 6 ] );
+
+					p_inMovieMode{ playerid } = false;
+					cmd_moviemode( playerid, "" ); // Hide textdraws :3
+
+					SelectTextDraw( playerid, COLOR_RED );
+					SetPVarInt( playerid, "viewing_component", 1 );
 				}
 			}
 		}
@@ -689,4 +823,37 @@ stock ShowVehicleComponentCategories( playerid )
 		}
 	}
 	return ShowPlayerDialog( playerid, DIALOG_COMPONENTS_CATEGORY, DIALOG_STYLE_LIST, "Pimp My Ride - Categories", szCategory, "Select", "Cancel" );
+}
+
+
+hook OnPlayerClickTextDraw(playerid, Text: clickedid)
+{
+	// Pressed ESC
+	if ( clickedid == Text: INVALID_TEXT_DRAW ) {
+		if ( GetPVarInt( playerid, "recently_previewed" ) < GetTickCount( ) && GetPVarInt( playerid, "viewing_component" ) )
+			return CancelComponentView( playerid, 0 );
+	}
+	return 1;
+}
+
+
+stock CancelComponentView( playerid, cancel = 1 )
+{
+	if ( cancel )
+		CancelSelectTextDraw( playerid );
+
+	TextDrawHideForPlayer( playerid, g_VehiclePreviewBoxTD );
+	TextDrawHideForPlayer( playerid, g_VehiclePreviewTxtTD );
+	TextDrawHideForPlayer( playerid, p_VehiclePreviewCloseTD );
+
+	for( new i; i < sizeof p_VehiclePreviewTD; i++ )
+		PlayerTextDrawDestroy( playerid, p_VehiclePreviewTD[ i ] );
+
+	cmd_moviemode( playerid, "" ); // Show textdraws :3
+
+	DeletePVar( playerid, "viewing_component" );
+	SetPVarInt( playerid, "recently_previewed", GetTickCount( ) + 100 );
+
+	SendServerMessage( playerid, "You have finished looking at this vehicle modification preview." );
+	return ShowPlayerDialog(playerid, DIALOG_COMPONENTS_RESPONSE, DIALOG_STYLE_LIST, ""COL_WHITE"Pimp My Ride", "Purchase Component\nPreview Component", "Select", "Back" );
 }
