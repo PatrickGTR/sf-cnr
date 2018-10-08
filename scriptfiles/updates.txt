@@ -1,8 +1,10 @@
 (+) "/perks" has been added and is based off your total level.
-(+) Gang bank accounts are charged $250 per spawn in a facility.
+(+) Gang bank accounts are charged $500 per spawn in a facility.
+(+) Picking safe / thermal drill speeds improve if you increase your robbery level.
 (/) Passive mode is automatically toggled for every player, use "/passive" to disable it.
 (/) Business payouts have been significantly increased (how it was originally).
 (/) You will drop health pickups matching your DM level (10+ DM level only for now).
 (/) The XP bar has different colours for different levels.
 (/) You need at least 7 days of VIP remaining before you can upgrade it.
 (*) Fix business issue with production not beginning with maxed supplies.
+(*) Addressed issue with clerks giving too much XP when robbing them.
