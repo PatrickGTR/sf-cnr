@@ -9888,7 +9888,7 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		format( szSmallString, sizeof( szSmallString ), "vburg_%d_items", vehicleid );
 		if ( GetGVarInt( szSmallString ) > 0 )
 		{
-			new 
+			new
 				Float: X, Float: Y, Float: Z,
 				Float: pX, Float: pY, Float: pZ;
 
@@ -9898,30 +9898,16 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 			GameTextForPlayer( playerid, "Go to the truck blip on your radar for money!", 3000, 1 );
 			SendServerMessage( playerid, "Note! You have %d stolen goods that you can export for money!", GetGVarInt( szSmallString ) );
 
-			static 
-				szCity[ MAX_ZONE_NAME ], 
+			static
+				szCity[ MAX_ZONE_NAME ],
 				aPlayer[ 1 ];
 
 			aPlayer[ 0 ] = playerid;
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 
-			//static ;
-			// San Fierro only
-			// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
-			// if ( ! strmatch( szCity, "San Fierro" ) )  {
-			// 	ignoredHomes[ i ] = i;
-			// 	continue;
-			// }
-
 			Get2DCity( szCity, pX, pY, pZ );
 
-			if ( strmatch( szCity, "San Fierro" ) )
-			{
-				X = -2480.2461;
-				Y = 6.0720;
-				Z = 25.6172;
-			}
-			else if ( strmatch( szCity, "Los Santos" ) )
+			if ( strmatch( szCity, "Los Santos" ) )
 			{
 				X = 2522.1677;
 				Y = -1717.4137;
@@ -9932,6 +9918,12 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 				X = 2481.6812;
 				Y = 1315.8477;
 				Z = 10.6797;
+			}
+			else // default SF if not LV and LS
+			{
+				X = -2480.2461;
+				Y = 6.0720;
+				Z = 25.6172;
 			}
 
 			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( X, Y, Z, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
@@ -14395,16 +14387,16 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			// hits completed
 			case 5: mysql_function_query( dbHandle, "SELECT `NAME`, `CONTRACTS` as `SCORE_VAL` FROM `USERS` ORDER BY `CONTRACTS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 5 );
-		
+
 			// fires
 			case 6: mysql_function_query( dbHandle, "SELECT `NAME`, `FIRES` as `SCORE_VAL` FROM `USERS` ORDER BY `FIRES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 6 );
 
 			// burglaries
 			case 7: mysql_function_query( dbHandle, "SELECT `NAME`, `BURGLARIES` as `SCORE_VAL` FROM `USERS` ORDER BY `BURGLARIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 7 );
-			
+
 			// blown jails
 			case 8: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_JAILS` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_JAILS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 8 );
-			
+
 			// blown vaults
 			case 9: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_VAULT` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_VAULT` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 9 );
 
@@ -15853,7 +15845,7 @@ stock GetRandomCreatedHouse( )
 		return -1;
 	}
 
-	//static szCity[ MAX_ZONE_NAME ];
+	static szCity[ MAX_ZONE_NAME ];
 	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
 
 	// first find homes to ignore
@@ -15872,11 +15864,11 @@ stock GetRandomCreatedHouse( )
 		}
 
 		// San Fierro only
-		// Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
-		// if ( ! strmatch( szCity, "San Fierro" ) )  {
-		// 	ignoredHomes[ i ] = i;
-		// 	continue;
-		// }
+		Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+		if ( ! strmatch( szCity, "San Fierro" ) )  {
+			ignoredHomes[ i ] = i;
+			continue;
+		}
 	}
 
 	new
