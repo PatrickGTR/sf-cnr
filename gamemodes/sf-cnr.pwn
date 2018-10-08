@@ -6840,18 +6840,17 @@ CMD:job( playerid, params[ ] )
 
 CMD:jaillist( playerid, params[ ] )
 {
-	new count = 0;
-	SendClientMessage( playerid, COLOR_GOLD, ".: Jail List :." );
-	foreach(new i : Player)
-	{
-	    if ( p_Jailed{ i } == true )
-	    {
-	        SendClientMessageFormatted( playerid, -1, "%s (%d seconds)", ReturnPlayerName( i ), p_JailTime[ i ] );
-	        count++;
-	    }
-	}
-	if ( count == 0 ) SendClientMessage( playerid, -1, "There are no players in jail." );
-	return 1;
+	szBigString[ 0 ] = '\0';
+
+    foreach( new i : Player ) if ( IsPlayerJailed( i ) ) {
+        format( szBigString, sizeof( szBigString ), "%s%s%s(%d)\t%d seconds", szBigString, p_AdminJailed{ i } ? ( COL_RED ) : ( COL_WHITE ), ReturnPlayerName( i ), i, p_JailTime[ i ] );
+    }
+
+    if ( szBigString[ 0 ] == '\0' )   {
+        return SendError( playerid, "There are no players in jail." );
+    } else {
+        return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Jail List", szBigString, "Close", "" );
+    }
 }
 
 CMD:lastlogged( playerid, params[ ] )

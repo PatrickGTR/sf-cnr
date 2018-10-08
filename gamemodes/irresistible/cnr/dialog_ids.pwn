@@ -47,7 +47,7 @@
 #define DIALOG_GARAGE_INTERIORS     		1035
 #define DIALOG_GARAGE_INT_CONFIRM			1036
 #define DIALOG_GANG_LIST         			1037
-//#define DIALOG_LUMBERJACK           		1038
+#define DIALOG_TOY_PREVIEW           		1038
 #define DIALOG_FIGHTSTYLE           		1039
 #define DIALOG_TOYS_MAIN            		1040
 #define DIALOG_TOYS     					1041

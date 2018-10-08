@@ -25,6 +25,8 @@
 #define CATEGORY_MISC 			( 10 )
 #define CATEGORY_VIP 			( 11 )
 
+#define MODEL_PREVIEW_TOY 		( 15 )
+
 /* ** Variables ** */
 enum E_ATTACHED_DATA
 {
@@ -382,25 +384,52 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			{
 		       	if ( x == listitem )
 		      	{
-				    if ( p_ToyUnlocked[ playerid ] { g_ToyData[ id ] [ E_ID ] } )
-				    {
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-						return SendError( playerid, "You have already bought this toy." );
-				    }
-
-		      		if ( GetPlayerCash( playerid ) < g_ToyData[ id ] [ E_PRICE ] )
-		      		{
-						showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-						return SendError( playerid, "You cannot afford this toy." );
-		      		}
-
-				    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
-				    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
-					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
-		      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], cash_format( g_ToyData[ id ] [ E_PRICE ] ) );
+		      		SetPVarInt( playerid, "toy_item", id );
+					ShowPlayerDialog( playerid, DIALOG_TOY_PREVIEW, DIALOG_STYLE_TABLIST, "{FFFFFF}Purchase Toys", sprintf( "Purchase Toy\t"COL_GOLD"%s\nPreview Toy\t ", cash_format( g_ToyData[ id ] [ E_PRICE ] ) ), "Select", "Back" );
 		      		break;
 		   		}
 		      	x ++;
+			}
+		}
+	}
+	else if ( dialogid == DIALOG_TOY_PREVIEW )
+	{
+		if ( ! response )
+			return showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
+
+		new
+			id = GetPVarInt( playerid, "toy_item" );
+
+		if ( ! ( 0 <= id < sizeof( g_ToyData ) ) )
+			return SendError( playerid, "An error has occurred, please try again." );
+
+		switch ( listitem )
+		{
+			// bought
+			case 0:
+			{
+				if ( p_ToyUnlocked[ playerid ] { g_ToyData[ id ] [ E_ID ] } )
+			    {
+					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
+					return SendError( playerid, "You have already bought this toy." );
+			    }
+
+	      		if ( GetPlayerCash( playerid ) < g_ToyData[ id ] [ E_PRICE ] )
+	      		{
+					showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
+					return SendError( playerid, "You cannot afford this toy." );
+	      		}
+
+			    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
+			    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
+				showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
+	      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], cash_format( g_ToyData[ id ] [ E_PRICE ] ) );
+			}
+
+			// preview
+			case 1:
+			{
+				return ShowPlayerModelPreview( playerid, MODEL_PREVIEW_TOY, "Toy Preview", g_ToyData[ id ] [ E_MODEL ] );
 			}
 		}
 	}
@@ -565,6 +594,19 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	else if ( dialogid == DIALOG_TOYS_BUY && response ) {
 		p_ToyCategorySelected{ playerid } = listitem;
 		showToyCategoryItems( playerid, listitem, .pawnshop = true );
+	}
+	return 1;
+}
+
+hook OnPlayerEndModelPreview( playerid, handleid )
+{
+	if ( handleid == MODEL_PREVIEW_TOY )
+	{
+		new
+			id = GetPVarInt( playerid, "toy_item" );
+
+		SendServerMessage( playerid, "You have finished looking at this toy preview." );
+		return ShowPlayerDialog( playerid, DIALOG_TOY_PREVIEW, DIALOG_STYLE_TABLIST, "{FFFFFF}Purchase Toys", sprintf( "Purchase Toy\t"COL_GOLD"%s\nPreview Toy\t ", cash_format( g_ToyData[ id ] [ E_PRICE ] ) ), "Select", "Back" ), Y_HOOKS_BREAK_RETURN_1;
 	}
 	return 1;
 }
