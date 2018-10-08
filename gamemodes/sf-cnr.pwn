@@ -1463,6 +1463,8 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
         	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
 		}
 	}
+
+
 	return 1;
 }
 
@@ -11415,7 +11417,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	// taze mechanism
 	else if ( PRESSED( KEY_LOOK_BEHIND ) )
 	{
-		if ( p_Class[ playerid ] == CLASS_POLICE )
+		if ( p_Class[ playerid ] == CLASS_POLICE && p_AntiSpawnKillEnabled{ playerid })
 		{
 			new
 				closestid = GetClosestPlayer( playerid );
