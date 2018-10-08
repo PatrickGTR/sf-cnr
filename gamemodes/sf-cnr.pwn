@@ -17779,11 +17779,17 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 						// trigger the robbery bot
 						TriggerRobberyForClerks( playerid, robberyid );
 
-						SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C or type /stoprob to cancel the operation." );
-						g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
+						new
+							Float: speed_up = GetPlayerLevel( playerid, E_ROBBERY ) * 50.0;
 
-						//SendClientMessageFormatted( playerid, COLOR_RED, "beginning - robbery %d", robberyid );
-						ShowProgressBar( playerid, "Picking Safe", PROGRESS_SAFEPICK, 10000, COLOR_RED, robberyid );
+						if ( speed_up >= 50.0 ) {
+							SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe (%0.1f%s faster), please wait until you've finished. Press C to stop.", ( speed_up / 5000.0 ) * 100.0, "%%" );
+						} else {
+							SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C to stop." );
+						}
+
+						g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
+						ShowProgressBar( playerid, "Picking Safe", PROGRESS_SAFEPICK, 10000 - floatround( speed_up ), COLOR_WANTED12, robberyid );
 					}
 				}
 			}
