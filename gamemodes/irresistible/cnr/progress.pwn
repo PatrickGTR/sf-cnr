@@ -33,7 +33,7 @@ forward OnProgressCompleted( playerid, progressid, params );
 /* ** Hooks ** */
 hook OnPlayerConnect( playerid )
 {
-	p_ProgressBar[ playerid ] = CreatePlayerProgressBar( playerid, 251.000000, 222.000000, 142.0, 9.2 );
+	p_ProgressBar[ playerid ] = CreatePlayerProgressBar( playerid, 252.000000, 221.000000, 142.0, 9.2 );
 
 	p_ProgressTitle[ playerid ] = CreatePlayerTextDraw( playerid, 320.000000, 205.000000, "_" );
 	PlayerTextDrawAlignment( playerid, p_ProgressTitle[ playerid ], 2 );

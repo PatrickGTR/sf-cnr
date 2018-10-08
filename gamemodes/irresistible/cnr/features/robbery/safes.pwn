@@ -237,7 +237,16 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 			offsetY = -1.4 * floatcos( -( rotation + 170 ), degrees );
 			g_robberyData[ robberyid ] [ E_DRILL_EFFECT ] = CreateDynamicObject( 18718, fX + offsetX, fY + offsetY, fZ, 90, 0, rotation, g_robberyData[ robberyid ] [ E_WORLD ] );
 
-			g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 7500, false, "dddd", playerid, robberyid, type, 0 );
+			new
+				Float: speed_up = GetPlayerLevel( playerid, E_ROBBERY ) * 37.5;
+
+			if ( speed_up >= 37.5 ) {
+				SendServerMessage( playerid, "You have attached your thermal drill (%0.1f%s faster) on this "COL_ORANGE"safe"COL_WHITE".", ( speed_up / 7500.0 ) * 100.0, "%%" );
+			} else {
+				SendServerMessage( playerid, "You have attached your thermal drill on this "COL_ORANGE"safe"COL_WHITE"." );
+			}
+
+			g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 7500 - floatround( speed_up ), false, "dddd", playerid, robberyid, type, 0 );
 
 			p_drillStrength[ playerid ] -= 10;
 			Streamer_Update( playerid );
@@ -298,12 +307,11 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 	GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], fX, fY, fZ );
 	GetDynamicObjectRot( g_robberyData[ robberyid ] [ E_SAFE ], fRotation, fRotation, fRotation );
 
-	new businessid = g_robberyData[ robberyid ] [ E_BUSINESS_ID ];
-	new bool: business_robbery = businessid != -1;
+	// new businessid = g_robberyData[ robberyid ] [ E_BUSINESS_ID ];
+	// new bool: business_robbery = businessid != -1;
 	new Float: random_chance = fRandomEx( 0.0, 101.0 );
-	new Float: probability = 90.0;
 
-	if ( business_robbery )
+	/*if ( business_robbery )
 	{
 		switch ( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] )
 		{
@@ -312,10 +320,18 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 			case 2: probability = 75.0;
 			case 3: probability = 101.0; // must be over 100.0%
 		}
+	}*/
+
+	// 100% success rate for newbs
+	if ( p_Robberies[ playerid ] < 10.0 ) {
+		random_chance = 100.0;
 	}
 
-	// printf ( "[BIZ]Probability %0.3f - dice %0.3f", probability, random_chance );
-	if ( business_robbery ? random_chance > probability : ( p_Robberies[ playerid ] <= 20 ? 100.0 : random_chance ) > 5.0 )
+	// level increase chance of success
+	random_chance += GetPlayerLevel( playerid, E_ROBBERY ) * 0.2; // increase success rate by 0.2% per level
+
+	// potential for a 20% fail rate
+	if ( random_chance > 20.0 )
 	{
 		new Float: iRobAmount = float( g_robberyData[ robberyid ] [ E_ROB_VALUE ] );
 		new Float: iLoot = fRandomEx( iRobAmount / 2.0, iRobAmount );
@@ -325,7 +341,7 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 		g_robberyData[ robberyid ] [ E_MULTIPLIER ] = 1.0;
 
 		// check if this is a business safe
-		if ( business_robbery )
+		/*if ( business_robbery )
 		{
 			new Float: final_bank = float( g_businessData[ businessid ] [ E_BANK ] );
 			switch ( g_businessData[ businessid ] [ E_SECURITY_LEVEL ] )
@@ -345,7 +361,7 @@ stock createRobberyLootInstance( playerid, robberyid, type )
 
             // add loot anyway under 3k
             if ( iLoot < 3000 ) iLoot = RandomEx( 1500, 3000 );
-		}
+		}*/
 
 		// Loose 50% because of impact
 		// if ( type == ROBBERY_TYPE_C4 ) iLoot *= 0.50;

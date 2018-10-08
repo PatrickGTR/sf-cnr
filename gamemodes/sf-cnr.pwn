@@ -4647,7 +4647,7 @@ public OnProgressCompleted( playerid, progressid, params )
 				Float: distance = distanceFromSafe( playerid, robberyid )
 			;
 
-			if ( robberyid != -1 && distance < 2.5 || distance > 0.0 )
+			if ( robberyid != -1 && 0.0 < distance <= 2.5 )
 			{
 				if ( !g_robberyData[ robberyid ] [ E_ROBBED ] && !IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
 				{
@@ -17741,7 +17741,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 
 					if ( success == 0xBF ) SendError( playerid, "There is no money to rob from this business safe." );
 					else if ( success == 1 ) {
-						SendServerMessage( playerid, "You have attached your thermal drill on this "COL_ORANGE"safe"COL_WHITE"." ), p_UsingRobberySafe[ playerid ] = robberyid;
+						p_UsingRobberySafe[ playerid ] = robberyid;
 					}
 				}
 				else
@@ -17783,7 +17783,7 @@ function handlePlayerRobbery( playerid, newkeys, oldkeys )
 							Float: speed_up = GetPlayerLevel( playerid, E_ROBBERY ) * 50.0;
 
 						if ( speed_up >= 50.0 ) {
-							SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe (%0.1f%s faster), please wait until you've finished. Press C to stop.", ( speed_up / 5000.0 ) * 100.0, "%%" );
+							SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe (%0.1f%s faster), please wait until you've finished. Press C to stop.", ( speed_up / 10000.0 ) * 100.0, "%%" );
 						} else {
 							SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C to stop." );
 						}
