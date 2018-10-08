@@ -8955,7 +8955,7 @@ CMD:getgang( playerid, params[ ] )
 			SendServerMessage( playerid, ""COL_GREY"%s(%d) is not in a gang.", ReturnPlayerName( pID ), pID );
 		}
 		else {
-			SendServerMessage( playerid, ""COL_GREY"%s(%d) is in {%06x}%s", g_gangData[ p_GangID[ pID ] ] [ E_COLOR ] >>> 8, g_gangData[ p_GangID[ pID ] ][ E_NAME ] );
+			SendServerMessage( playerid, ""COL_GREY"%s(%d) is in {%06x}%s", ReturnPlayerName( pID ), pID, g_gangData[ p_GangID[ pID ] ] [ E_COLOR ] >>> 8, g_gangData[ p_GangID[ pID ] ][ E_NAME ] );
 		}
 	}
 

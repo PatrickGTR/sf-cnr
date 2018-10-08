@@ -250,8 +250,8 @@ hook OnScriptInit( )
 	g_VehicleDealerCP[ 2 ] = CreateDynamicCP( 540.7507, -1299.1378, 17.2859, 1.0, -1, -1, -1, 25.0 );
 
 	CreateDynamic3DTextLabel( "[PURCHASE VEHICLE]", COLOR_GOLD, -1867.9092, -646.3469, 1002.1284, 20.0 );
-	CreateDynamic3DTextLabel( "[PURCHASE VEHICLE]", COLOR_GOLD, 540.7507, -1299.1378, 17.2859, 20.0 );
 	CreateDynamic3DTextLabel( "[PURCHASE VEHICLE]", COLOR_GOLD, -126.2794, 117.3427, 1004.7233, 20.0 );
+	CreateDynamic3DTextLabel( "[PURCHASE VEHICLE]", COLOR_GOLD, 540.7507, -1299.1378, 17.2859, 20.0 );
 	return 1;
 }
 
@@ -323,24 +323,25 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		        new Float: X, Float: Y, Float: Z, Float: fA;
 
 		        // set teleport vehicle location
-		        if ( IsPlayerInDynamicCP( playerid, g_VehicleDealerCP[ 0 ] ) ) // LV?
+
+		        if ( IsPlayerInDynamicCP( playerid, g_VehicleDealerCP[ 0 ] ) ) // SF
 		        {
-					if ( IsBoatVehicle( model ) ) 		X = 1633.71860, Y = 563.73600, Z = -0.0579, fA = 90.00000;
+		        	if ( IsBoatVehicle( model ) ) 		X = -2686.6484, Y = -938.5189, Z = -0.1212, fA = 109.4955;
+					else if ( IsAirVehicle( model ) ) 	X = -1666.2905, Y = -173.4397, Z = 15.0692, fA = 314.6289;
+			        else               	 				X = -2518.9045, Y = -614.8578, Z = 132.302, fA = 267.8874;
+		        }
+		        else if ( IsPlayerInDynamicCP( playerid, g_VehicleDealerCP[ 1 ] ) ) // LS
+		        {
+		        	if ( IsBoatVehicle( model ) ) 		X = 728.4574, Y = -1516.2633, Z = 0.3122, fA = 178.5724;
+					else if ( IsAirVehicle( model ) ) 	X = 2048.7910, Y = -2493.8928, Z = 14.4686, fA = 90.00000;
+			        else  								X = 560.9333, Y = -1267.5469, Z = 16.9957, fA = 17.2539;
+		        }
+		        else if ( IsPlayerInDynamicCP( playerid, g_VehicleDealerCP[ 2 ] ) ) // LV?
+		        {
+		        	if ( IsBoatVehicle( model ) ) 		X = 1633.71860, Y = 563.73600, Z = -0.0579, fA = 90.00000;
 					else if ( IsAirVehicle( model ) ) 	X = 1477.43920, Y = 1761.4778, Z = 11.2735, fA = 180.9139;
 			        else               	 				X = 1986.85240, Y = 2049.2278, Z = 10.8203, fA = 132.5364;
 		        }
-		        else if ( IsPlayerInDynamicCP( playerid, g_VehicleDealerCP[ 1 ] ) ) // LS?
-		        {
-					if ( IsBoatVehicle( model ) ) 		X = 728.4574, Y = -1516.2633, Z = 0.3122, fA = 178.5724;
-					else if ( IsAirVehicle( model ) ) 	X = 2048.7910, Y = -2493.8928, Z = 14.4686, fA = 90.00000;
-			        else               	 				X = 560.9333, Y = -1267.5469, Z = 16.9957, fA = 17.2539;
-		        }
-		        else // SF
-		        {
-					if ( IsBoatVehicle( model ) ) 		X = -2686.6484, Y = -938.5189, Z = -0.1212, fA = 109.4955;
-					else if ( IsAirVehicle( model ) ) 	X = -1666.2905, Y = -173.4397, Z = 15.0692, fA = 314.6289;
-			        else               	 				X = -2518.9045, Y = -614.8578, Z = 132.302, fA = 267.8874;
-			  	}
 
 		        SetPlayerInterior( playerid, 0 );
 		        SetPlayerVirtualWorld( playerid, 0 );
