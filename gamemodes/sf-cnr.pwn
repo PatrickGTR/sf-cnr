@@ -5338,7 +5338,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults", "Select", "Close" );
 	return 1;
 }
 
@@ -14352,10 +14352,25 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			// total robberies
 			case 4: mysql_function_query( dbHandle, "SELECT `NAME`, `ROBBERIES` as `SCORE_VAL` FROM `USERS` ORDER BY `ROBBERIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 4 );
 
+			// hits completed
+			case 5: mysql_function_query( dbHandle, "SELECT `NAME`, `CONTRACTS` as `SCORE_VAL` FROM `USERS` ORDER BY `CONTRACTS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 5 );
+		
+			// fires
+			case 6: mysql_function_query( dbHandle, "SELECT `NAME`, `FIRES` as `SCORE_VAL` FROM `USERS` ORDER BY `FIRES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 6 );
+
+			// burglaries
+			case 7: mysql_function_query( dbHandle, "SELECT `NAME`, `BURGLARIES` as `SCORE_VAL` FROM `USERS` ORDER BY `BURGLARIES` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 7 );
+			
+			// blown jails
+			case 8: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_JAILS` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_JAILS` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 8 );
+			
+			// blown vaults
+			case 9: mysql_function_query( dbHandle, "SELECT `NAME`, `BLEW_VAULT` as `SCORE_VAL` FROM `USERS` ORDER BY `BLEW_VAULT` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 9 );
+
 		}
 	}
 	if ( dialogid == DIALOG_HIGHSCORES_BACK && ! response ) {
-		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies", "Select", "Close" );
+		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults", "Select", "Close" );
 	}
 	return 1;
 }
@@ -14381,6 +14396,11 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		case 2: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Kills\n", szSmallString = "Top 25 Kills";
 		case 3: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Arrests\n", szSmallString = "Top 25 Arrests";
 		case 4: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Robberies\n", szSmallString = "Top 25 Robberies";
+		case 5: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Contracts\n", szSmallString = "Top 25 Hits Completed";
+		case 6: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Fires\n", szSmallString = "Top 25 Fires Extinguished";
+		case 7: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Burglaries\n", szSmallString = "Top 25 Burglaries";
+		case 8: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Jailes\n", szSmallString = "Top 25 Blown Jails";
+		case 9: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Vaults\n", szSmallString = "Top 25 Blown Vaults";
 	}
 
 	for ( new row = 0; row < rows; row ++ )
