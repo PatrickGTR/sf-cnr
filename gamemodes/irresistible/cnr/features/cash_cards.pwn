@@ -8,7 +8,7 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
-#define DIALOG_CASH_CARD 			28373
+// #define DIALOG_CASH_CARD 			28373
 
 /* ** Commands ** */
 CMD:redeemcashcard( playerid, params[ ] ) return cmd_cashcard( playerid, params );

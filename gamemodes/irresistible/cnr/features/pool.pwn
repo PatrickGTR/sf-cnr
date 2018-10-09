@@ -19,7 +19,7 @@
 #define MAX_POOL_TABLES 			32
 #define MAX_POOL_BALLS 				(16) // do not modify
 
-#define DIALOG_POOL_WAGER 			3284
+//#define DIALOG_POOL_WAGER 			3284
 
 /* ** Macros ** */
 #define SendPoolMessage(%0,%1) \

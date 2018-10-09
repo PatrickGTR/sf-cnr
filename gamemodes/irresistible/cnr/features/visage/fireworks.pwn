@@ -9,8 +9,8 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define DIALOG_FIREWORKS 			29383
-#define DIALOG_FIREWORKS_COLOR 		29385
+// #define DIALOG_FIREWORKS 			29383
+// #define DIALOG_FIREWORKS_COLOR 		29385
 
 // The maximum amount of firework instances that players can place, per server. (Default: 20)
 #define MAX_FIREWORK 20

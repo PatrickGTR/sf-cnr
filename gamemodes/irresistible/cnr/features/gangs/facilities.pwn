@@ -19,9 +19,9 @@
 #define FACILITY_AMMU_RESPECT 		( 75000.0 )
 #define FACILITY_BLOWUP_TIME 		( 10 )
 
-#define DIALOG_GANG_JOIN 			( 9238 )
-#define DIALOG_FACILITY_AMMU 		( 9239 )
-#define DIALOG_FACILITY_AMMU_BUY 	( 9299 )
+// #define DIALOG_GANG_JOIN 			( 9238 )
+// #define DIALOG_FACILITY_AMMU 		( 9239 )
+// #define DIALOG_FACILITY_AMMU_BUY 	( 9299 )
 
 /* ** Variables ** */
 enum E_GANG_FACILITIES

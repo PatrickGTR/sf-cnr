@@ -110,8 +110,8 @@ stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], button1[], button
 #define CALL 																2
 #define RAISE 																3
 #define FOLD 																4
-#define DIALOG_BUY_IN														19232
-#define DIALOG_INPUT_RAISE													9231
+// #define DIALOG_BUY_IN														19232
+// #define DIALOG_INPUT_RAISE													9231
 
 
 #define SendPokerMessage(%0,%1) \

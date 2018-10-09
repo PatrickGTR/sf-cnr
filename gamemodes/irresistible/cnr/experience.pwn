@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define DIALOG_VIEW_LEVEL			5943
+//#define DIALOG_VIEW_LEVEL			5943
 
 /* ** Macros ** */
 #define IsDoubleXP() 				( GetGVarInt( "doublexp" ) )
