@@ -209,6 +209,7 @@ new
 	p_WorkCooldown 					[ MAX_PLAYERS ],
 	p_AntiSpammyTS 					[ MAX_PLAYERS ],
 	p_TruckedCargo 					[ MAX_PLAYERS ],
+	p_PilotMissions 				[ MAX_PLAYERS ],
 	p_KidnapImmunity				[ MAX_PLAYERS ],
 	p_GangSplitProfits 				[ MAX_PLAYERS ],
 	Float: p_IrresistiblePoints 	[ MAX_PLAYERS ],
