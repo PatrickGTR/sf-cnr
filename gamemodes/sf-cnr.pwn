@@ -2131,6 +2131,11 @@ public ZoneTimer( )
 		// CIA Visible On Radar after firing a shot
 		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
 			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
+
+		// Stealth mode after getting shot
+		if ( p_OffRadarVisible[ playerid ] != 0 && p_OffRadarVisible[ playerid ] < g_iTime )
+			SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) ), p_OffRadarVisible[ playerid ] = 0;
+
 	}
 	return 1;
 }
@@ -2847,6 +2852,8 @@ public OnPlayerSpawn( playerid )
 	StopSound( playerid );
 	CancelEdit( playerid );
 
+	p_OffRadar{ playerid } = false;
+
 	// Approved spawn?
 	if ( !approveClassSpawned( playerid ) ) {
 		SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL SPAWN]"COL_GREY" %s(%d) - %d skin - %d ping - %s IP", ReturnPlayerName( playerid ), playerid, GetPlayerSkin( playerid ), GetPlayerPing( playerid ), ReturnPlayerIP( playerid ) );
@@ -3081,6 +3088,10 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( playerid ) )
 		 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
+
+		// Exposing stealth mode player
+		if ( p_OffRadar{ playerid } )
+			SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0xFF ) ), p_OffRadarVisible[ playerid ] = g_iTime + 2;
 
 		// CIA Exposure when weapon is shot
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_inFBI{ playerid } && p_inCIA{ playerid } && !p_inArmy{ playerid } )
@@ -15207,6 +15218,8 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 	if ( p_WantedLevel[ playerid ] > 11 )	SetPlayerColor( playerid, COLOR_WANTED12 );
 	if ( p_WantedLevel[ playerid ] > 90 ) 	printf( "[wanted_level] %s - %d", ReturnPlayerName( playerid ), p_WantedLevel[ playerid ] );
 	if ( IsPlayerAdminOnDuty( playerid ) ) 	SetPlayerColor( playerid, COLOR_PINK );
+
+	if ( p_OffRadar{ playerid } ) SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) );
 
 	/*if ( p_WantedLevel[ playerid ] > 2000 ) // 8hska7082bmahu
 	{

@@ -15,7 +15,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		switch( listitem )
 		{
-			case 0: ShowPlayerDialog( playerid, DIALOG_PERKS_P, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nUnlimited Ammunition\t"COL_GOLD"50\t"COL_GREEN"$9,900", "Select", "Back" );
+			case 0: ShowPlayerDialog( playerid, DIALOG_PERKS_P, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nUnlimited Ammunition\t"COL_GOLD"50\t"COL_GREEN"$9,900\nStealth Mode\t"COL_GOLD"100\t"COL_GREEN"$15,000", "Select", "Back" );
 			case 1: ShowPlayerDialog( playerid, DIALOG_PERKS_V, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nFix & Flip vehicle\t"COL_GOLD"75\t"COL_GREEN"$9,900\nRepair Vehicle\t"COL_GOLD"75\t"COL_GREEN"$7,500\nAdd NOS\t"COL_GOLD"50\t"COL_GREEN"$3,000\nFlip vehicle\t"COL_GOLD"40\t"COL_GREEN"$2,500", "Select", "Back" );
 		}
 	}
@@ -51,6 +51,31 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				SendServerMessage( playerid, "You have bought unlimited ammunition for $9,900." );
 				SetPlayerArmedWeapon( playerid, 0 );
 				Beep( playerid );
+	        }
+
+	        case 1:
+	        {
+	        	if ( total_level < 10 ) {
+	        		return SendError( playerid, "Your total level must be at least 75 to use this (/level)." );
+	        	}
+
+	        	if ( GetPlayerCash( playerid ) < 11500 ) {
+	        		return SendError( playerid, "You do not have enough money for this item ($11,500)." );
+	        	}
+
+	        	if ( p_OffRadar{ playerid } ) {
+	        		return SendError( playerid, "You have already purchased this item." );
+	        	}
+
+	        	p_OffRadar{ playerid } = true;
+
+	        	GivePlayerCash( playerid, -11500 );
+
+	        	SendServerMessage( playerid, "You have brought stealth mode for $15,000." );
+	        	ShowPlayerHelpDialog( playerid, 3000, "~g~~h~Stealth mode ~w~will be deactivate once you respawn." );
+
+	        	SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) );
+	        	Beep( playerid );
 	        }
 	    }
 	}

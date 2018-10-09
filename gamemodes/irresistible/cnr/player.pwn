@@ -205,6 +205,7 @@ new
 	p_LastPlayerState 				[ MAX_PLAYERS char ],
 	p_RespondDelay 					[ MAX_PLAYERS ],
 	p_VisibleOnRadar 				[ MAX_PLAYERS ],
+	p_OffRadarVisible 				[ MAX_PLAYERS ],
 	p_InGarage 						[ MAX_PLAYERS ] = { -1, ... },
 	p_WorkCooldown 					[ MAX_PLAYERS ],
 	p_AntiSpammyTS 					[ MAX_PLAYERS ],
@@ -239,7 +240,8 @@ new
 	p_AimedAtPolice 				[ MAX_PLAYERS ],
 	bool: p_PassiveModeDisabled 	[ MAX_PLAYERS char ],
 	p_PassiveModeExpireTimer 		[ MAX_PLAYERS ] = { -1, ... },
-	Text3D: p_PassiveModeLabel 		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID }
+	Text3D: p_PassiveModeLabel 		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID },
+	bool: p_OffRadar 				[ MAX_PLAYERS char]
 ;
 
 /* ** Getters And Setters** */
