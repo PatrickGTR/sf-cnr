@@ -208,6 +208,7 @@
 #define DIALOG_IC_SELLORDERS				1198
 #define DIALOG_IC_BUY						1199
 #define DIALOG_COMPONENTS_SELL 				1200
+#define DIALOG_HOUSE_SELL 					1201
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
