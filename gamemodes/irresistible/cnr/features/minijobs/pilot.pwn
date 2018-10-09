@@ -7,7 +7,9 @@
 
 /*
 
-sql structure: ALTER TABLE `users` ADD `PILOT` INT NULL DEFAULT NULL AFTER `TRUCKED`;
+sql structure: 
+	
+	ALTER TABLE `users` ADD `PILOT` INT(11) NULL DEFAULT '0' AFTER `TRUCKED`;
 
 */
 
