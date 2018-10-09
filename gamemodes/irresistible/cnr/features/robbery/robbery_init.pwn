@@ -33,7 +33,7 @@ hook OnScriptInit( )
 	CreateRobberyNPC( "Betting Clerk",				ROBBERY_BOT_PAY, 820.1871, 2.4114, 1004.1797, 270.8091, 147, -1 );
 
 	CreateMultipleRobberies( "Zero's RC Shop", 		ROBBERY_SAFE_PAY, -2221.724365, 132.967208, 1035.223022, 180.00000, 6 );
-	CreateRobberyNPC( "Zero",						ROBBERY_BOT_PAY, -2238.1279, 128.5869, 1035.4141, 357.9158, 11, 6 );
+	CreateRobberyNPC( "Zero",						ROBBERY_BOT_PAY, -2238.1279, 128.5869, 1035.4141, 357.9158, 289, 6 );
 
 	CreateMultipleRobberies( "Prolaps", 			ROBBERY_SAFE_PAY, 204.282577, -126.326202, 1002.937255, 0.0000000, 39, 36 );
 	CreateRobberyNPC( "Prolaps Clerk",				ROBBERY_BOT_PAY, 206.3402, -127.8070, 1003.5078, 182.5186, 211, 39, 36 );
