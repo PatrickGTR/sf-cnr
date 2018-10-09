@@ -2726,6 +2726,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_AntiExportCarSpam[ playerid ] = 0;
 	p_TruckedCargo[ playerid ] = 0;
 	p_PilotMissions[ playerid ] = 0;
+	p_TrainMissions[ playerid ] = 0;
 	p_HydrogenChloride{ playerid } = 0;
 	p_Methamphetamine{ playerid } = 0;
 	p_IsCasinoHighRoller{ playerid } = false;
@@ -5283,7 +5284,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
-	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\n", "Select", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\nTotal Train Missions", "Select", "Close" );
 	return 1;
 }
 
@@ -11646,6 +11647,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_HitsComplete[ playerid ] 		= cache_get_field_content_int( 0, "CONTRACTS", dbHandle );
 			p_TruckedCargo[ playerid ] 		= cache_get_field_content_int( 0, "TRUCKED", dbHandle );
 			p_PilotMissions[ playerid ] 	= cache_get_field_content_int( 0, "PILOT", dbHandle ); 
+			p_TrainMissions[ playerid ] 	= cache_get_field_content_int( 0, "TRAIN", dbHandle ); 
 			//p_CopTutorial{ playerid } 		= cache_get_field_content_int( 0, "COP_TUTORIAL", dbHandle );
 			p_Job{ playerid } 				= cache_get_field_content_int( 0, "JOB", dbHandle );
 			p_VIPJob{ playerid } 			= cache_get_field_content_int( 0, "VIP_JOB", dbHandle );
@@ -13035,13 +13037,14 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				                          	""COL_GREY"Total Burglaries:{FFFFFF} %d\n",
 											szLargeString, p_OwnedHouses[ pID ], GetPlayerHouseSlots( pID ), p_OwnedVehicles[ pID ], GetPlayerVehicleSlots( pID ), p_Arrests[ pID ], p_Robberies[ pID ], p_Fires[ pID ], p_HitsComplete[ pID ], p_Burglaries[ pID ] );
 
-				format( szLargeString, 720,	"%s"COL_GREY"Total Jail Raids:{FFFFFF} %d\n"\
+				format( szLargeString, 750,	"%s"COL_GREY"Total Jail Raids:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Bank Raids:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Cars Jacked:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Trucked Cargo:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Meth Yielded:{FFFFFF} %d\n"\
-				                          	""COL_GREY"Total Pilot Missions:{FFFFFF} %d",
-											szLargeString, p_JailsBlown[ pID ], p_BankBlown[ pID ], p_CarsJacked[ pID ], p_TruckedCargo[ pID ], p_MethYielded[ pID ], p_PilotMissions[ pID ] );
+				                          	""COL_GREY"Total Pilot Missions:{FFFFFF} %d\n"\
+				                          	""COL_GREY"Total Train Missions:{FFFFFF} %d",
+											szLargeString, p_JailsBlown[ pID ], p_BankBlown[ pID ], p_CarsJacked[ pID ], p_TruckedCargo[ pID ], p_MethYielded[ pID ], p_PilotMissions[ pID ], p_TrainMissions[ playerid ] );
 
 				ShowPlayerDialog( playerid, DIALOG_STATS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Main Statistics", szLargeString, "Okay", "Back" );
 			}
@@ -14329,10 +14332,13 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			// pilot missons
 			case 13: mysql_function_query( dbHandle, "SELECT `NAME`, `PILOT` as `SCORE_VAL` FROM `USERS` ORDER BY `PILOT` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 13 );
+
+			// train missions
+			case 14: mysql_function_query( dbHandle, "SELECT `NAME`, `TRAIN` as `SCORE_VAL` FROM `USERS` ORDER BY `TRAIN` DESC LIMIT 25", true, "OnHighScoreCheck", "ii", playerid, 14 );
 		}
 	}
 	if ( dialogid == DIALOG_HIGHSCORES_BACK && ! response ) {
-		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\n", "Select", "Close" );
+		return ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\nTotal Train Missions", "Select", "Close" );
 	}
 	return 1;
 }
@@ -14367,6 +14373,7 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		case 11: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Meth\n", szSmallString = "Top 25 Meth Yielded";
 		case 12: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Trucked\n", szSmallString = "Top 25 Total Trucked Cargo";
 		case 13: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Missions\n", szSmallString = "Top 25 Total Pilot Missions";
+		case 14: szLargeString = ""COL_GOLD"Player\t"COL_GOLD"Missions\n", szSmallString = "Top 25 Total Train Missions";
 	}
 
 	for ( new row = 0; row < rows; row ++ )
@@ -14810,14 +14817,14 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
 										p_drillStrength[ playerid ] );
 
-		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d WHERE `ID`=%d",
+		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d,`TRAIN`=%d WHERE `ID`=%d",
 										Query,
 										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
 										p_ExplosiveBullets[ playerid ], p_IrresistiblePoints[ playerid ],
 										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
-										p_PilotMissions[ playerid ],
+										p_PilotMissions[ playerid ],	p_TrainMissions[ playerid ],
 										p_AccountID[ playerid ] );
 
 		mysql_single_query( Query );
@@ -18142,6 +18149,20 @@ stock Achievement::HandlePilotMissions( playerid )
 	}
 }
 
+stock Achievement::HandleTrainMissions( playerid )
+{
+	switch( ++p_TrainMissions[ playerid ])
+	{
+		case 5:     ShowAchievement( playerid, "Completed ~r~5~w~~h~~h~ train missions!", 3 );
+	    case 20:    ShowAchievement( playerid, "Completed ~r~20~w~~h~~h~ train missions!", 6 );
+	    case 50:    ShowAchievement( playerid, "Completed ~r~50~w~~h~~h~ train missions!", 9 );
+	    case 100:   ShowAchievement( playerid, "Completed ~r~100~w~~h~~h~ train missions!", 12 );
+	    case 200:   ShowAchievement( playerid, "Completed ~r~200~w~~h~~h~ train missions!", 15 );
+	    case 500:   ShowAchievement( playerid, "Completed ~r~500~w~~h~~h~ train missions!", 18 );
+	    case 1000:  ShowAchievement( playerid, "Completed ~r~1000~w~~h~~h~ train missions!", 25 );
+	}
+}
+
 thread readplayernotes( playerid )
 {
 	new
@@ -18452,6 +18473,12 @@ stock displayAchievements( playerid, dialogid = DIALOG_NULL, szSecondButton[ ] =
 		Ach_Unlock( p_PilotMissions[ playerid ], 5 ),     Ach_Unlock( p_PilotMissions[ playerid ], 20 ),    	Ach_Unlock( p_PilotMissions[ playerid ], 50 ),
 		Ach_Unlock( p_PilotMissions[ playerid ], 100 ),   Ach_Unlock( p_PilotMissions[ playerid ], 200 ),   	Ach_Unlock( p_PilotMissions[ playerid ], 500 ),
 		Ach_Unlock( p_PilotMissions[ playerid ], 1000 )
+	);
+	format( szAchievements, sizeof( szAchievements ),
+		"%s"COL_GREY"Total Train Missions\t\t%s5\t%s20\t%s50\t%s100\t%s200\t%s500\t%s1000\n", szAchievements,
+		Ach_Unlock( p_TrainMissions[ playerid ], 5 ),     Ach_Unlock( p_TrainMissions[ playerid ], 20 ),    	Ach_Unlock( p_TrainMissions[ playerid ], 50 ),
+		Ach_Unlock( p_TrainMissions[ playerid ], 100 ),   Ach_Unlock( p_TrainMissions[ playerid ], 200 ),   	Ach_Unlock( p_TrainMissions[ playerid ], 500 ),
+		Ach_Unlock( p_TrainMissions[ playerid ], 1000 )
 	);
 
 	if ( !IsPlayerConnected( forid ) ) forid = playerid;
