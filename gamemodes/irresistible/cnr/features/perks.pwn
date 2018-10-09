@@ -15,7 +15,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		switch( listitem )
 		{
-			case 0: ShowPlayerDialog( playerid, DIALOG_PERKS_P, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nUnlimited Ammunition\t"COL_GOLD"50\t"COL_GREEN"$9,900\nStealth Mode\t"COL_GOLD"100\t"COL_GREEN"$15,000", "Select", "Back" );
+			case 0: ShowPlayerDialog( playerid, DIALOG_PERKS_P, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nUnlimited Ammunition\t"COL_GOLD"50\t"COL_GREEN"$9,900\nStealth Mode\t"COL_GOLD"75\t"COL_GREEN"$15,000", "Select", "Back" );
 			case 1: ShowPlayerDialog( playerid, DIALOG_PERKS_V, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Game Perks", ""COL_WHITE"Item Name\t"COL_WHITE"Total Level Req.\t"COL_WHITE"Cost ($)\nFix & Flip vehicle\t"COL_GOLD"75\t"COL_GREEN"$9,900\nRepair Vehicle\t"COL_GOLD"75\t"COL_GREEN"$7,500\nAdd NOS\t"COL_GOLD"50\t"COL_GREEN"$3,000\nFlip vehicle\t"COL_GOLD"40\t"COL_GREEN"$2,500", "Select", "Back" );
 		}
 	}
@@ -55,7 +55,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 	        case 1:
 	        {
-	        	if ( total_level < 10 ) {
+	        	if ( total_level < 75 ) {
 	        		return SendError( playerid, "Your total level must be at least 75 to use this (/level)." );
 	        	}
 
