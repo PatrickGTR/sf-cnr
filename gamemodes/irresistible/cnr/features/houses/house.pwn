@@ -105,8 +105,12 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_HOUSE_SELL && response )
 	{
-		new 
+		new
 			ID = GetPVarInt( playerid, "house_sell_id" );
+
+		if ( ! Iter_Contains( houses, ID ) || ! IsPlayerHomeOwner( playerid, ID ) ) {
+			return SendError( playerid, "You do not have access to this feature." );
+		}
 
 		format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ ID ][ E_OWNER ], ID );
 		AddFileLogLine( "log_houses.txt", szBigString );

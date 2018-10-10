@@ -587,9 +587,15 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	if ( dialogid == DIALOG_BUSINESS_SELL_CONFIRM && response )
 	{
 		new
-			iBusiness = GetPVarInt( playerid, "biz_sell_id" ),
+			iBusiness = GetPVarInt( playerid, "biz_sell_id" );
+
+		if ( ! Iter_Contains( business, iBusiness ) || ! IsBusinessAssociate( playerid, iBusiness ) ) {
+			return SendError( playerid, "You do not have access to this feature." );
+		}
+
+		new
 			iCashMoney = floatround( g_businessData[ iBusiness ] [ E_COST ] / 2 );
-			
+
 		p_OwnedBusinesses[ playerid ] --;
 		g_businessData[ iBusiness ] [ E_OWNER_ID ] = 0;
 
