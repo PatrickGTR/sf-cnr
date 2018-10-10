@@ -9,8 +9,8 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define DIALOG_IC_SELLORDERS		( 5921 )
-#define DIALOG_IC_BUY				( 5922 )
+// #define DIALOG_IC_SELLORDERS		( 5921 )
+// #define DIALOG_IC_BUY				( 5922 )
 
 /* ** Variables ** */
 static const

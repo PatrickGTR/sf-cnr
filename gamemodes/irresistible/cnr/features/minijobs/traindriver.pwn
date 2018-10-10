@@ -134,6 +134,8 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			GivePlayerScore( playerid, 1 + floatround( p_TrainDistance[ playerid ] / 1000.0 ) );
 			GivePlayerCash( playerid, iCashEarned );
 
+			ach_HandleTrainMissions( playerid );
+
 			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for transporting passengers!", cash_format( iCashEarned ) );
 			StopPlayerTrainWork( playerid );
 

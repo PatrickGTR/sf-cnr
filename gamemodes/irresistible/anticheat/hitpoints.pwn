@@ -571,9 +571,6 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		new
 			server_time = gettime( );
 
-		// Reset spawned variable
-		AC_SetPlayerSpawned( playerid, false );
-
 		// Anti-fakekill
 		switch( server_time - p_LastDeath[ playerid ] )
 		{
@@ -591,7 +588,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		p_LastDeath[ playerid ] = server_time;
 
 	    // Died in Vehicle
-		if ( GetPlayerVehicleID( playerid ) && AC_IsPlayerSpawned( playerid ) )
+		if ( AC_IsPlayerSpawned( playerid ) )
 	    {
 			if( ( GetTickCount( ) - p_LastTookDamage[ playerid ] ) > 2500 ) {
 				p_LastDamageIssuer[ playerid ] = INVALID_PLAYER_ID, p_LastWeaponIssuer[ playerid ] = 51;
@@ -599,6 +596,9 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 			CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
 	    }
+
+	    // Reset spawned variable
+		AC_SetPlayerSpawned( playerid, false );
    	}
 	return 1;
 }

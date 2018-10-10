@@ -539,7 +539,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					EditDynamicObject( playerid, iObject );
  				}
 			}
-			case 2: // Pimp
+			case 2: // sell
 			{
 				new
 					pimpid;
@@ -548,22 +548,60 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					if ( g_vehicleComponentsData[ pimpid ] [ E_MODEL_ID ] == g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ i ] )
 						break;
 
-				if ( g_vehicleComponentsData[ pimpid ] [ E_MODEL_ID ] != g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ i ] )
-					return SendError( playerid, "You cannot sell this component as it no longer exists." );
-
 				new
 					sellPrice = floatround( g_vehicleComponentsData[ pimpid ] [ E_PRICE ] * 0.5 );
 
-				GivePlayerCash( playerid, sellPrice );
-				DestroyDynamicObject( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ i ] );
-
-				g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ i ] = -1;
-				g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ i ] = false;
-
-				mysql_single_query( sprintf( "DELETE FROM `COMPONENTS` WHERE `ID`=%d", g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_SQL_ID ] [ i ] ) );
-				SendServerMessage( playerid, "You have sold your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ pimpid ] [ E_NAME ], cash_format( sellPrice ) );
+				ShowPlayerDialog( playerid, DIALOG_COMPONENTS_SELL, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Sell Components", sprintf( ""COL_WHITE"Are you sure you want to sell your "COL_GREY"%s "COL_WHITE"for "COL_GOLD"%s?\n", g_vehicleComponentsData[ pimpid ] [ E_NAME ], cash_format( sellPrice ) ), "Sell", "Back" );
 			}
 		}
+	}
+	else if ( dialogid == DIALOG_COMPONENTS_SELL )
+	{
+		new
+	    	ownerid = INVALID_PLAYER_ID,
+	    	i = GetPVarInt( playerid, "components_editing" ),
+	    	vehicleid = getVehicleSlotFromID( GetPlayerVehicleID( playerid ), ownerid )
+		;
+
+		if ( vehicleid == -1 )
+			return SendError( playerid, "This vehicle isn't a buyable vehicle." );
+
+		if ( playerid != ownerid )
+			return SendError( playerid, "This vehicle does not belong to you." );
+
+		if ( ! response)
+		{
+			for( new y = 0, x = 0; y < MAX_PIMPS; y++ ) if ( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ y ] ) {
+				if ( listitem == x++ ) {
+					return ShowPlayerVehicleComponentMenu( playerid, ownerid, vehicleid, i );
+				}
+			}
+		}
+		else
+		{
+			new
+				pimpid;
+
+			for( ; pimpid < sizeof( g_vehicleComponentsData ); pimpid++ )
+				if ( g_vehicleComponentsData[ pimpid ] [ E_MODEL_ID ] == g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ i ] )
+					break;
+
+			if ( g_vehicleComponentsData[ pimpid ] [ E_MODEL_ID ] != g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_MODEL ] [ i ] )
+				return SendError( playerid, "You cannot sell this component as it no longer exists." );
+
+			new
+				sellPrice = floatround( g_vehicleComponentsData[ pimpid ] [ E_PRICE ] * 0.5 );
+
+			GivePlayerCash( playerid, sellPrice );
+			DestroyDynamicObject( g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ i ] );
+
+			g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_OBJECT ] [ i ] = -1;
+			g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ i ] = false;
+
+			mysql_single_query( sprintf( "DELETE FROM `COMPONENTS` WHERE `ID`=%d", g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_SQL_ID ] [ i ] ) );
+			SendServerMessage( playerid, "You have sold your "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_vehicleComponentsData[ pimpid ] [ E_NAME ], cash_format( sellPrice ) );
+		}
+		return 1;
 	}
 	return 1;
 }

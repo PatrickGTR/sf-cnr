@@ -103,7 +103,24 @@ hook OnScriptInit( )
 
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
-	if ( dialogid == DIALOG_HOUSE_CONFIG && response )
+	if ( dialogid == DIALOG_HOUSE_SELL && response )
+	{
+		new 
+			ID = GetPVarInt( playerid, "house_sell_id" );
+
+		format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ ID ][ E_OWNER ], ID );
+		AddFileLogLine( "log_houses.txt", szBigString );
+		p_OwnedHouses[ playerid ] --;
+		SetHouseForAuction( ID );
+		GivePlayerCash( playerid, ( g_houseData[ ID ] [ E_COST ] / 2 ) );
+		SetPlayerPos( playerid, g_houseData[ ID ] [ E_EX ], g_houseData[ ID ] [ E_EY ], g_houseData[ ID ] [ E_EZ ] );
+		SetPlayerInterior( playerid, 0 ), SetPlayerVirtualWorld( playerid, 0 );
+		SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
+
+		DeletePVar( playerid, "house_sell_id" );
+		return 1;
+	}
+	else if ( dialogid == DIALOG_HOUSE_CONFIG && response )
 	{
 		if ( p_InHouse[ playerid ] == -1 ) return SendError( playerid, "You're not inside any house." );
 	   	if ( !strmatch( g_houseData[ p_InHouse[ playerid ] ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
@@ -461,14 +478,8 @@ CMD:h( playerid, params[ ] )
 		else if ( !strmatch( g_houseData[ ID ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) return SendError( playerid, "You are not the owner of this house." );
 		else
 		{
-			format( szBigString, sizeof( szBigString ), "[SELL] [%s] %s | %s | %d\r\n", getCurrentDate( ), ReturnPlayerName( playerid ), g_houseData[ ID ][ E_OWNER ], ID );
-		    AddFileLogLine( "log_houses.txt", szBigString );
-			p_OwnedHouses[ playerid ] --;
-			SetHouseForAuction( ID );
-			GivePlayerCash( playerid, ( g_houseData[ ID ] [ E_COST ] / 2 ) );
-			SetPlayerPos( playerid, g_houseData[ ID ] [ E_EX ], g_houseData[ ID ] [ E_EY ], g_houseData[ ID ] [ E_EZ ] );
-			SetPlayerInterior( playerid, 0 ), SetPlayerVirtualWorld( playerid, 0 );
-			SendServerMessage( playerid, "You have successfully sold your house for "COL_GOLD"%s", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) );
+			SetPVarInt( playerid, "house_sell_id", ID );
+			ShowPlayerDialog( playerid, DIALOG_HOUSE_SELL, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Sell House", sprintf( ""COL_WHITE"Are you sure you want to sell this house for "COL_GOLD"%s"COL_WHITE"?", cash_format( ( g_houseData[ ID ] [ E_COST ] / 2 ) ) ), "Sell", "Cancel" );
 		}
 		return 1;
 	}

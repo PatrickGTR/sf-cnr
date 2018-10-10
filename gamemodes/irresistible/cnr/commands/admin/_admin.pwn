@@ -12,8 +12,8 @@
 #define ADMIN_COMMAND_REJECT        "You don't have an appropriate administration level to use this command."
 #define ADMIN_COMMAND_TIME          4
 
-#define DIALOG_ADMIN_CMDS 			1167
-#define DIALOG_ADMIN_CMDS_BACK 		1168
+// #define DIALOG_ADMIN_CMDS 			1167
+// #define DIALOG_ADMIN_CMDS_BACK 		1168
 
 /* ** Variables ** */
 enum E_COMMAND_DATA

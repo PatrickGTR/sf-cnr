@@ -5,6 +5,14 @@
  * Purpose: pilot minijob - cargo pickup and transport to another airport.
  */
 
+/*
+
+sql structure: 
+	
+	ALTER TABLE `users` ADD `PILOT` INT(11) NULL DEFAULT '0' AFTER `TRUCKED`;
+
+*/
+
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
@@ -172,6 +180,8 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 				cash_earned *= 2;
 				GivePlayerWantedLevel( playerid, 6 );
 			}
+
+			ach_HandlePilotMissions( playerid );
 
 			GivePlayerScore( playerid, 1 + floatround( p_PilotDistance[ playerid ] / 1000.0 ) );
 			GivePlayerCash( playerid, cash_earned );

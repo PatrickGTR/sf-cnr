@@ -370,17 +370,9 @@ CMD:business( playerid, params[ ] )
 			new
 				iCashMoney = floatround( g_businessData[ iBusiness ] [ E_COST ] / 2 );
 
-			p_OwnedBusinesses[ playerid ] --;
-			g_businessData[ iBusiness ] [ E_OWNER_ID ] = 0;
+			SetPVarInt( playerid, "biz_sell_id", iBusiness );
 
-			ResetBusiness( iBusiness, .hard_reset = true );
-			StopBusinessExportMission( iBusiness );
-			UpdateBusinessData( iBusiness );
-			UpdateBusinessTitle( iBusiness ); // No point querying (add on resale)
-			GivePlayerCash( playerid, iCashMoney );
-
-			SetPlayerPosEx( playerid, g_businessData[ iBusiness ] [ E_X ], g_businessData[ iBusiness ] [ E_Y ], g_businessData[ iBusiness ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
-			SendServerMessage( playerid, "You have successfully sold your business for "COL_GOLD"%s"COL_WHITE".", cash_format( iCashMoney ) );
+			ShowPlayerDialog( playerid, DIALOG_BUSINESS_SELL_CONFIRM, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Sell Business", sprintf( ""COL_WHITE"Are you sure you want to sell this business for "COL_GOLD"%s"COL_WHITE"?", cash_format( iCashMoney ) ), "Sell", "Cancel" );
 		}
 		return 1;
 	}
@@ -592,7 +584,28 @@ function Timer_DestroyObject( objectid )
 
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
-	if ( dialogid == DIALOG_BUSINESSES )
+	if ( dialogid == DIALOG_BUSINESS_SELL_CONFIRM && response )
+	{
+		new
+			iBusiness = GetPVarInt( playerid, "biz_sell_id" ),
+			iCashMoney = floatround( g_businessData[ iBusiness ] [ E_COST ] / 2 );
+			
+		p_OwnedBusinesses[ playerid ] --;
+		g_businessData[ iBusiness ] [ E_OWNER_ID ] = 0;
+
+		ResetBusiness( iBusiness, .hard_reset = true );
+		StopBusinessExportMission( iBusiness );
+		UpdateBusinessData( iBusiness );
+		UpdateBusinessTitle( iBusiness ); // No point querying (add on resale)
+		GivePlayerCash( playerid, iCashMoney );
+
+		SetPlayerPosEx( playerid, g_businessData[ iBusiness ] [ E_X ], g_businessData[ iBusiness ] [ E_Y ], g_businessData[ iBusiness ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+		SendServerMessage( playerid, "You have successfully sold your business for "COL_GOLD"%s"COL_WHITE".", cash_format( iCashMoney ) );
+
+		DeletePVar( playerid, "biz_sell_id" );
+		return 1;
+	}
+	else if ( dialogid == DIALOG_BUSINESSES )
 	{
 		if ( ! response )
 			return ShowPlayerSpawnMenu( playerid );

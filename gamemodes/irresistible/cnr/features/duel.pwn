@@ -11,14 +11,14 @@
 /* ** Definitions ** */
 #define COL_DUEL 					"{B74AFF}"
 
-#define DIALOG_DUEL 				7360
-#define DIALOG_DUEL_PLAYER			7361
-#define DIALOG_DUEL_LOCATION		7362
-#define DIALOG_DUEL_WEAPON			7363
-#define DIALOG_DUEL_WAGER			7364
-#define DIALOG_DUEL_WEAPON_TWO 		7365
-#define DIALOG_DUEL_HEALTH 			7366
-#define DIALOG_DUEL_ARMOUR			7367
+// #define DIALOG_DUEL 				7360
+// #define DIALOG_DUEL_PLAYER			7361
+// #define DIALOG_DUEL_LOCATION		7362
+// #define DIALOG_DUEL_WEAPON			7363
+// #define DIALOG_DUEL_WAGER			7364
+// #define DIALOG_DUEL_WEAPON_TWO 		7365
+// #define DIALOG_DUEL_HEALTH 			7366
+// #define DIALOG_DUEL_ARMOUR			7367
 
 /* ** Variables ** */
 enum E_DUEL_DATA

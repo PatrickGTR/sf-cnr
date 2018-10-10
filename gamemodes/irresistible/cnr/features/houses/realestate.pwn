@@ -9,8 +9,8 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define DIALOG_HOUSE_LISTINGS		5838
-#define DIALOG_HOUSE_LIST_VIEW		5839
+// #define DIALOG_HOUSE_LISTINGS		5838
+// #define DIALOG_HOUSE_LIST_VIEW		5839
 
 /* ** Macros ** */
 #define ShowPlayerHomeListing(%0,%1) \
