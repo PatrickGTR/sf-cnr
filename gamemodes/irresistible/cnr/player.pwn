@@ -222,7 +222,6 @@ new
 	p_TimeTiedAt 					[ MAX_PLAYERS ],
 	p_CopRefillTimestamp			[ MAX_PLAYERS ],
 	p_AdminCommandPause 			[ MAX_PLAYERS ],
-	p_WeaponKills					[ MAX_PLAYERS ] [ MAX_WEAPONS ],
 	p_forcedAnticheat				[ MAX_PLAYERS ],
 	p_TiedAtTimestamp 				[ MAX_PLAYERS ],
 	bool: p_AutoSpin				[ MAX_PLAYERS char ],

@@ -7,7 +7,7 @@
 
 /* ** Includes ** */
 
-// houses
+#include "irresistible\cnr\features\player\_player.pwn"
 #include "irresistible\cnr\features\houses\_houses.pwn"
 #include "irresistible\cnr\features\vehicles\_vehicles.pwn"
 #include "irresistible\cnr\features\business\_business.pwn"

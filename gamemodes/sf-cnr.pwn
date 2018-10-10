@@ -412,23 +412,6 @@ new
 	p_HitmarkerSound 				[ MAX_PLAYERS char ]
 ;
 
-/* ** Streak System ** */
-#define MAX_STREAKS 				( 3 ) // Changing order will require change in UCP seasonal page.
-
-#define STREAK_ROBBERY				0
-#define STREAK_ARREST 				1
-#define STREAK_KILL 				2
-
-enum E_STREAK_DATA
-{
-	E_STREAK, 					E_BEST_STREAK
-};
-
-new
-	g_streaksTypes[ MAX_STREAKS ] [ 8 ] = { "robbery", "arrest", "kill" },
-	p_streakData[ MAX_PLAYERS ] [ MAX_STREAKS ] [ E_STREAK_DATA ]
-;
-
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
 
@@ -2292,7 +2275,6 @@ public OnPlayerDisconnect( playerid, reason )
 	dischargeVehicles( playerid );
 	CutSpectation( playerid );
 	LeavePlayerPaintball( playerid );
-	resetPlayerStreaks( playerid );
     RemovePlayerFromRace( playerid );
 	ResetPlayerPassiveMode( playerid );
 	//p_Detained		{ playerid } = false;
@@ -2468,9 +2450,7 @@ public OnPlayerDisconnect( playerid, reason )
 		}
 
 		if ( i < MAX_GANGS ) 	p_gangInvited[ playerid ] [ i ] = false;
-		if ( i < MAX_WEAPONS ) 	p_WeaponKills[ playerid ] [ i ] = 0;
 		if ( i < MAX_RACES )	p_raceInvited[ playerid ] [ i ] = false;
-		if ( i < MAX_STREAKS ) 	p_streakData[ playerid ] [ i ] [ E_BEST_STREAK ] = 0, p_streakData[ playerid ] [ i ] [ E_STREAK ] = 0;
 
 		p_BlockedPM[ playerid ] [ i ] = false;
 	}
@@ -3314,7 +3294,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	HidePlayerTogglableTextdraws( playerid );
-	resetPlayerStreaks( playerid );
 
 	/* ** Tax And Medical Fees ** */
 	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
@@ -3365,8 +3344,8 @@ public OnPlayerDeath( playerid, killerid, reason )
 				case 1000:  ShowAchievement( killerid, "Master Killer - 1000 Kills!", 25 );
 			}
 
-			incrementPlayerWeaponKills( killerid, reason );
-			incrementPlayerStreak( killerid, STREAK_KILL );
+			WeaponStats_IncrementKill( killerid, reason );
+			Streak_IncrementPlayerStreak( killerid, STREAK_KILL );
 
 			if ( p_VIPLevel[ killerid ] && !isnull( p_DeathMessage[ killerid ] ) ) {
     			GameTextForPlayer( playerid, p_DeathMessage[ killerid ], 4000, 6 );
@@ -4694,13 +4673,6 @@ CMD:feedback( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_FEEDBACK, DIALOG_STYLE_INPUT, ""COL_GOLD"Server Feedback", ""COL_WHITE"Let us know how you think we can make the server better to play! Impactful feedback is rewarded.\n\n    Be as serious and straight forward as you wish. You can rant if you need to. Be impactful.", "Submit", "Close" );
 }
 
-CMD:weaponstats( playerid, params[ ] ) {
-	return displayWeaponStats( playerid );
-}
-
-CMD:streaks( playerid, params[ ] ) {
-	return displayStreaks( playerid );
-}
 
 CMD:notes( playerid, params[ ] ) return cmd_mynotes( playerid, params );
 CMD:myvipnotes( playerid, params[ ] ) return cmd_mynotes( playerid, params );
@@ -10093,7 +10065,7 @@ public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )
 		iAfter 	= ( p_Arrests[ playerid ] += totalpeople )
 	;
 
-	incrementPlayerStreak( playerid, STREAK_ARREST );
+	Streak_IncrementPlayerStreak( playerid, STREAK_ARREST );
 
 	if ( iBefore < 1000 && iAfter >= 1000 )	   ShowAchievement( playerid, "Arrested ~r~1000~w~~h~~h~ criminals!", 25 );
 	else if ( iBefore < 500 && iAfter >= 500 ) ShowAchievement( playerid, "Arrested ~r~500~w~~h~~h~ criminals!", 18 );
@@ -10763,12 +10735,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnVehicleLoad", "d", playerid );
-
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `STREAKS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnStreaksLoad", "d", playerid );
-
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `WEAPON_STATS` WHERE `USER_ID`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnWeaponStatsLoad", "d", playerid );
 
 			if ( p_VIPLevel[ playerid ] ) {
 				format( szBigString, 192, "SELECT `ID` FROM `NOTES` WHERE (`NOTE` LIKE '{FFDC2E}%%' OR `NOTE` LIKE '{CD7F32}%%') AND `USER_ID`=%d AND `DELETED` IS NULL", p_AccountID[ playerid ] );
@@ -12111,8 +12077,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				format( szLargeString, 700, "%s"COL_GREY"Fireworks:{FFFFFF} %d\n"COL_GREY"Explosive Bullets:{FFFFFF} %d\n", szLargeString, p_Fireworks[ pID ], p_ExplosiveBullets[ pID ] );
 				ShowPlayerDialog( playerid, DIALOG_STATS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Item Statistics", szLargeString, "Okay", "Back" );
 			}
-			case 3: displayStreaks( pID, DIALOG_STATS_REDIRECT, "Back", playerid );
-			case 4: displayWeaponStats( pID, DIALOG_STATS_REDIRECT, true, playerid );
+			case 3: Streak_ShowPlayer( pID, DIALOG_STATS_REDIRECT, "Back", playerid );
+			case 4: WeaponStats_ShowPlayer( pID, DIALOG_STATS_REDIRECT, true, playerid );
 			case 5: displayAchievements( pID, DIALOG_STATS_REDIRECT, "Back", playerid );
 		}
 	}
@@ -16719,7 +16685,7 @@ stock Achievement::HandleMethYielded( playerid )
 
 stock Achievement::HandlePlayerRobbery( playerid )
 {
-	incrementPlayerStreak( playerid, STREAK_ROBBERY );
+	Streak_IncrementPlayerStreak( playerid, STREAK_ROBBERY );
 
 	switch( ++p_Robberies[ playerid ] )
 	{
@@ -16948,57 +16914,6 @@ stock IsPlayerInBank( playerid )
 		return ( valid_values[ value >>> 5 ] & ( 1 << ( value & 31 ) ) ) || false;
 	}
 	return false;
-}
-
-stock displayStreaks( playerid, dialogid = DIALOG_NULL, szSecondButton[ ] = "", forid = INVALID_PLAYER_ID ) {
-
-	szLargeString = ""COL_WHITE"Streak\t"COL_WHITE"Best Streak\t"COL_WHITE"Current Streak\n";
-
-	for( new streakid = 0, szStreak[ 8 ]; streakid < MAX_STREAKS; streakid++ ) {
-		szStreak = g_streaksTypes[ streakid ];
-		szStreak[ 0 ] = toupper( szStreak[ 0 ] );
-
-		format( szLargeString, 512, "%s%s\t%d\t%d\n", szLargeString, szStreak, p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ], p_streakData[ playerid ] [ streakid ] [ E_STREAK ] );
-	}
-
-	if ( !IsPlayerConnected( forid ) )
-		forid = playerid;
-
-	return ShowPlayerDialog( forid, dialogid, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Best Streaks", szLargeString, "Okay", szSecondButton );
-}
-
-stock displayWeaponStats( playerid, dialogid = DIALOG_NULL, bool: back_option = false, forid = INVALID_PLAYER_ID )
-{
-	if ( !IsPlayerConnected( forid ) ) forid = playerid;
-	format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `WEAPON_STATS` WHERE `USER_ID`=%d ORDER BY `KILLS` DESC", p_AccountID[ playerid ] );
-	return mysql_function_query( dbHandle, szNormalString, true, "OnShowWeaponStats", "dddd", playerid, dialogid, back_option, forid );
-}
-
-thread OnShowWeaponStats( playerid, dialogid, back_option, forid )
-{
-	new
-		rows;
-
-    cache_get_data( rows, tmpVariable );
-
-	if ( rows )
-	{
-		szLargeString = ""COL_WHITE"Weapon\t"COL_WHITE"Kills\n";
-
-    	for( new i = 0; i < rows; i++ )
-		{
-			new
-				weaponid = cache_get_field_content_int( i, "WEAPON_ID" ),
-				streak = cache_get_field_content_int( i, "KILLS" );
-
-			format( szLargeString, sizeof( szLargeString ), "%s%s\t%d\n", szLargeString, ReturnWeaponName( weaponid ), streak );
-		}
-		return ShowPlayerDialog( forid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Weapon Statistics", szLargeString, "Okay", back_option ? ( "Back" ) : ( "" ) );
-	}
-	else
-	{
-		return SendError( forid, "Kill someone with anything to display a statistic!" );
-	}
 }
 
 stock displayAchievements( playerid, dialogid = DIALOG_NULL, szSecondButton[ ] = "", forid = INVALID_PLAYER_ID )
@@ -17601,105 +17516,6 @@ stock GivePlayerLeoWeapons( playerid ) {
 	    GivePlayerWeapon( playerid, 16, 5 );
 		//GivePlayerWeapon( playerid, 34, 100 );
 	}
-}
-
-stock incrementPlayerStreak( playerid, streakid ) {
-
-	if ( ++p_streakData[ playerid ] [ streakid ] [ E_STREAK ] > p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] ) {
-		p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] = p_streakData[ playerid ] [ streakid ] [ E_STREAK ];
-
-		format( szBigString, 196, "INSERT INTO `STREAKS` (`USER_ID`,`STREAK_ID`,`STREAK`) VALUES(%d,%d,%d) ON DUPLICATE KEY UPDATE `STREAK`=%d;", p_AccountID[ playerid ], streakid, p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ], p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] );
-		mysql_single_query( szBigString );
-
-		// Notify oneself
-		SendServerMessage( playerid, "You are currently on your best "COL_GOLD"%s streak"COL_WHITE" of %d!", g_streaksTypes[ streakid ], p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] );
-
-		// Beep
-		Beep( playerid );
-	}
-
-	// Notify whole chat
-	new
-		iModulus = 10;
-
-	if ( p_streakData[ playerid ] [ streakid ] [ E_STREAK ] > 50 )
-		iModulus = 1;
-
-	else if ( p_streakData[ playerid ] [ streakid ] [ E_STREAK ] > 20 )
-		iModulus = 5;
-
-	if ( p_streakData[ playerid ] [ streakid ] [ E_STREAK ] % iModulus == 0 ) {
-		if ( p_streakData[ playerid ] [ streakid ] [ E_STREAK ] == p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] ) {
-			SendGlobalMessage( -1, ""COL_GOLD"[STREAK]{FFFFFF} %s(%d) is currently on their best "COL_GOLD"%s streak"COL_WHITE" of %d!", ReturnPlayerName( playerid ), playerid, g_streaksTypes[ streakid ], p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] );
-		} else {
-			SendGlobalMessage( -1, ""COL_GOLD"[STREAK]{FFFFFF} %s(%d) is currently on a "COL_GOLD"%s streak"COL_WHITE" of %d!", ReturnPlayerName( playerid ), playerid, g_streaksTypes[ streakid ], p_streakData[ playerid ] [ streakid ] [ E_STREAK ] );
-		}
-	}
-}
-
-stock resetPlayerStreaks( playerid ) {
-
-	for( new streakid = 0; streakid < MAX_STREAKS; streakid++ )
-		p_streakData[ playerid ] [ streakid ] [ E_STREAK ] = 0;
-}
-
-thread OnStreaksLoad( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0;
-
-	new
-		rows, fields, i = -1,
-		streakid, streak
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows ) {
-		while( ++i < rows ) {
-			// Assign streak
-			streakid = cache_get_field_content_int( i, "STREAK_ID", dbHandle );
-			streak = cache_get_field_content_int( i, "STREAK", dbHandle );
-
-			// Check if streak is valid and then insert
-			if ( streakid < MAX_STREAKS )
-				p_streakData[ playerid ] [ streakid ] [ E_BEST_STREAK ] = streak;
-		}
-	}
-	return 1;
-}
-
-stock incrementPlayerWeaponKills( playerid, weaponid, increment = 1 )
-{
-	if ( 0 <= weaponid < MAX_WEAPONS )
-	{
-		p_WeaponKills[ playerid ] [ weaponid ] += increment;
-
-		format( szBigString, 196, "INSERT INTO `WEAPON_STATS` (`USER_ID`,`WEAPON_ID`,`KILLS`) VALUES(%d,%d,%d) ON DUPLICATE KEY UPDATE `KILLS`=%d;", p_AccountID[ playerid ], weaponid, p_WeaponKills[ playerid ] [ weaponid ], p_WeaponKills[ playerid ] [ weaponid ] );
-		mysql_single_query( szBigString );
-	}
-}
-
-thread OnWeaponStatsLoad( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) )
-		return 0;
-
-	new
-		rows, fields, i = -1, weaponid;
-
-	cache_get_data( rows, fields );
-
-	if ( rows ) {
-		while( ++i < rows ) {
-			// Assign streak
-			weaponid = cache_get_field_content_int( i, "WEAPON_ID", dbHandle );
-
-			// Check if streak is valid and then insert
-			if ( weaponid < sizeof( p_WeaponKills[ ] ) )
-				p_WeaponKills[ playerid ] [ weaponid ] = cache_get_field_content_int( i, "KILLS", dbHandle );
-		}
-	}
-	return 1;
 }
 
 stock UpdateGlobalDonated( playerid = INVALID_PLAYER_ID, Float: amount = 0.0, hidden = 0 )
