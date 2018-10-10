@@ -568,14 +568,6 @@ new
 	Iterator:InformedRobbery< MAX_INFORMED_ROBBERIES >
 ;
 
-/* ** Ammunation Cops ** */
-#define MAX_WEAPON_LOCKERS					( 7 )
-
-new
-	g_weaponLockerCheckpoint[ MAX_WEAPON_LOCKERS ],
-	Iterator:WeaponLockers< MAX_WEAPON_LOCKERS >
-;
-
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
 
@@ -10134,13 +10126,6 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 	    return 1;
 	}
 
-	if ( p_Class[ playerid ] == CLASS_POLICE )
-	{
-		foreach (new lockerid : WeaponLockers) if ( checkpointid == g_weaponLockerCheckpoint[ lockerid ] ) {
-			return ShowAmmunationMenu( playerid, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER );
-		}
-	}
-
 	if ( checkpointid == g_Checkpoints[ CP_AMMUNATION_0 ] || checkpointid == g_Checkpoints[ CP_AMMUNATION_1 ] || checkpointid == g_Checkpoints[ CP_AMMUNATION_2 ] )
     	return ShowAmmunationMenu( playerid );
 
@@ -13208,62 +13193,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
     	p_AmmunationMenu{ playerid } = listitem;
         return RedirectAmmunation( playerid, listitem );
-	}
-	if ( ( dialogid == DIALOG_WEAPON_LOCKER ) && response )
-	{
-    	p_WeaponLockerMenu{ playerid } = listitem;
-      	return RedirectAmmunation( playerid, listitem, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
-	}
-	if ( dialogid == DIALOG_WEAPON_LOCKER_BUY )
-	{
-	   	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "You must be a law enforcement officer to use this feature." );
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot buy weapons in jail." );
-		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED || !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You are unable to purchase any weapons at this time." );
-
-		// Check if user is in the locker checkpoint
-		foreach (new lockerid : WeaponLockers)
-		{
-			if ( IsPlayerInDynamicCP( playerid, g_weaponLockerCheckpoint[ lockerid ] ) )
-			{
-				if ( response )
-				{
-				    for( new i, x = 0; i < sizeof( g_AmmunationWeapons ); i++ )
-				    {
-				        if ( g_AmmunationWeapons[ i ] [ E_MENU ] == p_WeaponLockerMenu{ playerid } )
-				        {
-				            if ( x == listitem )
-				            {
-								new
-									iCostPrice = floatround( float( g_AmmunationWeapons[ i ] [ E_PRICE ] ) * 1.25 );
-
-							 	if ( iCostPrice > GetPlayerCash( playerid ) )
-								{
-								    SendError( playerid, "You don't have enough money for this." );
-								    RedirectAmmunation( playerid, p_WeaponLockerMenu{ playerid }, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
-									return 1;
-								}
-
-								GivePlayerCash( playerid, -iCostPrice );
-
-								if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
-								else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
-
-								RedirectAmmunation( playerid, p_WeaponLockerMenu{ playerid }, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER_BUY, 1.25 );
-								SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s (inc. fees).", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], cash_format( iCostPrice ) );
-								break;
-				            }
-				            x ++;
-				        }
-				    }
-				}
-				else
-				{
-					ShowAmmunationMenu( playerid, "{FFFFFF}Weapon Locker - Purchase Weapons", DIALOG_WEAPON_LOCKER );
-				}
-				return 1;
-			}
-		}
-		return SendError( playerid, "You are not inside any gun locker checkpoint." );
 	}
 	if ( dialogid == DIALOG_AMMU_BUY )
 	{
@@ -19231,27 +19160,6 @@ stock CreateCrimeReport( playerid )
 	  		Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, i );
 	  	}
 	}
-}
-
-stock CreateAmmunationLocker( Float: X, Float: Y, Float: Z, Float: rX )
-{
-	new
-		lockerid = Iter_Free(WeaponLockers);
-
-	if ( lockerid !=ITER_NONE )
-	{
-		Iter_Add( WeaponLockers, lockerid );
-
-		new
-			Float: nX = X + 1.5 * -floatsin( -rX, degrees ),
-			Float: nY = Y + 1.5 * -floatcos( -rX, degrees )
-		;
-
-		g_weaponLockerCheckpoint[ lockerid ] = CreateDynamicCP( nX, nY, Z, 2.0 , -1, -1, -1, 100.0 );
-		CreateDynamicObject( 14782, X, Y, Z, 0.0, 0.0, rX, -1, -1, -1, 100.0 );
-		CreateDynamic3DTextLabel( "[WEAPON LOCKER]", COLOR_GOLD, nX, nY, Z, 20.0 );
-	}
-	return lockerid;
 }
 
 stock SecurityModeToString( modeid )

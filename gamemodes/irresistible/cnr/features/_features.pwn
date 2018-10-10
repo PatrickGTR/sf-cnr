@@ -32,9 +32,7 @@
 #include "irresistible\cnr\features\animations.pwn"
 #include "irresistible\cnr\features\spikestrips.pwn"
 #include "irresistible\cnr\features\perks.pwn"
-// #include "irresistible\cnr\features\pilot.pwn"
-// #include "irresistible\cnr\features\fishing.pwn"
-// #include "irresistible\cnr\features\vote.pwn"
+#include "irresistible\cnr\features\weapon_locker.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"

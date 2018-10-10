@@ -147,7 +147,6 @@ new
 	p_WeaponDealTick				[ MAX_PLAYERS ],
 	p_WeaponDealer					[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_WeaponDealMenu				[ MAX_PLAYERS char ],
-	p_WeaponLockerMenu				[ MAX_PLAYERS char ],
 	bool: p_WeaponDealing			[ MAX_PLAYERS char ],
 	p_BlowjobOfferer				[ MAX_PLAYERS ],
 	p_BlowjobDealTick				[ MAX_PLAYERS ],
