@@ -2131,11 +2131,6 @@ public ZoneTimer( )
 		// CIA Visible On Radar after firing a shot
 		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
 			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
-
-		// Stealth mode after getting shot
-		if ( p_OffRadarVisible[ playerid ] != 0 && p_OffRadarVisible[ playerid ] < g_iTime )
-			SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) ), p_OffRadarVisible[ playerid ] = 0;
-
 	}
 	return 1;
 }
@@ -2852,8 +2847,6 @@ public OnPlayerSpawn( playerid )
 	StopSound( playerid );
 	CancelEdit( playerid );
 
-	p_OffRadar{ playerid } = false;
-
 	// Approved spawn?
 	if ( !approveClassSpawned( playerid ) ) {
 		SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL SPAWN]"COL_GREY" %s(%d) - %d skin - %d ping - %s IP", ReturnPlayerName( playerid ), playerid, GetPlayerSkin( playerid ), GetPlayerPing( playerid ), ReturnPlayerIP( playerid ) );
@@ -3088,10 +3081,6 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( playerid ) )
 		 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
-
-		// Exposing stealth mode player
-		if ( p_OffRadar{ playerid } )
-			SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0xFF ) ), p_OffRadarVisible[ playerid ] = g_iTime + 2;
 
 		// CIA Exposure when weapon is shot
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_inFBI{ playerid } && p_inCIA{ playerid } && !p_inArmy{ playerid } )
@@ -11657,8 +11646,8 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_PingImmunity{ playerid } 		= cache_get_field_content_int( 0, "PING_IMMUNE", dbHandle );
 			p_HitsComplete[ playerid ] 		= cache_get_field_content_int( 0, "CONTRACTS", dbHandle );
 			p_TruckedCargo[ playerid ] 		= cache_get_field_content_int( 0, "TRUCKED", dbHandle );
-			p_PilotMissions[ playerid ] 	= cache_get_field_content_int( 0, "PILOT", dbHandle ); 
-			p_TrainMissions[ playerid ] 	= cache_get_field_content_int( 0, "TRAIN", dbHandle ); 
+			p_PilotMissions[ playerid ] 	= cache_get_field_content_int( 0, "PILOT", dbHandle );
+			p_TrainMissions[ playerid ] 	= cache_get_field_content_int( 0, "TRAIN", dbHandle );
 			//p_CopTutorial{ playerid } 		= cache_get_field_content_int( 0, "COP_TUTORIAL", dbHandle );
 			p_Job{ playerid } 				= cache_get_field_content_int( 0, "JOB", dbHandle );
 			p_VIPJob{ playerid } 			= cache_get_field_content_int( 0, "VIP_JOB", dbHandle );
@@ -15177,13 +15166,8 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 	static
 		szWanted[ 12 ];
 
-	if ( !IsPlayerConnected( playerid ) )
+	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) )
 	    return 0;
-
-#if defined __cnr__chuffsec
-	if ( IsPlayerSecurityDriver( playerid ) )
-		return SetPlayerColor( playerid, COLOR_SECURITY );
-#endif
 
 	if ( IsPlayerJailed( playerid ) )
 	{
@@ -15200,10 +15184,8 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
     if ( ( wantedlevel < 0 && p_WantedLevel[ playerid ] < 6 ) || wantedlevel > 0 )
 		SetPlayerWantedLevel( playerid, p_WantedLevel[ playerid ] );
 
-	if ( p_WantedLevel[ playerid ] )
+	if ( p_WantedLevel[ playerid ] > 0 )
 	{
-		SetPlayerColor( playerid, COLOR_WANTED2 );
-
 		if ( IsPlayerSpawned( playerid ) )
 		{
 			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
@@ -15212,14 +15194,14 @@ stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
 			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
 		}
 	}
-	else SetPlayerColorToTeam( playerid ), PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] ), Uncuff( playerid );
+	else
+	{
+		PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
+		Uncuff( playerid );
+	}
 
-	if ( p_WantedLevel[ playerid ] > 5 )		SetPlayerColor( playerid, COLOR_WANTED6 );
-	if ( p_WantedLevel[ playerid ] > 11 )	SetPlayerColor( playerid, COLOR_WANTED12 );
-	if ( p_WantedLevel[ playerid ] > 90 ) 	printf( "[wanted_level] %s - %d", ReturnPlayerName( playerid ), p_WantedLevel[ playerid ] );
-	if ( IsPlayerAdminOnDuty( playerid ) ) 	SetPlayerColor( playerid, COLOR_PINK );
-
-	if ( p_OffRadar{ playerid } ) SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) );
+	// regulate player color
+	SetPlayerColorToTeam( playerid );
 
 	/*if ( p_WantedLevel[ playerid ] > 2000 ) // 8hska7082bmahu
 	{
@@ -15424,14 +15406,25 @@ stock SetPlayerColorToTeam( playerid )
 			if ( p_inArmy{ playerid } ) SetPlayerColor( playerid, COLOR_ARMY );
 	    }
 	    case CLASS_FIREMAN: SetPlayerColor( playerid, COLOR_FIREMAN );
-	    case CLASS_MEDIC: 	SetPlayerColor( playerid, COLOR_MEDIC );
+	    case CLASS_MEDIC: SetPlayerColor( playerid, COLOR_MEDIC );
 	    default:
 	    {
-	    	SetPlayerColor( playerid, COLOR_DEFAULT );
-		    if ( p_GangID[ playerid ] != INVALID_GANG_ID ) 	SetPlayerColor( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ] );
-			if ( p_WantedLevel[ playerid ] > 1 )			SetPlayerColor( playerid, COLOR_WANTED2 );
-			if ( p_WantedLevel[ playerid ] > 5 )			SetPlayerColor( playerid, COLOR_WANTED6 );
-			if ( p_WantedLevel[ playerid ] > 11 )			SetPlayerColor( playerid, COLOR_WANTED12 );
+	    	new
+	    		default_color = COLOR_DEFAULT;
+
+	    	// set color according to wanted level
+			if ( p_WantedLevel[ playerid ] > 11 ) default_color = COLOR_WANTED12;
+			else if ( p_WantedLevel[ playerid ] > 5 ) default_color = COLOR_WANTED6;
+			else if ( p_WantedLevel[ playerid ] > 1 ) default_color = COLOR_WANTED2;
+		    else if ( p_GangID[ playerid ] != INVALID_GANG_ID ) default_color = g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ];
+
+		    // set alpha for invisible players to 0
+	    	if ( IsPlayerHiddenFromRadar( playerid ) ) {
+	    		default_color = setAlpha( default_color, 0x00 );
+	    	}
+
+	    	// force the color on the player
+	    	return SetPlayerColor( playerid, default_color );
 		}
 	}
 	return 1;
