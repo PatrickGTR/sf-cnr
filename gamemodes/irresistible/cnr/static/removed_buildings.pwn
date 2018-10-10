@@ -198,6 +198,7 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer( playerid, 792, -2035.648681, 473.131896, 35.172294, 25.000 ); // facility trees (dope casino)
 	RemoveBuildingForPlayer(playerid, 9919, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility
 	RemoveBuildingForPlayer(playerid, 9937, -1667.7734, 884.2266, 71.6250, 0.25); // VT Facility LOD ^
+	RemoveBuildingForPlayer(playerid, 2424, 371.6172, -5.1875, 1000.8359, 0.25); // Cluckin bell counter table
 
 	// Wolfganja (Diamond Donor)
 	RemoveBuildingForPlayer(playerid, 1280, -2911.4219, 422.3516, 4.2891, 60.0);
