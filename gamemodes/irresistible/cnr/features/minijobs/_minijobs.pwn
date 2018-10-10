@@ -6,6 +6,7 @@
  */
 
 /* ** Includes ** */
+#include "irresistible\cnr\features\minijobs\mining.pwn"
 #include "irresistible\cnr\features\minijobs\meth.pwn"
 #include "irresistible\cnr\features\minijobs\trucking.pwn"
 #include "irresistible\cnr\features\minijobs\pilot.pwn"
