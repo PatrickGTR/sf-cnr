@@ -867,3 +867,9 @@ stock ArePlayersInHouse( houseid, owner )
 	}
 	return false;
 }
+
+stock GetHousePos( houseid, &Float: X, &Float: Y, &Float: Z ) {
+	X = g_houseData[ houseid ] [ E_EX ];
+	Y = g_houseData[ houseid ] [ E_EY ];
+	Z = g_houseData[ houseid ] [ E_EZ ];
+}

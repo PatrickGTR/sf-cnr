@@ -566,3 +566,9 @@ stock GetGarageInteriorID( garageid ) {
 stock GetGarageVirtualWorld( garageid ) {
 	return g_garageData[ garageid ] [ E_WORLD ];
 }
+
+stock GetGaragePos( garageid, &Float: X, &Float: Y, &Float: Z ) {
+	X = g_garageData[ garageid ] [ E_X ];
+	Y = g_garageData[ garageid ] [ E_Y ];
+	Z = g_garageData[ garageid ] [ E_Z ];
+}

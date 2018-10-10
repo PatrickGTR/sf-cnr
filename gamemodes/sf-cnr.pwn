@@ -17115,40 +17115,18 @@ stock isNotNearPlayer( playerid, nearid, Float: distance = 200.0 )
 	if ( ! IsPlayerNPC( playerid ) && ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 500 )
 		return 0;
 
-	if ( !IsPlayerConnected( nearid ) )
+	if ( ! IsPlayerConnected( nearid ) )
 		return 1;
 
 	if ( IsPlayerAFK( nearid ) )
 		return 1;
 
 	new
-		Float: fDistance 	= 9999.9,
-		Float: X, Float: Y, Float: Z,
+		Float: X, Float: Y, Float: Z;
 
-		// Get kidnapper data
-		iEntrance 			= p_LastEnteredEntrance[ nearid ],
-		iHouse 				= p_InHouse[ nearid ],
-		iGarage 			= p_InGarage[ nearid ]
-	;
+	GetPlayerOutsidePos( nearid, X, Y, Z );
 
-	GetPlayerPos( nearid, X, Y, Z );
-
-	if ( GetPlayerInterior( playerid ) != GetPlayerInterior( nearid ) && GetPlayerVirtualWorld( playerid ) != GetPlayerVirtualWorld( nearid ) )
-	{
-	    if ( iEntrance != -1 )
-	  		fDistance = GetPlayerDistanceFromPoint( playerid, g_entranceData[ iEntrance ] [ E_EX ], g_entranceData[ iEntrance ] [ E_EY ], g_entranceData[ iEntrance ] [ E_EZ ] );
-
-	  	else if ( iGarage != -1 )
-	  		fDistance = GetPlayerDistanceFromPoint( playerid, g_garageData[ iGarage ] [ E_X ], g_garageData[ iGarage ] [ E_Y ], g_garageData[ iGarage ] [ E_Z ] );
-
-	  	else if ( iHouse != -1 )
-	  		fDistance = GetPlayerDistanceFromPoint( playerid, g_houseData[ iHouse ] [ E_EX ], g_houseData[ iHouse ] [ E_EY ], g_houseData[ iHouse ] [ E_EZ ] );
-
-  		else fDistance = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
-	}
-  	else fDistance = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
-
-	return fDistance > distance ? 1 : 0;
+	return GetPlayerDistanceFromPoint( playerid, X, Y, Z ) > distance ? 1 : 0;
 }
 
 stock GetVehicleDriver( vehicleid )
@@ -17208,23 +17186,12 @@ stock IsDeathmatchProtectedZone( playerid ) {
 	return false;
 }*/
 
-stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] ) {
+stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] )
+{
 	static
 		Float: X, Float: Y, Float: Z;
 
-	if ( GetPlayerInterior( iPlayer ) != 0 || IsPlayerInBank( iPlayer ) ) {
-		new
-			iEntrance = p_LastEnteredEntrance[ iPlayer ],
-			iHouse = p_InHouse[ iPlayer ],
-			iGarage = p_InGarage[ iPlayer ]
-		;
-
-	    if ( iEntrance != -1 ) GetEntrancePos( iEntrance, X, Y, Z );
-	    else if ( iGarage != -1 ) X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
-	    else if ( iHouse != -1 ) X = g_houseData[ iHouse ] [ E_EX ], Y = g_houseData[ iHouse ] [ E_EY ], Z = g_houseData[ iHouse ] [ E_EZ ];
-		else return false;
-	}
-	else GetPlayerPos( iPlayer, X, Y, Z );
+	GetPlayerOutsidePos( iPlayer, X, Y, Z );
 
 	Get2DCity( szCity, X, Y, Z );
 	GetZoneFromCoordinates( szLocation, X, Y, Z );
@@ -19113,24 +19080,24 @@ stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to f
 	return 1;
 }
 
-stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // Gets the player position, if interior then the last checkpoint position
+stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // gets the player position, if interior then the last checkpoint position
 {
 	new
-		iEntrance 			= p_LastEnteredEntrance[ playerid ],
-		iHouse 				= p_InHouse[ playerid ],
-		iGarage 			= p_InGarage[ playerid ]
+		entranceid = p_LastEnteredEntrance[ playerid ],
+		houseid = p_InHouse[ playerid ],
+		garageid = p_InGarage[ playerid ]
 	;
 
-	if ( GetPlayerInterior( playerid ) != 0 )
+	if ( GetPlayerInterior( playerid ) != 0 || IsPlayerInBank( playerid ) )
 	{
-	    if ( iEntrance != -1 )
-	    	GetEntrancePos( iEntrance, X, Y, Z );
+	    if ( entranceid != -1 )
+	    	GetEntrancePos( entranceid, X, Y, Z );
 
-	  	else if ( iGarage != -1 )
-	  		X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
+	  	else if ( garageid != -1 )
+	    	GetGaragePos( garageid, X, Y, Z );
 
-	  	else if ( iHouse != -1 )
-	  		X = g_houseData[ iHouse ] [ E_EX ], Y = g_houseData[ iHouse ] [ E_EY ], Z = g_houseData[ iHouse ] [ E_EZ ];
+	  	else if ( houseid != -1 )
+	    	GetHousePos( houseid, X, Y, Z );
 
   		else GetPlayerPos( playerid, X, Y, Z );
 	}
