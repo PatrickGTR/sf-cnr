@@ -37,6 +37,7 @@
 #include "irresistible\cnr\features\info_pickups.pwn"
 #include "irresistible\cnr\features\crime_reports.pwn"
 #include "irresistible\cnr\features\fires.pwn"
+#include "irresistible\cnr\features\car_jacker.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"
