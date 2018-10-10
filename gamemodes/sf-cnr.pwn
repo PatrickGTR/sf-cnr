@@ -70,8 +70,6 @@ new bool: False = false;
 #define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
 
 /* Beast Functions */
-#define SendClientMessageToFireman(%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_FIREMAN)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToVips(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_VIPLevel[fI]>=VIP_REGULAR)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define SendClientMessageToAmbulance(%1,%2,%3) \
@@ -152,20 +150,6 @@ new
 	// Iterator
 	Iterator:gates<MAX_GATES>
 ;
-
-/* ** Fire System ** */
-enum E_FIRE_DATA
-{
-	bool: E_CREATED,	E_OBJECT,		Float: E_HEALTH,
-	E_HOUSE,            Text3D: E_LABEL
-};
-
-new
-	g_fireData                      [ 10 ] [ E_FIRE_DATA ],
-	bool: fire_toggled              = false
-;
-
-public OnPlayerTakeOutFire			( playerid, fireid );
 
 /* ** Weed System ** */
 #define MAX_WEED_STORAGE 			6
@@ -794,19 +778,6 @@ public OnGameModeInit()
 	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
 
-	/* ** RDM protection **
-	static const
-		Float: radius = 100.0;
-
-	for( new i = 0; i < sizeof( g_SanFierroSpawns ); i++ )
-		CreateNoDeathmatchZone( radius, g_SanFierroSpawns[ i ] [ RANDOM_SPAWN_X ], g_SanFierroSpawns[ i ] [ RANDOM_SPAWN_Y ] );
-
-	//CreateNoDeathmatchZone( radius, g_FiremanSpawns[ 0 ] [ RANDOM_SPAWN_X ], g_FiremanSpawns[ 0 ] [ RANDOM_SPAWN_Y ] );
-	CreateNoDeathmatchZone( radius, g_MedicSpawns[ 0 ] [ RANDOM_SPAWN_X ], g_MedicSpawns[ 0 ] [ RANDOM_SPAWN_Y ] );
-	CreateNoDeathmatchZone( radius, g_ArmySpawns[ 0 ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ 0 ] [ RANDOM_SPAWN_Y ] );
-	CreateNoDeathmatchZone( radius, g_CIASpawns[ 0 ] [ RANDOM_SPAWN_X ], g_CIASpawns[ 0 ] [ RANDOM_SPAWN_Y ] );
-	CreateNoDeathmatchZone( radius, g_PoliceSpawns[ 0 ] [ RANDOM_SPAWN_X ], g_PoliceSpawns[ 0 ] [ RANDOM_SPAWN_Y ] );*/
-
 	/* ** Set everyone offline ** */
 	mysql_single_query( "UPDATE `USERS` SET `ONLINE` = 0" );
 
@@ -1108,22 +1079,6 @@ public OnPlayerEditDynamicObject( playerid, objectid, response, Float:x, Float:y
 	return 1;
 }
 
-public OnPlayerTakeOutFire( playerid, fireid )
-{
-	Achievement::HandleExtinguishedFires( playerid );
-    SendClientMessageToFireman( -1, "{A83434}[FIREMAN]{FFFFFF} %s(%d) has extinguished house fire %d.", ReturnPlayerName( playerid ), playerid, fireid );
-	GivePlayerScore( playerid, 2 );
-	//GivePlayerExperience( playerid, E_FIREMAN );
-	GivePlayerCash( playerid, 5000 );
-	g_fireData[ fireid ] [ E_CREATED ]	= false;
-    g_fireData[ fireid ] [ E_HOUSE ] 	= -1;
-    DestroyDynamicObject				( g_fireData[ fireid ] [ E_OBJECT ] );
-    g_fireData[ fireid ] [ E_OBJECT ] 	= INVALID_OBJECT_ID;
-    DestroyDynamic3DTextLabel			( g_fireData[ fireid ] [ E_LABEL ] );
-    g_fireData[ fireid ] [ E_LABEL ] 	= Text3D: 0xFFFF;
-	return 1;
-}
-
 public OnGameModeExit( )
 {
 	KillTimer( rl_ServerUpdate );
@@ -1136,8 +1091,8 @@ public OnGameModeExit( )
 public OnServerUpdateTimer( )
 {
 	static
-		iState, iVehicle, iWeapon, iAmmo, iKeys,
-		Float: fX, Float: fY, Float: fZ, Float: fLastRate
+		iState, iVehicle, iWeapon, iAmmo,
+		Float: fLastRate
 	;
 
 	// for hooks
@@ -1188,8 +1143,6 @@ public OnServerUpdateTimer( )
 			iVehicle 	= GetPlayerVehicleID( playerid );
 			iWeapon 	= GetPlayerWeapon( playerid );
 			iState 		= GetPlayerState( playerid );
-
-		    GetPlayerKeys( playerid, iKeys, tmpVariable, tmpVariable );
 
 		    // Generally Updated textdraws
 			PlayerTextDrawSetString( playerid, p_LocationTD[ playerid ], GetPlayerArea( playerid ) );
@@ -1376,42 +1329,6 @@ public OnServerUpdateTimer( )
 							{
 								SendError( playerid, "You cannot leave the prison. It's prohibited." );
 								SetPlayerPosToPrison( playerid );
-							}
-						}
-					}
-				}
-			}
-
-			// Taking Out Fires
-		    if ( p_Class[ playerid ] == CLASS_FIREMAN && ( iKeys & KEY_FIRE ) || ( iKeys & KEY_WALK ) )
-			{
-				if ( iWeapon == 42 || GetVehicleModel( iVehicle ) == 407 )
-				{
-					for( new i; i < sizeof( g_fireData ); i ++ ) if ( g_fireData[ i ] [ E_CREATED ] )
-				    {
-				 		if ( GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], fX, fY, fZ ) )
-				 		{
-							fZ += 2.3;
-
-							if ( IsPlayerInRangeOfPoint( playerid, ( GetVehicleModel( iVehicle ) == 407 ? 25.0 : 10.0 ), fX, fY, fZ ) )
-							{
-								if ( IsPlayerAimingAt( playerid, fX, fY, fZ, ( GetVehicleModel( iVehicle ) == 407 ? 3.0 : 1.0 ) ) )
-								{
-								    if ( g_fireData[ i ] [ E_HEALTH ] > 0.0 )
-									{
-										if ( ( g_fireData[ i ] [ E_HEALTH ] -= GetVehicleModel( iVehicle ) == 407 ? ( 2.85 + fRandomEx( 1.0, 5.0 ) ) : ( 1.25 + fRandomEx( 1.0, 5.0 ) ) ) < 0.0 )
-											g_fireData[ i ] [ E_HEALTH ] = 0.0;
-
-						             	UpdateDynamic3DTextLabelText( g_fireData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_fireData[ i ] [ E_HEALTH ] ) );
-									}
-									else
-								    {
-								        g_fireData[ i ] [ E_HEALTH ] = 0.0;
-					             	    CallLocalFunction( "OnPlayerTakeOutFire", "dd", playerid, i );
-						             	UpdateDynamic3DTextLabelText( g_fireData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_fireData[ i ] [ E_HEALTH ] ) );
-								    }
-									break;
-								}
 							}
 						}
 					}
@@ -1852,8 +1769,6 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = 0xFF;
 	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
 	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
 	p_MoneyBag{ playerid } = false;
@@ -2415,8 +2330,6 @@ public OnPlayerDisconnect( playerid, reason )
 	//p_CopTutorialProgress{ playerid } = 0;
 	DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 	p_MiningExport[ playerid ] = 0xFFFF;
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = 0xFF;
 	p_ContractedAmount[ playerid ] = 0;
 	ClearPlayerWantedLevel( playerid );
 	Delete3DTextLabel( p_InfoLabel[ playerid ] );
@@ -3829,35 +3742,6 @@ function emp_deactivate( vehicleid )
 	if ( !IsValidVehicle( vehicleid ) ) return 0;
 	GetVehicleParamsEx( vehicleid, engine, lights, alarm, doors, bonnet, boot, objective );
 	SetVehicleParamsEx( vehicleid, VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective );
-	return 1;
-}
-
-function OnPlayerFireDistanceUpdate( playerid )
-{
-    new
-	    Float: X, Float: Y, Float: Z, Float: dis,
-		szFire1[ 128 ], szFire2[ 128 ]
-	;
-
-	for( new i; i < sizeof( g_fireData ); i++ )
-	{
-	    GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], X, Y, Z );
-	    dis = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
-	    if ( i < floatround( sizeof( g_fireData ) / 2 ) )
-	    {
-		    if ( g_fireData[ i ] [ E_CREATED ] == false ) format( szFire1, sizeof( szFire1 ), "%s~r~FIRE %d:%s ~g~Stopped~n~", szFire1, i,i==1?(" "):("") );
-			else format( szFire1, sizeof( szFire1 ), "%s~r~FIRE %d:%s~w~ %0.0f m~n~", szFire1, i,i==1?("_"):(""), dis );
-		}
-		else
-		{
-		    if ( g_fireData[ i ] [ E_CREATED ] == false ) format( szFire2, sizeof( szFire2 ), "%s~r~FIRE %d:%s ~g~Stopped~n~", szFire2, i,i==1?(" "):("") );
-			else format( szFire2, sizeof( szFire2 ), "%s~r~FIRE %d:%s~w~ %0.0f m~n~", szFire2, i,i==1?("_"):(""), dis );
-		}
-	}
-	PlayerTextDrawSetString( playerid, p_FireDistance1[ playerid ], szFire1 );
-	PlayerTextDrawSetString( playerid, p_FireDistance2[ playerid ], szFire2 );
-	PlayerTextDrawShow( playerid, p_FireDistance1[ playerid ] );
-	PlayerTextDrawShow( playerid, p_FireDistance2[ playerid ] );
 	return 1;
 }
 
@@ -6242,28 +6126,6 @@ CMD:idof( playerid, params[ ] )
 	if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/idof [PART_OF_NAME]" );
 	if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected." );
 	SendServerMessage( playerid, "%s: "COL_GREY"%d", ReturnPlayerName( pID ), pID );
-	return 1;
-}
-
-CMD:firetracker( playerid, params[ ] )
-{
-	if ( p_Class[ playerid ] != CLASS_FIREMAN )
-		return SendError( playerid, "You are not a fireman." );
-
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = 0xFF;
-	p_FireDistanceTimer[ playerid ] = SetTimerEx( "OnPlayerFireDistanceUpdate", 1000, true, "d", playerid );
-	SendServerMessage( playerid, "Fire's have been tracked and have been forwarded to you in meters. Find the fires and extinguish them." );
-	return 1;
-}
-
-CMD:rfiretracker( playerid, params[ ] )
-{
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = 0xFF;
-	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
-	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
-	SendServerMessage( playerid, "You have turned off your fire tracker." );
 	return 1;
 }
 
@@ -15432,70 +15294,6 @@ stock IsPlayerAimingAt(playerid, Float:x, Float:y, Float:z, Float:radius)
     return false;
 }
 
-stock CreateFire( )
-{
-	static string[ 6 ];
-	if ( fire_toggled )
-	{
-	    for( new i; i < sizeof( g_fireData ); i ++ )
-	    {
-			if ( g_fireData[ i ] [ E_CREATED ] == true )
-			{
-			    g_fireData[ i ] [ E_CREATED ] = false;
-			    g_fireData[ i ] [ E_HOUSE ] = -1;
-			    DestroyDynamicObject( g_fireData[ i ] [ E_OBJECT ] );
-			    g_fireData[ i ] [ E_OBJECT ] = INVALID_OBJECT_ID;
-			    DestroyDynamic3DTextLabel( g_fireData[ i ] [ E_LABEL ] );
-			    g_fireData[ i ] [ E_LABEL ] = Text3D: 0xFFFF;
-			}
-	    }
-	    fire_toggled = false;
-	    CreateFire( );
-	}
-	else
-	{
-	    for( new i = 0; i < sizeof( g_fireData ); i ++ )
-	    {
-			new
-				house = GetRandomCreatedHouse( );
-
-			if ( Iter_Contains( houses, house ) )
-			{
-				g_fireData[ i ] [ E_HEALTH ] = 100.0 + fRandomEx( 1, 25 );
-				g_fireData[ i ] [ E_HOUSE ] = house;
-				g_fireData[ i ] [ E_CREATED ] = true;
-				format( string, sizeof( string ), "%0.1f", g_fireData[ i ] [ E_HEALTH ] );
-				g_fireData[ i ] [ E_LABEL ] = CreateDynamic3DTextLabel( string, COLOR_YELLOW, g_houseData[ house ] [ E_EX ], g_houseData[ house ] [ E_EY ], g_houseData[ house ] [ E_EZ ] + 0.5, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1 );
-				g_fireData[ i ] [ E_OBJECT ] = CreateDynamicObject( 18691, g_houseData[ house ] [ E_EX ], g_houseData[ house ] [ E_EY ], g_houseData[ house ] [ E_EZ ] - 2.3, 0.0, 0.0, 0.0 );
-			}
-		}
-	    fire_toggled = true;
-	}
-	return 1;
-}
-
-stock IsHouseOnFire( houseid )
-{
-	if ( houseid < 0 || houseid > MAX_HOUSES )
-	    return 0;
-
-	if ( ! Iter_Contains( houses, houseid ) )
-	    return 0;
-
-	for( new i, Float: X, Float: Y, Float: Z; i < sizeof( g_fireData ); i++ )
-	{
-	    if ( g_fireData[ i ] [ E_CREATED ] )
-	    {
-		    GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], X, Y, Z ); // Z is unused due to the object.
-		    if ( g_houseData[ houseid ] [ E_EX ] == X && g_houseData[ houseid ] [ E_EY ] == Y )
-		    {
-		        return 1;
-		    }
-		}
-	}
-	return 0;
-}
-
 stock ShowAchievement( playerid, achievement[ ], score = -1 )
 {
 	if ( score != -1 ) {
@@ -18830,6 +18628,19 @@ stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to f
     va_format( out, sizeof( out ), format, va_start<2> );
 
 	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_POLICE ) {
+		SendClientMessage( i, colour, out );
+	}
+	return 1;
+}
+
+stock SendClientMessageToFireman( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+{
+    static
+		out[ 144 ];
+
+    va_format( out, sizeof( out ), format, va_start<2> );
+
+	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_FIREMAN ) {
 		SendClientMessage( i, colour, out );
 	}
 	return 1;

@@ -36,6 +36,7 @@
 #include "irresistible\cnr\features\bribes.pwn"
 #include "irresistible\cnr\features\info_pickups.pwn"
 #include "irresistible\cnr\features\crime_reports.pwn"
+#include "irresistible\cnr\features\fires.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"

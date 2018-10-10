@@ -88,7 +88,6 @@ new
 	bool: p_MoneyBag                [ MAX_PLAYERS char ],
 	p_CopBanned                     [ MAX_PLAYERS char ],
 	p_AntiEMP                       [ MAX_PLAYERS ],
-	p_FireDistanceTimer             [ MAX_PLAYERS ] = { 0xFF, ... },
 	p_Warns                         [ MAX_PLAYERS ],
 	p_Wood							[ MAX_PLAYERS ],
 	p_LumberjackDeliver				[ MAX_PLAYERS ] = { 0xFFFF, ... },
