@@ -16,7 +16,7 @@
 // #pragma option -d3
 #pragma dynamic 7200000
 
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -151,25 +151,6 @@ new
 
 	// Iterator
 	Iterator:gates<MAX_GATES>
-;
-
-/* ** ATM System ** */
-#if defined MAX_FACILITIES
-	#define MAX_ATMS 				( 48 + MAX_FACILITIES )
-#else
-	#define MAX_ATMS				( 48 )
-#endif
-
-enum E_ATM_DATA
-{
-	E_CHECKPOINT, 		Float: E_HEALTH, 	E_TIMESTAMP,
-	E_OBJECT,			Text3D: E_LABEL, 	bool: E_DISABLED,
-	E_PICKUP,			E_LOOT,				E_WORLD
-};
-
-new
-	g_atmData						[ MAX_ATMS ] [ E_ATM_DATA ],
-	Iterator: atms 					< MAX_ATMS >
 ;
 
 /* ** Fire System ** */
@@ -448,19 +429,6 @@ new
 	p_streakData[ MAX_PLAYERS ] [ MAX_STREAKS ] [ E_STREAK_DATA ]
 ;
 
-/* ** Informed Robbery System ** */
-#define MAX_INFORMED_ROBBERIES				( 25 )
-
-enum E_INFORMED_ROBBERY_DATA
-{
-	E_MAP_ICON,					E_ALPHA
-};
-
-new
-	g_informedRobberies[ MAX_INFORMED_ROBBERIES ] [ E_INFORMED_ROBBERY_DATA ],
-	Iterator:InformedRobbery< MAX_INFORMED_ROBBERIES >
-;
-
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
 
@@ -704,69 +672,6 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( 1749.2073, -1948.8389, 13.4137, 42, 0, -1, -1, -1, 750.0 ); // TrainStation
 	CreateDynamicMapIcon( 815.69880, -1347.7256, 13.1043, 42, 0, -1, -1, -1, 750.0 ); // TrainStation
 	CreateDynamicMapIcon( 1911.2578, -1775.8676, 12.9470,  8, 0, -1, -1, -1, 750.0 ); // BombShop
-
-	/* ** Weapon Locker ** */
-	CreateAmmunationLocker( -1614.41992, 672.565246, -4.90625, 180.0000 );
-	CreateAmmunationLocker( 2245.062988, 2434.94458, 10.82031, -90.0000 );
-	CreateAmmunationLocker( 1525.003051, -1669.4093, 6.228725, 90.00000 );
-	CreateAmmunationLocker( 1527.936645, -1462.0344, 9.500000, -90.0000 );
-	CreateAmmunationLocker( 937.0916130, 1733.15197, 8.851562, 90.00000 );
-	CreateAmmunationLocker( -2458.59399, 501.431365, 30.02399, 0.000000 );
-
-	/* ** ATM Points ** */
-
-	// San Fierro
-	CreateATM( -1938.123291, 883.547668, 38.087814, 270.000000 ); // 0
-	CreateATM( -2408.914794, 720.656738, 34.751876, 180.000000 ); // 1
-	CreateATM( -1980.711669, 122.112731, 27.267499, 90.000000  ); // 2
-	CreateATM( -2647.664306, -22.565168, 5.7128110, 180.000000 ); // 3
-	CreateATM( -1917.654418, 558.118347, 34.743148, 270.000000 ); // 4
-	CreateATM( -2635.699951, 631.200012, 14.079999, 180.000000 ); // 5
-	CreateATM( -2636.040000, 208.560000, 3.8800000, 360.000000 ); // 6
-	CreateATM( -2512.100000, 2340.74000, 4.5799990, 180.000000 ); // 7
-	CreateATM( -2525.250000, -624.97000, 132.41000, 360.000000 ); // 8
-
-	// Las Venturas
-	CreateATM( 2544.055175, 2242.881835, 10.471873, 180.000000 ); // 0
-	CreateATM( 2110.729736, 2061.529052, 10.500308, 180.000000 ); // 1
-	CreateATM( 2233.845703, 957.4488520, 10.470303, 90.0000000 ); // 2
-	CreateATM( 2413.644287, 1114.202758, 10.452508, -90.000000 ); // 3
-	CreateATM( 1900.780151, 1102.897583, 10.459669, 180.000000 ); // 4
-	CreateATM( 2349.165283, 1543.896972, 10.469670, 180.000000 ); // 5
-	CreateATM( 2845.597412, 1286.504272, 11.030617, 0.00000000 ); // 6
-	CreateATM( 1879.681396, 722.8941040, 10.440302, 180.000000 ); // 7
-	CreateATM( 997.7407220, 2086.763427, 10.459657, -90.000000 ); // 8
-	CreateATM( 1480.238769, 2206.801025, 10.663430, -90.000000 ); // 9
-	CreateATM( 1677.719604, 2756.413330, 10.459667, -90.000000 ); // 10
-	CreateATM( -16.0785670, 1221.418579, 19.012741, -90.000000 ); // 11
-	CreateATM( -792.090637, 2744.119140, 45.490905, 180.000000 ); // 12
-	CreateATM( -1505.61242, 2622.352050, 55.470737, -90.000000 ); // 13
-	CreateATM( -1952.57629, 2388.553466, 49.139991, 20.0000000 ); // 14
-	CreateATM( -856.524902, 1528.208496, 22.238605, -90.000000 ); // 15
-
-	// Los Santos
-	CreateATM( 2234.733398, 51.345561000, 26.134365, 0.000000, 0.0 ); // 0
-	CreateATM( 1381.069213, 259.56204200, 19.156929, 157.0000, 0.0 ); // 1
-	CreateATM( 255.4551690, -197.5846250, 1.2381240, -90.0000, 0.0 ); // 2
-	CreateATM( 661.3598020, -555.1714470, 15.965932, -90.0000, 0.0 ); // 3
-	CreateATM( -2177.50292, -2435.006591, 30.214990, 52.00000, 0.0 ); // 4
-	CreateATM( 1367.251464, -1284.611938, 13.156874, -90.6000, 0.0 ); // 5
-	CreateATM( 1928.592651, -1771.088012, 13.172806, 90.00000, 0.0 ); // 6
-	CreateATM( 2323.767333, -1644.993896, 14.442724, 0.000000, 0.0 ); // 7
-	CreateATM( 2043.748779, -1416.704711, 16.810766, -90.0000, 0.0 ); // 8
-	CreateATM( 2387.751464, -1981.961669, 13.156866, -180.000, 0.0 ); // 9
-	CreateATM( 1494.450195, -1768.979492, 18.365745, -90.0000, 0.0 ); // 10
-	CreateATM( 1051.627075, -1026.406616, 31.661567, 0.000000, 0.0 ); // 11
-	CreateATM( 816.8725580, -1356.521240, 13.156099, -180.000, 0.0 ); // 12
-	CreateATM( 1808.732177, -1567.267822, 13.063967, 37.00000, 0.0 ); // 13
-	CreateATM( 2412.541259, -1492.666992, 23.628126, -180.000, 0.0 ); // 14
-	CreateATM( 2431.131347, -1219.477539, 25.022165, 0.000000, 0.0 ); // 15
-
-	// Casinos
-	CreateATM( 1985.135253, 1003.277404, 994.097290, 0.000 ); // 4 Drags
-	CreateATM( 1986.635253, 1032.391113, 994.097290, 180.0 ); // 4 Drags
-	CreateATM( 2230.132324, 1647.986816, 1007.97900, -90.0 ); // Caligs
-	CreateATM( 2241.676269, 1649.486816, 1007.97900, 90.00 ); // Caligs
 
 	/* ** Drug Dealer ** */
 
@@ -1595,19 +1500,6 @@ public OnServerUpdateTimer( )
 		}
 	}
 
-	// Update Criminal Report Markers
-	foreach (new ir : InformedRobbery)
-	{
-		if ( ( g_informedRobberies[ ir ] [ E_ALPHA ] -= 7 ) <= 0 )
-		{
-			new
-				cur = ir;
-
-			DestroyDynamicMapIcon( g_informedRobberies[ ir ] [ E_MAP_ICON ] );
-			Iter_SafeRemove(InformedRobbery, cur, ir);
-		}
-		else Streamer_SetIntData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ ir ] [ E_MAP_ICON ], E_STREAMER_COLOR, setAlpha( COLOR_WANTED12, g_informedRobberies[ ir ] [ E_ALPHA ] ) );
-	}
 
 	// Soft delete gang
 	foreach (new gangid : gangs) if ( g_gangData[ gangid ] [ E_SOFT_DELETE_TS ] != 0 && g_iTime > g_gangData[ gangid ] [ E_SOFT_DELETE_TS ] )
@@ -1634,14 +1526,6 @@ public OnServerUpdateTimer( )
     	// Replenish Weapon Drops
     	ClearInactiveWeaponDrops( g_iTime );
     #endif
-
- 		// Replenish Atms
- 		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] && g_iTime > g_atmData[ i ] [ E_TIMESTAMP ] ) {
-			UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, "[ATM]\n"COL_GREY"100%" );
-			DestroyDynamicPickup( g_atmData[ i ] [ E_PICKUP ] ), g_atmData[ i ] [ E_PICKUP ] = -1;
-			g_atmData[ i ] [ E_LOOT ] = 0, g_atmData[ i ] [ E_DISABLED ] = false, g_atmData[ i ] [ E_HEALTH ] = 100.0;
-			Streamer_SetIntData( STREAMER_TYPE_OBJECT, g_atmData[ i ] [ E_OBJECT ], E_STREAMER_MODEL_ID, 19324 );
- 		}
 
     	// Replenish Vaults
 		for( new i = 0; i < sizeof( g_bankvaultData ); i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
@@ -3030,9 +2914,7 @@ stock CreateExplosiveBullet( playerid ) {
 public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:y, Float:z )
 {
 	new
-		Float: X, Float: Y, Float: Z, Float: rZ,
-		modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID )
-	;
+		modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
 
 	// Explosive Bullets
 	CreateExplosiveBullet( playerid );
@@ -3049,64 +2931,6 @@ public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:
 					if ( objectid == g_C4Data[ p ] [ i ] [ E_OBJECT ] )
 					{
 						ExplodePlayerC4s( p, i, i + 1 );
-						break;
-					}
-				}
-			}
-		}
-
-		// ATM
-		case 19324:
-		{
-			if ( p_Class[ playerid ] == CLASS_POLICE )
-				return 1; // Prevent police from damaging atms
-
-			new Float: Damage = GetWeaponDamageFromDistance( weaponid, GetPlayerDistanceFromPoint( playerid, x, y, z ) );
-			new player_world = GetPlayerVirtualWorld( playerid );
-
-			foreach ( new i : atms ) {
-
-				if ( g_atmData[ i ] [ E_WORLD ] != -1 && g_atmData[ i ] [ E_WORLD ] != player_world ) continue;
-
-				if ( g_atmData[ i ] [ E_OBJECT ] == objectid && !g_atmData[ i ] [ E_DISABLED ] )
-				{
-					if ( GetDynamicObjectPos( objectid, X, Y, Z ) && IsPointToPoint( 1.0, X + x, Y + y, Z + z, X, Y, Z ) ) {
-						new
-							Float: atmDamage = floatdiv( Damage, 4 );
-
-						if ( ( g_atmData[ i ] [ E_HEALTH ] -= atmDamage ) > 0.0 ) {
-							format( szNormalString, 24, "[ATM]\n"COL_GREY"%0.0f%%", g_atmData[ i ] [ E_HEALTH ] );
-							UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, szNormalString );
-						} else {
-							UpdateDynamic3DTextLabelText( g_atmData[ i ] [ E_LABEL ], COLOR_GOLD, "[ATM]\n"COL_RED"Disabled" );
-							Streamer_SetIntData( STREAMER_TYPE_OBJECT, g_atmData[ i ] [ E_OBJECT ], E_STREAMER_MODEL_ID, 2943 );
-
-							g_atmData[ i ] [ E_TIMESTAMP ] = g_iTime + 240;
-							g_atmData[ i ] [ E_DISABLED ] = true;
-
-							if ( random( 101 ) <= 20 ) {
-								new
-									szLocation[ MAX_ZONE_NAME ];
-
-								GetPlayerPos 			( playerid, X, Y, Z );
-								GetZoneFromCoordinates	( szLocation, X, Y, Z );
-
-								CreateCrimeReport( playerid );
-								SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing an ATM near %s, suspect is armed and dangerous.", ReturnPlayerName( playerid ), szLocation );
-								SendServerMessage( playerid, "There seems to be no money in the ATM that you have breached." );
-							} else {
-								GetDynamicObjectRot( objectid, rZ, rZ, rZ );
-								g_atmData[ i ] [ E_PICKUP ] = CreateDynamicPickup( 1550, 1, X + 1.0 * -floatsin( -rZ, degrees ), Y + 1.0 * -floatcos( -rZ, degrees ), Z + 0.33, .worldid = g_atmData[ i ] [ E_WORLD ] );
-								g_atmData[ i ] [ E_LOOT ] = RandomEx( 320, 750 );
-
-								if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
-									new extra_loot = floatround( float( g_atmData[ i ] [ E_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
-									g_atmData[ i ] [ E_LOOT ] = extra_loot;
-								}
-
-								SendServerMessage( playerid, "You've breached an ATM! Rob the money that has been dispensed for quick pocket change!" );
-							}
-						}
 						break;
 					}
 				}
@@ -3613,7 +3437,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			CreateCrimeReport( killerid );
 		}
 
-        if ( p_Class[ killerid ] == CLASS_CIVILIAN && JobEquals( killerid, JOB_HITMAN ) )
+        if ( p_Class[ killerid ] == CLASS_CIVILIAN && IsPlayerJob( killerid, JOB_HITMAN ) )
 		{
 			new
 				iContractAmount = p_ContractedAmount[ playerid ];
@@ -5065,7 +4889,7 @@ CMD:request( playerid, params[ ] )
 	if ( iJob == JOB_RAPIST || iJob == JOB_KIDNAPPER || iJob == JOB_BURGLAR )
 		return SendServerMessage( playerid, "%s's do not do any services in exchange for money.", GetJobName( iJob ) );
 
-	if ( JobEquals( playerid, iJob ) )
+	if ( IsPlayerJob( playerid, iJob ) )
 		return SendError( playerid, "You cannot request for your own job!" );
 
 	new
@@ -5077,7 +4901,7 @@ CMD:request( playerid, params[ ] )
 	GetZoneFromCoordinates( szLocation, X, Y, Z );
 	Get2DCity( szCity, X, Y, Z );
 
-	foreach(new i : Player) if ( p_Class[ i ] == CLASS_CIVILIAN && JobEquals( i, iJob ) )
+	foreach(new i : Player) if ( p_Class[ i ] == CLASS_CIVILIAN && IsPlayerJob( i, iJob ) )
 		SendClientMessageFormatted( i, -1, ""COL_GREY"[JOB REQUEST]"COL_WHITE" %s(%d) is in need of a %s near %s in %s!", ReturnPlayerName( playerid ), playerid, GetJobName( iJob ), szLocation, szCity );
 
 	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
@@ -5332,7 +5156,7 @@ CMD:robitems( playerid, params[ ] )
 
   	new victimid = GetClosestPlayer( playerid );
    	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-   	else if ( !JobEquals( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
+   	else if ( !IsPlayerJob( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
    	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "It's impossible to rob someone inside a car." );
 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
@@ -5440,7 +5264,7 @@ CMD:banks( playerid, params[ ] )
 CMD:burglar( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
-	if ( !JobEquals( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You are not a burglar." );
+	if ( !IsPlayerJob( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You are not a burglar." );
 
 	if ( isnull( params ) ) return SendUsage( playerid, "/burglar [CRACKPW/STEAL/STORE]" );
 	else if ( strmatch( params, "crackpw" ) )
@@ -5676,7 +5500,7 @@ CMD:ransom( playerid, params[ ] )
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	else if ( !JobEquals( playerid, JOB_KIDNAPPER ) ) return SendError( playerid, "You must be a kidnapper to use this command." );
+	else if ( !IsPlayerJob( playerid, JOB_KIDNAPPER ) ) return SendError( playerid, "You must be a kidnapper to use this command." );
    	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( victimid == playerid ) return SendError( playerid, "You cannot create a ransom on yourself." );
 	else if ( IsPlayerSettingToggled( victimid, SETTING_RANSOMS ) ) return SendError( playerid, "This player has disabled ransom offers." );
@@ -6154,7 +5978,7 @@ CMD:mech( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be a civilian to use this command." );
-	if ( !JobEquals( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
+	if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
 	if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
 	else if ( strmatch( params, "fix" ) )
 	{
@@ -6316,7 +6140,7 @@ CMD:weed( playerid, params[ ] )
 	if ( isnull( params ) ) return SendUsage( playerid, "/weed [COLLECT/SELL/BUY/USE]" );
 	else if ( strmatch( params, "collect" ) )
 	{
-		if ( !JobEquals( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
+		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
 		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You mustn't be inside a vehicle while collecting weed." );
 
@@ -6342,7 +6166,7 @@ CMD:weed( playerid, params[ ] )
 	{
 	    new pID, iAmount;
 
-		if ( !JobEquals( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
+		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
 	    else if ( p_SellingWeedTick[ playerid ] > g_iTime ) return SendError( playerid, "You must wait a minute before selling weed again." );
 		else if ( !p_WeedGrams[ playerid ] ) return SendError( playerid, "You don't have any weed with you." );
 	    else if ( sscanf( params[ 5 ],"uD(1)", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
@@ -6385,7 +6209,7 @@ CMD:weed( playerid, params[ ] )
 			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", cash_format( iCost ), iGrams );
 			else if ( IsPlayerInPaintBall( dealerid ) || IsPlayerDueling( dealerid ) ) return SendError( playerid, "Your dealer cannot deal in an arena." );
 			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
-			else if ( !JobEquals( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
+			else if ( !IsPlayerJob( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
 			else if ( !p_WeedGrams[ dealerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID,  SendError( playerid, "Your dealer doesn't have any more weed." );
 			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
 			else
@@ -6414,7 +6238,7 @@ CMD:weed( playerid, params[ ] )
 		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot use this in jail." );
 		if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-		if ( JobEquals( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
+		if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		//if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command in a vehicle." );
 	    //if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command if you're entering a vehicle." );
@@ -6953,7 +6777,7 @@ CMD:sellgun( playerid, params[ ] )
 	    pID
 	;
 
-	if ( !JobEquals( playerid, JOB_WEAPON_DEALER ) ) return SendError( playerid, "You aren't a weapon dealer." );
+	if ( !IsPlayerJob( playerid, JOB_WEAPON_DEALER ) ) return SendError( playerid, "You aren't a weapon dealer." );
 	else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "Only civilians can use this command." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/sellgun [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
@@ -7106,7 +6930,7 @@ CMD:acceptbj( playerid, params[ ] )
 {
 	if ( !IsPlayerConnected( p_BlowjobOfferer[ playerid ] ) ) return p_BlowjobOfferer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "Your blowjob offerer isn't available." );
 	else if ( g_iTime > p_BlowjobDealTick[ playerid ] ) return SendError( playerid, "Your blowjob offer has expired." );
-	else if ( !JobEquals( p_BlowjobOfferer[ playerid ], JOB_PROSTITUTE ) ) return SendError( playerid, "Your blowjob offerer no longer offers blowjobs." );
+	else if ( !IsPlayerJob( p_BlowjobOfferer[ playerid ], JOB_PROSTITUTE ) ) return SendError( playerid, "Your blowjob offerer no longer offers blowjobs." );
 	else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot get a blowjob inside a car." );
 	else if ( IsPlayerInAnyVehicle( p_BlowjobOfferer[ playerid ] ) ) return SendError( playerid, "This player is inside a car." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot accept blowjobs in jail." );
@@ -7155,7 +6979,7 @@ CMD:bj( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	else if ( !JobEquals( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
+	else if ( !IsPlayerJob( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
 	else if ( ( GetTickCount( ) - p_AntiBlowJobSpam[ playerid ] ) < 30000 ) return SendError( playerid, "You must wait 30 seconds before using this command again." );
 	else if ( sscanf( params, "ud", pID, price ) ) return SendUsage( playerid, "/(bj)blowjob [PLAYER_ID] [PRICE]" );
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected." );
@@ -7483,7 +7307,7 @@ CMD:placehit( playerid, params[ ] )
 	    cash
 	;
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	else if ( JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "As a hitman you're not allowed to use this command." );
+	else if ( IsPlayerJob( playerid, JOB_HITMAN ) ) return SendError( playerid, "As a hitman you're not allowed to use this command." );
 	else if ( sscanf( params, "ud", pID, cash ) ) return SendUsage( playerid, "/placehit [PLAYER_ID] [AMOUNT]" );
 	else if ( cash > GetPlayerCash( playerid ) ) return SendError( playerid, "You don't have enough money to place this much." );
 	else if ( cash < 1000 ) return SendError( playerid, "The minimal hit you can place is $1,000." );
@@ -7523,7 +7347,7 @@ CMD:me( playerid, params[ ] )
 CMD:hidetracker( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	if ( !JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
+	if ( !IsPlayerJob( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
 	if ( p_TrackingTimer[ playerid ] == -1 ) return SendError( playerid, "Your tracker is already deactivated." );
 	SendServerMessage(playerid, "You have de-activated the tracker.");
 	KillTimer( p_TrackingTimer[ playerid ] );
@@ -7539,7 +7363,7 @@ CMD:track( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	else if ( !JobEquals( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
+	else if ( !IsPlayerJob( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/track [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
@@ -7557,7 +7381,7 @@ CMD:track( playerid, params[ ] )
 
 function TrackPlayer_timer( playerid, victimid )
 {
-	if ( !IsPlayerConnected( victimid ) || p_AdminOnDuty{ victimid } == true || GetPlayerState( victimid ) == PLAYER_STATE_SPECTATING || !JobEquals( playerid, JOB_HITMAN ) || p_Class[ playerid ] != CLASS_CIVILIAN )
+	if ( !IsPlayerConnected( victimid ) || p_AdminOnDuty{ victimid } == true || GetPlayerState( victimid ) == PLAYER_STATE_SPECTATING || !IsPlayerJob( playerid, JOB_HITMAN ) || p_Class[ playerid ] != CLASS_CIVILIAN )
 	{
 		KillTimer( p_TrackingTimer[ playerid ] ), p_TrackingTimer[ playerid ] = -1;
 		PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
@@ -7700,7 +7524,7 @@ CMD:kidnap( playerid, params[ ] )
    	if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 	else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
    	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-   	else if ( !JobEquals( playerid, JOB_KIDNAPPER ) ) return SendError( playerid, "Kidnappers are only permitted to use this command." );
+   	else if ( !IsPlayerJob( playerid, JOB_KIDNAPPER ) ) return SendError( playerid, "Kidnappers are only permitted to use this command." );
 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
 	{
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
@@ -8213,10 +8037,10 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 
   		new iRandom = random( 101 );
-        if ( JobEquals( playerid, JOB_RAPIST ) ) { iRandom += 10; } // Adds more success to rapists.
+        if ( IsPlayerJob( playerid, JOB_RAPIST ) ) { iRandom += 10; } // Adds more success to rapists.
   		if ( iRandom < 75 || IsPlayerTied( victimid ) )
   		{
-			if ( p_InfectedHIV{ playerid } || ( JobEquals( playerid, JOB_RAPIST ) && p_AidsVaccine{ victimid } == false && !JobEquals( victimid, JOB_PROSTITUTE ) ) )
+			if ( p_InfectedHIV{ playerid } || ( IsPlayerJob( playerid, JOB_RAPIST ) && p_AidsVaccine{ victimid } == false && !IsPlayerJob( victimid, JOB_PROSTITUTE ) ) )
 			{
 			    SendClientMessageFormatted( victimid, -1, ""COL_RED"[RAPED]{FFFFFF} You have been raped and infected with "COL_RED"HIV{FFFFFF} by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d) and infected them with "COL_RED"HIV{FFFFFF}!", ReturnPlayerName( victimid ), victimid );
@@ -8265,7 +8089,7 @@ CMD:c4( playerid, params[ ] )
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 		if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-		if ( !JobEquals( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
+		if ( !IsPlayerJob( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
 		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
@@ -8361,7 +8185,7 @@ CMD:c4( playerid, params[ ] )
 
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
 		else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-		else if ( !JobEquals( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
+		else if ( !IsPlayerJob( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
 		else if ( sscanf( params[ 9 ], "d", cID ) ) return SendUsage( playerid, "/c4 detonate [C4_ID] "COL_GREY"- Use detonator to blow all." );
 		else if ( cID < 0 || cID >= MAX_C4 ) return SendError( playerid, "Invalid C4 ID specified." );
 		else if ( g_C4Data[ playerid ] [ cID ] [ E_SET ] == false ) return SendError( playerid, "This C4 ID is not planted." );
@@ -9451,7 +9275,7 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		SetPlayerArmedWeapon( playerid, 0 );
 	}
 
-	if ( JobEquals( playerid, JOB_DIRTY_MECHANIC ) && p_Class[ playerid ] == CLASS_CIVILIAN && ( iVehiclePrice = calculateVehicleSellPrice( vehicleid ) ) )
+	if ( IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) && p_Class[ playerid ] == CLASS_CIVILIAN && ( iVehiclePrice = calculateVehicleSellPrice( vehicleid ) ) )
 	{
 		if ( g_LastExportModel[ playerid ] == model )
 			ShowPlayerHelpDialog( playerid, 4000, "You have already exported this vehicle recently and cannot export it again at the docks." );
@@ -9612,7 +9436,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 	/* ** Continue ** */
 	if ( checkpointid == g_Checkpoints[ CP_BOMB_SHOP ] || checkpointid == g_Checkpoints[ CP_BOMB_SHOP_LV ] || checkpointid == g_Checkpoints[ CP_BOMB_SHOP_LS ] )
 	{
-		if ( !JobEquals( playerid, JOB_TERRORIST ) )
+		if ( !IsPlayerJob( playerid, JOB_TERRORIST ) )
 			ShowPlayerHelpDialog( playerid, 4000, "You are not a ~r~terrorist~w~~h~ so you won't be able to use the C4 bought!" );
 			//return ShowPlayerHelpDialog( playerid, 4000, "You need to be a ~r~terrorist~w~~h~ to buy C4!" );
 
@@ -9732,17 +9556,6 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 	if ( checkpointid == g_Checkpoints[ CP_PAINTBALL ] )
 		return listPaintBallLobbies( playerid );
-
-	if ( !IsPlayerInAnyVehicle( playerid ) )
-	{
-		foreach ( new i : atms ) if ( checkpointid == g_atmData[ i ] [ E_CHECKPOINT ] ) {
-	    	if ( g_atmData[ i ] [ E_DISABLED ] ) {
-	    		return SendError( playerid, "This ATM has recently been robbed and cannot be accessed for now." );
-	    	} else {
-	    		return ShowPlayerBankMenuDialog( playerid );
-	    	}
-		}
-	}
 
 	if ( CanPlayerExitEntrance( playerid ) )
 	{
@@ -9892,7 +9705,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 				{
 					if ( checkpointid == g_containerData[ i ] [ E_CHECKPOINT ] && !g_containerData[ i ] [ E_CLOSED ] )
 					{
-						if ( !JobEquals( playerid, JOB_DIRTY_MECHANIC ) ) {
+						if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) {
 							ShowPlayerHelpDialog( playerid, 4000, "You need to be a ~r~dirty mechanic~w~~h~ to export stolen vehicles!" );
 							break;
 						}
@@ -10153,9 +9966,6 @@ public OnPlayerClickPlayerTextDraw(playerid, PlayerText: playertextid)
 
 public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 {
-	new
-		Float: X, Float: Y, Float: Z;
-
 	if ( pickupid != PreviousPickupID[ playerid ] )
 	{
 		new
@@ -10178,37 +9988,6 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 		PreviousPickupID[ playerid ] = pickupid;
 	}
 	GetPlayerPos( playerid, p_LastPickupPos[ playerid ] [ 0 ], p_LastPickupPos[ playerid ] [ 1 ], p_LastPickupPos[ playerid ] [ 2 ] );
-
-	// Information Pickups
-
-	// Money bag from atms
-	if ( p_Class[ playerid ] != CLASS_POLICE ) {
-		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] ) {
-			if ( g_atmData[ i ] [ E_PICKUP ] == pickupid && pickupid != -1 ) {
-				new
-					szCity[ MAX_ZONE_NAME ], szLocation[ MAX_ZONE_NAME ], iLoot = g_atmData[ i ] [ E_LOOT ];
-
-				SplitPlayerCashForGang( playerid, iLoot );
-				Achievement::HandlePlayerRobbery( playerid );
-				DestroyDynamicPickup( g_atmData[ i ] [ E_PICKUP ] );
-
-				g_atmData[ i ] [ E_PICKUP ] = -1;
-				g_atmData[ i ] [ E_LOOT ] = 0;
-
-				GivePlayerWantedLevel( playerid, 4 );
-				GivePlayerScore( playerid, 1 );
-				GivePlayerExperience( playerid, E_ROBBERY, 0.67 );
-
-				GetPlayerPos 			( playerid, X, Y, Z );
-			    Get2DCity				( szCity, X, Y, Z );
-			    GetZoneFromCoordinates	( szLocation, X, Y, Z );
-
-				SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from an ATM near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( iLoot ), szLocation, szCity );
-				return SendServerMessage( playerid, "You have successfully taken "COL_GOLD"%s"COL_WHITE" dispensed from the ATM.", cash_format( iLoot ) );
-			}
-		}
-
-	}
 	return 1;
 }
 
@@ -10480,7 +10259,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
    	else if ( PRESSED( KEY_YES ) )
    	{
-	    if ( p_Class[ playerid ] == CLASS_CIVILIAN && JobEquals( playerid, JOB_TERRORIST ) && !IsPlayerJailed( playerid ) )
+	    if ( p_Class[ playerid ] == CLASS_CIVILIAN && IsPlayerJob( playerid, JOB_TERRORIST ) && !IsPlayerJailed( playerid ) )
 	   		ExplodePlayerC4s( playerid );
    	}
 
@@ -12495,7 +12274,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						}
 
 						new
-							bDealer = JobEquals( playerid, JOB_WEAPON_DEALER ),
+							bDealer = IsPlayerJob( playerid, JOB_WEAPON_DEALER ),
 							iCostPrice = g_AmmunationWeapons[ i ] [ E_PRICE ]
 						;
 
@@ -12653,7 +12432,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		erase( szLargeString );
 		foreach(new pID : Player)
 		{
-		    if ( JobEquals( pID, listitem ) && p_Class[ pID ] == CLASS_CIVILIAN )
+		    if ( IsPlayerJob( pID, listitem ) && p_Class[ pID ] == CLASS_CIVILIAN )
 		    {
 		        format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\n", szLargeString, ReturnPlayerName( pID ), pID );
 		        count++;
@@ -15672,30 +15451,6 @@ stock GetDayToString( day )
 	return string;
 }
 
-stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0, world = -1 )
-{
-	new ID = Iter_Free( atms );
-
-	if ( ID != ITER_NONE )
-	{
-		rX = rX - offset;
-
-		new
-			Float: nX = X + 1.0 * -floatsin( -rX, degrees ),
-			Float: nY = Y + 1.0 * -floatcos( -rX, degrees )
-		;
-
-		Iter_Add( atms, ID );
-		g_atmData[ ID ] [ E_HEALTH ] = 100.0;
-		g_atmData[ ID ] [ E_CHECKPOINT ] = CreateDynamicCP( nX, nY, Z, 1.0, .worldid = world );
-		g_atmData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 19324, X, Y, Z, 0.0, 0.0, rX, .priority = 2, .worldid = world );
-		g_atmData[ ID ] [ E_LABEL ] = CreateDynamic3DTextLabel( "[ATM]\n"COL_GREY"100%", COLOR_GOLD, nX, nY, Z, 20.0, .worldid = world );
-		g_atmData[ ID ] [ E_WORLD ] = world;
-	}
-	return ID;
-}
-
-
 Float:DistanceCameraTargetToLocation(Float:CamX, Float:CamY, Float:CamZ, Float:ObjX, Float:ObjY, Float:ObjZ, Float:FrX, Float:FrY, Float:FrZ) {
 
     new Float:TGTDistance;
@@ -17355,9 +17110,6 @@ stock PlainUnjailPlayer( playerid )
 	PlayerTextDrawHide( playerid, p_JailTimeTD[ playerid ] );
 }
 
-stock JobEquals( playerid, jobid )
-	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPJob{ playerid } == jobid );
-
 stock isNotNearPlayer( playerid, nearid, Float: distance = 200.0 )
 {
 	if ( ! IsPlayerNPC( playerid ) && ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 500 )
@@ -18151,59 +17903,6 @@ stock SendClientMessageToAdmins( colour, format[ ], va_args<> ) // Conversion to
 stock TextDrawShowForAllSpawned( Text: textdrawid ) {
 	foreach(new i : Player) if ( IsPlayerSpawned( i ) ) {
 		TextDrawShowForPlayer( i, textdrawid );
-	}
-}
-
-stock CreateCrimeReport( playerid )
-{
-	if ( !( 0 <= playerid < MAX_PLAYERS ) )
-		return;
-
-	if ( p_Job{ playerid } == JOB_BURGLAR )
-		return;
-
-	new
-		iCrimeReport 		= Iter_Free(InformedRobbery);
-
-	if ( iCrimeReport != ITER_NONE )
-	{
-		new
-			Float: X, Float: Y, Float: Z,
-			iEntrance 			= p_LastEnteredEntrance[ playerid ],
-			iHouse 				= p_InHouse[ playerid ],
-			iGarage 			= p_InGarage[ playerid ]
-		;
-
-		// Add iterator
-	  	Iter_Add( InformedRobbery, iCrimeReport );
-
-	  	// Find user location
-		if ( GetPlayerInterior( playerid ) != 0 )
-		{
-		    if ( iEntrance != -1 )
-		    	GetEntrancePos( iEntrance, X, Y, Z );
-
-		  	else if ( iGarage != -1 )
-		  		X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
-
-		  	else if ( iHouse != -1 )
-		  		X = g_houseData[ iHouse ] [ E_EX ], Y = g_houseData[ iHouse ] [ E_EY ], Z = g_houseData[ iHouse ] [ E_EZ ];
-
-	  		else GetPlayerPos( playerid, X, Y, Z );
-		}
-	  	else GetPlayerPos( playerid, X, Y, Z );
-
-	  	// Create marker
-	  	g_informedRobberies[ iCrimeReport ] [ E_ALPHA ] = 0xAA;
-	  	g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, COLOR_WANTED12, -1, -1, 0, 1000.0, MAPICON_GLOBAL );
-
-	  	// Reset Players In Map Icon
-	  	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
-
-	  	// Show For All Cops
-	  	foreach (new i : Player) if ( p_Class[ i ] == CLASS_POLICE ) {
-	  		Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_informedRobberies[ iCrimeReport ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, i );
-	  	}
 	}
 }
 
@@ -19412,4 +19111,32 @@ stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to f
 		SendClientMessage( i, colour, out );
 	}
 	return 1;
+}
+
+stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // Gets the player position, if interior then the last checkpoint position
+{
+	new
+		iEntrance 			= p_LastEnteredEntrance[ playerid ],
+		iHouse 				= p_InHouse[ playerid ],
+		iGarage 			= p_InGarage[ playerid ]
+	;
+
+	if ( GetPlayerInterior( playerid ) != 0 )
+	{
+	    if ( iEntrance != -1 )
+	    	GetEntrancePos( iEntrance, X, Y, Z );
+
+	  	else if ( iGarage != -1 )
+	  		X = g_garageData[ iGarage ] [ E_X ], Y = g_garageData[ iGarage ] [ E_Y ], Z = g_garageData[ iGarage ] [ E_Z ];
+
+	  	else if ( iHouse != -1 )
+	  		X = g_houseData[ iHouse ] [ E_EX ], Y = g_houseData[ iHouse ] [ E_EY ], Z = g_houseData[ iHouse ] [ E_EZ ];
+
+  		else GetPlayerPos( playerid, X, Y, Z );
+	}
+  	else
+  	{
+  		GetPlayerPos( playerid, X, Y, Z );
+  	}
+  	return 1;
 }

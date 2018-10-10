@@ -204,7 +204,7 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 	//if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] )
 	//	return 0xBF; // has $0 in bank as biz
 
-	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) )
+	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! IsPlayerJob( playerid, JOB_BURGLAR ) )
 		return 0; // must be burglar to rob safe
 
 	if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) )
@@ -635,7 +635,7 @@ function SetPlayerHandleNearestSafe( playerid )
 	       	 	else if ( g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF ) return SendError( playerid, "This safe is currently busy." );
 	       	 	else if ( p_Class[ playerid ] == CLASS_POLICE ) return SendError( playerid, "You cannot pick this safe as a law enforcement officer." );
 	       	 	// else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] ) return SendError( playerid, "There is nothing to rob from this business safe." );
-	       	 	else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You need to be a burglar to rob this safe." );
+	       	 	else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! IsPlayerJob( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You need to be a burglar to rob this safe." );
 				else if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) ) return SendError( playerid, "You are an associate of this business, you cannot rob it!" );
 	       	 	else if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) ) return SendError( playerid, "The safe is currently occupied by a drill." );
 	       	 	else

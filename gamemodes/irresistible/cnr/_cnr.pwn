@@ -11,7 +11,6 @@
 #include "irresistible\cnr\player.pwn"
 #include "irresistible\cnr\global.pwn"
 #include "irresistible\cnr\classes.pwn"
-#include "irresistible\cnr\jobs.pwn"
 #include "irresistible\cnr\textdraws.pwn"
 #include "irresistible\cnr\progress.pwn"
 #include "irresistible\cnr\spawn.pwn"
@@ -21,6 +20,7 @@
 
 // reliant on core definitions
 #include "irresistible\cnr\vip\_vip.pwn"
+#include "irresistible\cnr\jobs.pwn"
 #include "irresistible\cnr\experience.pwn"
 #include "irresistible\cnr\ammunation.pwn"
 #include "irresistible\cnr\irresistibleguard.pwn"
