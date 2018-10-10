@@ -127,24 +127,6 @@ new stock
 	DCC_Role: discordRoleVoice
 ;
 
-/* ** Bribe Data ** */
-#define MAX_BRIBES                  ( 200 )
-#define MAX_BRIBE_WAIT              ( 300000 )
-
-enum E_BRIBE_DATA
-{
-	bool: E_DISABLED, 	E_PICKUP[ 2 ],			Text3D: E_LABEL,
-	Float: E_X, 		Float: E_Y, 			Float: E_Z,
-	E_TIMESTAMP
-};
-
-new
-	g_bribeData						[ MAX_BRIBES ] [ E_BRIBE_DATA ],
-
-	// Iterator
-	Iterator:BribeCount< MAX_BRIBES >
-;
-
 /* ** Gate System ** */
 #define MAX_GATES 					( 300 )
 
@@ -1028,7 +1010,7 @@ public OnGameModeInit()
 #endif
 
 	// mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
-	mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
+	// mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "OnApartmentLoad", "" );
 	// mysql_function_query( dbHandle, "SELECT * FROM `FURNITURE`", true, "OnFurnitureLoad", "" );
 	mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
@@ -1684,10 +1666,6 @@ public OnServerUpdateTimer( )
     	// Replenish Weapon Drops
     	ClearInactiveWeaponDrops( g_iTime );
     #endif
-
-    	// Replenish Bribes
-		foreach(new bribeid : BribeCount) if ( ( GetTickCount( ) - g_bribeData[ bribeid ] [ E_TIMESTAMP ] ) > MAX_BRIBE_WAIT && g_bribeData[ bribeid ] [ E_DISABLED ] == true )
-			UpdateDynamic3DTextLabelText( g_bribeData[ bribeid ] [ E_LABEL ], COLOR_GOLD, sprintf( "Bribe(%d)", bribeid ) ), g_bribeData[ bribeid ] [ E_DISABLED ] = false;
 
  		// Replenish Atms
  		foreach ( new i : atms ) if ( g_atmData[ i ] [ E_DISABLED ] && g_iTime > g_atmData[ i ] [ E_TIMESTAMP ] ) {
@@ -10264,34 +10242,6 @@ public OnPlayerPickUpDynamicPickup( playerid, pickupid )
 			}
 		}
 
-		// Bribes
-		foreach(new bribeid : BribeCount) if ( g_bribeData[ bribeid ] [ E_PICKUP ] [ 0 ] == pickupid || g_bribeData[ bribeid ] [ E_PICKUP ] [ 1 ] == pickupid )
-		{
-		    if ( !( g_bribeData[ bribeid ] [ E_DISABLED ] == true || p_WantedLevel[ playerid ] <= 0 || IsPlayerCuffed( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_SPECTATING ) ) //  || IsPlayerDetained( playerid )
-		    {
-		    	new
-		    		iWanted = 2;
-
-		    	// Play a sound so it matches the vehicle pickup
-		    	if ( g_bribeData[ bribeid ] [ E_PICKUP ] [ 0 ] == pickupid )
-		    		PlayerPlaySound( playerid, 1138, 0.0, 0.0, 5.0 );
-
-		    	// Expire the bribe
-		        g_bribeData[ bribeid ] [ E_TIMESTAMP ] = GetTickCount( );
-		        g_bribeData[ bribeid ] [ E_DISABLED ] = true;
-				UpdateDynamic3DTextLabelText( g_bribeData[ bribeid ] [ E_LABEL ], COLOR_GOLD, sprintf( "Bribe(%d)\n"COL_RED"Currently Expired!", bribeid ) );
-
-				// Remove a custom wanted level
-				if ( p_WantedLevel[ playerid ] > 1800 ) iWanted = 128;
-				else if ( p_WantedLevel[ playerid ] > 1000 ) iWanted = 64;
-				else if ( p_WantedLevel[ playerid ] > 500 )	iWanted = 32;
-				else if ( p_WantedLevel[ playerid ] > 250 )	iWanted = 16;
-				else if ( p_WantedLevel[ playerid ] > 100 ) iWanted = 8;
-				else if ( p_WantedLevel[ playerid ] > 50 ) iWanted = 4;
-
-				return GivePlayerWantedLevel( playerid, p_WantedLevel[ playerid ] <= 1 ? -1 : -iWanted );
-		    }
-		}
 	}
 	return 1;
 }
@@ -15025,72 +14975,6 @@ stock IsPlayerFireman( playerid )
 	    }
 	}
 	return false;
-}
-
-stock CreateBribe( Float: fX, Float: fY, Float: fZ, iExistingID = ITER_NONE )
-{
-	new
-		bID = iExistingID != ITER_NONE ? iExistingID : Iter_Free(BribeCount);
-
-	if ( Iter_Contains( BribeCount, iExistingID ) )
-		bID = ITER_NONE; // In the unlikelihood...
-
-	if ( bID != -1 )
-	{
-	    Iter_Add(BribeCount, bID);
-	    g_bribeData[ bID ] [ E_X ] = fX;
-	    g_bribeData[ bID ] [ E_Y ] = fY;
-	    g_bribeData[ bID ] [ E_Z ] = fZ;
-	    g_bribeData[ bID ] [ E_PICKUP ] [ 0 ] = CreateDynamicPickup( 1247,  15, fX, fY, fZ );
-	    g_bribeData[ bID ] [ E_PICKUP ] [ 1 ] = CreateDynamicPickup( 19300, 14, fX, fY, fZ );
-	    g_bribeData[ bID ] [ E_LABEL ] 		  = CreateDynamic3DTextLabel( sprintf( "Bribe(%d)", bID ), COLOR_GOLD, fX, fY, fZ, 15.0 );
-
-	    if ( iExistingID == ITER_NONE )
-			mysql_single_query( sprintf( "INSERT INTO `BRIBES` VALUES (%d,%f,%f,%f)", bID, fX, fY, fZ ) );
-	}
-	return bID;
-}
-
-stock DestroyBribe( bID )
-{
-	if ( bID == -1 || !Iter_Contains( BribeCount, bID ) )
-	    return 0;
-
-	new
-	    query[ 40 ]
-	;
-	Iter_Remove(BribeCount, bID);
-	DestroyDynamic3DTextLabel( g_bribeData[ bID ] [ E_LABEL ] );
-	DestroyDynamicPickup( g_bribeData[ bID ] [ E_PICKUP ] [ 0 ] );
-	DestroyDynamicPickup( g_bribeData[ bID ] [ E_PICKUP ] [ 1 ] );
- 	g_bribeData[ bID ] [ E_TIMESTAMP ] = -1;
-	format( query, sizeof( query ), "DELETE FROM `BRIBES` WHERE `ID`=%d", bID );
-	mysql_single_query( query );
-	return 1;
-}
-
-thread OnBribeLoad( )
-{
-	new
-		rows, fields, i = -1,
-	    loadingTick = GetTickCount( )
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows )
-	{
-		while( ++i < rows )
-		{
-			CreateBribe(
-				cache_get_field_content_float( i, "X", dbHandle ),
-				cache_get_field_content_float( i, "Y", dbHandle ),
-				cache_get_field_content_float( i, "Z", dbHandle ),
-				cache_get_field_content_int( i, "ID", dbHandle )
-			);
-		}
-	}
-	printf( "[BRIBES]: %d bribes have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
-	return 1;
 }
 
 stock PutPlayerInEmptyVehicleSeat( vehicleid, playerid )

@@ -33,6 +33,7 @@
 #include "irresistible\cnr\features\spikestrips.pwn"
 #include "irresistible\cnr\features\perks.pwn"
 #include "irresistible\cnr\features\weapon_locker.pwn"
+#include "irresistible\cnr\features\bribes.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"

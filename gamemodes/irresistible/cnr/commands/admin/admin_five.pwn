@@ -543,6 +543,7 @@ CMD:reconnectchuff( playerid, params[ ] )
 }
 #endif
 
+#if defined __cnr__features__bribes
 CMD:createbribe( playerid, params[ ] )
 {
     new
@@ -563,7 +564,9 @@ CMD:createbribe( playerid, params[ ] )
 	}
 	return 1;
 }
+#endif
 
+#if defined __cnr__features__bribes
 CMD:destroybribe( playerid, params[ ] )
 {
 	new
@@ -573,7 +576,7 @@ CMD:destroybribe( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, "d", bID ) ) return SendUsage( playerid, "/destroybribe [BRIBE_ID]" );
 	else if ( bID < 0 || bID > MAX_BRIBES ) return SendError( playerid, "Invalid Bribe ID." );
-	else if ( !Iter_Contains( BribeCount, bID ) ) return SendError( playerid, "Invalid Bribe ID." );
+	else if ( ! Bribe_IsValid( bID ) ) return SendError( playerid, "Invalid Bribe ID." );
 	else
 	{
 		SaveToAdminLog( playerid, bID, "destroyed bribe" );
@@ -583,6 +586,7 @@ CMD:destroybribe( playerid, params[ ] )
 	}
 	return 1;
 }
+#endif
 
 CMD:createcar( playerid, params[ ] )
 {
