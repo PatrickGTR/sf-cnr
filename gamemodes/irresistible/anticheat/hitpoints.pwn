@@ -588,7 +588,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		p_LastDeath[ playerid ] = server_time;
 
 	    // Died in Vehicle
-		if ( AC_IsPlayerSpawned( playerid ) )
+		if ( GetPlayerVehicleID( playerid ) && AC_IsPlayerSpawned( playerid ) )
 	    {
 			if( ( GetTickCount( ) - p_LastTookDamage[ playerid ] ) > 2500 ) {
 				p_LastDamageIssuer[ playerid ] = INVALID_PLAYER_ID, p_LastWeaponIssuer[ playerid ] = 51;
