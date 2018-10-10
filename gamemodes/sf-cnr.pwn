@@ -2597,7 +2597,7 @@ public OnPlayerSpawn( playerid )
 	return 1;
 }
 
-public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ )
+public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ )
 {
 	if ( p_AdminLevel[ playerid ] < 1 && IsWeaponBanned( weaponid ) ) {
 		return 0;
@@ -2643,7 +2643,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 	else if ( hittype == BULLET_HIT_TYPE_VEHICLE )
 	{
 		new
-			Float: Health, Float: Damage,
+			Float: Health,
 			iModel = GetVehicleModel( hitid )
 		;
 
@@ -2651,52 +2651,15 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float:fX, Float:f
 		g_VehicleLastAttacked[ hitid ] = g_iTime;
 
 		// BMX, Bike, Mountain Bike, Train, Train Cargo, Train Passenger, Tram, Freight Box
-		if ( iModel != 481 && iModel != 509 && iModel != 510 && iModel != 537 && iModel != 569 && iModel != 570 && iModel != 538 && iModel != 449 && iModel != 590 ) {
+		if ( iModel != 481 && iModel != 509 && iModel != 510 && iModel != 537 && iModel != 569 && iModel != 570 && iModel != 538 && iModel != 449 && iModel != 590 )
+		{
 			GetPlayerPos( playerid, X, Y, Z );
 			GetVehicleHealth( hitid, Health );
 
-			Damage = GetWeaponDamageFromDistance( weaponid, GetVehicleDistanceFromPoint( hitid, X, Y, Z ) );
-
-			#if defined __cnr__chuffsec
-				// Secured Truck!
-				if ( g_secureTruckVehicle == hitid && GetPlayerSurfingVehicleID( playerid ) != g_secureTruckVehicle && IsPlayerConnected( g_secureTruckDriver ) && p_Class[ playerid ] != CLASS_POLICE )
-				{
-					if ( IsSecurityDriverAFK( ) )
-						return 1; // Nothing cheeky when he's disabled.
-
-					for( new i = 0; i < sizeof( g_secureTruckOffsets ); i++ ) if ( g_secureTruckOffsets[ i ] [ E_ENABLED ] )
-					{
-						if ( IsPointToPoint( 0.25, fX, fY, fZ, g_secureTruckOffsets[ i ] [ E_X ], g_secureTruckOffsets[ i ] [ E_Y ], g_secureTruckOffsets[ i ] [ E_Z ] ) )
-						{
-							new Float: hingeDamage = floatdiv( Damage, 2 );
-							if ( floatround( g_secureTruckOffsets[ i ] [ E_HP ] -= hingeDamage ) > 0.0 ) {
-								SendClientMessage( g_secureTruckDriver, 0x112233FF, "[0x01][NPC] PROVOKED." );
-								format( szNormalString, 6, "%0.0f%%", g_secureTruckOffsets[ i ] [ E_HP ] );
-								UpdateDynamic3DTextLabelText( g_secureTruckVehicleLabel[ i ], setAlpha( COLOR_GREY, 0x90 ), szNormalString );
-							} else {
-								g_secureTruckOffsets[ i ] [ E_HP ] = 0.0;
-								g_secureTruckOffsets[ i ] [ E_ENABLED ] = false;
-								UpdateDynamic3DTextLabelText( g_secureTruckVehicleLabel[ i ], setAlpha( COLOR_RED, 0x90 ), "0%" );
-
-								if ( allSecurityOffsetsShot( ) ) {
-									g_secureTruckData[ E_LOOT ] 		= RandomEx( 20000, 30000 );
-									g_secureTruckData[ E_ROBBED ] 		= false;
-									g_secureTruckData[ E_OPEN ] 		= true;
-									g_secureTruckData[ E_BEING_ROBBED ] = false;
-									SetVehicleParamsCarDoors( hitid, 0, 0, 1, 1 );
-									ShowPlayerHelpDialog( playerid, 5000, "You've successfully disabled the security truck.~n~~n~To rob it, press ~r~~k~~SNEAK_ABOUT~~w~ behind the truck." );
-									SendClientMessage( g_secureTruckDriver, 0x112233FF, "[0x00][NPC] TRUCK DISABLED." );
-								}
-							}
-							break;
-						}
-					}
-					return 1;
-				}
-			#endif
-
 			new
-				iDriver = GetVehicleDriver( hitid );
+				Float: Damage = GetWeaponDamageFromDistance( weaponid, GetVehicleDistanceFromPoint( hitid, X, Y, Z ) ),
+				iDriver = GetVehicleDriver( hitid )
+			;
 
 			if ( iDriver == INVALID_PLAYER_ID )
 			{
@@ -3733,9 +3696,6 @@ public OnPlayerLeaveGang( playerid, gangid, reason )
 
 public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 {
-	static
-		Float: X, Float: Y, Float: Z;
-
 	if ( progressid == PROGRESS_CRACKING || progressid == PROGRESS_BRUTEFORCE ) {
         if ( !IsPlayerSpawned( playerid ) || !IsPlayerInDynamicCP( playerid, g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CHECKPOINT ] [ 0 ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled )
         	return g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_BEING_CRACKED ] = false, StopProgressBar( playerid ), 1;
@@ -3783,23 +3743,6 @@ public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) || !IsPlayerInMethlab( playerid ) || canceled )
 			return DeletePVar( playerid, "pouring_chemical" ), StopProgressBar( playerid ), 1;
 	}
-#if defined __cnr__chuffsec
-	else if ( progressid == PROGRESS_ROBTRUCK )
-	{
-		static Float: Angle;
-		GetVehiclePos( g_secureTruckVehicle, X, Y, Z );
-		GetVehicleZAngle( g_secureTruckVehicle, Angle );
-		X += ( SECURE_TRUCK_DISTANCE * floatsin( -Angle + 180, degrees ) );
-		Y += ( SECURE_TRUCK_DISTANCE * floatcos( -Angle + 180, degrees ) );
-
-		if ( !IsPlayerInRangeOfPoint( playerid, SECURE_TRUCK_RADIUS, X, Y, Z ) || !IsPlayerSpawned( playerid ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_WASTED || canceled )
-		{
-			g_secureTruckData[ E_BEING_ROBBED ] = false;
-			StopProgressBar( playerid );
-			return 1;
-		}
-	}
-#endif
 	return 1;
 }
 
@@ -4077,62 +4020,9 @@ public OnProgressCompleted( playerid, progressid, params )
 				SendServerMessage( playerid, "You've yielded a pound of meth. Take your bags over to "COL_GREY"Cluckin' Bell"COL_WHITE" for exportation." );
 			}
 		}
-	#if defined __cnr__chuffsec
-		case PROGRESS_ROBTRUCK:
-		{
-			static Float: Angle;
-			GetVehiclePos( g_secureTruckVehicle, X, Y, Z );
-			GetVehicleZAngle( g_secureTruckVehicle, Angle );
-			X += ( SECURE_TRUCK_DISTANCE * floatsin( -Angle + 180, degrees ) );
-			Y += ( SECURE_TRUCK_DISTANCE * floatcos( -Angle + 180, degrees ) );
-
-			if ( IsPlayerInRangeOfPoint( playerid, SECURE_TRUCK_RADIUS, X, Y, Z ) && IsPlayerSpawned( playerid ) && IsPlayerConnected( playerid ) && !IsPlayerInAnyVehicle( playerid ) && GetPlayerState( playerid ) != PLAYER_STATE_WASTED )
-			{
-				if ( g_secureTruckData[ E_BEING_ROBBED ] && g_secureTruckData[ E_OPEN ] == true && g_secureTruckData[ E_ROBBED ] == false )
-				{
-					new
-						szCity[ MAX_ZONE_NAME ],
-						szLocation[ MAX_ZONE_NAME ]
-					;
-
-					GetPlayerPos 			( playerid, X, Y, Z );
-				    Get2DCity				( szCity, X, Y, Z );
-				    GetZoneFromCoordinates	( szLocation, X, Y, Z );
-
-					g_secureTruckData[ E_BEING_ROBBED ] = true;
-					g_secureTruckData[ E_ROBBED ] 		= true;
-
-					GivePlayerWantedLevel	( playerid, 24 );
-					GivePlayerScore			( playerid, 5 );
-					GivePlayerExperience 	( playerid, E_ROBBERY, 2.0 );
-
-					if ( random( 101 ) >= 20 ) {
-						if ( IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
-							new extra_loot = floatround( float( g_secureTruckData[ E_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
-							g_secureTruckData[ E_LOOT ] = extra_loot;
-						}
-
-						Achievement::HandlePlayerRobbery( playerid );
-					    SplitPlayerCashForGang( playerid, float( g_secureTruckData[ E_LOOT ] ) );
-
-						SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from a Security Truck near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_secureTruckData[ E_LOOT ] ), szLocation, szCity );
-					} else {
-						CreateCrimeReport( playerid );
-		    			SendClientMessageToCops( -1, ""COL_BLUE"[ROBBERY]"COL_WHITE" %s has failed robbing a security truck near %s, suspect is armed and dangerous.", ReturnPlayerName( playerid ), szLocation );
-						SendServerMessage( playerid, "You've found nothing tangible in here. Cops have been alerted." );
-					}
-
-					SendClientMessage( g_secureTruckDriver, 0x112233FF, "[0x02] RESTART." );
-				}
-				else SendError( playerid, "An unexpected error occurred." );
-			}
-		}
-	#endif
 	}
 	return 1;
 }
-
-
 
 stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( array ) )
 {
