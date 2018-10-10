@@ -27,8 +27,17 @@ static stock
 
 /* ** Hooks ** */
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys ) {
-	if ( PRESSED( KEY_FIRE ) && IsPlayerInAnyVehicle( playerid ) && GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } ) {
-		return cmd_setspike( playerid, "" ), 1;
+	new
+		player_vehicle = GetPlayerVehicleID( playerid );
+
+	if ( PRESSED( KEY_AIM ) && player_vehicle && GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } )
+	{
+		new
+			vehicle_model = GetVehicleModel( player_vehicle );
+
+		if ( ! IsBoatVehicle( vehicle_model ) && ! IsAirVehicle( vehicle_model ) ) {
+			return cmd_setspike( playerid, "" ), 1;
+		}
 	}
 	return 1;
 }
@@ -145,7 +154,7 @@ CMD:setspike( playerid, params[ ] )
 			Y -= ( 4.1 * floatcos( -Angle, degrees ) );
 		}
 
-		if ( CreateSpikeStrip( playerid, X, Y, Z + 0.15, Angle ) != -1 )
+		if ( CreateSpikeStrip( playerid, X, Y, Z, Angle ) != -1 )
 			SendServerMessage( playerid, "You have succesfully created a spike strip." );
 		else
 			SendError( playerid, "Failed to place a spike strip due to a unexpected error." );
