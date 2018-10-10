@@ -66,7 +66,7 @@ CMD:getip( playerid, params[ ] )
 	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, """u""", pID ) ) return SendUsage( playerid, "/getip [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerLorenc( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his IP :)");
+	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerServerMaintainer( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his IP :)");
 	else
 	{
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d): "COL_GREY"%s", ReturnPlayerName( pID ), pID, ReturnPlayerIP( pID ) );
@@ -81,7 +81,7 @@ CMD:geolocate( playerid, params[ ] )
  	else if ( sscanf( params, """u""", pID ) ) return SendUsage( playerid, "/geolocate [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else if ( !IsProxyEnabledForPlayer( pID ) ) return SendError( playerid, "The server has failed to fetch geographical data. Please use a 3rd party." );
-	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerLorenc( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
+	else if ( p_AdminLevel[ pID ] >= 5 || IsPlayerServerMaintainer( pID ) ) return SendError( playerid, "I love this person so much that I wont give you his geographical data! :)");
  	else
  	{
 		SendClientMessageFormatted( playerid, COLOR_PINK, "[ADMIN]"COL_WHITE" %s(%d) is from %s (%s) [%s]", ReturnPlayerName( pID ), pID, GetPlayerCountryName( pID ), GetPlayerCountryCode( pID ), ReturnPlayerIP( pID ) );

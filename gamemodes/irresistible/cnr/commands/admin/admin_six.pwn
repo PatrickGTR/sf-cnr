@@ -265,7 +265,7 @@ CMD:setlevel( playerid, params[ ] )
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	else
 	{
-		if ( !IsPlayerLorenc( playerid ) && p_AdminLevel[ playerid ] >= 6 && iLevel > 5 )
+		if ( ! IsPlayerServerMaintainer( playerid ) && p_AdminLevel[ playerid ] >= 6 && iLevel > 5 )
 			return SendError( playerid, "You maximum level you are able to promote a person to is 5." );
 
 		// Log level
@@ -290,7 +290,7 @@ CMD:setleveloffline( playerid, params[ ] )
 	else if ( iLevel < 0 || iLevel > 6 ) return SendError( playerid, "Please specify an administration level between 0 and 6." );
 	else
 	{
-		if ( !IsPlayerLorenc( playerid ) && p_AdminLevel[ playerid ] >= 6 && iLevel > 4 )
+		if ( ! IsPlayerServerMaintainer( playerid ) && p_AdminLevel[ playerid ] >= 6 && iLevel > 4 )
 			return SendError( playerid, "You maximum level you are able to promote a person to is 4." );
 
 		mysql_function_query( dbHandle, sprintf( "UPDATE `USERS` SET `ADMINLEVEL`=%d WHERE `NAME`='%s'", iLevel, mysql_escape( szName ) ), true, "OnPlayerUpdateAdminLevel", "iis", playerid, iLevel, szName );

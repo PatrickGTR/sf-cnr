@@ -63,15 +63,11 @@ hook OnRconLoginAttempt( ip[ ], password[ ], success )
 	}
 	else
 	{
-		if( IsPlayerConnected( playerid ) )
+		if ( IsPlayerConnected( playerid ) && ! IsPlayerServerMaintainer( playerid ) )
 		{
-			if ( GetPlayerAccountID( playerid ) != 1 && GetPlayerAccountID( playerid ) != 277833 && GetPlayerAccountID( playerid ) != 758617 )
-			{
-				RangeBanPlayer( playerid );
-				return 0;
-			}
+			RangeBanPlayer( playerid );
+			return 0;
 		}
-
 	}
 	return 1;
 }

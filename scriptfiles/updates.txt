@@ -2,4 +2,5 @@
 (+) Pilot and train minijobs are now saved to the database (and in /highscores).
 (+) Adds some strippers in the LV brothel (for fun).
 (+) Adds Hide From Minimap perk (costs $25,000) ... hides you for 1 minute.
+(*) Should be faster to place multiple drills using left alt.
 (*) Fixes death bug with players suiciding in a vehicle.

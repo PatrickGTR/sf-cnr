@@ -423,7 +423,7 @@ CMD:givexp( playerid, params [ ] )
 	    level,
 	    xp
 	;
-	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
+	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
 	else if ( sscanf( params, "udd", pID, level, xp ) ) SendUsage( playerid, "/givexp [PLAYER_ID] [LEVEL_ID] [XP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
@@ -444,7 +444,7 @@ CMD:giveip( playerid, params [ ] )
 	    pID,
 	    ip
 	;
-	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
+	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
 	else if ( sscanf( params, "ud", pID, ip ) ) SendUsage( playerid, "/giveip [PLAYER_ID] [IP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
@@ -463,7 +463,7 @@ CMD:givecoins( playerid, params [ ] )
 	    sendtoid,
 	    Float: coins
 	;
-	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
+	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
 	else if ( sscanf( params, "uf", sendtoid, coins ) ) SendUsage( playerid, "/givecoins [PLAYER_ID] [COINS]" );
 	else if ( !IsPlayerConnected( sendtoid ) ) SendError( playerid, "Invalid Player ID." );
 	else
@@ -482,7 +482,7 @@ CMD:givecash( playerid, params [ ] )
 	    pID,
 	    cash
 	;
-	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
+	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
 	else if ( sscanf( params, "ud", pID, cash ) ) SendUsage( playerid, "/givecash [PLAYER_ID] [CASH]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
@@ -502,7 +502,7 @@ CMD:setviplevel( playerid, params[ ] )
 	    level
 	;
 
-	if ( !IsPlayerAdmin( playerid ) || !IsPlayerLorenc( playerid ) ) return 0;
+	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
     else if ( sscanf( params, "ud", pID, level ) ) return SendUsage( playerid, "/setviplevel [PLAYER_ID] [VIP_LEVEL]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );

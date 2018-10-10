@@ -13,10 +13,10 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+// #pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -4781,7 +4781,7 @@ public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 
 public OnPlayerCommandReceived(playerid, cmdtext[])
 {
-    if ( p_AdminLevel[ playerid ] < 6 && !IsPlayerLorenc( playerid ) )
+    if ( p_AdminLevel[ playerid ] < 6 && ! IsPlayerServerMaintainer( playerid ) )
 	{
 		if ( !hasTickcountPassed( p_AntiCommandSpam[ playerid ], 1000 ) )
 		{
@@ -7676,7 +7676,7 @@ CMD:r( playerid, params[ ] )
 	{
 	    new pID = p_PmResponder[ playerid ];
 
-		if ( IsPlayerLorenc( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
+		if ( IsPlayerServerMaintainer( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
 			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.sfcnr.com" );
 		}
 
@@ -7719,7 +7719,7 @@ CMD:pm( playerid, params[ ] )
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
 	else
 	{
-		if ( IsPlayerLorenc( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
+		if ( IsPlayerServerMaintainer( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
 			return SendError( playerid, "You need to be V.I.P to PM this person, to become one visit "COL_GREY"donate.sfcnr.com" );
 		}
 
@@ -13666,7 +13666,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						SendError( playerid, "This value must be numerical." );
 						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
 					}
-					else if ( ! ( 1.0 <= range <= 100.0 ) && ! IsPlayerLorenc( playerid ) )
+					else if ( ! ( 1.0 <= range <= 100.0 ) )
 					{
 						SendError( playerid, "Please specify a range between 1.0 and 100.0 metres." );
 						return ShowPlayerDialog( playerid, DIALOG_GATE_EDIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gate - Edit", ""COL_WHITE"Value to replace with:", "Commit", "Back" );
