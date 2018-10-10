@@ -42,6 +42,7 @@ stock const g_aVehicleNames[ 212 ] [ ] =
 	{ "Utility Trailer"}
 };
 
+/* ** Functions ** */
 stock GetVehicleModelFromName( szVehicleName[ ] )
 {
 	for( new i = 400; i <= 611; i++ )
@@ -49,4 +50,68 @@ stock GetVehicleModelFromName( szVehicleName[ ] )
 			return i;
 
 	return -1;
+}
+
+stock IsBoatVehicle(value)
+{
+	static const valid_values[6] = {
+		29425665, -2143286272, 0, 0, 0, 32
+	};
+
+	if (430 <= value <= 595) {
+		value -= 430;
+		return (valid_values[value >>> 5] & (1 << (value & 31))) || false;
+	}
+	return false;
+}
+
+stock IsAirVehicle(value)
+{
+	static const valid_values[6] = {
+		1073742081, 135268352, -1073676096, 192, 262408, 98305
+	};
+
+	if (417 <= value <= 593) {
+		value -= 417;
+		return (valid_values[value >>> 5] & (1 << (value & 31))) || false;
+	}
+	return false;
+}
+
+stock IsBikeVehicle(value)
+{
+	static const valid_values[5] = {
+		1105921, 1610612738, 1536, 0, 1056
+	};
+
+	if (448 <= value <= 586) {
+		value -= 448;
+		return (valid_values[value >>> 5] & (1 << (value & 31))) || false;
+	}
+	return false;
+}
+
+stock IsTrailerVehicle(model) {
+	static const valid_values[6] = {
+		32769, 0, 0, 0, 270532608, 112640
+	};
+
+	if (435 <= model <= 611) {
+		model -= 435;
+		return (valid_values[model >>> 5] & (1 << (model & 31))) || false;
+	}
+	return false;
+}
+
+stock IsLowriderVehicle(model)
+{
+	static const valid_values[6] = {
+		1, 0, 0, 469762048, 201326592, 24
+	};
+
+	if (412 <= model <= 576) {
+		model -= 412;
+		return (valid_values[model >>> 5] & (1 << (model & 31))) || false;
+	}
+	return false;
 }
