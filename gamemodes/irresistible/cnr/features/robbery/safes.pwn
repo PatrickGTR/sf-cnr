@@ -78,6 +78,18 @@ hook OnServerUpdate( )
 	return 1;
 }
 
+hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
+{
+	if ( PRESSED( KEY_WALK ) )
+	{
+		if ( ! IsPlayerInAnyVehicle( playerid ) )
+	    {
+	       	return SetPlayerHandleNearestSafe( playerid );
+		}
+	}
+	return 1;
+}
+
 /* ** Functions ** */
 stock CreateRobberyCheckpoint( szName[ 32 ], iRobValue, Float: fX, Float: fY, Float: fZ, Float: rotation, worldid )
 {
@@ -172,31 +184,31 @@ stock GetXYInFrontOfSafe( robberyid, &Float: X, &Float: Y, &Float: Z, Float: dis
 stock AttachToRobberySafe( robberyid, playerid, type )
 {
 	if ( !IsPlayerConnected( playerid ) )
-		return 0xFFFF; // Not connected
+		return 0; // Not connected
 
 	if (!Iter_Contains(RobberyCount, robberyid))
-		return 0xAA; // Invalid Robbery
+		return 0; // Invalid Robbery
 
 	if ( ( g_robberyData[ robberyid ] [ E_C4_SLOT ] == true && type == ROBBERY_TYPE_DRILL ) || ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID && type == ROBBERY_TYPE_C4 ) )
-		return 0x1B; // Is occupied?
+		return 0; // Is occupied?
 
 	if ( g_robberyData[ robberyid ] [ E_ROBBED ] || g_robberyData[ robberyid ] [ E_OPEN ] || g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF )
-		return 0x2C; // It's been robbed/opened!
+		return 0; // It's been robbed/opened!
 
 	if ( p_Class[ playerid ] == CLASS_POLICE )
-		return 0xBB; // Not civilian
+		return 0; // Not civilian
 
 	if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) || g_robberyData[ robberyid ] [ E_STATE ] )
-		return 0xBC; // Currently picking/being robbed/being picked
+		return 0; // Currently picking/being robbed/being picked
 
 	//if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] )
 	//	return 0xBF; // has $0 in bank as biz
 
 	if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) )
-		return 0xCB; // must be burglar to rob safe
+		return 0; // must be burglar to rob safe
 
 	if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) )
-		return 0xCA; // is biz associate
+		return 0; // is biz associate
 
 	static
 		Float: fX, Float: fY, Float: fZ,
@@ -221,10 +233,10 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 		case ROBBERY_TYPE_DRILL:
 		{
 			if ( p_drillStrength[ playerid ] <= 0 )
-				return 0xA1;
+				return 0;
 
 			if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) )
-				return 0x2B; // Valid drill/driller already on?
+				return 0; // Valid drill/driller already on?
 
 			// DRILL
 			offsetX = 0.8 * floatsin( -( rotation + 200 ), degrees );
@@ -270,7 +282,7 @@ stock AttachToRobberySafe( robberyid, playerid, type )
 			}
 		}
 	}
-	return -1;
+	return 0;
 }
 
 stock RemoveRobberyAttachments( robberyid )
@@ -457,7 +469,7 @@ function onSafeBust( playerid, robberyid, type, index )
 			RemoveRobberyAttachments( robberyid );
 			ControlRobberySafe( robberyid, true );
 			createRobberyLootInstance( playerid, robberyid, type );
-			if ( type == ROBBERY_TYPE_LABOR ) SetTimerEx( "handlePlayerRobbery", 1350, false, "ddd", playerid, KEY_WALK, KEY_SPRINT );
+			if ( type == ROBBERY_TYPE_LABOR ) SetTimerEx( "SetPlayerHandleNearestSafe", 1350, false, "d", playerid );
 		}
 	}
 
@@ -588,4 +600,105 @@ stock truncateDrills( playerid )
 		if ( g_robberyData[ i ] [ E_DRILL_PLACER ] == playerid )
 			haltRobbery( i );
 	}
+}
+
+function SetPlayerHandleNearestSafe( playerid )
+{
+	if ( ! IsPlayerConnected( playerid ) )
+		return 0;
+
+	new
+		Float: X, Float: Y, Float: Z,
+	    Float: distance = 99999.99,
+		robberyid = getClosestRobberySafe( playerid, distance ),
+	 	Float: sZ
+	;
+
+	if ( robberyid != INVALID_OBJECT_ID && distance < 1.5 )
+	{
+		if ( !g_robberyData[ robberyid ] [ E_STATE ] && !g_robberyData[ robberyid ] [ E_ROBBED ] && !IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
+		{
+			if ( IsPlayerCuffed( playerid ) || IsPlayerTazed( playerid ) || IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot pick the safe at the moment." );
+
+			if ( p_drillStrength[ playerid ] )
+			{
+				if ( AttachToRobberySafe( robberyid, playerid, ROBBERY_TYPE_DRILL ) ) {
+					p_UsingRobberySafe[ playerid ] = robberyid;
+				}
+			}
+			else
+			{
+	       	 	if ( g_robberyData[ robberyid ] [ E_STATE ] ) return SendError( playerid, "This safe must be in an idle state to pick it." );
+	       	 	//else if ( p_UsingRobberySafe[ playerid ] != -1 ) return SendError( playerid, "You're currently working on another safe." );
+	       	 	else if ( g_robberyData[ robberyid ] [ E_OPEN ] ) return 1; //SendError( playerid, "This safe is open." );
+	       	 	else if ( IsPlayerUsingAnimation( playerid ) ) return 1; //SendError( playerid, "You mustn't be using an animation." );
+	       	 	else if ( g_robberyData[ robberyid ] [ E_ROBTIMER ] != 0xFFFF ) return SendError( playerid, "This safe is currently busy." );
+	       	 	else if ( p_Class[ playerid ] == CLASS_POLICE ) return SendError( playerid, "You cannot pick this safe as a law enforcement officer." );
+	       	 	// else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! g_businessData[ g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ] [ E_BANK ] ) return SendError( playerid, "There is nothing to rob from this business safe." );
+	       	 	else if ( g_robberyData[ robberyid ] [ E_BUSINESS_ID ] != -1 && ! JobEquals( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You need to be a burglar to rob this safe." );
+				else if ( IsBusinessAssociate( playerid, g_robberyData[ robberyid ] [ E_BUSINESS_ID ] ) ) return SendError( playerid, "You are an associate of this business, you cannot rob it!" );
+	       	 	else if ( g_robberyData[ robberyid ] [ E_DRILL_PLACER ] != INVALID_PLAYER_ID || IsValidDynamicObject( g_robberyData[ robberyid ] [ E_DRILL ] ) ) return SendError( playerid, "The safe is currently occupied by a drill." );
+	       	 	else
+	       	 	{
+	       	 		// TriggerRobberyForClerks( playerid, robberyid );
+
+					p_UsingRobberySafe[ playerid ] = robberyid;
+	       	 		GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], X, Y, Z );
+					SetPlayerFacingAngle( playerid, g_robberyData[ robberyid ] [ E_DOOR_ROT ] );
+		        	GetXYInFrontOfSafe( robberyid, X, Y, sZ );
+					GetPlayerPos( playerid, Z, Z, Z );
+		        	SetPlayerPos( playerid, X, Y, Z );
+
+		        	if ( sZ > Z )
+						ApplyAnimation( playerid, "PED", "bomber", 4.1, 1, 1, 1, 1, 0, 1 );
+					else
+						ApplyAnimation( playerid, "BOMBER", "BOM_Plant", 4.1, 1, 1, 1, 1, 0, 1 );
+
+					SetPlayerArmedWeapon( playerid, 0 );
+					RemovePlayerAttachedObject( playerid, 0 );
+		        	SetPlayerAttachedObject( playerid, 0, 18634, 6, 0.073999, 0.036999, 0.095999, 88.400009, 0.000000, 0.000000, 1.000000, 1.000000, 1.000000 );
+
+					// trigger the robbery bot
+					TriggerRobberyForClerks( playerid, robberyid );
+
+					new
+						Float: speed_up = GetPlayerLevel( playerid, E_ROBBERY ) * 50.0;
+
+					if ( speed_up >= 50.0 ) {
+						SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe (%0.1f%s faster), please wait until you've finished. Press C to stop.", ( speed_up / 10000.0 ) * 100.0, "%%" );
+					} else {
+						SendClientMessage( playerid, -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" You are now picking a safe, please wait until you've finished. Press C to stop." );
+					}
+
+					g_robberyData[ robberyid ] [ E_STATE ] = STATE_PICKED;
+					ShowProgressBar( playerid, "Picking Safe", PROGRESS_SAFEPICK, 10000 - floatround( speed_up ), COLOR_WANTED12, robberyid );
+				}
+			}
+		}
+
+		if ( IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
+		{
+	    	if ( g_robberyData[ robberyid ] [ E_STATE ] ) return SendError( playerid, "This safe must be in an idle state to rob it." );
+	       	else if ( p_Class[ playerid ] == CLASS_POLICE ) return SendError( playerid, "You cannot rob this safe as a law enforcement officer." );
+	        else
+	        {
+				p_UsingRobberySafe[ playerid ] = robberyid;
+	   	 		GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], X, Y, Z );
+				SetPlayerFacePoint( playerid, X, Y );
+	        	GetXYInFrontOfSafe( robberyid, X, Y, sZ );
+				GetPlayerPos( playerid, Z, Z, Z );
+	        	SetPlayerPos( playerid, X, Y, Z );
+
+	        	if ( sZ > Z )
+					ApplyAnimation( playerid, "CARRY", "liftup105", 4.0, 1, 0, 0, 1, 0 );
+				else
+					ApplyAnimation( playerid, "ROB_BANK", "CAT_Safe_Rob", 4.0, 1, 0, 0, 1, 0 );
+
+	        	g_robberyData[ robberyid ] [ E_STATE ] = STATE_ROBBED;
+
+				ShowProgressBar( playerid, "Robbing Safe", PROGRESS_ROBBING, 2500, COLOR_YELLOW, robberyid );
+	        }
+		}
+	}
+	return 1;
 }
