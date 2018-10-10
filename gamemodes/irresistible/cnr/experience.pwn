@@ -71,11 +71,16 @@ static stock
 ;
 
 /* ** Important ** */
-stock Float: GetPlayerLevel( playerid, E_LEVELS: level ) {
-	return floatsqroot( g_playerExperience[ playerid ] [ level ] / ( ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) ) );
+stock Float: GetPlayerLevel( playerid, E_LEVELS: level )
+{
+	new
+		Float: player_level = floatsqroot( g_playerExperience[ playerid ] [ level ] / ( ( g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) / ( EXP_MAX_PLAYER_LEVEL * EXP_MAX_PLAYER_LEVEL ) ) );
+
+	return player_level > 100.0 ? 100.0 : player_level;
 }
 
-stock Float: GetPlayerTotalExperience( playerid ) {
+stock Float: GetPlayerTotalExperience( playerid )
+{
 	new
 		Float: experience = 0.0;
 
@@ -227,7 +232,7 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 
 	// check if its over 100 anyway
 	if ( ( g_playerExperience[ playerid ] [ level ] += xp_earned ) > g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ] ) {
-		g_playerExperience[ playerid ] [ level ] = g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ];
+		// g_playerExperience[ playerid ] [ level ] = g_levelData[ _: level ] [ E_MAX_UNITS ] * g_levelData[ _: level ] [ E_XP_DILATION ]; // stop player from accumulating more exp
 		SetPlayerProgressBarValue( playerid, p_playerExpProgress[ playerid ], 100.0 );
 	} else {
 		new Float: progress = floatfract( GetPlayerLevel( playerid, level ) ) * 100.0;
