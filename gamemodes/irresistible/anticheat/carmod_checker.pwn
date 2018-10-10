@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj, JerenjL
- * Module: gta\car_mods.pwn
- * Purpose:
+ * Module: anticheat\carmod_checker.pwn
+ * Purpose: checks for valid car modification componenets
  */
 
 /* ** Variables ** */
@@ -61,17 +61,29 @@ static const
 	}
 ;
 
+/* ** Hooks ** */
+hook OnVehicleMod( playerid, vehicleid, componentid )
+{
+	if ( ! CarMod_IsLegalCarMod( GetVehicleModel( vehicleid ), componentid ) )
+	{
+ 		Kick( playerid );
+		SetVehicleToRespawn( vehicleid );
+		return 0; // desync the car mod
+	}
+	return 1;
+}
+
 /* ** Functions ** */
-stock isLegalCarMod( vehicleide, componentid ) {
+stock CarMod_IsLegalCarMod( vehicleide, componentid ) {
 
     new
     	modok = false;
 
     // stereo, hydraulics & nos (1x 2x 3x) are special.
-    if ( ( iswheelmodel( componentid ) ) || ( componentid == 1086 ) || ( componentid == 1087 ) || ( ( componentid >= 1008 ) && ( componentid <= 1010 ) ) ) {
+    if ( ( CarMod_IsWheelModel( componentid ) ) || ( componentid == 1086 ) || ( componentid == 1087 ) || ( ( componentid >= 1008 ) && ( componentid <= 1010 ) ) ) {
 
         new
-        	nosblocker = IllegalCarNitroIde( vehicleide );
+        	nosblocker = CarMod_IllegalCarNitroIde( vehicleide );
 
         if ( ! nosblocker ) {
             modok = true;
@@ -95,7 +107,7 @@ stock isLegalCarMod( vehicleide, componentid ) {
     return modok;
 }
 
-stock iswheelmodel( modelid ) {
+stock CarMod_IsWheelModel( modelid ) {
 	new
 		wheelmodels[ 17 ] = { 1025, 1073, 1074, 1075, 1076, 1077, 1078, 1079, 1080, 1081, 1082, 1083, 1084, 1085, 1096, 1097, 1098 };
 
@@ -105,7 +117,7 @@ stock iswheelmodel( modelid ) {
 	return false;
 }
 
-stock IllegalCarNitroIde( carmodel ) {
+stock CarMod_IllegalCarNitroIde( carmodel ) {
 
 	new
 		illegalvehs[ 29 ] = { 581, 523, 462, 521, 463, 522, 461, 448, 468, 586, 509, 481, 510, 472, 473, 493, 595, 484, 430, 453, 452, 446, 454, 590, 569, 537, 538, 570, 449 };

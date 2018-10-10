@@ -159,6 +159,7 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 #include "irresistible\anticheat\money.pwn"
 #include "irresistible\anticheat\hitpoints.pwn"
 #include "irresistible\anticheat\weapon.pwn"
+#include "irresistible\anticheat\carmod_checker.pwn"
 #include "irresistible\anticheat\airbrake.pwn"
 #include "irresistible\anticheat\proaim.pwn"
 #include "irresistible\anticheat\autocbug.pwn"

@@ -582,7 +582,7 @@ thread OnVehicleLoad( playerid )
 				{
 					if ( g_vehicleModifications[ playerid ] [ vID ] [ x ] >= 1000 && g_vehicleModifications[ playerid ] [ vID ] [ x ] < 1193 )
 					{
-					    if ( isLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ vID ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ vID ] [ x ] ) )
+					    if ( CarMod_IsLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ vID ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ vID ] [ x ] ) )
 					        AddVehicleComponent( g_vehicleData[ playerid ] [ vID ] [ E_VEHICLE_ID ], g_vehicleModifications[ playerid ] [ vID ] [ x ] );
 						else
 						    g_vehicleModifications[ playerid ] [ vID ] [ x ] = 0;
@@ -675,7 +675,7 @@ stock ResetBuyableVehicleMods( playerid, id, fordestroy=1 )
 	for( new i = 0; i < MAX_CAR_MODS; i++ )
 	{
 		if ( !fordestroy && IsValidVehicle( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ) ) {
-	        if ( isLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ id ] [ i ] ) )
+	        if ( CarMod_IsLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ id ] [ i ] ) )
 	            RemoveVehicleComponent( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ], g_vehicleModifications[ playerid ] [ id ] [ i ] );
 		}
 		g_vehicleModifications[ playerid ] [ id ] [ i ] = 0;
@@ -768,7 +768,7 @@ stock RespawnBuyableVehicle( samp_veh_id, occupantid = INVALID_PLAYER_ID )
 	for( new i = 0; i < MAX_CAR_MODS; i++ ) {
 	    if ( g_vehicleModifications[ playerid ] [ id ] [ i ] >= 1000 && g_vehicleModifications[ playerid ] [ id ] [ i ] < 1193 )
 	    {
-	        if ( isLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ id ] [ i ] ) )
+	        if ( CarMod_IsLegalCarMod( GetVehicleModel( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ] ), g_vehicleModifications[ playerid ] [ id ] [ i ] ) )
 	            AddVehicleComponent( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ], g_vehicleModifications[ playerid ] [ id ] [ i ] );
 			else
 			    g_vehicleModifications[ playerid ] [ id ] [ i ] = 0;
