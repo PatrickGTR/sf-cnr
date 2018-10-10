@@ -17039,8 +17039,11 @@ stock isNotNearPlayer( playerid, nearid, Float: distance = 200.0 )
 	new
 		Float: X, Float: Y, Float: Z;
 
-	GetPlayerOutsidePos( nearid, X, Y, Z );
-
+	if ( GetPlayerInterior( playerid ) == GetPlayerInterior( nearid ) && GetPlayerVirtualWorld( playerid ) == GetPlayerVirtualWorld( nearid ) ) {
+		GetPlayerPos( nearid, X, Y, Z );
+	} else {
+		GetPlayerOutsidePos( nearid, X, Y, Z );
+	}
 	return GetPlayerDistanceFromPoint( playerid, X, Y, Z ) > distance ? 1 : 0;
 }
 
