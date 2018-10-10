@@ -5345,6 +5345,17 @@ function initializeServerObjects( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1981.197998, 1756.649902, 39.467201, 0.000000, 0.000000, 10.600001, -1, -1, -1 ), 0, 0, "none", "none", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1980.224121, 1732.872070, 39.467201, 0.000000, 0.000000, -6.100002, -1, -1, -1 ), 0, 0, "none", "none", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2075.446533, 1709.991943, 39.931343, 0.000000, 0.000000, 93.099952, -1, -1, -1 ), 0, 0, "none", "none", 0 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2089.600097, 1706.765014, 48.458999, 0.000000, 0.000000, 15.600000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2059.374023, 1710.063964, 48.458999, 0.000000, 0.000000, 2.099999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2043.427001, 1710.718994, 48.458999, 0.000000, 0.000000, 2.099999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1992.123046, 1711.006958, 48.458999, 0.000000, 0.000000, 1.899999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1976.727050, 1736.880004, 48.458999, 0.000000, 0.000000, -94.699996, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1991.198974, 1802.734008, 48.458999, 0.000000, 0.000000, -98.900001, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1987.973999, 1811.743041, 48.458999, 0.000000, 0.000000, -121.300003, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1978.237060, 1838.181030, 48.458999, 0.000000, 0.000000, -71.800003, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2111.657958, 1794.296020, 48.458999, 0.000000, 0.000000, -5.300000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2080.099121, 1794.564941, 48.458999, 0.000000, 0.000000, -2.599999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -2075.977050, 1709.745971, 47.631000, 0.000000, 0.000000, 96.599998, -1, -1, -1 ), 0, 5775, "sunset01_lawn", "Metalox64", 1 );
 
 	// Duel Arena
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, -2232.130126, 263.019104, 36.146163, 0.000000, 0.000000, 0.099999, -1, -1, -1 ), 0, "Thanks Stev!", 130, "Impact", 32, 0, -16777216, 0, 1 );
