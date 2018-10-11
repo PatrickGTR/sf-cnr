@@ -19,9 +19,11 @@
 #define TYPE_GIVEN 					( 1 )
 #define TYPE_TAKEN 					( 2 )
 
+#define TEXTDRAW_ADDON 				( 120.0 )
+
 /* ** Forwards ** */
-forward OnPlayerFeedUpdate( playerid );
-forward OnPlayerTakenDamageFeed( playerid, issuerid, Float: amount, weaponid, bodypart );
+forward OnPlayerFeedUpdate 			( playerid );
+forward OnPlayerTakenDamageFeed 	( playerid, issuerid, Float: amount, weaponid, bodypart );
 
 /* ** Variables ** */
 enum E_DAMAGE_FEED
@@ -57,11 +59,7 @@ hook OnPlayerConnect( playerid )
 /* ** Functions ** */
 public OnPlayerTakenDamageFeed( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
-	if ( issuerid != INVALID_PLAYER_ID )
-	{
-		AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
-	}
-
+	AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
 	AddDamageFeedHit( playerid, issuerid, amount, weaponid, TYPE_TAKEN );
 	return 1;
 }
@@ -97,7 +95,7 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 	/* ** Textdraws ** */
 	if ( g_damageFeedGivenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
 	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, 200.000000, 340.000000, "_");
+		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( 320.0 - TEXTDRAW_ADDON ), 340.0, "_");
 
 		if ( handle == PlayerText: INVALID_TEXT_DRAW )
 			return print("[DAMAGE FEED ERROR]: Unable to create TD (given damage)" );
@@ -116,7 +114,7 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 
 	if ( g_damageFeedTakenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
 	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, 440.000000, 340.000000, "_");
+		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( TEXTDRAW_ADDON + 320.0 ), 340.0, "_");
 
 		if ( handle == PlayerText: INVALID_TEXT_DRAW )
 			return print("[DAMAGE FEED ERROR]: Unable to create TD (taken damage)" );
@@ -384,6 +382,6 @@ CMD:feed( playerid, params[ ] )
 {
 	p_FeedActive{ playerid } = !p_FeedActive{ playerid };
 
-	SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have %s the damage feed.", p_FeedActive{ playerid } ? ( "toggled" ) : ( "un-toggled" ) );
+	SendServerMessage( playerid, "You have %s the damage feed.", p_FeedActive{ playerid } ? ( "toggled" ) : ( "un-toggled" ) );
 	return 1;
 }
