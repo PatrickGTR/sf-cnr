@@ -19,9 +19,6 @@
 #define TYPE_GIVEN 					( 1 )
 #define TYPE_TAKEN 					( 2 )
 
-#define DAMAGE_GIVEN_COLOR 			"~~"
-#define DAMAGE_TAKEN_COLOR 			"~~"
-
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate( playerid );
 
