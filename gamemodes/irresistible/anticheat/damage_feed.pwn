@@ -344,7 +344,7 @@ stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issueri
 	array[ wID ][ E_ISSUER ] = issuerid;
 	array[ wID ][ E_WEAPON ] = weapon;
 
-	GetPlayerName( playerid, array[ wID ][ E_NAME ] , MAX_PLAYER_NAME );
+	GetPlayerName( issuerid, array[ wID ][ E_NAME ] , MAX_PLAYER_NAME );
 
 	UpdateDamageFeed( playerid, true );
 }
