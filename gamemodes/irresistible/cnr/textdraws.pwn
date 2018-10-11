@@ -47,9 +47,7 @@ new
 	PlayerText: p_TruckingTD 		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_TrackPlayerTD     [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_GPSInformation	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_AchievementTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_FireDistance1		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_FireDistance2		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... }
+	PlayerText: p_AchievementTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... }
 ;
 
 /* ** Hooks ** */
@@ -525,22 +523,6 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawSetOutline(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_RobberyAmountTD[ playerid ], 1);
 	PlayerTextDrawSetSelectable(playerid, p_RobberyAmountTD[ playerid ], 0);
-
-    p_FireDistance1[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 182.000000, "_");
-	PlayerTextDrawBackgroundColor(playerid, p_FireDistance1[ playerid ], 255);
-	PlayerTextDrawFont(playerid, p_FireDistance1[ playerid ], 2);
-	PlayerTextDrawLetterSize(playerid, p_FireDistance1[ playerid ], 0.210000, 1.200000);
-	PlayerTextDrawColor(playerid, p_FireDistance1[ playerid ], -1);
-	PlayerTextDrawSetOutline(playerid, p_FireDistance1[ playerid ], 1);
-	PlayerTextDrawSetProportional(playerid, p_FireDistance1[ playerid ], 1);
-
-	p_FireDistance2[ playerid ] = CreatePlayerTextDraw(playerid, 26.000000, 236.000000, "_");
-	PlayerTextDrawBackgroundColor(playerid, p_FireDistance2[ playerid ], 255);
-	PlayerTextDrawFont(playerid, p_FireDistance2[ playerid ], 2);
-	PlayerTextDrawLetterSize(playerid, p_FireDistance2[ playerid ], 0.209999, 1.200000);
-	PlayerTextDrawColor(playerid, p_FireDistance2[ playerid ], -1);
-	PlayerTextDrawSetOutline(playerid, p_FireDistance2[ playerid ], 1);
-	PlayerTextDrawSetProportional(playerid, p_FireDistance2[ playerid ], 1);
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 

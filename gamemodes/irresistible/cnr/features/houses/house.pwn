@@ -620,9 +620,6 @@ thread OnHouseLoad( )
 			SetHouseOwner( houseid, 1, "Lorenc" );
 		}
 	}
-
-	// The server crashes when the fires aren't correctly loaded.
-	CreateFire( );
 	return 1;
 }
 
