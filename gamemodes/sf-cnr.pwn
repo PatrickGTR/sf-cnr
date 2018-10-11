@@ -2955,44 +2955,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 			amount *= 1.5;
 	}
 
-	// Hitmarker
-	if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
-	{
-		new
-			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-    	PlayerTextDrawSetString( issuerid, p_DamageTD[ issuerid ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    	PlayerTextDrawShow( issuerid, p_DamageTD[ issuerid ] );
-
-	    KillTimer( p_DamageTDTimer[ issuerid ] );
-		p_DamageTDTimer[ issuerid ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", issuerid );
-	}
-
-	foreach ( new i : Player )
-	{
-		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
-		{
-			new
-				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-			PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-			PlayerTextDrawSetString( i, p_DamageTD[ i ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    		PlayerTextDrawShow( i, p_DamageTD[ i ] );
-
-	    	KillTimer( p_DamageTDTimer[ i ] );
-			p_DamageTDTimer[ i ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", i );
-		}
-	}
-
+	CallLocalFunction( "OnPlayerTakenDamage", "ddfdd", playerid, issuerid, amount, weapon, bodypart );
 	return 1;
 }
 #endif
-
-function hidedamagetd_Timer( playerid )
-	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
 stock BeginEconomyTax( starting = 1 ) {
 	mysql_function_query( dbHandle, "SELECT USER_CASH, BIZ_CASH, GANG_CASH FROM (SELECT (SUM(BANKMONEY)+SUM(CASH)) USER_CASH FROM USERS) A CROSS JOIN (SELECT SUM(BANK) BIZ_CASH FROM BUSINESSES) B CROSS JOIN (SELECT SUM(BANK) GANG_CASH FROM GANGS) C", true, "OnTaxEconomy", "i", starting );

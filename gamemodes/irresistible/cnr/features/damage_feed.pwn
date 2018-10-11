@@ -23,7 +23,7 @@
 
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate 			( playerid );
-forward OnPlayerTakenDamageFeed 	( playerid, issuerid, Float: amount, weaponid, bodypart );
+forward OnPlayerTakenDamage 		( playerid, issuerid, Float: amount, weaponid, bodypart );
 
 /* ** Variables ** */
 enum E_DAMAGE_FEED
@@ -32,14 +32,16 @@ enum E_DAMAGE_FEED
 	E_WEAPON, 				E_TICK,
 };
 
-new
+static stock
 	g_damageGiven 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
 	g_damageTaken 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
-	p_damageFeedTimer 				[ MAX_PLAYERS ],
+	p_damageFeedTimer 				[ MAX_PLAYERS ] = { -1, ... },
+	p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
 	bool: p_FeedActive				[ MAX_PLAYERS char ],
 	p_lastFeedUpdate 				[ MAX_PLAYERS ]
 ;
@@ -53,13 +55,62 @@ hook OnPlayerConnect( playerid )
 	}
 
 	p_lastFeedUpdate[ playerid ] = GetTickCount( );
+
+	/* ** Textdraws ** */
+	p_DamageTD[ playerid ] = CreatePlayerTextDraw(playerid, 357.000000, 208.000000, "~r~~h~300.24 DAMAGE");
+	PlayerTextDrawBackgroundColor(playerid, p_DamageTD[ playerid ], 255);
+	PlayerTextDrawFont(playerid, p_DamageTD[ playerid ], 3);
+	PlayerTextDrawLetterSize(playerid, p_DamageTD[ playerid ], 0.400000, 1.000000);
+	PlayerTextDrawColor(playerid, p_DamageTD[ playerid ], -1);
+	PlayerTextDrawSetOutline(playerid, p_DamageTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);
+
 	return 1;
 }
 
 /* ** Functions ** */
-public OnPlayerTakenDamageFeed( playerid, issuerid, Float: amount, weaponid, bodypart )
+function OnHitmarkerHide( playerid ) 
+	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] ); 
+
+public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
-	AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
+	/* ** Hitmarker ** */
+	if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
+	{
+		new
+			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
+
+    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
+
+    	PlayerTextDrawSetString( issuerid, p_DamageTD[ issuerid ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
+    	PlayerTextDrawShow( issuerid, p_DamageTD[ issuerid ] );
+
+	    KillTimer( p_DamageTDTimer[ issuerid ] );
+		p_DamageTDTimer[ issuerid ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", issuerid );
+	}
+
+	/* ** Hitmarker (while spectating) ** */
+	foreach ( new i : Player )
+	{
+		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
+		{
+			new
+				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
+
+			PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
+
+			PlayerTextDrawSetString( i, p_DamageTD[ i ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
+    		PlayerTextDrawShow( i, p_DamageTD[ i ] );
+
+	    	KillTimer( p_DamageTDTimer[ i ] );
+			p_DamageTDTimer[ i ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", i );
+		}
+	}
+
+	/* ** Damage Feed ** */
+	if ( issuerid != INVALID_PLAYER_ID ) {
+		AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
+	}
 	AddDamageFeedHit( playerid, issuerid, amount, weaponid, TYPE_TAKEN );
 	return 1;
 }
