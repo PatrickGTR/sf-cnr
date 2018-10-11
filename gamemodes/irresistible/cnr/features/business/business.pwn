@@ -1159,7 +1159,7 @@ hook OnPlayerDisconnect( playerid, reason )
 		new
 			members = 0;
 
-		GetOnlineBusinessAssociates( playerid, members, playerid );
+		GetOnlineBusinessAssociates( businessid, members, playerid );
 
 		// printf ("%d online players for business %d, stopping mission?", members, businessid );
 		if ( members <= 0 ) {
