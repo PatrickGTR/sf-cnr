@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Steven Howard
- * Module: anticheat/damage_feed.pwn
+ * Module: cnr/features/damage_feed.pwn
  * Purpose: damage feed for dmers
  */
 
@@ -16,9 +16,11 @@
 #define HIDE_FEED_DELAY 			( 3000 )
 #define MAX_UPDATE_RATE 			( 250 )
 
-#define TYPE_NONE 					( 0 )
 #define TYPE_GIVEN 					( 1 )
 #define TYPE_TAKEN 					( 2 )
+
+#define DAMAGE_GIVEN_COLOR 			"~~"
+#define DAMAGE_TAKEN_COLOR 			"~~"
 
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate( playerid );
@@ -53,7 +55,6 @@ hook OnPlayerConnect( playerid )
 	p_lastFeedUpdate[ playerid ] = GetTickCount( );
 	return 1;
 }
-
 
 /* ** Functions ** */
 public OnPlayerFeedUpdate( playerid )
@@ -223,11 +224,11 @@ stock UpdateDamageFeedLabel( playerid )
 
 		if ( g_damageGiven[ playerid ][ givenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s +%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s - %s +%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
 		}
 	}
 
@@ -265,11 +266,11 @@ stock UpdateDamageFeedLabel( playerid )
 
 		if ( g_damageTaken[ playerid ][ takenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s -%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~b~~h~%s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s - %s -%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_NAME ], g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~b~~h~%s - %s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_NAME ], g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
 		}
 	}
 
