@@ -32,6 +32,11 @@ enum E_DAMAGE_FEED
 	E_WEAPON, 				E_TICK,
 };
 
+enum E_HITMARKER_SOUND
+{
+	E_NAME[ 10 ], 			E_SOUND_ID,
+};
+
 static stock
 	g_damageGiven 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
 	g_damageTaken 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
@@ -39,6 +44,12 @@ static stock
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+
+	g_HitmarkerSounds 				[ ][ E_HITMARKER_SOUND ] =
+	{
+		{ "Bell Ding", 17802 }, 	{ "Soft Beep", 5205 }, 		{ "Low Blip", 1138 }, 	{ "Med Blip", 1137 },
+		{ "High Blip", 1139 }, 		{ "Bling", 5201 }
+	},
 
 	p_damageFeedTimer 				[ MAX_PLAYERS ] = { -1, ... },
 	p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
@@ -68,6 +79,24 @@ hook OnPlayerConnect( playerid )
 	return 1;
 }
 
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_HitmarkerSound{ playerid } = 0;
+
+	return 1;
+}
+
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	if ( dialogid == DIALOG_MODIFY_HITSOUND && response )
+	{
+		p_HitmarkerSound{ playerid } = listitem;
+		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have changed your hitmarker sound to "COL_GREY"%s"COL_WHITE".", g_HitmarkerSounds[ listitem ] [ E_NAME ] );
+		ShowSoundsMenu( playerid );
+	}
+
+	return 1;
+}
 /* ** Functions ** */
 function OnHitmarkerHide( playerid ) 
 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] ); 
@@ -428,11 +457,34 @@ stock AddDamageFeedHit( playerid, issuerid, Float: amount, weaponid, type )
 	}
 }
 
+stock ShowSoundsMenu( playerid )
+{
+	static
+		szSounds[ 11 * sizeof( g_HitmarkerSounds ) ];
+
+	if ( szSounds[ 0 ] == '\0' )
+	{
+		for( new i = 0; i < sizeof( g_HitmarkerSounds ); i++ )
+			format( szSounds, sizeof( szSounds ), "%s%s\n", szSounds, g_HitmarkerSounds[ i ] [ E_NAME ] );
+	}
+	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
+}
+
+
 /* ** Commands ** */
 CMD:feed( playerid, params[ ] )
 {
 	p_FeedActive{ playerid } = !p_FeedActive{ playerid };
 
 	SendServerMessage( playerid, "You have %s the damage feed.", p_FeedActive{ playerid } ? ( "toggled" ) : ( "un-toggled" ) );
+	return 1;
+}
+
+CMD:hitmarker( playerid, params[ ] )
+{
+	if ( p_VIPLevel[ playerid ] < 1 )
+		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+
+	ShowSoundsMenu( playerid );
 	return 1;
 }
