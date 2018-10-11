@@ -284,7 +284,7 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 
 	if ( ( szTick - p_lastFeedUpdate[ playerid ] ) < MAX_UPDATE_RATE && modified )
 	{
-		p_damageFeedTimer[ playerid ] = SetTimerEx( "OnPlayerFeedUpdate", MAX_UPDATE_RATE - ( szTick - lowest_tick ) + 10, false, "d", playerid );
+		p_damageFeedTimer[ playerid ] = SetTimerEx( "OnPlayerFeedUpdate", MAX_UPDATE_RATE - ( szTick - p_lastFeedUpdate[ playerid ] ) + 10, false, "d", playerid );
 	}
 	else
 	{
