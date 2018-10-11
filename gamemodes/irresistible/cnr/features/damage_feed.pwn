@@ -21,6 +21,7 @@
 
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate( playerid );
+forward OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart );
 
 /* ** Variables ** */
 enum E_DAMAGE_FEED
@@ -54,6 +55,17 @@ hook OnPlayerConnect( playerid )
 }
 
 /* ** Functions ** */
+public OnPlayerTakenDamageFeed( playerid, issuerid, Float: amount, weaponid, bodypart )
+{
+	if ( issuerid != INVALID_PLAYER_ID )
+	{
+		AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
+	}
+
+	AddDamageFeedHit( playerid, issuerid, amount, weaponid, TYPE_TAKEN );
+	return 1;
+}
+
 public OnPlayerFeedUpdate( playerid )
 {
 	p_damageFeedTimer[ playerid ] = -1;
