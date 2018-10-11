@@ -138,9 +138,10 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 	/* ** Damage Feed ** */
 	if ( issuerid != INVALID_PLAYER_ID ) {
-		AddDamageFeedHit( issuerid, playerid, amount, weaponid, TYPE_GIVEN );
+		DamageFeedAddHitGiven( issuerid, playerid, amount, weaponid );
 	}
-	AddDamageFeedHit( playerid, issuerid, amount, weaponid, TYPE_TAKEN );
+
+	DamageFeedAddHitTaken( playerid, issuerid, amount, weaponid );
 	return 1;
 }
 
@@ -153,6 +154,24 @@ public OnPlayerFeedUpdate( playerid )
 	}
 
 	return 1;
+}
+
+stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
+{
+	foreach( new i : Player ) if ( i != playerid ) {
+		AddDamageHit( g_damageGiven[ i ], i, issuerid, amount, weaponid );
+	}
+
+	AddDamageHit( g_damageGiven[ playerid ], playerid, issuerid, amount, weaponid );
+}
+
+stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
+{
+	foreach( new i : Player ) if ( i != playerid ) {
+		AddDamageHit( g_damageTaken[ i ], i, issuerid, amount, weaponid );
+	}
+
+	AddDamageHit( g_damageTaken[ playerid ], playerid, issuerid, amount, weaponid );
 }
 
 stock UpdateDamageFeed( playerid, bool: modified = false )
@@ -311,11 +330,11 @@ stock UpdateDamageFeedLabel( playerid )
 
 		if ( g_damageGiven[ playerid ][ givenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
 		}
 	}
 
@@ -435,26 +454,6 @@ stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issueri
 	GetPlayerName( issuerid, array[ wID ][ E_NAME ] , MAX_PLAYER_NAME );
 
 	UpdateDamageFeed( playerid, true );
-}
-
-stock AddDamageFeedHit( playerid, issuerid, Float: amount, weaponid, type )
-{
-	if ( type == TYPE_GIVEN )
-	{
-		foreach( new i : Player ) if ( i != playerid) {
-			AddDamageHit( g_damageGiven[ i ], i, issuerid, amount, weaponid );
-		}
-
-		AddDamageHit( g_damageGiven[ playerid ], playerid, issuerid, amount, weaponid );
-	}
-	else if ( type == TYPE_TAKEN )
-	{
-		foreach( new i : Player ) if ( i != playerid) {
-			AddDamageHit( g_damageTaken[ i ], i, issuerid, amount, weaponid );
-		}
-
-		AddDamageHit( g_damageTaken[ playerid ], playerid, issuerid, amount, weaponid );
-	}
 }
 
 stock ShowSoundsMenu( playerid )
