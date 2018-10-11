@@ -14176,9 +14176,6 @@ stock SetObjectFacePoint(iObjectID, Float: fX, Float: fY, Float: fOffset, bool: 
 	}
 }
 
-stock encode_tires( tires1, tires2, tires3, tires4 )
-	return tires1 | (tires2 << 1) | (tires3 << 2) | (tires4 << 3);
-
 stock TimeConvert( seconds )
 {
 	static
