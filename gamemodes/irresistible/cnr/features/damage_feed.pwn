@@ -21,7 +21,7 @@
 
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate( playerid );
-forward OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart );
+forward OnPlayerTakenDamageFeed( playerid, issuerid, Float: amount, weaponid, bodypart );
 
 /* ** Variables ** */
 enum E_DAMAGE_FEED
