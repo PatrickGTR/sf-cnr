@@ -9799,7 +9799,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	}
 
  	// Explosive Bullets
- 	if ( p_ExplosiveBullets[ playerid ] > 0 && PRESSED( KEY_YES ) ) {
+ 	if ( p_ExplosiveBullets[ playerid ] > 0 && PRESSED( KEY_NO ) ) {
  		if ( GetPVarInt( playerid, "explosive_rounds" ) == 1 ) {
  			DeletePVar( playerid, "explosive_rounds" );
  			ShowPlayerHelpDialog( playerid, 2000, "Explosive rounds ~r~disabled." );
