@@ -37,6 +37,10 @@ enum E_HITMARKER_SOUND
 	E_NAME[ 10 ], 			E_SOUND_ID,
 };
 
+new 
+	p_HitmarkerSound 				[ MAX_PLAYERS char ]
+;
+
 static stock
 	g_damageGiven 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
 	g_damageTaken 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
@@ -52,8 +56,6 @@ static stock
 	},
 
 	p_damageFeedTimer 				[ MAX_PLAYERS ] = { -1, ... },
-	//p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
-	//bool: p_FeedActive				[ MAX_PLAYERS char ],
 	p_lastFeedUpdate 				[ MAX_PLAYERS ]
 ;
 
