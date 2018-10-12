@@ -19,7 +19,7 @@
 #define TYPE_GIVEN 					( 1 )
 #define TYPE_TAKEN 					( 2 )
 
-#define TEXTDRAW_ADDON 				( 120.0 )
+#define TEXTDRAW_ADDON 				( 100.0 )
 
 /* ** Forwards ** */
 forward OnPlayerFeedUpdate 			( playerid );
@@ -209,11 +209,11 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 		if ( handle == PlayerText: INVALID_TEXT_DRAW )
 			return print("[DAMAGE FEED ERROR]: Unable to create TD (given damage)" );
 
+		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
 		PlayerTextDrawAlignment( playerid, handle, 2 );
-		PlayerTextDrawBackgroundColor( playerid, handle, 255 );
 		PlayerTextDrawFont( playerid, handle, 1 );
 		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, -16776961 );
+		PlayerTextDrawColor( playerid, handle, 0xDD2020FF );
 		PlayerTextDrawSetOutline( playerid, handle, 1 );
 		PlayerTextDrawSetProportional( playerid, handle, 1 );
 		PlayerTextDrawSetSelectable( playerid, handle, 0 );
@@ -228,10 +228,11 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 		if ( handle == PlayerText: INVALID_TEXT_DRAW )
 			return print("[DAMAGE FEED ERROR]: Unable to create TD (taken damage)" );
 
-		PlayerTextDrawBackgroundColor( playerid, handle, 255 );
+		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
+		PlayerTextDrawAlignment( playerid, handle, 2 );
 		PlayerTextDrawFont( playerid, handle, 1 );
 		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, 16711935 );
+		PlayerTextDrawColor( playerid, handle, 1069804543 );
 		PlayerTextDrawSetOutline( playerid, handle, 1 );
 		PlayerTextDrawSetProportional( playerid, handle, 1 );
 		PlayerTextDrawSetSelectable( playerid, handle, 0 );
@@ -340,11 +341,11 @@ stock UpdateDamageFeedLabel( playerid )
 
 		if ( g_damageGiven[ playerid ][ givenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s~g~~h~%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
 		}
 	}
 
@@ -382,11 +383,11 @@ stock UpdateDamageFeedLabel( playerid )
 
 		if ( g_damageTaken[ playerid ][ takenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s~b~~h~%s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s%s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s~b~~h~%s - %s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_NAME ], g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] + 0.009 );
+			format( szLabel, sizeof( szLabel ), "%s%s - %s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_NAME ], g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] );
 		}
 	}
 
@@ -479,16 +480,7 @@ stock ShowSoundsMenu( playerid )
 	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
 
-
 /* ** Commands ** */
-/*CMD:feed( playerid, params[ ] )
-{
-	p_FeedActive{ playerid } = !p_FeedActive{ playerid };
-
-	SendServerMessage( playerid, "You have %s the damage feed.", p_FeedActive{ playerid } ? ( "toggled" ) : ( "un-toggled" ) );
-	return 1;
-}*/
-
 CMD:hitmarker( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < 1 )
