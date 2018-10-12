@@ -168,7 +168,7 @@ public OnPlayerFeedUpdate( playerid )
 
 stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
 {
-	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid && i != playerid ) {
+	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == playerid && i != playerid ) {
 		AddDamageHit( g_damageGiven[ i ], i, issuerid, amount, weaponid );
 	}
 
@@ -177,7 +177,7 @@ stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
 
 stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
 {
-	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid && i != playerid ) {
+	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == playerid && i != playerid ) {
 		AddDamageHit( g_damageTaken[ i ], i, issuerid, amount, weaponid );
 	}
 
