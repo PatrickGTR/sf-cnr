@@ -485,9 +485,6 @@ stock ShowSoundsMenu( playerid )
 /* ** Commands ** */
 CMD:hitmarker( playerid, params[ ] )
 {
-	if ( p_VIPLevel[ playerid ] < 1 )
-		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-
 	ShowSoundsMenu( playerid );
 	return 1;
 }
