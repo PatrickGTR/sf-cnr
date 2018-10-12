@@ -453,7 +453,7 @@ stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issueri
 
 	GetPlayerName( issuerid, array[ wID ][ E_NAME ] , MAX_PLAYER_NAME );
 
-	UpdateDamageFeed( issuerid, true );
+	UpdateDamageFeed( playerid, true );
 }
 
 stock ShowSoundsMenu( playerid )
