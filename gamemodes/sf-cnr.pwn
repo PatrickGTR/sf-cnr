@@ -1564,7 +1564,7 @@ public ZoneTimer( )
 
 						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! IsPlayerInPaintBall( d ) ) {
 							if ( in_area ) {
-								GivePlayerScore( d, 2, .multiplier = 0.5 );
+								GivePlayerScore( d, 2 );
 								GivePlayerWantedLevel( d, 6 );
 							}
 							PlayerPlaySound( d, 36205, 0.0, 0.0, 0.0 );
@@ -3273,7 +3273,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 		if ( p_Class[ killerid ] != CLASS_POLICE )
 		{
 			GivePlayerWantedLevel( killerid, 12 );
-			GivePlayerScore( killerid, 1, .multiplier = 0.2 );
+			GivePlayerScore( killerid, 1 );
 
 			new
 				Float: default_experience = 1.0;
@@ -3301,7 +3301,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			SaveGangData( playerGangId ), g_gangData[ playerGangId ] [ E_DEATHS ]++;
 
 		p_Deaths[ playerid ] ++; // Usually other events do nothing
-		GivePlayerIrresistiblePoints( playerid, -1 ); // Deduct points, it's meant to be hard!!!
+		GivePlayerSeasonalXP( playerid, -10.0 ); // Deduct points, it's meant to be hard!!!
 	}
 
     ClearPlayerWantedLevel( playerid );
@@ -9154,7 +9154,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 						GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 						ClearAnimations( victimid );
 						JailPlayer( victimid, totalSeconds );
-						GivePlayerIrresistiblePoints( victimid, -2 );
+						GivePlayerSeasonalXP( victimid, -2 );
 						SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 	    			}
 	    		}
@@ -9387,7 +9387,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			}
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
-			GivePlayerScore( playerid, score == 0 ? 1 : score, .multiplier = 0.4 );
+			GivePlayerScore( playerid, score == 0 ? 1 : score );
 			//GivePlayerExperience( playerid, E_BURGLAR, float( items ) * 0.2 );
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
@@ -10276,7 +10276,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
 			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
 			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_seasonalXP[ playerid ]		= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 
@@ -10286,6 +10285,9 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_ExplosiveBullets[ playerid ] = cache_get_field_content_int( 0, "EXPLOSIVE_BULLETS", dbHandle );
 			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
 			// p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
+
+			// seasonal xp
+			SetPlayerSeasonalXP( playerid, cache_get_field_content_float( 0, "RANK", dbHandle ) );
 
 			// spawn location
 			new
@@ -11598,7 +11600,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Admin Level:{FFFFFF} %d\n"\
 											""COL_GREY"Time Online:{FFFFFF} %s\n"\
 											""COL_GREY"Irresistible Rank:{FFFFFF} %s\n"\
-											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), GetRankName( GetPlayerRank( pID ) ), p_IrresistibleCoins[ pID ] );
+											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), GetSeasonalRankName( GetPlayerRank( pID ) ), p_IrresistibleCoins[ pID ] );
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
@@ -12930,7 +12932,7 @@ thread OnHighScoreCheck( playerid, highscore_item )
 				new Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle );
 				new rank = GetRankFromXP( score_value );
 
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetRankColour( rank ) >>> 8, GetRankName( rank ) );
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetSeasonalRankColour( rank ) >>> 8, GetSeasonalRankName( rank ) );
 			}
 			default:
 			{
@@ -13288,12 +13290,12 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
 										p_drillStrength[ playerid ] );
 
-		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d,`TRAIN`=%d WHERE `ID`=%d",
+		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d,`TRAIN`=%d WHERE `ID`=%d",
 										Query,
 										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										p_ExplosiveBullets[ playerid ], p_seasonalXP[ playerid ],
+										p_ExplosiveBullets[ playerid ],
 										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
 										p_PilotMissions[ playerid ],	p_TrainMissions[ playerid ],
 										p_AccountID[ playerid ] );
@@ -13701,7 +13703,7 @@ stock IsWeaponBanned( weaponid ) {
 	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
 }
 
-stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
+stock GivePlayerScore( playerid, score )
 {
 	if ( IsPlayerAdminOnDuty( playerid ) )
 		return 0;
@@ -13709,11 +13711,9 @@ stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
 	new
 		gangid = p_GangID[ playerid ];
 
-	if ( gangid != INVALID_GANG_ID )
+	if ( gangid != INVALID_GANG_ID ) {
 		SaveGangData( gangid ), g_gangData[ gangid ] [ E_SCORE ] += score;
-
-	//GivePlayerXP_Legacy( playerid, score * 10 );
-	GivePlayerIrresistiblePoints( playerid, score < 0 ? ( score * 1.0 ) : ( score * multiplier ) );
+	}
 	return SetPlayerScore( playerid, GetPlayerScore( playerid ) + score );
 }
 
@@ -17835,7 +17835,7 @@ stock ArrestPlayer( victimid, playerid )
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
 		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
-		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
+		GivePlayerScore( playerid, 2 );
 		GivePlayerExperience( playerid, E_POLICE );
 		GivePlayerCash( playerid, totalCash );
 		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
@@ -17843,7 +17843,7 @@ stock ArrestPlayer( victimid, playerid )
 		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 		CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
 		Untaze( victimid, 6 );
-		GivePlayerIrresistiblePoints( victimid, -2 );
+		GivePlayerSeasonalXP( victimid, -20.0 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
 		return 1;
