@@ -177,6 +177,26 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+hook OnPlayerMovieMode( playerid, bool: toggled )
+{
+	if ( toggled )
+	{
+		TextDrawShowForPlayer( playerid, g_CurrentRankTD );
+		TextDrawShowForPlayer( playerid, g_currentXPTD );
+		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
+		ShowPlayerIrresistibleRank( playerid );
+	}
+	else
+	{
+		TextDrawHideForPlayer( playerid, g_CurrentRankTD );
+		TextDrawHideForPlayer( playerid, g_currentXPTD );
+		PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
+		PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
+		PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
+	}
+	return 1;
+}
+
 /* ** Commands ** */
 CMD:experience( playerid, params[ ] ) return cmd_level( playerid, params );
 CMD:levels( playerid, params[ ] ) return cmd_level( playerid, params );
@@ -458,4 +478,4 @@ stock SetPlayerSeasonalXP( playerid, Float: seasonal_xp ) {
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 6 as LEVEL_ID, (BLEW_JAILS + BLEW_VAULT) * 6.0 AS EXPERIENCE FROM USERS);
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 7 as LEVEL_ID, VEHICLES_JACKED * 6.0 AS EXPERIENCE FROM USERS);
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 8 as LEVEL_ID, (METH_YIELDED + (TRUCKED*0.33)) * 6.0 AS EXPERIENCE FROM USERS);
- */
+*/

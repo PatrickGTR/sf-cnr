@@ -6145,10 +6145,7 @@ CMD:moviemode( playerid, params[ ] )
 		case true:
 		{
 			ShowPlayerTogglableTextdraws( playerid );
-			TextDrawShowForPlayer( playerid, g_CurrentRankTD );
-			TextDrawShowForPlayer( playerid, g_currentXPTD );
 		    PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
-			PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 			if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
 			TextDrawShowForPlayer( playerid, g_WebsiteTD );
 			if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
@@ -6157,7 +6154,6 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
-			ShowPlayerIrresistibleRank( playerid );
 			PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
@@ -6167,16 +6163,11 @@ CMD:moviemode( playerid, params[ ] )
 		{
 			PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 			HidePlayerTogglableTextdraws( playerid );
-			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
-			TextDrawHideForPlayer( playerid, g_currentXPTD );
 			PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
-			PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 			PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 			TextDrawHideForPlayer( playerid, g_WebsiteTD );
 			TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawHideForPlayer( playerid, g_DoubleXPTD );
-			PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
-			PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 			TextDrawHideForPlayer( playerid, g_MotdTD );
 			TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 			TextDrawHideForPlayer( playerid, g_WorldDayTD );
