@@ -20,6 +20,7 @@
 
 #define WEAPON_HEALTH 				( 100 )
 #define WEAPON_ARMOUR 				( 101 )
+#define WEAPON_MONEY				( 102 )
 
 /* ** Variables ** */
 enum E_WEAPONDROP_DATA {
@@ -86,6 +87,22 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		if ( killer_dm_level >= 10 ) {
 			CreateWeaponPickup( WEAPON_HEALTH, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
 		}
+
+		// money
+		new
+			player_money = GetPlayerCash( playerid );
+
+		if ( player_money )
+		{
+			// half the amount lost through secure wallet
+			if ( p_SecureWallet{ playerid } ) {
+				player_money = floatround( float( player_money ) * 0.5 );
+			}
+
+			// reduce player money
+			GivePlayerCash( playerid, -player_money );
+			CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+		}
 	}
 	return 1;
 }
@@ -121,6 +138,29 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 
 					SetPlayerHealth( playerid, health );
 				}
+			}
+			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_HEALTH )
+			{
+				new
+					Float: armour;
+
+				if ( GetPlayerArmour( playerid, armour ) )
+				{
+					// no weed like effects
+					if ( ( armour += float( g_weaponDropData[ dropid ] [ E_AMMO ] ) ) > 100.0 ) {
+						armour = 100.0;
+					}
+
+					SetPlayerArmour( playerid, armour );
+				}
+			}
+			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_MONEY )
+			{
+				new
+					dropped_money = g_weaponDropData[ dropid ] [ E_AMMO ];
+
+				GivePlayerCash( playerid, dropped_money );
+				SendServerMessage( playerid, "You have found "COL_GOLD"%s"COL_WHITE" on the ground.", cash_format( dropped_money ) );
 			}
 			else
 			{
@@ -169,7 +209,23 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 
 	if ( handle != ITER_NONE )
 	{
-		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( weaponid == WEAPON_HEALTH ? 1240 : GetWeaponModel( weaponid ), 1, X, Y, Z );
+		new
+			modelid;
+
+		switch ( weaponid ) {
+			case WEAPON_HEALTH: modelid = 1240;
+			case WEAPON_MONEY: {
+				if ( ammo > 10000 ) {
+					modelid = 1550;
+				} else {
+					modelid = 1212;
+				}
+			}
+			case WEAPON_ARMOUR: modelid = 1242;
+			default: modelid = GetWeaponModel( weaponid );
+		}
+
+		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z );
 		g_weaponDropData[ handle ] [ E_EXPIRE_TIMESTAMP ] = expire_time;
 		g_weaponDropData[ handle ] [ E_WEAPON_ID ] = weaponid;
 		g_weaponDropData[ handle ] [ E_AMMO ] = ammo;
