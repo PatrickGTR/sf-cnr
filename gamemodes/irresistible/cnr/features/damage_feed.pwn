@@ -98,8 +98,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	return 1;
 }
 /* ** Functions ** */
-function OnHitmarkerHide( playerid ) 
-	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] ); 
+function OnHitmarkerHide( playerid )
+	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
 public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
@@ -158,7 +158,7 @@ public OnPlayerFeedUpdate( playerid )
 
 stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
 {
-	foreach( new i : Player ) if ( i != playerid ) {
+	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid && i != playerid ) {
 		AddDamageHit( g_damageGiven[ i ], i, issuerid, amount, weaponid );
 	}
 
@@ -167,7 +167,7 @@ stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
 
 stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
 {
-	foreach( new i : Player ) if ( i != playerid ) {
+	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid && i != playerid ) {
 		AddDamageHit( g_damageTaken[ i ], i, issuerid, amount, weaponid );
 	}
 
@@ -311,7 +311,7 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 
 stock UpdateDamageFeedLabel( playerid )
 {
-	new 
+	new
 		szLabel[ 64 * MAX_FEED_HEIGHT ] = "";
 
 	for( new givenid = 0; givenid < sizeof( g_damageGiven[ ] ) - 1; givenid ++)
