@@ -12,6 +12,7 @@
 #define IsDamageFeedActive(%0) 		( IsPlayerSettingToggled( %0, SETTING_HITMARKER ) )
 
 /* ** Definitions ** */
+#define MAX_BULLETS 				( 24 )
 #define MAX_FEED_HEIGHT 			( 5 )
 #define HIDE_FEED_DELAY 			( 3000 )
 #define MAX_UPDATE_RATE 			( 250 )
@@ -29,12 +30,12 @@ forward OnPlayerTakenDamage 		( playerid, issuerid, Float: amount, weaponid, bod
 enum E_DAMAGE_FEED
 {
 	E_ISSUER, 				E_NAME[ MAX_PLAYER_NAME ], 			Float: E_AMOUNT,
-	E_WEAPON, 				E_TICK,
+	E_WEAPON, 				E_TICK
 };
 
 enum E_HITMARKER_SOUND
 {
-	E_NAME[ 10 ], 			E_SOUND_ID,
+	E_NAME[ 10 ], 			E_SOUND_ID
 };
 
 new 
@@ -44,6 +45,9 @@ new
 static stock
 	g_damageGiven 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
 	g_damageTaken 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
+
+	Text3D: g_BulletLabel			[ MAX_PLAYERS ],
+	g_BulletTimer 					[ MAX_PLAYERS ],
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -94,53 +98,47 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		p_HitmarkerSound{ playerid } = listitem;
 		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have changed your hitmarker sound to "COL_GREY"%s"COL_WHITE".", g_HitmarkerSounds[ listitem ] [ E_NAME ] );
+		
+		PlayerPlaySound( playerid, g_HitmarkerSounds[ listitem ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
 		ShowSoundsMenu( playerid );
 	}
 
 	return 1;
 }
+
 /* ** Functions ** */
-// function OnHitmarkerHide( playerid )
-// 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
+function OnHideBulletLabel( playerid )
+{
+	DestroyDynamic3DTextLabel( g_BulletLabel[ playerid ] );
+	KillTimer( g_BulletTimer[ playerid ] ); g_BulletTimer[ playerid ] = -1;
+	return 1;
+}
 
 public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
-	/* ** Hitmarker ** */
-	/*if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
-	{
-		new
-			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-    	PlayerTextDrawSetString( issuerid, p_DamageTD[ issuerid ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    	PlayerTextDrawShow( issuerid, p_DamageTD[ issuerid ] );
-
-	    KillTimer( p_DamageTDTimer[ issuerid ] );
-		p_DamageTDTimer[ issuerid ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", issuerid );
-	}*/
-
-	/* ** Hitmarker (while spectating) ** */
-	/*foreach ( new i : Player )
-	{
-		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
-		{
-			new
-				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-			PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-			PlayerTextDrawSetString( i, p_DamageTD[ i ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    		PlayerTextDrawShow( i, p_DamageTD[ i ] );
-
-	    	KillTimer( p_DamageTDTimer[ i ] );
-			p_DamageTDTimer[ i ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", i );
-		}
-	}*/
-
-	/* ** Damage Feed ** */
+	/* ** Label Damage Indicator ** */
 	if ( issuerid != INVALID_PLAYER_ID )
 	{
+		static Float: fromX, Float: fromY, Float: fromZ;
+		static Float: toX, Float: toY, Float: toZ;
+
+		if ( IsValidDynamic3DTextLabel( g_BulletLabel[ issuerid ] ) )
+		{
+			DestroyDynamic3DTextLabel( g_BulletLabel[ issuerid ] );
+
+			KillTimer( g_BulletTimer[ issuerid ] );
+			g_BulletTimer[ issuerid ] = -1;
+		}
+
+		GetPlayerLastShotVectors( issuerid, fromX, fromY, fromZ, toX, toY, toZ );
+
+		g_BulletLabel[ issuerid ] = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xC0C0C088, toX, toY, toZ, 100.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld( playerid ), GetPlayerInterior( playerid ) );
+		Streamer_Update( issuerid, STREAMER_TYPE_3D_TEXT_LABEL );
+
+		printf( "[LABEL]: Label for %d, at %f %f %f ", playerid, toX, toY, toZ );
+		g_BulletTimer[ issuerid ] = SetTimerEx( "OnHideBulletLabel", 3000, false, "d", issuerid );
+
+		/* ** Hitmarker ** */
 		DamageFeedAddHitGiven( issuerid, playerid, amount, weaponid );
 
 		// play noise
@@ -166,6 +164,13 @@ public OnPlayerFeedUpdate( playerid )
 	}
 
 	return 1;
+}
+
+stock CreateBulletLabel( playerid, weaponid, Float: amount )
+{
+	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
+		return;
+
 }
 
 stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
