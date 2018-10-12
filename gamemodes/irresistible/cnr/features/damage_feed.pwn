@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard
+ * Developed by Steven Howard, Oscar "Slice" Broman
  * Module: cnr/features/damage_feed.pwn
  * Purpose: damage feed for dmers
  */
@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Macros ** */
-#define IsDamageFeedActive(%0) 		(p_FeedActive{%0})
+#define IsDamageFeedActive(%0) 		( IsPlayerSettingToggled( %0, SETTING_HITMARKER ) )
 
 /* ** Definitions ** */
 #define MAX_FEED_HEIGHT 			( 5 )
@@ -43,7 +43,7 @@ static stock
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
+	//PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
 	g_HitmarkerSounds 				[ ][ E_HITMARKER_SOUND ] =
 	{
@@ -52,8 +52,8 @@ static stock
 	},
 
 	p_damageFeedTimer 				[ MAX_PLAYERS ] = { -1, ... },
-	p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
-	bool: p_FeedActive				[ MAX_PLAYERS char ],
+	//p_DamageTDTimer                 [ MAX_PLAYERS ] = { -1, ... },
+	//bool: p_FeedActive				[ MAX_PLAYERS char ],
 	p_lastFeedUpdate 				[ MAX_PLAYERS ]
 ;
 
@@ -68,13 +68,13 @@ hook OnPlayerConnect( playerid )
 	p_lastFeedUpdate[ playerid ] = GetTickCount( );
 
 	/* ** Textdraws ** */
-	p_DamageTD[ playerid ] = CreatePlayerTextDraw(playerid, 357.000000, 208.000000, "~r~~h~300.24 DAMAGE");
+	/*p_DamageTD[ playerid ] = CreatePlayerTextDraw(playerid, 357.000000, 208.000000, "~r~~h~300.24 DAMAGE");
 	PlayerTextDrawBackgroundColor(playerid, p_DamageTD[ playerid ], 255);
 	PlayerTextDrawFont(playerid, p_DamageTD[ playerid ], 3);
 	PlayerTextDrawLetterSize(playerid, p_DamageTD[ playerid ], 0.400000, 1.000000);
 	PlayerTextDrawColor(playerid, p_DamageTD[ playerid ], -1);
 	PlayerTextDrawSetOutline(playerid, p_DamageTD[ playerid ], 1);
-	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);
+	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);*/
 
 	return 1;
 }
@@ -98,13 +98,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	return 1;
 }
 /* ** Functions ** */
-function OnHitmarkerHide( playerid )
-	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
+// function OnHitmarkerHide( playerid )
+// 	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
 public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
 	/* ** Hitmarker ** */
-	if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
+	/*if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
 	{
 		new
 			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
@@ -116,10 +116,10 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 	    KillTimer( p_DamageTDTimer[ issuerid ] );
 		p_DamageTDTimer[ issuerid ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", issuerid );
-	}
+	}*/
 
 	/* ** Hitmarker (while spectating) ** */
-	foreach ( new i : Player )
+	/*foreach ( new i : Player )
 	{
 		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
 		{
@@ -134,11 +134,21 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 	    	KillTimer( p_DamageTDTimer[ i ] );
 			p_DamageTDTimer[ i ] = SetTimerEx( "OnHitmarkerHide", 3000, false, "d", i );
 		}
-	}
+	}*/
 
 	/* ** Damage Feed ** */
-	if ( issuerid != INVALID_PLAYER_ID ) {
+	if ( issuerid != INVALID_PLAYER_ID )
+	{
 		DamageFeedAddHitGiven( issuerid, playerid, amount, weaponid );
+
+		// play noise
+		if ( IsDamageFeedActive( issuerid ) )
+		{
+			new
+				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
+
+	    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
+	    }
 	}
 
 	DamageFeedAddHitTaken( playerid, issuerid, amount, weaponid );
@@ -471,13 +481,13 @@ stock ShowSoundsMenu( playerid )
 
 
 /* ** Commands ** */
-CMD:feed( playerid, params[ ] )
+/*CMD:feed( playerid, params[ ] )
 {
 	p_FeedActive{ playerid } = !p_FeedActive{ playerid };
 
 	SendServerMessage( playerid, "You have %s the damage feed.", p_FeedActive{ playerid } ? ( "toggled" ) : ( "un-toggled" ) );
 	return 1;
-}
+}*/
 
 CMD:hitmarker( playerid, params[ ] )
 {
