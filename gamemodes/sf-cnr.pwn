@@ -342,28 +342,6 @@ new
 ;
 
 /* ** Rank System ** */
-enum E_RANK_DATA
-{
-	Float: E_POINTS,			E_NAME[ 32 ], 					E_MODEL,
-	E_COLOR,
-};
-
-stock const
-	g_aPlayerRanks[ ] [ E_RANK_DATA ] =
-	{
-		{ 11871.5,	"Elite V", 		19780, COLOR_GOLD },
-		{ 6627.13,	"Elite IV", 	19782, COLOR_GOLD },
-		{ 3699.51, 	"Elite III", 	19781, COLOR_GOLD },
-		{ 2065.21, 	"Elite II", 	19784, COLOR_GOLD },
-		{ 1152.88, 	"Elite I", 		19783, COLOR_GOLD },
-		{ 643.581,	"Silver V", 	19780, COLOR_GREY },
-		{ 359.271,	"Silver IV", 	19782, COLOR_GREY },
-		{ 200.563, 	"Silver III", 	19781, COLOR_GREY },
-		{ 111.95, 	"Silver II", 	19784, COLOR_GREY },
-		{ 62.5, 	"Silver I", 	19783, COLOR_GREY },
-		{ 0.0, 		"unranked",		19300, COLOR_GREY }
-	}
-;
 
 /* ** Hitmarker ** */
 enum E_HITMARKER_SOUND
@@ -2263,7 +2241,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_GangSplitProfits[ playerid ] = 0;
 	p_IrresistibleCoins[ playerid ] = 0.0;
 	p_QuitToAvoidTimestamp[ playerid ] = 0;
-	p_IrresistiblePoints[ playerid ] = 0.0;
 	p_AntiExportCarSpam[ playerid ] = 0;
 	p_TruckedCargo[ playerid ] = 0;
 	p_PilotMissions[ playerid ] = 0;
@@ -4549,41 +4526,6 @@ CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
 	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\nTotal Train Missions", "Select", "Close" );
-	return 1;
-}
-
-CMD:rank( playerid, params[ ] )
-{
-	new
-	 	watchingid;
-
-	if ( sscanf( params, "u", watchingid ) )
-		watchingid = playerid;
-
-	if ( !IsPlayerConnected( watchingid ) )
-		watchingid = playerid;
-
-	format( szBigString, 196, "SELECT uo.NAME, (SELECT COUNT(DISTINCT ui.`SCORE`) FROM `USERS` ui WHERE ui.`SCORE` >= uo.`SCORE`) AS `GLOBAL_RANK` FROM `USERS` uo WHERE `ID`=%d", p_AccountID[ watchingid ] );
-	mysql_function_query( dbHandle, szBigString, true, "currentUserRank", "ii", playerid, watchingid );
-	return 1;
-}
-
-thread currentUserRank( playerid, watchingid )
-{
-	new
-		rows;
-
-    cache_get_data( rows, tmpVariable );
-
-	if ( rows )
-	{
-		new
-			iGroupedRank = GetPlayerRank( watchingid ),
-			iGlobalRank = cache_get_field_content_int( 0, "GLOBAL_RANK", dbHandle )
-		;
-		SendServerMessage( playerid, "%s(%d) is grouped in {%06x}%s"COL_WHITE" and is globally "COL_GREY"#%d"COL_WHITE".", ReturnPlayerName( watchingid ), watchingid, g_aPlayerRanks[ iGroupedRank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iGroupedRank ] [ E_NAME ], iGlobalRank );
-	}
-	else SendError( playerid, "Couldn't find a rank for this user, try again later." );
 	return 1;
 }
 
@@ -10334,7 +10276,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
 			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
 			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
+			p_seasonalXP[ playerid ]		= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 
@@ -11656,7 +11598,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Admin Level:{FFFFFF} %d\n"\
 											""COL_GREY"Time Online:{FFFFFF} %s\n"\
 											""COL_GREY"Irresistible Rank:{FFFFFF} %s\n"\
-											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), g_aPlayerRanks[ GetPlayerRank( pID ) ] [ E_NAME ], p_IrresistibleCoins[ pID ] );
+											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), GetRankName( GetPlayerRank( pID ) ), p_IrresistibleCoins[ pID ] );
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
@@ -12985,16 +12927,10 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		{
 			case 0:
 			{
-				new
-					Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle ), rank;
+				new Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle );
+				new rank = GetRankFromXP( score_value );
 
-				for( rank = 0; rank < sizeof( g_aPlayerRanks ); rank++ ) {
-					if ( score_value >= g_aPlayerRanks[ rank ] [ E_POINTS ] ) {
-						break;
-					}
-				}
-
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, g_aPlayerRanks[ rank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ rank ] [ E_NAME ] );
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetRankColour( rank ) >>> 8, GetRankName( rank ) );
 			}
 			default:
 			{
@@ -13357,7 +13293,7 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										p_ExplosiveBullets[ playerid ], p_IrresistiblePoints[ playerid ],
+										p_ExplosiveBullets[ playerid ], p_seasonalXP[ playerid ],
 										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
 										p_PilotMissions[ playerid ],	p_TrainMissions[ playerid ],
 										p_AccountID[ playerid ] );
@@ -16579,88 +16515,6 @@ stock SplitPlayerCashForGang( playerid, Float: cashRobbed )
 		GivePlayerCash( playerid, iRoundedRobbed );
 	}
 	return 1;
-}
-
-stock GetPlayerRank( playerid )
-{
-	new
-		iRank;
-
-	for( iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
-		if ( p_IrresistiblePoints[ playerid ] >= g_aPlayerRanks[ iRank ] [ E_POINTS ] )
-			break;
-
-	return iRank;
-}
-
-stock ShowPlayerIrresistibleRank( playerid )
-{
-	new
-		iRank = GetPlayerRank( playerid );
-
-	PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-	PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-	PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-	PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_MODEL ] );
-
-	PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
-	PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
-}
-
-stock GivePlayerIrresistiblePoints( playerid, Float: points )
-{
-	new
-		Float: fPreviousPoints 	= p_IrresistiblePoints[ playerid ],
-		Float: fCurrentPoints 	= fPreviousPoints + points
-	;
-
-	if ( fCurrentPoints < 0.0 )
-		fCurrentPoints = 0.0;
-
-	new Float: upper_limit = g_aPlayerRanks[ 0 ] [ E_POINTS ] + 500.0;
-
-	if ( fCurrentPoints > upper_limit )
-		fCurrentPoints = upper_limit;
-
-	for( new iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
-	{
-		new
-			bGained = ( fPreviousPoints < g_aPlayerRanks[ iRank ] [ E_POINTS ] <= fCurrentPoints ),
-			bLost = ( fCurrentPoints < g_aPlayerRanks[ iRank ] [ E_POINTS ] <= fPreviousPoints )
-		;
-
-		if ( bGained || bLost )
-		{
-			if ( bGained )
-			{
-				SendServerMessage( playerid, "Congratulations, your grouped ranking has been increased to {%06x}%s"COL_WHITE"!", g_aPlayerRanks[ iRank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_MODEL ] );
-			}
-
-			if ( bLost )
-			{
-				SendServerMessage( playerid, "Sorry, your grouped ranking has decreased to {%06x}%s"COL_WHITE"!", g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iRank + 1 ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] );
-				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] );
-				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_MODEL ] );
-			}
-
-			PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
-			PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
-			break;
-		}
-	}
-	//printf( "%s: %f points", ReturnPlayerName( playerid ), fCurrentPoints );
-	p_IrresistiblePoints[ playerid ] = fCurrentPoints;
 }
 
 stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
