@@ -2704,12 +2704,12 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 
 	// Explosive Bullets
 	if ( hittype != BULLET_HIT_TYPE_OBJECT ) {
-		CreateExplosiveBullet( playerid );
+		CreateExplosiveBullet( playerid, hittype, hitid );
 	}
     return 1;
 }
 
-stock CreateExplosiveBullet( playerid ) {
+stock CreateExplosiveBullet( playerid, hittype = BULLET_HIT_TYPE_OBJECT, hitid = INVALID_OBJECT_ID ) {
 
 	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
 		return;
@@ -2719,8 +2719,14 @@ stock CreateExplosiveBullet( playerid ) {
 		static Float: fromX, Float: fromY, Float: fromZ;
 		static Float: toX, Float: toY, Float: toZ;
 
-		// Cool effect
-		if ( GetPlayerLastShotVectors( playerid, fromX, fromY, fromZ, toX, toY, toZ ) ) {
+		if ( GetPlayerLastShotVectors( playerid, fromX, fromY, fromZ, toX, toY, toZ ) )
+		{
+			// create explosion at the core of the vehicle
+			if ( hittype == BULLET_HIT_TYPE_VEHICLE ) {
+				GetVehiclePos( hitid, toX, toY, toZ );
+			}
+
+			// Cool effect
 			new objectid = CreateDynamicObject( 19296, fromX, fromY, fromZ, 0.0, 0.0, 0.0 );
 			new milliseconds = MoveDynamicObject( objectid, toX, toY, toZ, 500.0 );
 			SetTimerEx( "Timer_DestroyObject", milliseconds + 200, false, "d", objectid );
