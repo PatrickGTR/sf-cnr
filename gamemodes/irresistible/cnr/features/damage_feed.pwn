@@ -10,9 +10,9 @@
 
 /* ** Macros ** */
 #define IsDamageFeedActive(%0) 		( IsPlayerSettingToggled( %0, SETTING_HITMARKER ) )
+#define IsPlayerHit(%0)		 		( p_GotHit{%0} )
 
 /* ** Definitions ** */
-#define MAX_BULLETS 				( 24 )
 #define MAX_FEED_HEIGHT 			( 5 )
 #define HIDE_FEED_DELAY 			( 3000 )
 #define MAX_UPDATE_RATE 			( 250 )
@@ -48,6 +48,9 @@ static stock
 
 	Text3D: g_BulletLabel			[ MAX_PLAYERS ],
 	g_BulletTimer 					[ MAX_PLAYERS ],
+
+	p_PlayerDamageObject 			[ MAX_PLAYERS ],
+	bool: p_GotHit 					[ MAX_PLAYERS char ],
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -138,6 +141,24 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 		printf( "[LABEL]: Label for %d, at %f %f %f ", playerid, toX, toY, toZ );
 		g_BulletTimer[ issuerid ] = SetTimerEx( "OnHideBulletLabel", 3000, false, "d", issuerid );
 
+		/* ** Armour and Health Object Damage ** */
+
+		if ( !IsPlayerHit( playerid ) )
+		{
+			static 
+				Float: fArmour;
+
+			if ( GetPlayerArmour( playerid, fArmour ) )
+			{
+				p_PlayerDamageObject[ playerid ] = CreateObject( fArmour == 0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
+				AttachObjectToPlayer( p_PlayerDamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
+			
+				Streamer_Update(playerid, STREAMER_TYPE_OBJECT );
+				p_GotHit{ playerid } = true;
+			}
+		}
+
 		/* ** Hitmarker ** */
 		DamageFeedAddHitGiven( issuerid, playerid, amount, weaponid );
 
@@ -152,6 +173,13 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 	}
 
 	DamageFeedAddHitTaken( playerid, issuerid, amount, weaponid );
+	return 1;
+}
+
+function HideDamageObject( playerid )
+{
+	DestroyObject( p_PlayerDamageObject[ playerid ] );
+	p_GotHit{ playerid } = false;
 	return 1;
 }
 
