@@ -40,7 +40,6 @@ new
 	PlayerText: p_PlayerRankTextTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_RobberyAmountTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_RobberyRiskTD 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
-	PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_JailTimeTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_ZoneOwnerTD     	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_HelpBoxTD 		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -438,14 +437,6 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawColor(playerid, p_JailTimeTD[ playerid ], -1);
 	PlayerTextDrawSetOutline(playerid, p_JailTimeTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_JailTimeTD[ playerid ], 1);
-
-    p_DamageTD[ playerid ] = CreatePlayerTextDraw(playerid, 357.000000, 208.000000, "~r~~h~300.24 DAMAGE");
-	PlayerTextDrawBackgroundColor(playerid, p_DamageTD[ playerid ], 255);
-	PlayerTextDrawFont(playerid, p_DamageTD[ playerid ], 3);
-	PlayerTextDrawLetterSize(playerid, p_DamageTD[ playerid ], 0.400000, 1.000000);
-	PlayerTextDrawColor(playerid, p_DamageTD[ playerid ], -1);
-	PlayerTextDrawSetOutline(playerid, p_DamageTD[ playerid ], 1);
-	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);
 
 	p_LocationTD[ playerid ] = CreatePlayerTextDraw( playerid, 86.000000, 322.000000, "Loading..." );
 	PlayerTextDrawAlignment( playerid, p_LocationTD[ playerid ], 2 );

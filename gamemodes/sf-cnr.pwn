@@ -343,21 +343,6 @@ new
 
 /* ** Rank System ** */
 
-/* ** Hitmarker ** */
-enum E_HITMARKER_SOUND
-{
-	E_NAME[ 10 ],					E_SOUND_ID
-};
-
-new
-	g_HitmarkerSounds[ ] [ E_HITMARKER_SOUND ] =
-	{
-		{ "Bell Ding", 17802 }, 	{ "Soft Beep", 5205 }, 		{ "Low Blip", 1138 }, 	{ "Med Blip", 1137 },
-		{ "High Blip", 1139 }, 		{ "Bling", 5201 }
-	},
-	p_HitmarkerSound 				[ MAX_PLAYERS char ]
-;
-
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
 
@@ -2234,7 +2219,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_AddedEmail 	{ playerid } = false;
 	p_TicketTimestamp[ playerid ] = 0;
 	p_ExtraAssetSlots{ playerid } = 0;
-	p_HitmarkerSound{ playerid } = 0;
 	p_CasinoRewardsPoints[ playerid ] = 0.0;
 	p_OwnedBusinesses[ playerid ] = 0;
 	p_ExplosiveBullets[ playerid ] = 0;
@@ -2935,44 +2919,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 			amount *= 1.5;
 	}
 
-	// Hitmarker
-	if ( IsPlayerSettingToggled( issuerid, SETTING_HITMARKER ) )
-	{
-		new
-			soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-    	PlayerTextDrawSetString( issuerid, p_DamageTD[ issuerid ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    	PlayerTextDrawShow( issuerid, p_DamageTD[ issuerid ] );
-
-	    KillTimer( p_DamageTDTimer[ issuerid ] );
-		p_DamageTDTimer[ issuerid ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", issuerid );
-	}
-
-	foreach ( new i : Player )
-	{
-		if ( p_Spectating{ i } && p_whomSpectating[ i ] == issuerid )
-		{
-			new
-				soundid = p_VIPLevel[ issuerid ] ? p_HitmarkerSound{ issuerid } : 0;
-
-			PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-
-			PlayerTextDrawSetString( i, p_DamageTD[ i ], sprintf( "~r~~h~%0.2f DAMAGE", amount ) );
-    		PlayerTextDrawShow( i, p_DamageTD[ i ] );
-
-	    	KillTimer( p_DamageTDTimer[ i ] );
-			p_DamageTDTimer[ i ] = SetTimerEx( "hidedamagetd_Timer", 3000, false, "d", i );
-		}
-	}
-
+	CallLocalFunction( "OnPlayerTakenDamage", "ddfdd", playerid, issuerid, amount, weaponid, bodypart );
 	return 1;
 }
 #endif
-
-function hidedamagetd_Timer( playerid )
-	return PlayerTextDrawHide( playerid, p_DamageTD[ playerid ] );
 
 stock BeginEconomyTax( starting = 1 ) {
 	mysql_function_query( dbHandle, "SELECT USER_CASH, BIZ_CASH, GANG_CASH FROM (SELECT (SUM(BANKMONEY)+SUM(CASH)) USER_CASH FROM USERS) A CROSS JOIN (SELECT SUM(BANK) BIZ_CASH FROM BUSINESSES) B CROSS JOIN (SELECT SUM(BANK) GANG_CASH FROM GANGS) C", true, "OnTaxEconomy", "i", starting );
@@ -4433,15 +4383,6 @@ thread readplayervipnotes( playerid )
 		return ShowPlayerDialog( playerid, DIALOG_VIP_NOTE, DIALOG_STYLE_TABLIST, ""COL_GOLD"My V.I.P Notes", szLargeString, "Call Admin", "Close" );
 	}
 	return SendError( playerid, "You do not have any V.I.P notes." );
-}
-
-CMD:hitmarker( playerid, params[ ] )
-{
-	if ( p_VIPLevel[ playerid ] < 1 )
-		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-
-	ShowSoundsMenu( playerid );
-	return 1;
 }
 
 CMD:t( playerid, params[ ] )
@@ -12402,12 +12343,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 		}
 	}
-	if ( dialogid == DIALOG_MODIFY_HITSOUND && response )
-	{
-		p_HitmarkerSound{ playerid } = listitem;
-		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have changed your hitmarker sound to "COL_GREY"%s"COL_WHITE".", g_HitmarkerSounds[ listitem ] [ E_NAME ] );
-		ShowSoundsMenu( playerid );
-	}
 	if ( dialogid == DIALOG_VIP_NOTE && response )
 	{
 		SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) is requesting help with their VIP asset(s). (/viewnotes)", ReturnPlayerName( playerid ), playerid );
@@ -16645,19 +16580,6 @@ thread OnListGangMembers( playerid, gangid, page )
 		SendError( playerid, "This gang no longer has any members." );
 	}
 	return 1;
-}
-
-stock ShowSoundsMenu( playerid )
-{
-	static
-		szSounds[ 11 * sizeof( g_HitmarkerSounds ) ];
-
-	if ( szSounds[ 0 ] == '\0' )
-	{
-		for( new i = 0; i < sizeof( g_HitmarkerSounds ); i++ )
-			format( szSounds, sizeof( szSounds ), "%s%s\n", szSounds, g_HitmarkerSounds[ i ] [ E_NAME ] );
-	}
-	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
 
 stock GivePlayerLeoWeapons( playerid ) {
