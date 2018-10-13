@@ -179,7 +179,7 @@ hook OnPlayerDisconnect( playerid, reason )
 
 hook OnPlayerMovieMode( playerid, bool: toggled )
 {
-	if ( toggled )
+	if ( ! toggled )
 	{
 		TextDrawShowForPlayer( playerid, g_CurrentRankTD );
 		TextDrawShowForPlayer( playerid, g_currentXPTD );
