@@ -37,6 +37,12 @@ enum E_LEVEL_DATA {
 	Float: E_MAX_UNITS,				Float: E_XP_DILATION
 };
 
+enum E_RANK_DATA
+{
+	Float: E_POINTS,			E_NAME[ 32 ], 					E_MODEL,
+	E_COLOR,
+};
+
 static const
 	Float: EXP_MAX_PLAYER_LEVEL 	= 100.0;
 
@@ -56,18 +62,33 @@ static const
 		{ "Drug Production",	10000.0,			6.0	},		// 10k exports drug related
 		{ "Mining",				1500.0,				3.0 }		// 1,500 mining ores
 */
+	},
+
+	g_seasonalRanks[ ] [ E_RANK_DATA ] =
+	{
+		{ 49860.3,	"Elite V", 		19780, COLOR_GOLD },
+		{ 27833.9,	"Elite IV", 	19782, COLOR_GOLD },
+		{ 15537.9, 	"Elite III", 	19781, COLOR_GOLD },
+		{ 8673.88, 	"Elite II", 	19784, COLOR_GOLD },
+		{ 4842.10, 	"Elite I", 		19783, COLOR_GOLD },
+		{ 2703.04,	"Silver V", 	19780, COLOR_GREY },
+		{ 1508.94,	"Silver IV", 	19782, COLOR_GREY },
+		{ 842.365, 	"Silver III", 	19781, COLOR_GREY },
+		{ 470.19, 	"Silver II", 	19784, COLOR_GREY },
+		{ 262.5, 	"Silver I", 	19783, COLOR_GREY },
+		{ 0.0, 		"unranked",		19300, COLOR_GREY }
 	}
 ;
 
 /* ** Variables ** */
 static stock
 	Float: g_playerExperience		[ MAX_PLAYERS ] [ E_LEVELS ],
+	Float: p_seasonalXP				[ MAX_PLAYERS ],
 
 	PlayerText: p_playerExpTitle 	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: p_playerExpAwardTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerBar: p_playerExpProgress 	[ MAX_PLAYERS ],
 	p_playerExpHideTimer 			[ MAX_PLAYERS ] = { -1, ... }
-
 ;
 
 /* ** Important ** */
@@ -134,20 +155,44 @@ hook OnPlayerConnect( playerid )
 
 	// general reward
 	p_playerExpAwardTD[ playerid ] = CreatePlayerTextDraw( playerid,319.000000, 167.000000, "+20 XP" );
-	PlayerTextDrawAlignment( playerid,p_playerExpAwardTD[ playerid ], 2 );
-	PlayerTextDrawBackgroundColor( playerid,p_playerExpAwardTD[ playerid ], 255 );
-	PlayerTextDrawFont( playerid,p_playerExpAwardTD[ playerid ], 3 );
-	PlayerTextDrawLetterSize( playerid,p_playerExpAwardTD[ playerid ], 0.450000, 1.599999 );
-	PlayerTextDrawColor( playerid,p_playerExpAwardTD[ playerid ], COLOR_GOLD );
-	PlayerTextDrawSetOutline( playerid,p_playerExpAwardTD[ playerid ], 1 );
-	PlayerTextDrawSetProportional( playerid,p_playerExpAwardTD[ playerid ], 1 );
-	PlayerTextDrawSetSelectable( playerid,p_playerExpAwardTD[ playerid ], 0 );
+	PlayerTextDrawAlignment( playerid, p_playerExpAwardTD[ playerid ], 2 );
+	PlayerTextDrawBackgroundColor( playerid, p_playerExpAwardTD[ playerid ], 255 );
+	PlayerTextDrawFont( playerid, p_playerExpAwardTD[ playerid ], 3 );
+	PlayerTextDrawLetterSize( playerid, p_playerExpAwardTD[ playerid ], 0.450000, 1.599999 );
+	PlayerTextDrawColor( playerid, p_playerExpAwardTD[ playerid ], COLOR_GOLD );
+	PlayerTextDrawSetOutline( playerid, p_playerExpAwardTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, p_playerExpAwardTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid, p_playerExpAwardTD[ playerid ], 0 );
 	return 1;
 }
 
-hook OnPlayerDisconnect( playerid, reason ) {
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_seasonalXP[ playerid ] = 0.0;
+
+	// reset levels
 	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
 		g_playerExperience[ playerid ] [ E_LEVELS: l ] = 0;
+	}
+	return 1;
+}
+
+hook OnPlayerMovieMode( playerid, bool: toggled )
+{
+	if ( toggled )
+	{
+		TextDrawShowForPlayer( playerid, g_CurrentRankTD );
+		TextDrawShowForPlayer( playerid, g_currentXPTD );
+		PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
+		ShowPlayerIrresistibleRank( playerid );
+	}
+	else
+	{
+		TextDrawHideForPlayer( playerid, g_CurrentRankTD );
+		TextDrawHideForPlayer( playerid, g_currentXPTD );
+		PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
+		PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
+		PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 	}
 	return 1;
 }
@@ -186,6 +231,22 @@ CMD:level( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_VIEW_LEVEL, DIALOG_STYLE_TABLIST_HEADERS, sprintf( "{FFFFFF}%s's Level - Total Level %d", ReturnPlayerName( watchingid ), player_total_lvl ), szLargeString, "Refresh", "Close" );
 }
 
+CMD:rank( playerid, params[ ] )
+{
+	new
+	 	watchingid;
+
+	if ( sscanf( params, "u", watchingid ) )
+		watchingid = playerid;
+
+	if ( !IsPlayerConnected( watchingid ) )
+		watchingid = playerid;
+
+	format( szBigString, 196, "SELECT uo.NAME, (SELECT COUNT(DISTINCT ui.`SCORE`) FROM `USERS` ui WHERE ui.`SCORE` >= uo.`SCORE`) AS `GLOBAL_RANK` FROM `USERS` uo WHERE `ID`=%d", p_AccountID[ watchingid ] );
+	mysql_function_query( dbHandle, szBigString, true, "currentUserRank", "ii", playerid, watchingid );
+	return 1;
+}
+
 /* ** SQL Threads ** */
 thread Experience_OnLoad( playerid )
 {
@@ -205,6 +266,25 @@ thread Experience_OnLoad( playerid )
 			}
 		}
 	}
+	return 1;
+}
+
+thread currentUserRank( playerid, watchingid )
+{
+	new
+		rows;
+
+    cache_get_data( rows, tmpVariable );
+
+	if ( rows )
+	{
+		new
+			iGroupedRank = GetPlayerRank( watchingid ),
+			iGlobalRank = cache_get_field_content_int( 0, "GLOBAL_RANK", dbHandle )
+		;
+		SendServerMessage( playerid, "%s(%d) is grouped in {%06x}%s"COL_WHITE" and is globally "COL_GREY"#%d"COL_WHITE".", ReturnPlayerName( watchingid ), watchingid, g_seasonalRanks[ iGroupedRank ] [ E_COLOR ] >>> 8, g_seasonalRanks[ iGroupedRank ] [ E_NAME ], iGlobalRank );
+	}
+	else SendError( playerid, "Couldn't find a rank for this user, try again later." );
 	return 1;
 }
 
@@ -238,6 +318,9 @@ stock GivePlayerExperience( playerid, E_LEVELS: level, Float: default_xp = 1.0, 
 		new Float: progress = floatfract( GetPlayerLevel( playerid, level ) ) * 100.0;
 		SetPlayerProgressBarValue( playerid, p_playerExpProgress[ playerid ], progress );
 	}
+
+	// seasonal
+	GivePlayerSeasonalXP( playerid, xp_earned );
 
 	// alert user
 	KillTimer( p_playerExpHideTimer[ playerid ] );
@@ -274,6 +357,105 @@ stock GetPlayerTotalLevel( playerid, &level = 0 ) {
 	return level;
 }
 
+stock GetRankFromXP( Float: xp ) {
+	new
+		iRank;
+
+	for( iRank = 0; iRank < sizeof( g_seasonalRanks ); iRank++ )
+		if ( xp >= g_seasonalRanks[ iRank ] [ E_POINTS ] )
+			break;
+
+	return iRank;
+}
+
+stock GetPlayerRank( playerid ) {
+	return GetRankFromXP( p_seasonalXP[ playerid ] );
+}
+
+stock ShowPlayerIrresistibleRank( playerid )
+{
+	new
+		iRank = GetPlayerRank( playerid );
+
+	PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank ] [ E_COLOR ] );
+	PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank ] [ E_NAME ] );
+
+	PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank ] [ E_COLOR ] );
+	PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank ] [ E_MODEL ] );
+
+	PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
+	PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
+}
+
+stock GivePlayerSeasonalXP( playerid, Float: default_xp )
+{
+	new Float: previous_season_xp = p_seasonalXP[ playerid ];
+	new Float: current_season_xp = previous_season_xp + default_xp;
+
+	// default 0
+	if ( current_season_xp < 0.0 )
+		current_season_xp = 0.0;
+
+	new Float: upper_limit = g_seasonalRanks[ 0 ] [ E_POINTS ] + 500.0;
+
+	// so that the player has a chance to be deranked
+	if ( current_season_xp > upper_limit )
+		current_season_xp = upper_limit;
+
+	for( new iRank = 0; iRank < sizeof( g_seasonalRanks ); iRank++ )
+	{
+		new bGained = ( previous_season_xp < g_seasonalRanks[ iRank ] [ E_POINTS ] <= current_season_xp );
+		new bLost = ( current_season_xp < g_seasonalRanks[ iRank ] [ E_POINTS ] <= previous_season_xp );
+
+		if ( bGained || bLost )
+		{
+			if ( bGained )
+			{
+				SendServerMessage( playerid, "Congratulations, your grouped ranking has been increased to {%06x}%s"COL_WHITE"!", g_seasonalRanks[ iRank ] [ E_COLOR ] >>> 8, g_seasonalRanks[ iRank ] [ E_NAME ] );
+
+				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank ] [ E_COLOR ] );
+				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank ] [ E_NAME ] );
+
+				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank ] [ E_COLOR ] );
+				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank ] [ E_MODEL ] );
+			}
+
+			if ( bLost )
+			{
+				SendServerMessage( playerid, "Sorry, your grouped ranking has decreased to {%06x}%s"COL_WHITE"!", g_seasonalRanks[ iRank + 1 ] [ E_COLOR ] >>> 8, g_seasonalRanks[ iRank + 1 ] [ E_NAME ] );
+
+				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank + 1 ] [ E_COLOR ] );
+				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_seasonalRanks[ iRank + 1 ] [ E_NAME ] );
+
+				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank + 1 ] [ E_COLOR ] );
+				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_seasonalRanks[ iRank + 1 ] [ E_MODEL ] );
+			}
+
+			PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
+			PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
+			break;
+		}
+	}
+
+	//printf( "%s: %f points", ReturnPlayerName( playerid ), current_season_xp );
+	p_seasonalXP[ playerid ] = current_season_xp;
+
+	// save to database
+	mysql_single_query( sprintf( "UPDATE `USERS` SET `RANK` = %f WHERE `ID` = %d", current_season_xp, GetPlayerAccountID( playerid ) ) );
+}
+
+stock GetSeasonalRankName( rankid ) {
+	return g_seasonalRanks[ rankid ] [ E_NAME ];
+}
+
+stock GetSeasonalRankColour( rankid ) {
+	return g_seasonalRanks[ rankid ] [ E_COLOR ];
+}
+
+stock SetPlayerSeasonalXP( playerid, Float: seasonal_xp ) {
+	p_seasonalXP[ playerid ] = seasonal_xp;
+}
+
 /* ** Migrations ** */
 /*
 	CREATE TABLE IF NOT EXISTS USER_LEVELS (
@@ -296,4 +478,4 @@ stock GetPlayerTotalLevel( playerid, &level = 0 ) {
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 6 as LEVEL_ID, (BLEW_JAILS + BLEW_VAULT) * 6.0 AS EXPERIENCE FROM USERS);
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 7 as LEVEL_ID, VEHICLES_JACKED * 6.0 AS EXPERIENCE FROM USERS);
 	INSERT INTO USER_LEVELS (USER_ID, LEVEL_ID, EXPERIENCE) (SELECT ID as USER_ID, 8 as LEVEL_ID, (METH_YIELDED + (TRUCKED*0.33)) * 6.0 AS EXPERIENCE FROM USERS);
- */
+*/

@@ -209,7 +209,6 @@ new
 	p_TrainMissions 				[ MAX_PLAYERS ],
 	p_KidnapImmunity				[ MAX_PLAYERS ],
 	p_GangSplitProfits 				[ MAX_PLAYERS ],
-	Float: p_IrresistiblePoints 	[ MAX_PLAYERS ],
 	p_SafeHelperTimer				[ MAX_PLAYERS ] = { -1, ... },
 	p_HouseOfferer					[ MAX_PLAYERS ],
 	p_HouseOfferTicks				[ MAX_PLAYERS ],

@@ -30,7 +30,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys ) {
 	new
 		player_vehicle = GetPlayerVehicleID( playerid );
 
-	if ( PRESSED( KEY_AIM ) && player_vehicle && GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } )
+	if ( PRESSED( KEY_CROUCH ) && player_vehicle && GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } )
 	{
 		new
 			vehicle_model = GetVehicleModel( player_vehicle );
@@ -224,3 +224,6 @@ stock ClearPlayerSpikeStrips( playerid, bool: distance_check = true )
 	}
 	return 1;
 }
+
+stock encode_tires( tires1, tires2, tires3, tires4 )
+	return tires1 | (tires2 << 1) | (tires3 << 2) | (tires4 << 3);

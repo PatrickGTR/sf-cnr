@@ -209,7 +209,7 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 			ShowPlayerHelpDialog( playerid, 5000, "The process is done. Bag it up and do another round if you wish." );
 			SendServerMessage( playerid, "Process is done. Bag it up, and do another round if you wish. Export it for money." );
 			GivePlayerWantedLevel( playerid, 12 );
-			GivePlayerScore( playerid, 3, .multiplier = 0.30 );
+			GivePlayerScore( playerid, 3 );
 			ach_HandleMethYielded( playerid );
 			SetGVarInt( "meth_yield", CreateDynamicObject( 1579, 2083.684082, 1233.945922, 414.875244, 0.000000, 0.000000, 90.000000, GetPlayerVirtualWorld( playerid ) ), vehicleid );
 			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
