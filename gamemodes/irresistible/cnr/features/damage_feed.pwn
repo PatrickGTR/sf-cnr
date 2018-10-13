@@ -81,6 +81,27 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawSetOutline(playerid, p_DamageTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);*/
 
+	/* ** Textdraws ** */
+	g_damageFeedGivenTD[ playerid ] = CreatePlayerTextDraw( playerid, ( 320.0 - TEXTDRAW_ADDON ), 340.0, "_");
+	PlayerTextDrawBackgroundColor(playerid, g_damageFeedGivenTD[ playerid ], 117 );
+	PlayerTextDrawAlignment( playerid, g_damageFeedGivenTD[ playerid ], 2 );
+	PlayerTextDrawFont( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, g_damageFeedGivenTD[ playerid ], 0.200000, 0.899999 );
+	PlayerTextDrawColor( playerid, g_damageFeedGivenTD[ playerid ], 0xDD2020FF );
+	PlayerTextDrawSetOutline( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid, g_damageFeedGivenTD[ playerid ], 0 );
+
+	g_damageFeedTakenTD[ playerid ] = CreatePlayerTextDraw( playerid, ( TEXTDRAW_ADDON + 320.0 ), 340.0, "_");
+	PlayerTextDrawBackgroundColor(playerid, g_damageFeedTakenTD[ playerid ], 117 );
+	PlayerTextDrawAlignment( playerid, g_damageFeedTakenTD[ playerid ], 2 );
+	PlayerTextDrawFont( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, g_damageFeedTakenTD[ playerid ], 0.200000, 0.899999 );
+	PlayerTextDrawColor( playerid, g_damageFeedTakenTD[ playerid ], 1069804543 );
+	PlayerTextDrawSetOutline( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid, g_damageFeedTakenTD[ playerid ], 0 );
+
 	return 1;
 }
 
@@ -106,14 +127,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	return 1;
 }
 
-hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys ) 
-{
-	if ( PRESSED( KEY_SPRINT ) && PRESSED( KEY_AIM ) ) {
-		SyncPlayer( playerid );
-	}
-	return 1;
-}
-
 /* ** Functions ** */
 function DamageFeed_HideBulletLabel( labelid )
 {
@@ -132,7 +145,7 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 		GetPlayerLastShotVectors( issuerid, fromX, fromY, fromZ, toX, toY, toZ );
 
 		new
-			Text3D: bullet_label = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xFFFFFF80, toX, toY, toZ, 100.0, .interiorid = GetPlayerVirtualWorld( playerid ), .worldid = GetPlayerInterior( playerid ), .testlos = 1 );
+			Text3D: bullet_label = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xFFFFFF80, toX, toY, toZ, 100.0, .interiorid = GetPlayerInterior( playerid ), .worldid = GetPlayerVirtualWorld( playerid ), .testlos = 1 );
 
 		if ( IsValidDynamic3DTextLabel( bullet_label ) )
 		{
@@ -215,60 +228,6 @@ stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
 
 stock UpdateDamageFeed( playerid, bool: modified = false )
 {
-	if ( !IsDamageFeedActive( playerid ) )
-	{
-		if ( g_damageFeedGivenTD[ playerid ] != PlayerText: INVALID_TEXT_DRAW ) {
-			PlayerTextDrawDestroy( playerid, g_damageFeedGivenTD[ playerid ] );
-			g_damageFeedGivenTD[ playerid ] = PlayerText: INVALID_TEXT_DRAW;
-		}
-
-		if ( g_damageFeedTakenTD[ playerid ] != PlayerText: INVALID_TEXT_DRAW ) {
-			PlayerTextDrawDestroy( playerid, g_damageFeedTakenTD[ playerid ] );
-			g_damageFeedTakenTD[ playerid ] = PlayerText: INVALID_TEXT_DRAW;
-		}
-
-		return 1;
-	}
-
-	/* ** Textdraws ** */
-	if ( g_damageFeedGivenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
-	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( 320.0 - TEXTDRAW_ADDON ), 340.0, "_");
-
-		if ( handle == PlayerText: INVALID_TEXT_DRAW )
-			return print("[DAMAGE FEED ERROR]: Unable to create TD (given damage)" );
-
-		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
-		PlayerTextDrawAlignment( playerid, handle, 2 );
-		PlayerTextDrawFont( playerid, handle, 1 );
-		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, 0xDD2020FF );
-		PlayerTextDrawSetOutline( playerid, handle, 1 );
-		PlayerTextDrawSetProportional( playerid, handle, 1 );
-		PlayerTextDrawSetSelectable( playerid, handle, 0 );
-
-		g_damageFeedGivenTD[ playerid ] = handle;
-	}
-
-	if ( g_damageFeedTakenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
-	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( TEXTDRAW_ADDON + 320.0 ), 340.0, "_");
-
-		if ( handle == PlayerText: INVALID_TEXT_DRAW )
-			return print("[DAMAGE FEED ERROR]: Unable to create TD (taken damage)" );
-
-		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
-		PlayerTextDrawAlignment( playerid, handle, 2 );
-		PlayerTextDrawFont( playerid, handle, 1 );
-		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, 1069804543 );
-		PlayerTextDrawSetOutline( playerid, handle, 1 );
-		PlayerTextDrawSetProportional( playerid, handle, 1 );
-		PlayerTextDrawSetSelectable( playerid, handle, 0 );
-
-		g_damageFeedTakenTD[ playerid ] = handle;
-	}
-
 	/* ** Core ** */
 	new szTick = GetTickCount( );
 	if ( szTick == 0 ) szTick = 1;
@@ -509,14 +468,14 @@ stock ShowSoundsMenu( playerid )
 	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
 
-stock SyncPlayer( playerid )
+/*stock SyncPlayer( playerid )
 {
 	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerInAnyVehicle( playerid ) || IsPlayerAFK( playerid ) )
 		return 0;
 	
 	p_SyncingPlayer{ playerid } = true;
 
-	/* ** Obtaining Information ** */
+	// ** Obtaining Information **
 	static
 		Float: fX, Float: fY, Float: fZ, Float: fA, Float: iHealth, Float: iArmour,
 		iSkin, iInterior, iWorld, iWeapon, weaponData[ 13 ][ 2 ];
@@ -536,7 +495,7 @@ stock SyncPlayer( playerid )
 
 	ClearAnimations( playerid );
 	
-	/* ** Reinstating Information ** */
+	// ** Reinstating Information ** *
 	SetSpawnInfo( playerid, GetPlayerTeam( playerid ), iSkin, fX, fY, fZ - 0.4, fA, 0, 0, 0, 0, 0, 0 );
 	SpawnPlayer( playerid );
 
@@ -554,7 +513,7 @@ stock SyncPlayer( playerid )
 
 	SendServerMessage( playerid, "You are now synced." );
 	return 1;
-}
+}*/
 
 /* ** Commands ** */
 CMD:hitmarker( playerid, params[ ] )
