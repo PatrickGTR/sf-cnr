@@ -11,17 +11,20 @@
 /* ** Definitions ** */
 #define MAX_FIRES					( 10 )
 
+#define FIRE_EXTINGUISH_PAYOUT 		( 5000 )
+
 /* ** Variables ** */
 enum E_FIRE_DATA
 {
-	bool: E_CREATED,	E_OBJECT,		Float: E_HEALTH,
-	E_HOUSE,            Text3D: E_LABEL
+	E_OBJECT,					Float: E_HEALTH,				E_HOUSE,
+	Text3D: E_LABEL,			E_MAP_ICON
 };
 
 static stock
 	g_fireData                      [ MAX_FIRES ] [ E_FIRE_DATA ],
-	p_FireDistanceTimer             [ MAX_PLAYERS ] = { -1, ... },
-	bool: fire_toggled              = false
+	Iterator: fires 				< MAX_FIRES >,
+
+	p_FireTracker					[ MAX_PLAYERS char ]
 ;
 
 /* ** Forwards ** */
@@ -55,48 +58,45 @@ hook OnPlayerUpdateEx( playerid )
     if ( p_Class[ playerid ] == CLASS_FIREMAN && ( iKeys & KEY_FIRE ) || ( iKeys & KEY_WALK ) )
 	{
 		new
-			iVehicle = GetPlayerVehicleID( playerid );
+			using_firetruck = GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 407;
 
-		if ( GetPlayerWeapon( playerid ) == 42 || GetVehicleModel( iVehicle ) == 407 )
+		if ( GetPlayerWeapon( playerid ) == 42 || using_firetruck )
 		{
-			for( new i = 0; i < sizeof( g_fireData ); i ++ ) if ( g_fireData[ i ] [ E_CREATED ] )
+			foreach ( new i : fires )
 		    {
 		    	static
 					Float: fX, Float: fY, Float: fZ;
 
 		 		if ( GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], fX, fY, fZ ) )
 		 		{
+		 			// add a bit of height cause of the fire
 					fZ += 2.3;
 
-					if ( IsPlayerInRangeOfPoint( playerid, ( GetVehicleModel( iVehicle ) == 407 ? 25.0 : 10.0 ), fX, fY, fZ ) )
+					// check if range of point
+					if ( IsPlayerInRangeOfPoint( playerid, ( using_firetruck ? 30.0 : 10.0 ), fX, fY, fZ ) )
 					{
-						if ( IsPlayerAimingAt( playerid, fX, fY, fZ, ( GetVehicleModel( iVehicle ) == 407 ? 3.0 : 1.0 ) ) )
+						if ( IsPlayerAimingAt( playerid, fX, fY, fZ, ( using_firetruck ? 3.5 : 1.0 ) ) )
 						{
-						    if ( g_fireData[ i ] [ E_HEALTH ] > 0.0 )
-							{
-								if ( ( g_fireData[ i ] [ E_HEALTH ] -= GetVehicleModel( iVehicle ) == 407 ? ( 2.85 + fRandomEx( 1.0, 5.0 ) ) : ( 1.25 + fRandomEx( 1.0, 5.0 ) ) ) < 0.0 )
-									g_fireData[ i ] [ E_HEALTH ] = 0.0;
 
-				             	UpdateDynamic3DTextLabelText( g_fireData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_fireData[ i ] [ E_HEALTH ] ) );
+							new
+								Float: removed_health = ( 2.5 + fRandomEx( 1.0, 5.0 ) ) * ( using_firetruck ? 2.5 : 1.0 );
+
+							if ( ( g_fireData[ i ] [ E_HEALTH ] -= removed_health ) < 0.0 ) {
+								g_fireData[ i ] [ E_HEALTH ] = 0.0;
 							}
-							else
+
+				       		UpdateDynamic3DTextLabelText( g_fireData[ i ] [ E_LABEL ], 0xA83434FF, sprintf( "House Fire %0.1f%", g_fireData[ i ] [ E_HEALTH ] ) );
+
+						    if ( g_fireData[ i ] [ E_HEALTH ] <= 0.0 )
 						    {
 								ach_HandleExtinguishedFires( playerid );
-							    SendClientMessageToFireman( -1, "{A83434}[FIREMAN]{FFFFFF} %s(%d) has extinguished house fire %d.", ReturnPlayerName( playerid ), playerid, i );
+							    SendClientMessageToFireman( -1, "{A83434}[FIREMAN]"COL_WHITE" %s(%d) has earned "COL_GOLD"%s"COL_WHITE" for extinguishing a house fire.", ReturnPlayerName( playerid ), playerid, cash_format( FIRE_EXTINGUISH_PAYOUT ) );
 								GivePlayerScore( playerid, 2 );
 								//GivePlayerExperience( playerid, E_FIREMAN );
-								GivePlayerCash( playerid, 5000 );
-
-								g_fireData[ i ] [ E_CREATED ]	= false;
-							    g_fireData[ i ] [ E_HOUSE ] = -1;
-							    DestroyDynamicObject( g_fireData[ i ] [ E_OBJECT ] );
-							    g_fireData[ i ] [ E_OBJECT ] = INVALID_OBJECT_ID;
-							    DestroyDynamic3DTextLabel( g_fireData[ i ] [ E_LABEL ] );
-							    g_fireData[ i ] [ E_LABEL ] = Text3D: INVALID_3DTEXT_ID;
-						        g_fireData[ i ] [ E_HEALTH ] = 0.0;
-				             	UpdateDynamic3DTextLabelText( g_fireData[ i ] [ E_LABEL ], COLOR_YELLOW, sprintf( "%0.1f", g_fireData[ i ] [ E_HEALTH ] ) );
+								GivePlayerCash( playerid, FIRE_EXTINGUISH_PAYOUT );
+								HouseFire_Remove( i );
 						    }
-							break;
+							return 1;
 						}
 					}
 				}
@@ -106,72 +106,138 @@ hook OnPlayerUpdateEx( playerid )
 	return 1;
 }
 
+hook OnServerUpdate( )
+{
+	// create fires if there are no fires existing and houses available
+	if ( ! Iter_Count( fires ) && Iter_Count( houses ) ) {
+		HouseFire_Create( );
+	}
+	return 1;
+}
+
+hook OnServerGameDayEnd( )
+{
+	HouseFire_Create( );
+	return 1;
+}
+
+hook OnPlayerDriveVehicle( playerid, vehicleid )
+{
+	new
+		modelid = GetVehicleModel( vehicleid );
+
+	if ( modelid == 407 ) {
+		ShowPlayerHelpDialog( playerid, 2500, "You can see where fires are using ~g~/fires" );
+	}
+	return 1;
+}
+
 /* ** Commands ** */
-CMD:firetracker( playerid, params[ ] )
+CMD:firetracker( playerid, params[ ] ) cmd_fires( playerid, params );
+CMD:fires( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_FIREMAN )
 		return SendError( playerid, "You are not a fireman." );
 
-	if ( p_FireDistanceTimer[ playerid ] != -1 )
-		return StopPlayerFireTracker( playerid ), SendServerMessage( playerid, "You have turned off your fire tracker." );
+	p_FireTracker{ playerid } = ! p_FireTracker{ playerid };
 
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = SetTimerEx( "OnPlayerFireDistanceUpdate", 1000, true, "d", playerid );
-	SendServerMessage( playerid, "Find the fires and extinguish them." );
-	return 1;
-}
-
-stock StopPlayerFireTracker( playerid )
-{
-	KillTimer( p_FireDistanceTimer[ playerid ] );
-	p_FireDistanceTimer[ playerid ] = -1;
-
-	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
-	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
-	return 1;
-}
-
-/* ** Functions ** */
-stock CreateFire( )
-{
-	if ( fire_toggled )
+	if ( p_FireTracker{ playerid } )
 	{
-	    for ( new i = 0; i < sizeof( g_fireData ); i ++ ) if ( g_fireData[ i ] [ E_CREATED ] == true )
-	    {
-		    g_fireData[ i ] [ E_CREATED ] = false;
-		    g_fireData[ i ] [ E_HOUSE ] = -1;
-		    DestroyDynamicObject( g_fireData[ i ] [ E_OBJECT ] );
-		    g_fireData[ i ] [ E_OBJECT ] = INVALID_OBJECT_ID;
-		    DestroyDynamic3DTextLabel( g_fireData[ i ] [ E_LABEL ] );
-		    g_fireData[ i ] [ E_LABEL ] = Text3D: INVALID_3DTEXT_ID;
-	    }
-
-	    fire_toggled = false;
-	    CreateFire( );
+		UpdatePlayerFireTracker( playerid );
+		return SendServerMessage( playerid, "All house fires are now in your minimap as red markers." );
 	}
 	else
 	{
-		static
-			Float: X, Float: Y, Float: Z;
+		StopPlayerFireTracker( playerid );
+		return SendServerMessage( playerid, "You have hidden all the fires from your radar." );
+	}
+}
 
-	    for ( new i = 0; i < sizeof( g_fireData ); i ++ )
-	    {
-			new
-				house = GetRandomCreatedHouse( );
+/* ** Functions ** */
+stock HouseFire_Create( )
+{
+	// create house house fires for random homes
+	for ( new fireid = 0; fireid < MAX_FIRES; fireid ++ ) if ( ! Iter_Contains( fires, fireid ) )
+	{
+		new
+			houseid = HouseFire_GetRandomHome( );
 
-			if ( Iter_Contains( houses, house ) )
-			{
-				GetHousePos( house, X, Y, Z );
-				g_fireData[ i ] [ E_HEALTH ] = 100.0 + fRandomEx( 1, 25 );
-				g_fireData[ i ] [ E_HOUSE ] = house;
-				g_fireData[ i ] [ E_CREATED ] = true;
-				g_fireData[ i ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%0.1f", g_fireData[ i ] [ E_HEALTH ] ), COLOR_YELLOW, X, Y, Z + 0.5, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1 );
-				g_fireData[ i ] [ E_OBJECT ] = CreateDynamicObject( 18691, X, Y, Z - 2.3, 0.0, 0.0, 0.0 );
-			}
+		if ( Iter_Contains( houses, houseid ) )
+		{
+			static
+				Float: X, Float: Y, Float: Z;
+
+			GetHousePos( houseid, X, Y, Z );
+
+			g_fireData[ fireid ] [ E_HEALTH ] = 100.0 + fRandomEx( 1, 25 );
+			g_fireData[ fireid ] [ E_HOUSE ] = houseid;
+			g_fireData[ fireid ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "House Fire %0.1f%", g_fireData[ fireid ] [ E_HEALTH ] ), 0xA83434FF, X, Y, Z + 0.5, 20.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1 );
+			g_fireData[ fireid ] [ E_OBJECT ] = CreateDynamicObject( 18691, X, Y, Z - 2.3, 0.0, 0.0, 0.0 );
+
+			// fire map icons
+			g_fireData[ fireid ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, 0xA83434FF, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+			Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_fireData[ fireid ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, 0 );
+
+			Iter_Add( fires, fireid );
 		}
-	    fire_toggled = true;
+	}
+
+	// show on radar when it is created
+	foreach ( new playerid : Player ) if ( GetPlayerClass( playerid ) == CLASS_FIREMAN && p_FireTracker{ playerid } ) {
+		UpdatePlayerFireTracker( playerid );
 	}
 	return 1;
+}
+
+stock HouseFire_Remove( fireid )
+{
+	DestroyDynamicObject( g_fireData[ fireid ] [ E_OBJECT ] );
+	g_fireData[ fireid ] [ E_OBJECT ] = INVALID_OBJECT_ID;
+	DestroyDynamic3DTextLabel( g_fireData[ fireid ] [ E_LABEL ] );
+	g_fireData[ fireid ] [ E_LABEL ] = Text3D: INVALID_3DTEXT_ID;
+	DestroyDynamicMapIcon( g_fireData[ fireid ] [ E_MAP_ICON ] );
+	g_fireData[ fireid ] [ E_MAP_ICON ] = -1;
+	Iter_Remove( fires, fireid );
+	return 1;
+}
+
+stock HouseFire_GetRandomHome( )
+{
+	if ( ! Iter_Count( houses ) ) {
+		return -1;
+	}
+
+	static szCity[ MAX_ZONE_NAME ];
+	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
+
+	// first find homes to ignore
+	for ( new i = 0; i < MAX_HOUSES; i ++ )
+	{
+		// Avoid Hills / Avoid V.I.P or Clan Homes
+		if ( ! Iter_Contains( houses, i ) || g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
+			ignoredHomes[ i ] = i;
+			continue;
+		}
+
+		// check for house fire
+		if ( IsHouseOnFire( i ) ) {
+			ignoredHomes[ i ] = i;
+			continue;
+		}
+
+		// San Fierro only
+		Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
+		if ( ! strmatch( szCity, "San Fierro" ) )  {
+			ignoredHomes[ i ] = i;
+			continue;
+		}
+	}
+
+	new
+		random_home = randomExcept( ignoredHomes, sizeof( ignoredHomes ) );
+
+	// apparently 'safer' to return value from variable
+	return random_home;
 }
 
 stock IsHouseOnFire( houseid )
@@ -182,45 +248,111 @@ stock IsHouseOnFire( houseid )
 	if ( ! Iter_Contains( houses, houseid ) )
 	    return 0;
 
-	for( new i, Float: X, Float: Y, Float: Z; i < sizeof( g_fireData ); i++ )
+	static
+		Float: X, Float: Y, Float: Z, Float: HX, Float: HY;
+
+	foreach ( new fireid : fires )
 	{
-	    if ( g_fireData[ i ] [ E_CREATED ] )
-	    {
-		    GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], X, Y, Z ); // Z is unused due to the object.
-		    if ( g_houseData[ houseid ] [ E_EX ] == X && g_houseData[ houseid ] [ E_EY ] == Y )
-		    {
-		        return 1;
-		    }
+		GetDynamicObjectPos( g_fireData[ fireid ] [ E_OBJECT ], X, Y, Z ); // Z is unused due to the object.
+		GetHousePos( houseid, HX, HY, Z );
+
+		if ( HX == X && HY == Y )
+		{
+			return 1;
 		}
 	}
 	return 0;
 }
 
-function OnPlayerFireDistanceUpdate( playerid )
+stock UpdatePlayerFireTracker( playerid )
 {
-    new
-	    Float: X, Float: Y, Float: Z, Float: dis,
-		szFire1[ 128 ], szFire2[ 128 ]
-	;
-
-	for( new i; i < sizeof( g_fireData ); i++ )
-	{
-	    GetDynamicObjectPos( g_fireData[ i ] [ E_OBJECT ], X, Y, Z );
-	    dis = GetPlayerDistanceFromPoint( playerid, X, Y, Z );
-	    if ( i < floatround( sizeof( g_fireData ) / 2 ) )
-	    {
-		    if ( g_fireData[ i ] [ E_CREATED ] == false ) format( szFire1, sizeof( szFire1 ), "%s~r~FIRE %d:%s ~g~Stopped~n~", szFire1, i,i==1?(" "):("") );
-			else format( szFire1, sizeof( szFire1 ), "%s~r~FIRE %d:%s~w~ %0.0f m~n~", szFire1, i,i==1?("_"):(""), dis );
-		}
-		else
-		{
-		    if ( g_fireData[ i ] [ E_CREATED ] == false ) format( szFire2, sizeof( szFire2 ), "%s~r~FIRE %d:%s ~g~Stopped~n~", szFire2, i,i==1?(" "):("") );
-			else format( szFire2, sizeof( szFire2 ), "%s~r~FIRE %d:%s~w~ %0.0f m~n~", szFire2, i,i==1?("_"):(""), dis );
-		}
+	// add player to map icon list
+	foreach ( new fireid : fires ) {
+		Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_fireData[ fireid ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid );
 	}
-	PlayerTextDrawSetString( playerid, p_FireDistance1[ playerid ], szFire1 );
-	PlayerTextDrawSetString( playerid, p_FireDistance2[ playerid ], szFire2 );
-	PlayerTextDrawShow( playerid, p_FireDistance1[ playerid ] );
-	PlayerTextDrawShow( playerid, p_FireDistance2[ playerid ] );
 	return 1;
+}
+
+stock StopPlayerFireTracker( playerid )
+{
+	// remove player from map icon list
+	foreach ( new fireid : fires ) if ( Streamer_IsInArrayData( STREAMER_TYPE_MAP_ICON, g_fireData[ fireid ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid ) ) {
+		Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_fireData[ fireid ] [ E_MAP_ICON ], E_STREAMER_PLAYER_ID, playerid );
+	}
+
+	// reset firetracker
+	p_FireTracker{ playerid } = false;
+	return 1;
+}
+
+stock Float: GetPointAngleToPoint( Float: x2, Float: y2, Float: X, Float: Y )
+{
+	new Float: DX, Float: DY;
+	new Float: angle;
+
+	DX = floatabs( floatsub( x2, X ) );
+	DY = floatabs( floatsub( y2, Y ) );
+
+	if ( DY == 0.0 || DX == 0.0 )
+	{
+		if ( DY == 0 && DX > 0 ) angle = 0.0;
+		else if ( DY == 0 && DX < 0 ) angle = 180.0;
+		else if ( DY > 0 && DX == 0 ) angle = 90.0;
+		else if ( DY < 0 && DX == 0 ) angle = 270.0;
+		else if ( DY == 0 && DX == 0 ) angle = 0.0;
+	}
+	else
+	{
+		angle = atan( DX / DY );
+		if ( X > x2 && Y <= y2 ) angle += 90.0;
+		else if ( X <= x2 && Y < y2 ) angle = floatsub( 90.0, angle );
+		else if ( X < x2 && Y >= y2 ) angle -= 90.0;
+		else if ( X >= x2 && Y > y2 ) angle = floatsub( 270.0, angle );
+	}
+	return floatadd( angle, 90.0 );
+}
+
+stock Float: DistanceCameraTargetToLocation(Float:CamX, Float:CamY, Float:CamZ, Float:ObjX, Float:ObjY, Float:ObjZ, Float:FrX, Float:FrY, Float:FrZ) {
+
+    new Float: TGTDistance;
+
+    TGTDistance = floatsqroot( ( CamX - ObjX) * ( CamX - ObjX ) + ( CamY - ObjY ) * ( CamY - ObjY ) + ( CamZ - ObjZ ) * ( CamZ - ObjZ ) );
+
+    new Float: tmpX, Float: tmpY, Float: tmpZ;
+
+    tmpX = FrX * TGTDistance + CamX;
+    tmpY = FrY * TGTDistance + CamY;
+    tmpZ = FrZ * TGTDistance + CamZ;
+
+    return floatsqroot( ( tmpX - ObjX ) * ( tmpX - ObjX ) + ( tmpY - ObjY ) * ( tmpY - ObjY ) + ( tmpZ - ObjZ ) * ( tmpZ - ObjZ ) );
+}
+
+stock IsPlayerAimingAt( playerid, Float: x, Float: y, Float: z, Float: radius ) // forgot who made this
+{
+    new Float: camera_x, Float: camera_y, Float: camera_z;
+    new Float: vector_x, Float: vector_y, Float: vector_z;
+
+    GetPlayerCameraPos( playerid, camera_x, camera_y, camera_z );
+    GetPlayerCameraFrontVector( playerid, vector_x, vector_y, vector_z );
+
+    new Float: vertical, Float: horizontal;
+
+    switch ( GetPlayerWeapon( playerid ) )
+    {
+        case 34, 35, 36: return DistanceCameraTargetToLocation( camera_x, camera_y, camera_z, x, y, z, vector_x, vector_y, vector_z ) < radius;
+        case 30, 31: vertical = 4.0, horizontal = -1.6;
+        case 33: vertical = 2.7, horizontal = -1.0;
+        default: vertical = 6.0, horizontal = -2.2;
+    }
+
+    new Float: angle = GetPointAngleToPoint( 0, 0, floatsqroot( vector_x * vector_x + vector_y * vector_y ), vector_z ) - 270.0;
+    new Float: resize_x, Float: resize_y, Float: resize_z = floatsin( angle + vertical, degrees );
+
+    GetXYInFrontOfPoint( resize_x, resize_y, GetPointAngleToPoint( 0, 0, vector_x, vector_y ) + horizontal, floatcos( angle + vertical, degrees ) );
+    return DistanceCameraTargetToLocation(camera_x, camera_y, camera_z, x, y, z, resize_x, resize_y, resize_z) < radius;
+}
+
+stock GetXYInFrontOfPoint( &Float: x, &Float: y, Float: angle, Float: distance ) {
+    x += ( distance * floatsin( -angle, degrees ) );
+    y += ( distance * floatcos( -angle, degrees ) );
 }

@@ -438,18 +438,18 @@ CMD:givexp( playerid, params [ ] )
 	return 1;
 }
 
-CMD:giveip( playerid, params [ ] )
+CMD:givesxp( playerid, params [ ] )
 {
 	new
 	    pID,
 	    ip
 	;
 	if ( !IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) return 0;
-	else if ( sscanf( params, "ud", pID, ip ) ) SendUsage( playerid, "/giveip [PLAYER_ID] [IP_AMOUNT]" );
+	else if ( sscanf( params, "ud", pID, ip ) ) SendUsage( playerid, "/givesxp [PLAYER_ID] [IP_AMOUNT]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
-	    GivePlayerIrresistiblePoints( pID, ip );
+	    GivePlayerSeasonalXP( pID, ip );
         //AddAdminLogLineFormatted( "%s(%d) has given %s(%d) %d IP", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, ip );
 	   	//SendClientMessageFormatted( pID, -1, ""COL_PINK"[ADMIN]{FFFFFF} %s(%d) has given you %d IP.", ReturnPlayerName( playerid ), playerid, ip );
 	    //SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) %d IP.", ReturnPlayerName( pID ), pID, ip );

@@ -342,28 +342,6 @@ new
 ;
 
 /* ** Rank System ** */
-enum E_RANK_DATA
-{
-	Float: E_POINTS,			E_NAME[ 32 ], 					E_MODEL,
-	E_COLOR,
-};
-
-stock const
-	g_aPlayerRanks[ ] [ E_RANK_DATA ] =
-	{
-		{ 11871.5,	"Elite V", 		19780, COLOR_GOLD },
-		{ 6627.13,	"Elite IV", 	19782, COLOR_GOLD },
-		{ 3699.51, 	"Elite III", 	19781, COLOR_GOLD },
-		{ 2065.21, 	"Elite II", 	19784, COLOR_GOLD },
-		{ 1152.88, 	"Elite I", 		19783, COLOR_GOLD },
-		{ 643.581,	"Silver V", 	19780, COLOR_GREY },
-		{ 359.271,	"Silver IV", 	19782, COLOR_GREY },
-		{ 200.563, 	"Silver III", 	19781, COLOR_GREY },
-		{ 111.95, 	"Silver II", 	19784, COLOR_GREY },
-		{ 62.5, 	"Silver I", 	19783, COLOR_GREY },
-		{ 0.0, 		"unranked",		19300, COLOR_GREY }
-	}
-;
 
 /* ** Race System ** */
 #define MAX_RACES 				( 32 )
@@ -1435,7 +1413,6 @@ public ZoneTimer( )
         g_WorldDayCount = ( g_WorldDayCount == 6 ? 0 : g_WorldDayCount + 1 );
 		TextDrawSetString( g_WorldDayTD, GetDayToString( g_WorldDayCount ) );
 
-		CreateFire( );
 		RenewWeed( );
 		PlayerPlaceRandomHits( );
 
@@ -1572,7 +1549,7 @@ public ZoneTimer( )
 
 						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! IsPlayerInPaintBall( d ) ) {
 							if ( in_area ) {
-								GivePlayerScore( d, 2, .multiplier = 0.5 );
+								GivePlayerScore( d, 2 );
 								GivePlayerWantedLevel( d, 6 );
 							}
 							PlayerPlaySound( d, 36205, 0.0, 0.0, 0.0 );
@@ -1725,8 +1702,6 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
-	PlayerTextDrawHide( playerid, p_FireDistance1[ playerid ] );
-	PlayerTextDrawHide( playerid, p_FireDistance2[ playerid ] );
 	p_MoneyBag{ playerid } = false;
 	RemovePlayerAttachedObject( playerid, 1 );
 
@@ -2250,7 +2225,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_GangSplitProfits[ playerid ] = 0;
 	p_IrresistibleCoins[ playerid ] = 0.0;
 	p_QuitToAvoidTimestamp[ playerid ] = 0;
-	p_IrresistiblePoints[ playerid ] = 0.0;
 	p_AntiExportCarSpam[ playerid ] = 0;
 	p_TruckedCargo[ playerid ] = 0;
 	p_PilotMissions[ playerid ] = 0;
@@ -2691,12 +2665,12 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 
 	// Explosive Bullets
 	if ( hittype != BULLET_HIT_TYPE_OBJECT ) {
-		CreateExplosiveBullet( playerid );
+		CreateExplosiveBullet( playerid, hittype, hitid );
 	}
     return 1;
 }
 
-stock CreateExplosiveBullet( playerid ) {
+stock CreateExplosiveBullet( playerid, hittype = BULLET_HIT_TYPE_OBJECT, hitid = INVALID_OBJECT_ID ) {
 
 	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
 		return;
@@ -2706,8 +2680,14 @@ stock CreateExplosiveBullet( playerid ) {
 		static Float: fromX, Float: fromY, Float: fromZ;
 		static Float: toX, Float: toY, Float: toZ;
 
-		// Cool effect
-		if ( GetPlayerLastShotVectors( playerid, fromX, fromY, fromZ, toX, toY, toZ ) ) {
+		if ( GetPlayerLastShotVectors( playerid, fromX, fromY, fromZ, toX, toY, toZ ) )
+		{
+			// create explosion at the core of the vehicle
+			if ( hittype == BULLET_HIT_TYPE_VEHICLE ) {
+				GetVehiclePos( hitid, toX, toY, toZ );
+			}
+
+			// Cool effect
 			new objectid = CreateDynamicObject( 19296, fromX, fromY, fromZ, 0.0, 0.0, 0.0 );
 			new milliseconds = MoveDynamicObject( objectid, toX, toY, toZ, 500.0 );
 			SetTimerEx( "Timer_DestroyObject", milliseconds + 200, false, "d", objectid );
@@ -3243,7 +3223,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 		if ( p_Class[ killerid ] != CLASS_POLICE )
 		{
 			GivePlayerWantedLevel( killerid, 12 );
-			GivePlayerScore( killerid, 1, .multiplier = 0.2 );
+			GivePlayerScore( killerid, 1 );
 
 			new
 				Float: default_experience = 1.0;
@@ -3271,7 +3251,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			SaveGangData( playerGangId ), g_gangData[ playerGangId ] [ E_DEATHS ]++;
 
 		p_Deaths[ playerid ] ++; // Usually other events do nothing
-		GivePlayerIrresistiblePoints( playerid, -1 ); // Deduct points, it's meant to be hard!!!
+		GivePlayerSeasonalXP( playerid, -10.0 ); // Deduct points, it's meant to be hard!!!
 	}
 
     ClearPlayerWantedLevel( playerid );
@@ -4487,41 +4467,6 @@ CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
 	ShowPlayerDialog( playerid, DIALOG_HIGHSCORES, DIALOG_STYLE_LIST, "{FFFFFF}Highscores", "Seasonal Rank\nTotal Score\nTotal Kills\nTotal Arrests\nTotal Robberies\nHits Completed\nFires Extinguished\nBurglaries\nBlown Jails\nBlown Vaults\nVehicles Jacked\nMeth Yielded\nTotal Trucked Cargo\nTotal Pilot Missions\nTotal Train Missions", "Select", "Close" );
-	return 1;
-}
-
-CMD:rank( playerid, params[ ] )
-{
-	new
-	 	watchingid;
-
-	if ( sscanf( params, "u", watchingid ) )
-		watchingid = playerid;
-
-	if ( !IsPlayerConnected( watchingid ) )
-		watchingid = playerid;
-
-	format( szBigString, 196, "SELECT uo.NAME, (SELECT COUNT(DISTINCT ui.`SCORE`) FROM `USERS` ui WHERE ui.`SCORE` >= uo.`SCORE`) AS `GLOBAL_RANK` FROM `USERS` uo WHERE `ID`=%d", p_AccountID[ watchingid ] );
-	mysql_function_query( dbHandle, szBigString, true, "currentUserRank", "ii", playerid, watchingid );
-	return 1;
-}
-
-thread currentUserRank( playerid, watchingid )
-{
-	new
-		rows;
-
-    cache_get_data( rows, tmpVariable );
-
-	if ( rows )
-	{
-		new
-			iGroupedRank = GetPlayerRank( watchingid ),
-			iGlobalRank = cache_get_field_content_int( 0, "GLOBAL_RANK", dbHandle )
-		;
-		SendServerMessage( playerid, "%s(%d) is grouped in {%06x}%s"COL_WHITE" and is globally "COL_GREY"#%d"COL_WHITE".", ReturnPlayerName( watchingid ), watchingid, g_aPlayerRanks[ iGroupedRank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iGroupedRank ] [ E_NAME ], iGlobalRank );
-	}
-	else SendError( playerid, "Couldn't find a rank for this user, try again later." );
 	return 1;
 }
 
@@ -6141,10 +6086,7 @@ CMD:moviemode( playerid, params[ ] )
 		case true:
 		{
 			ShowPlayerTogglableTextdraws( playerid );
-			TextDrawShowForPlayer( playerid, g_CurrentRankTD );
-			TextDrawShowForPlayer( playerid, g_currentXPTD );
 		    PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
-			PlayerTextDrawShow( playerid, p_ExperienceTD[ playerid ] );
 			if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
 			TextDrawShowForPlayer( playerid, g_WebsiteTD );
 			if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
@@ -6153,7 +6095,6 @@ CMD:moviemode( playerid, params[ ] )
 			if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
-			ShowPlayerIrresistibleRank( playerid );
 			PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
@@ -6163,16 +6104,11 @@ CMD:moviemode( playerid, params[ ] )
 		{
 			PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 			HidePlayerTogglableTextdraws( playerid );
-			TextDrawHideForPlayer( playerid, g_CurrentRankTD );
-			TextDrawHideForPlayer( playerid, g_currentXPTD );
 			PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
-			PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
 			PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 			TextDrawHideForPlayer( playerid, g_WebsiteTD );
 			TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawHideForPlayer( playerid, g_DoubleXPTD );
-			PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
-			PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 			TextDrawHideForPlayer( playerid, g_MotdTD );
 			TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 			TextDrawHideForPlayer( playerid, g_WorldDayTD );
@@ -9150,7 +9086,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 						GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 						ClearAnimations( victimid );
 						JailPlayer( victimid, totalSeconds );
-						GivePlayerIrresistiblePoints( victimid, -2 );
+						GivePlayerSeasonalXP( victimid, -2 );
 						SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 	    			}
 	    		}
@@ -9383,7 +9319,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			}
 			items = GetGVarInt( szItems );
 			score = floatround( items / 2 );
-			GivePlayerScore( playerid, score == 0 ? 1 : score, .multiplier = 0.4 );
+			GivePlayerScore( playerid, score == 0 ? 1 : score );
 			//GivePlayerExperience( playerid, E_BURGLAR, float( items ) * 0.2 );
 			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
 			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
@@ -9743,7 +9679,7 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	}
 
  	// Explosive Bullets
- 	if ( p_ExplosiveBullets[ playerid ] > 0 && PRESSED( KEY_YES ) ) {
+ 	if ( p_ExplosiveBullets[ playerid ] > 0 && PRESSED( KEY_NO ) ) {
  		if ( GetPVarInt( playerid, "explosive_rounds" ) == 1 ) {
  			DeletePVar( playerid, "explosive_rounds" );
  			ShowPlayerHelpDialog( playerid, 2000, "Explosive rounds ~r~disabled." );
@@ -10272,7 +10208,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
 			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
 			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_IrresistiblePoints[ playerid ]= cache_get_field_content_float( 0, "RANK", dbHandle );
 			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
 			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
 
@@ -10282,6 +10217,9 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_ExplosiveBullets[ playerid ] = cache_get_field_content_int( 0, "EXPLOSIVE_BULLETS", dbHandle );
 			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
 			// p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
+
+			// seasonal xp
+			SetPlayerSeasonalXP( playerid, cache_get_field_content_float( 0, "RANK", dbHandle ) );
 
 			// spawn location
 			new
@@ -11594,7 +11532,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Admin Level:{FFFFFF} %d\n"\
 											""COL_GREY"Time Online:{FFFFFF} %s\n"\
 											""COL_GREY"Irresistible Rank:{FFFFFF} %s\n"\
-											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), g_aPlayerRanks[ GetPlayerRank( pID ) ] [ E_NAME ], p_IrresistibleCoins[ pID ] );
+											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), GetSeasonalRankName( GetPlayerRank( pID ) ), p_IrresistibleCoins[ pID ] );
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
@@ -12917,16 +12855,10 @@ thread OnHighScoreCheck( playerid, highscore_item )
 		{
 			case 0:
 			{
-				new
-					Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle ), rank;
+				new Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle );
+				new rank = GetRankFromXP( score_value );
 
-				for( rank = 0; rank < sizeof( g_aPlayerRanks ); rank++ ) {
-					if ( score_value >= g_aPlayerRanks[ rank ] [ E_POINTS ] ) {
-						break;
-					}
-				}
-
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, g_aPlayerRanks[ rank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ rank ] [ E_NAME ] );
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetSeasonalRankColour( rank ) >>> 8, GetSeasonalRankName( rank ) );
 			}
 			default:
 			{
@@ -13284,12 +13216,12 @@ stock SavePlayerData( playerid, bool: logout = false )
 										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
 										p_drillStrength[ playerid ] );
 
-		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`RANK`=%f,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d,`TRAIN`=%d WHERE `ID`=%d",
+		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d,`TRAIN`=%d WHERE `ID`=%d",
 										Query,
 										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
 										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
 										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										p_ExplosiveBullets[ playerid ], p_IrresistiblePoints[ playerid ],
+										p_ExplosiveBullets[ playerid ],
 										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
 										p_PilotMissions[ playerid ],	p_TrainMissions[ playerid ],
 										p_AccountID[ playerid ] );
@@ -13697,7 +13629,7 @@ stock IsWeaponBanned( weaponid ) {
 	return 0 <= weaponid < MAX_WEAPONS && ( weaponid == 36 || weaponid == 37 || weaponid == 38 || weaponid == 39 || weaponid == 44 || weaponid == 45 );
 }
 
-stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
+stock GivePlayerScore( playerid, score )
 {
 	if ( IsPlayerAdminOnDuty( playerid ) )
 		return 0;
@@ -13705,11 +13637,9 @@ stock GivePlayerScore( playerid, score, Float: multiplier = 0.75 )
 	new
 		gangid = p_GangID[ playerid ];
 
-	if ( gangid != INVALID_GANG_ID )
+	if ( gangid != INVALID_GANG_ID ) {
 		SaveGangData( gangid ), g_gangData[ gangid ] [ E_SCORE ] += score;
-
-	//GivePlayerXP_Legacy( playerid, score * 10 );
-	GivePlayerIrresistiblePoints( playerid, score < 0 ? ( score * 1.0 ) : ( score * multiplier ) );
+	}
 	return SetPlayerScore( playerid, GetPlayerScore( playerid ) + score );
 }
 
@@ -14114,9 +14044,6 @@ stock SetObjectFacePoint(iObjectID, Float: fX, Float: fY, Float: fOffset, bool: 
 	}
 }
 
-stock encode_tires( tires1, tires2, tires3, tires4 )
-	return tires1 | (tires2 << 1) | (tires3 << 2) | (tires4 << 3);
-
 stock TimeConvert( seconds )
 {
 	static
@@ -14124,44 +14051,6 @@ stock TimeConvert( seconds )
 	;
  	format( szTime, sizeof( szTime ), "%02d:%02d", floatround( seconds / 60 ), seconds - floatround( ( seconds / 60 ) * 60 ) );
 	return szTime;
-}
-
-stock GetRandomCreatedHouse( )
-{
-	if ( ! Iter_Count( houses ) ) {
-		return -1;
-	}
-
-	static szCity[ MAX_ZONE_NAME ];
-	new ignoredHomes[ MAX_HOUSES ] = { -1, ... };
-
-	// first find homes to ignore
-	for ( new i = 0; i < MAX_HOUSES; i ++ )
-	{
-		// Avoid Hills / Avoid V.I.P or Clan Homes
-		if ( ! Iter_Contains( houses, i ) || g_houseData[ i ] [ E_EZ ] > 300.0 || g_houseData[ i ] [ E_COST ] < 500000 ) {
-			ignoredHomes[ i ] = i;
-			continue;
-		}
-
-		// check for house fire
-		if ( IsHouseOnFire( i ) ) {
-			ignoredHomes[ i ] = i;
-			continue;
-		}
-
-		// San Fierro only
-		Get2DCity( szCity, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ] );
-		if ( ! strmatch( szCity, "San Fierro" ) )  {
-			ignoredHomes[ i ] = i;
-			continue;
-		}
-	}
-
-	new
-		random_home = randomExcept( ignoredHomes, sizeof( ignoredHomes ) );
-
-	return random_home;
 }
 
 stock SetPlayerFacePoint(playerid, Float: fX, Float: fY, Float: offset = 0.0)
@@ -14939,84 +14828,6 @@ stock GetDayToString( day )
 	return string;
 }
 
-Float:DistanceCameraTargetToLocation(Float:CamX, Float:CamY, Float:CamZ, Float:ObjX, Float:ObjY, Float:ObjZ, Float:FrX, Float:FrY, Float:FrZ) {
-
-    new Float:TGTDistance;
-
-    TGTDistance = floatsqroot((CamX - ObjX) * (CamX - ObjX) + (CamY - ObjY) * (CamY - ObjY) + (CamZ - ObjZ) * (CamZ - ObjZ));
-
-    new Float:tmpX, Float:tmpY, Float:tmpZ;
-
-    tmpX = FrX * TGTDistance + CamX;
-    tmpY = FrY * TGTDistance + CamY;
-    tmpZ = FrZ * TGTDistance + CamZ;
-
-    return floatsqroot((tmpX - ObjX) * (tmpX - ObjX) + (tmpY - ObjY) * (tmpY - ObjY) + (tmpZ - ObjZ) * (tmpZ - ObjZ));
-}
-
-stock Float:GetPointAngleToPoint(Float:x2, Float:y2, Float:X, Float:Y) {
-
-  new Float:DX, Float:DY;
-  new Float:angle;
-
-  DX = floatabs(floatsub(x2,X));
-  DY = floatabs(floatsub(y2,Y));
-
-  if (DY == 0.0 || DX == 0.0) {
-    if (DY == 0 && DX > 0) angle = 0.0;
-    else if (DY == 0 && DX < 0) angle = 180.0;
-    else if (DY > 0 && DX == 0) angle = 90.0;
-    else if (DY < 0 && DX == 0) angle = 270.0;
-    else if (DY == 0 && DX == 0) angle = 0.0;
-  }
-  else {
-    angle = atan(DX/DY);
-
-    if (X > x2 && Y <= y2) angle += 90.0;
-    else if (X <= x2 && Y < y2) angle = floatsub(90.0, angle);
-    else if (X < x2 && Y >= y2) angle -= 90.0;
-    else if (X >= x2 && Y > y2) angle = floatsub(270.0, angle);
-  }
-
-  return floatadd(angle, 90.0);
-}
-
-stock GetXYInFrontOfPoint(&Float:x, &Float:y, Float:angle, Float:distance) {
-    x += (distance * floatsin(-angle, degrees));
-    y += (distance * floatcos(-angle, degrees));
-}
-
-stock IsPlayerAimingAt(playerid, Float:x, Float:y, Float:z, Float:radius)
-{
-    new   Float:camera_x;
-    new   Float:camera_y;
-    new   Float:camera_z;
-    new   Float:vector_x;
-    new   Float:vector_y;
-    new   Float:vector_z;
-
-    GetPlayerCameraPos(playerid, camera_x, camera_y, camera_z);
-    GetPlayerCameraFrontVector(playerid, vector_x, vector_y, vector_z);
-
-    new Float:vertical, Float:horizontal;
-
-    switch (GetPlayerWeapon( playerid )) {
-        case 34,35,36:
-        {
-            if (DistanceCameraTargetToLocation(camera_x, camera_y, camera_z, x, y, z, vector_x, vector_y, vector_z) < radius) return true;
-            return false;
-        }
-        case 30,31: {vertical = 4.0; horizontal = -1.6;}
-        case 33: {vertical = 2.7; horizontal = -1.0;}
-        default: {vertical = 6.0; horizontal = -2.2;}
-    }
-    new Float:angle = GetPointAngleToPoint(0, 0, floatsqroot(vector_x*vector_x+vector_y*vector_y), vector_z) - 270.0;
-    new Float:resize_x, Float:resize_y, Float:resize_z = floatsin(angle+vertical, degrees);
-    GetXYInFrontOfPoint(resize_x, resize_y, GetPointAngleToPoint(0, 0, vector_x, vector_y)+horizontal, floatcos(angle+vertical, degrees));
-
-    if (DistanceCameraTargetToLocation(camera_x, camera_y, camera_z, x, y, z, resize_x, resize_y, resize_z) < radius) return true;
-    return false;
-}
 
 stock ShowAchievement( playerid, achievement[ ], score = -1 )
 {
@@ -16632,88 +16443,6 @@ stock SplitPlayerCashForGang( playerid, Float: cashRobbed )
 	return 1;
 }
 
-stock GetPlayerRank( playerid )
-{
-	new
-		iRank;
-
-	for( iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
-		if ( p_IrresistiblePoints[ playerid ] >= g_aPlayerRanks[ iRank ] [ E_POINTS ] )
-			break;
-
-	return iRank;
-}
-
-stock ShowPlayerIrresistibleRank( playerid )
-{
-	new
-		iRank = GetPlayerRank( playerid );
-
-	PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-	PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-	PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-	PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_MODEL ] );
-
-	PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
-	PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
-}
-
-stock GivePlayerIrresistiblePoints( playerid, Float: points )
-{
-	new
-		Float: fPreviousPoints 	= p_IrresistiblePoints[ playerid ],
-		Float: fCurrentPoints 	= fPreviousPoints + points
-	;
-
-	if ( fCurrentPoints < 0.0 )
-		fCurrentPoints = 0.0;
-
-	new Float: upper_limit = g_aPlayerRanks[ 0 ] [ E_POINTS ] + 500.0;
-
-	if ( fCurrentPoints > upper_limit )
-		fCurrentPoints = upper_limit;
-
-	for( new iRank = 0; iRank < sizeof( g_aPlayerRanks ); iRank++ )
-	{
-		new
-			bGained = ( fPreviousPoints < g_aPlayerRanks[ iRank ] [ E_POINTS ] <= fCurrentPoints ),
-			bLost = ( fCurrentPoints < g_aPlayerRanks[ iRank ] [ E_POINTS ] <= fPreviousPoints )
-		;
-
-		if ( bGained || bLost )
-		{
-			if ( bGained )
-			{
-				SendServerMessage( playerid, "Congratulations, your grouped ranking has been increased to {%06x}%s"COL_WHITE"!", g_aPlayerRanks[ iRank ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_COLOR ] );
-				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank ] [ E_MODEL ] );
-			}
-
-			if ( bLost )
-			{
-				SendServerMessage( playerid, "Sorry, your grouped ranking has decreased to {%06x}%s"COL_WHITE"!", g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] >>> 8, g_aPlayerRanks[ iRank + 1 ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] );
-				PlayerTextDrawSetString( playerid, p_PlayerRankTextTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_NAME ] );
-
-				PlayerTextDrawColor( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_COLOR ] );
-				PlayerTextDrawSetPreviewModel( playerid, p_PlayerRankTD[ playerid ], g_aPlayerRanks[ iRank + 1 ] [ E_MODEL ] );
-			}
-
-			PlayerTextDrawShow( playerid, p_PlayerRankTD[ playerid ] );
-			PlayerTextDrawShow( playerid, p_PlayerRankTextTD[ playerid ] );
-			break;
-		}
-	}
-	//printf( "%s: %f points", ReturnPlayerName( playerid ), fCurrentPoints );
-	p_IrresistiblePoints[ playerid ] = fCurrentPoints;
-}
-
 stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
 {
 	// Current Coins
@@ -18019,7 +17748,7 @@ stock ArrestPlayer( victimid, playerid )
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
 		new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
-		GivePlayerScore( playerid, 2, .multiplier = 1.5 );
+		GivePlayerScore( playerid, 2 );
 		GivePlayerExperience( playerid, E_POLICE );
 		GivePlayerCash( playerid, totalCash );
 		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
@@ -18027,7 +17756,7 @@ stock ArrestPlayer( victimid, playerid )
 		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
 		CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
 		Untaze( victimid, 6 );
-		GivePlayerIrresistiblePoints( victimid, -2 );
+		GivePlayerSeasonalXP( victimid, -20.0 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
 		return 1;
