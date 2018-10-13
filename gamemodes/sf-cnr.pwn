@@ -3427,6 +3427,14 @@ public OnPlayerText( playerid, text[ ] )
 						}
 					}
 				    SendClientMessageToCops( -1, ""COL_BLUE"<Police Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, szBigString[ 1 ] );
+				    
+				    foreach(new i : Player)
+					{
+					    if ( ( p_AdminLevel[ i ] >= 5 || IsPlayerUnderCover( i ) ) && p_ToggleCopChat{ i } == true )
+					    {
+					    	SendClientMessageFormatted( i, -1, ""COL_BLUE"<Police Radio> %s(%d):"COL_GREY" %s", ReturnPlayerName( playerid ), playerid, szBigString[ 1 ] );
+					    }
+					}
 				    return 0;
 				}
 
