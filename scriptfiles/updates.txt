@@ -1,12 +1,20 @@
+(+) Newly registered players will be asked if they prefer DM or RP - if they like RP, passive mode is on.
 (+) Added confirmation dialog before selling a home / business / vehicle components.
 (+) Pilot and train minijobs are now saved to the database (and in /highscores).
 (+) Adds some strippers in the LV brothel (for fun).
 (+) Adds Hide From Minimap perk (costs $25,000) ... hides you for 1 minute.
-(/) You can now set spikes in non-air and non-sea vehicles using your AIM key.
+(+) Fire tracker is now /fires ... and it shows the fires on the map as red blips.
+(+) New hitmarker system ... activate using /cp - Now shows taken/given damage!
+(/) Passive mode now completely disables deathmatch. 
+(/) You can now set spikes in non-air and non-sea vehicles using your CAPSLOCK key.
 (/) Car jackers now need to wait only 1 min before exporting another vehicle (before 2 min).
 (/) Players with level 100 in a specific level are able to accrue more XP in the level.
+(/) Explosive rounds used on vehicles will have a more significant impact.
+(/) Explosive rounds require the key N to activate.
+(/) Rank is now XP based now (prior score based).
 (*) Should be faster to place multiple drills using left alt.
 (*) Fixes death bug with players suiciding in a vehicle.
 (*) Fixed Alcatraz map escaping issues.
 (*) Addressed issue with being unable to rob ChuffSec.
+(*) Fixed issue with business exports being randomly canceled.
 (-) Removed a counter in cluckin' bell for ease of access to the safe.
