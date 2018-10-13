@@ -125,7 +125,7 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 		GetPlayerLastShotVectors( issuerid, fromX, fromY, fromZ, toX, toY, toZ );
 
 		new
-			Text3D: bullet_label = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xFFFFFF80, toX, toY, toZ, 100.0, .interiorid = GetPlayerVirtualWorld( playerid ), .worldid = GetPlayerInterior( playerid ), .testlos = 1 );
+			Text3D: bullet_label = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xFFFFFF80, toX, toY, toZ, 100.0, .interiorid = GetPlayerInterior( playerid ), .worldid = GetPlayerVirtualWorld( playerid ), .testlos = 1 );
 
 		if ( IsValidDynamic3DTextLabel( bullet_label ) )
 		{
