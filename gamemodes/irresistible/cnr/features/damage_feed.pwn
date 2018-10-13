@@ -10,7 +10,6 @@
 
 /* ** Macros ** */
 #define IsDamageFeedActive(%0) 		( IsPlayerSettingToggled( %0, SETTING_HITMARKER ) )
-#define IsPlayerHit(%0)		 		( p_GotHit{%0} )
 
 /* ** Definitions ** */
 #define MAX_FEED_HEIGHT 			( 5 )
@@ -38,25 +37,24 @@ enum E_HITMARKER_SOUND
 	E_NAME[ 10 ], 			E_SOUND_ID
 };
 
-new 
+new
 	p_HitmarkerSound 				[ MAX_PLAYERS char ]
 ;
 
 static stock
-	g_damageGiven 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
-	g_damageTaken 					[ MAX_PLAYERS ][ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ],
+	g_damageGiven 					[ MAX_PLAYERS ] [ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ],
+	g_damageTaken 					[ MAX_PLAYERS ] [ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ],
 
-	Text3D: g_BulletLabel			[ MAX_PLAYERS ],
-	g_BulletTimer 					[ MAX_PLAYERS ],
+	//Text3D: g_BulletLabel			[ MAX_PLAYERS ],
+	//g_BulletTimer 				[ MAX_PLAYERS ],
 
-	p_PlayerDamageObject 			[ MAX_PLAYERS ],
 	bool: p_GotHit 					[ MAX_PLAYERS char ],
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	//PlayerText: p_DamageTD          [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 
-	g_HitmarkerSounds 				[ ][ E_HITMARKER_SOUND ] =
+	g_HitmarkerSounds 				[ ] [ E_HITMARKER_SOUND ] =
 	{
 		{ "Bell Ding", 17802 }, 	{ "Soft Beep", 5205 }, 		{ "Low Blip", 1138 }, 	{ "Med Blip", 1137 },
 		{ "High Blip", 1139 }, 		{ "Bling", 5201 }
@@ -70,8 +68,8 @@ static stock
 hook OnPlayerConnect( playerid )
 {
 	for( new x = 0; x < sizeof( g_damageGiven[ ] ); x ++) {
-		g_damageGiven[ playerid ][ x ][ E_TICK ] = 0;
-		g_damageTaken[ playerid ][ x ][ E_TICK ] = 0;
+		g_damageGiven[ playerid ] [ x ] [ E_TICK ] = 0;
+		g_damageTaken[ playerid ] [ x ] [ E_TICK ] = 0;
 	}
 
 	p_lastFeedUpdate[ playerid ] = GetTickCount( );
@@ -101,7 +99,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		p_HitmarkerSound{ playerid } = listitem;
 		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have changed your hitmarker sound to "COL_GREY"%s"COL_WHITE".", g_HitmarkerSounds[ listitem ] [ E_NAME ] );
-		
+
 		PlayerPlaySound( playerid, g_HitmarkerSounds[ listitem ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
 		ShowSoundsMenu( playerid );
 	}
@@ -110,10 +108,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Functions ** */
-function OnHideBulletLabel( playerid )
+function DamageFeed_HideBulletLabel( labelid )
 {
-	DestroyDynamic3DTextLabel( g_BulletLabel[ playerid ] );
-	KillTimer( g_BulletTimer[ playerid ] ); g_BulletTimer[ playerid ] = -1;
+	DestroyDynamic3DTextLabel( Text3D: labelid );
 	return 1;
 }
 
@@ -125,34 +122,31 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 		static Float: fromX, Float: fromY, Float: fromZ;
 		static Float: toX, Float: toY, Float: toZ;
 
-		if ( IsValidDynamic3DTextLabel( g_BulletLabel[ issuerid ] ) )
-		{
-			DestroyDynamic3DTextLabel( g_BulletLabel[ issuerid ] );
-
-			KillTimer( g_BulletTimer[ issuerid ] );
-			g_BulletTimer[ issuerid ] = -1;
-		}
-
 		GetPlayerLastShotVectors( issuerid, fromX, fromY, fromZ, toX, toY, toZ );
 
-		g_BulletLabel[ issuerid ] = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xDD202088, toX, toY, toZ, 100.0, playerid, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld( playerid ), GetPlayerInterior( playerid ) );
-		Streamer_Update( issuerid, STREAMER_TYPE_3D_TEXT_LABEL );
+		new
+			Text3D: bullet_label = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xFFFFFF80, toX, toY, toZ, 100.0, .interiorid = GetPlayerVirtualWorld( playerid ), .worldid = GetPlayerInterior( playerid ), .testlos = 1 );
 
-		g_BulletTimer[ issuerid ] = SetTimerEx( "OnHideBulletLabel", 3000, false, "d", issuerid );
+		if ( IsValidDynamic3DTextLabel( bullet_label ) )
+		{
+			Streamer_Update( issuerid, STREAMER_TYPE_3D_TEXT_LABEL );
+			Streamer_Update( playerid, STREAMER_TYPE_3D_TEXT_LABEL );
+			SetTimerEx( "DamageFeed_HideBulletLabel", 1250, false, "d", _: bullet_label );
+		}
 
 		/* ** Armour and Health Object Damage ** */
 
-		if ( !IsPlayerHit( playerid ) )
+		if ( ! p_GotHit{ playerid } )
 		{
-			static 
-				Float: fArmour;
+			static
+				Float: armour;
 
-			if ( GetPlayerArmour( playerid, fArmour ) )
+			if ( GetPlayerArmour( playerid, armour ) )
 			{
-				SetPlayerAttachedObject(playerid, 4, fArmour == 0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999);
+				SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
-			
-				Streamer_Update(playerid, STREAMER_TYPE_OBJECT );
+
+				Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
 				p_GotHit{ playerid } = true;
 			}
 		}
@@ -177,9 +171,8 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 function HideDamageObject( playerid )
 {
 	if( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) )
-		RemovePlayerAttachedObject( playerid, 4 ); 
+		RemovePlayerAttachedObject( playerid, 4 );
 
-	DestroyObject( p_PlayerDamageObject[ playerid ] );
 	p_GotHit{ playerid } = false;
 	return 1;
 }
@@ -283,45 +276,45 @@ stock UpdateDamageFeed( playerid, bool: modified = false )
 
 	for( new givenid = 0; givenid < sizeof( g_damageGiven[ ] ) - 1; givenid ++)
 	{
-		if ( !g_damageGiven[ playerid ][ givenid ][ E_TICK ] ) {
+		if ( !g_damageGiven[ playerid ] [ givenid ] [ E_TICK ] ) {
 			break;
 		}
 
-		if ( szTick - g_damageGiven[ playerid ][ givenid ][ E_TICK ] >= HIDE_FEED_DELAY )
+		if ( szTick - g_damageGiven[ playerid ] [ givenid ] [ E_TICK ] >= HIDE_FEED_DELAY )
 		{
 			modified = true;
 
 			for( new j = givenid; j < sizeof( g_damageGiven[ ] ) - 1; j++ ) {
-				g_damageGiven[ playerid ][ j ][ E_TICK ] = 0;
+				g_damageGiven[ playerid ] [ j ] [ E_TICK ] = 0;
 			}
 
 			break;
 		}
 
-		if ( g_damageGiven[ playerid ][ givenid ][ E_TICK ] < lowest_tick ) {
-			lowest_tick = g_damageGiven[ playerid ][ givenid ][ E_TICK ];
+		if ( g_damageGiven[ playerid ] [ givenid ] [ E_TICK ] < lowest_tick ) {
+			lowest_tick = g_damageGiven[ playerid ] [ givenid ] [ E_TICK ];
 		}
 	}
 
 	for( new takenid = 0; takenid < sizeof( g_damageTaken[ ] ) - 1; takenid ++)
 	{
-		if ( !g_damageTaken[ playerid ][ takenid ][ E_TICK ] ) {
+		if ( !g_damageTaken[ playerid ] [ takenid ] [ E_TICK ] ) {
 			break;
 		}
 
-		if ( szTick - g_damageTaken[ playerid ][ takenid ][ E_TICK ] >= HIDE_FEED_DELAY )
+		if ( szTick - g_damageTaken[ playerid ] [ takenid ] [ E_TICK ] >= HIDE_FEED_DELAY )
 		{
 			modified = true;
 
 			for( new j = takenid; j < sizeof( g_damageTaken[ ] ) - 1; j++ ) {
-				g_damageTaken[ playerid ][ j ][ E_TICK ] = 0;
+				g_damageTaken[ playerid ] [ j ] [ E_TICK ] = 0;
 			}
 
 			break;
 		}
 
-		if ( g_damageTaken[ playerid ][ takenid ][ E_TICK ] < lowest_tick ) {
-			lowest_tick = g_damageTaken[ playerid ][ takenid ][ E_TICK ];
+		if ( g_damageTaken[ playerid ] [ takenid ] [ E_TICK ] < lowest_tick ) {
+			lowest_tick = g_damageTaken[ playerid ] [ takenid ] [ E_TICK ];
 		}
 	}
 
@@ -363,25 +356,25 @@ stock UpdateDamageFeedLabel( playerid )
 
 	for( new givenid = 0; givenid < sizeof( g_damageGiven[ ] ) - 1; givenid ++)
 	{
-		if ( !g_damageGiven[ playerid ][ givenid ][ E_TICK ] )
+		if ( !g_damageGiven[ playerid ] [ givenid ] [ E_TICK ] )
 			break;
 
 		new szWeapon[ 32 ];
 
-		if ( g_damageGiven[ playerid ][ givenid ][ E_WEAPON ] == -1 ) {
+		if ( g_damageGiven[ playerid ] [ givenid ] [ E_WEAPON ] == -1 ) {
 			szWeapon = "Multiple";
 		}
 		else {
-			GetWeaponName( g_damageGiven[ playerid ][ givenid ][ E_WEAPON ], szWeapon, sizeof( szWeapon ) );
+			GetWeaponName( g_damageGiven[ playerid ] [ givenid ] [ E_WEAPON ], szWeapon, sizeof( szWeapon ) );
 		}
 
-		if ( g_damageGiven[ playerid ][ givenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
+		if ( g_damageGiven[ playerid ] [ givenid ] [ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s +%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ] [ givenid ] [ E_AMOUNT ] );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s - %s ~w~+%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ][ givenid ][ E_NAME ], g_damageGiven[ playerid ][ givenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s - %s +%.2f~n~", szLabel, szWeapon, g_damageGiven[ playerid ] [ givenid ] [ E_NAME ], g_damageGiven[ playerid ] [ givenid ] [ E_AMOUNT ] );
 		}
 	}
 
@@ -405,25 +398,25 @@ stock UpdateDamageFeedLabel( playerid )
 
 	for( new takenid = 0; takenid < sizeof( g_damageTaken[ ] ) - 1; takenid ++)
 	{
-		if ( !g_damageTaken[ playerid ][ takenid ][ E_TICK ] )
+		if ( !g_damageTaken[ playerid ] [ takenid ] [ E_TICK ] )
 			break;
 
 		new szWeapon[ 32 ];
 
-		if ( g_damageTaken[ playerid ][ takenid ][ E_WEAPON ] == -1 ) {
+		if ( g_damageTaken[ playerid ] [ takenid ] [ E_WEAPON ] == -1 ) {
 			szWeapon = "Multiple";
 		}
 		else {
-			GetWeaponName( g_damageTaken[ playerid ][ takenid ][ E_WEAPON ], szWeapon, sizeof( szWeapon ) );
+			GetWeaponName( g_damageTaken[ playerid ] [ takenid ] [ E_WEAPON ], szWeapon, sizeof( szWeapon ) );
 		}
 
-		if ( g_damageTaken[ playerid ][ takenid ][ E_ISSUER ] == INVALID_PLAYER_ID )
+		if ( g_damageTaken[ playerid ] [ takenid ] [ E_ISSUER ] == INVALID_PLAYER_ID )
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s -%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ] [ takenid ] [ E_AMOUNT ] );
 		}
 		else
 		{
-			format( szLabel, sizeof( szLabel ), "%s%s - %s ~w~-%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ][ takenid ][ E_NAME ], g_damageTaken[ playerid ][ takenid ][ E_AMOUNT ] );
+			format( szLabel, sizeof( szLabel ), "%s%s - %s -%.2f~n~", szLabel, szWeapon, g_damageTaken[ playerid ] [ takenid ] [ E_NAME ], g_damageTaken[ playerid ] [ takenid ] [ E_AMOUNT ] );
 		}
 	}
 
@@ -444,17 +437,17 @@ stock UpdateDamageFeedLabel( playerid )
 	}
 }
 
-stock RemoveDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], index )
+stock RemoveDamageHit( array[ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ], index )
 {
 	for( new i = 0; i < MAX_FEED_HEIGHT; i ++ )
 	{
 		if ( i >= index ) {
-			array[ i ][ E_TICK ] = 0;
+			array[ i ] [ E_TICK ] = 0;
 		}
 	}
 }
 
-stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issuerid, Float: amount, weapon )
+stock AddDamageHit( array[ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ], playerid, issuerid, Float: amount, weapon )
 {
 	if ( ! IsDamageFeedActive( playerid ) ) {
 		return;
@@ -466,18 +459,18 @@ stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issueri
 
 	for( new i = 0; i < sizeof( array ); i ++ )
 	{
-		if ( ! array[ i ][ E_TICK ] ) {
+		if ( ! array[ i ] [ E_TICK ] ) {
 			break;
 		}
 
-		if ( szTick - array[ i ][ E_TICK ] >= HIDE_FEED_DELAY ) {
+		if ( szTick - array[ i ] [ E_TICK ] >= HIDE_FEED_DELAY ) {
 			RemoveDamageHit( array, i );
 			break;
 		}
 
-		if ( array[ i ][ E_ISSUER ] == issuerid )
+		if ( array[ i ] [ E_ISSUER ] == issuerid )
 		{
-			amount += array[ i ][ E_AMOUNT ];
+			amount += array[ i ] [ E_AMOUNT ];
 			wID = i;
 			break;
 		}
@@ -493,12 +486,12 @@ stock AddDamageHit( array[ MAX_FEED_HEIGHT ][ E_DAMAGE_FEED ], playerid, issueri
 		}
 	}
 
-	array[ wID ][ E_TICK ] = szTick;
-	array[ wID ][ E_AMOUNT ] = amount;
-	array[ wID ][ E_ISSUER ] = issuerid;
-	array[ wID ][ E_WEAPON ] = weapon;
+	array[ wID ] [ E_TICK ] = szTick;
+	array[ wID ] [ E_AMOUNT ] = amount;
+	array[ wID ] [ E_ISSUER ] = issuerid;
+	array[ wID ] [ E_WEAPON ] = weapon;
 
-	GetPlayerName( issuerid, array[ wID ][ E_NAME ] , MAX_PLAYER_NAME );
+	GetPlayerName( issuerid, array[ wID ] [ E_NAME ] , MAX_PLAYER_NAME );
 
 	UpdateDamageFeed( playerid, true );
 }
