@@ -16,9 +16,6 @@
 #define HIDE_FEED_DELAY 			( 3000 )
 #define MAX_UPDATE_RATE 			( 250 )
 
-#define TYPE_GIVEN 					( 1 )
-#define TYPE_TAKEN 					( 2 )
-
 #define TEXTDRAW_ADDON 				( 100.0 )
 
 /* ** Forwards ** */
