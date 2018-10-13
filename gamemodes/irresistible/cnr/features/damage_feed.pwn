@@ -135,7 +135,7 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 		GetPlayerLastShotVectors( issuerid, fromX, fromY, fromZ, toX, toY, toZ );
 
-		g_BulletLabel[ issuerid ] = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xC0C0C088, toX, toY, toZ, 100.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld( playerid ), GetPlayerInterior( playerid ) );
+		g_BulletLabel[ issuerid ] = CreateDynamic3DTextLabel( sprintf( "%.0f", amount ), 0xDD202088, toX, toY, toZ, 100.0, playerid, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld( playerid ), GetPlayerInterior( playerid ) );
 		Streamer_Update( issuerid, STREAMER_TYPE_3D_TEXT_LABEL );
 
 		g_BulletTimer[ issuerid ] = SetTimerEx( "OnHideBulletLabel", 3000, false, "d", issuerid );
@@ -149,7 +149,7 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, fArmour ) )
 			{
-				SetPlayerAttachedObject(playerid, 4, fArmour == 0 ? ( 1240 ) : ( 1242 ), 2, 0.799999, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999);
+				SetPlayerAttachedObject(playerid, 4, fArmour == 0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999);
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
 			
 				Streamer_Update(playerid, STREAMER_TYPE_OBJECT );
