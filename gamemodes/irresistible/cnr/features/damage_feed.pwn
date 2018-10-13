@@ -46,7 +46,7 @@ static stock
 	//g_BulletTimer 				[ MAX_PLAYERS ],
 
 	bool: p_GotHit 					[ MAX_PLAYERS char ],
-	bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
+	//bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
 	p_DamageObject 					[ MAX_PLAYERS ] = { -1, ... },
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -109,7 +109,7 @@ hook OnPlayerConnect( playerid )
 hook OnPlayerDisconnect( playerid, reason )
 {
 	p_HitmarkerSound{ playerid } = 0;
-	p_SyncingPlayer{ playerid } = false;
+	//p_SyncingPlayer{ playerid } = false;
 
 	return 1;
 }
