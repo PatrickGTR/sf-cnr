@@ -150,8 +150,13 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, fArmour ) )
 			{
-				p_PlayerDamageObject[ playerid ] = CreateObject( fArmour == 0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
-				AttachObjectToPlayer( p_PlayerDamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+				//SetPlayerAttachedObject(playerid, 4, fArmour == 0 ? ( 1240 ) : ( 1242 ), 2, 0.490000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.027000);
+				SetPlayerAttachedObject(playerid, 4, fArmour == 0 ? ( 1240 ) : ( 1242 ), 2, 0.799999, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999);
+
+				// SetPlayerAttachedObject(playerid, 4, 1240, 2, 0.655999, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999);
+
+				// p_PlayerDamageObject[ playerid ] = CreateObject( , 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
+				// AttachObjectToPlayer( p_PlayerDamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
 			
 				Streamer_Update(playerid, STREAMER_TYPE_OBJECT );
@@ -178,6 +183,9 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 function HideDamageObject( playerid )
 {
+	if( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) )
+		RemovePlayerAttachedObject( playerid, 4 ); 
+
 	DestroyObject( p_PlayerDamageObject[ playerid ] );
 	p_GotHit{ playerid } = false;
 	return 1;
