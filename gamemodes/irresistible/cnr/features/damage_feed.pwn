@@ -47,6 +47,7 @@ static stock
 
 	bool: p_GotHit 					[ MAX_PLAYERS char ],
 	bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
+	p_DamageObject 					[ MAX_PLAYERS ] = { -1, ... },
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -163,7 +164,10 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, armour ) )
 			{
-				SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
+				p_DamageObject[ playerid ] = CreateObject( armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
+				AttachObjectToPlayer( p_DamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+
+				//SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
 
 				Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
@@ -190,8 +194,8 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 function HideDamageObject( playerid )
 {
-	if( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) )
-		RemovePlayerAttachedObject( playerid, 4 );
+	if( IsValidObject( p_DamageObject[ playerid ] ) )
+		DestroyObject( p_DamageObject[ playerid ] );
 
 	p_GotHit{ playerid } = false;
 	return 1;
