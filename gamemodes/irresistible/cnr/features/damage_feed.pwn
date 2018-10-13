@@ -185,13 +185,6 @@ public OnPlayerFeedUpdate( playerid )
 	return 1;
 }
 
-stock CreateBulletLabel( playerid, weaponid, Float: amount )
-{
-	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
-		return;
-
-}
-
 stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
 {
 	foreach( new i : Player ) if ( p_Spectating{ i } && p_whomSpectating[ i ] == playerid && i != playerid ) {
