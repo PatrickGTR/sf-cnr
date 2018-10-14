@@ -151,7 +151,7 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 					SetPlayerHealth( playerid, health );
 				}
 			}
-			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_HEALTH )
+			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_ARMOUR )
 			{
 				new
 					Float: armour;
