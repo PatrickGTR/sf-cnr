@@ -41,9 +41,9 @@ new
  		{ SHOP_ITEM_CHASITY_BELT,	false, "Chastity Belt", 	"Protection from aids", 	 	1,		550 },
  		{ SHOP_ITEM_SECURE_WALLET,	false, "Secure Wallet", 	"Protection from robberies",  	1,		660 },
  		{ SHOP_ITEM_SCISSOR,	 	true , "Scissors", 			"Automatically cut ties", 		8,		1100 },
- 		{ SHOP_ITEM_ROPES,	 		true , "Rope", 				"/tie", 					 	8,		2250 }, // [1500]
+ 		{ SHOP_ITEM_ROPES,	 		true , "Rope", 				"/tie", 					 	8,		1500 },
+ 		{ SHOP_ITEM_BOBBY_PIN,	 	true , "Bobby Pin", 		"Automatically break cuffs", 	16,		1950 }, // [1000] -makecopgreatagain
  		{ SHOP_ITEM_FOIL,	 		true , "Aluminium Foil", 	"Automatically deflect EMP",	8,		3400 },
- 		{ SHOP_ITEM_BOBBY_PIN,	 	true , "Bobby Pin", 		"Automatically break cuffs", 	16,		3900 }, // [1000] -makecopgreatagain
  		{ SHOP_ITEM_MONEY_CASE,		false, "Money Case", 		"Increases robbing amount", 	1,		4500 }, // [1250]
  		{ SHOP_ITEM_DRILL,	 		true , "Thermal Drill", 	"Halves safe cracking time",  	1,		5000 },
  		{ SHOP_ITEM_METAL_MELTER,	true , "Metal Melter", 		"/breakout", 				 	4,		7500 }

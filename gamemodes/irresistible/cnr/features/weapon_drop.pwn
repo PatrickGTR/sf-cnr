@@ -47,6 +47,9 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
+	if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
+		return 1; // do not break return
+
 	new Float: X, Float: Y, Float: Z;
 	new expire_time = GetServerTime( ) + 180;
 
@@ -54,8 +57,6 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 	if ( IsPlayerConnected( killerid ) && ! IsPlayerNPC( killerid ) )
 	{
-		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
-			return 1;
 
 
 		for ( new slotid = 0; slotid < 13; slotid++ )
