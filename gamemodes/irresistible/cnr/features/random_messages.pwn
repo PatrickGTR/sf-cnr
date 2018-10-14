@@ -70,7 +70,8 @@ static stock
 		{ "{8ADE47}Stephanie:"COL_WHITE" Contribute to our feature "COL_GREY"/crowdfunds"COL_WHITE"! Early supporters get benefits!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" Don't want to be interrupted as an innocent player? Enter passive mode with "COL_GREY"/passive"COL_WHITE"!" },
 		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy premium player homes using "COL_GREY"/estate"COL_WHITE"!" },
-		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy Irresistible Coins from players using "COL_GREY"/ic buy"COL_WHITE"!" }
+		{ "{8ADE47}Stephanie:"COL_WHITE" You can buy Irresistible Coins from players using "COL_GREY"/ic buy"COL_WHITE"!" },
+		{ "{8ADE47}Stephanie:"COL_WHITE" Buy a secure wallet to reduce the amount of money you drop when you die!" }
 	},
 	g_randomMessageTick 			= 0
 ;
