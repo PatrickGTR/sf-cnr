@@ -164,13 +164,15 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, armour ) )
 			{
+				DestroyObject( p_DamageObject[ playerid ] );
+
 				p_DamageObject[ playerid ] = CreateObject( armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
 				AttachObjectToPlayer( p_DamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
 
 				//SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
 
-				Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
+				//Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
 				p_GotHit{ playerid } = true;
 			}
 		}
@@ -194,8 +196,10 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 function HideDamageObject( playerid )
 {
-	if( IsValidObject( p_DamageObject[ playerid ] ) )
+	if( IsValidObject( p_DamageObject[ playerid ] ) ) {
 		DestroyObject( p_DamageObject[ playerid ] );
+		p_DamageObject[ playerid ] = -1;
+	}
 
 	p_GotHit{ playerid } = false;
 	return 1;
@@ -476,7 +480,7 @@ stock ShowSoundsMenu( playerid )
 {
 	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerInAnyVehicle( playerid ) || IsPlayerAFK( playerid ) )
 		return 0;
-	
+
 	p_SyncingPlayer{ playerid } = true;
 
 	// ** Obtaining Information **
@@ -498,7 +502,7 @@ stock ShowSoundsMenu( playerid )
 	}
 
 	ClearAnimations( playerid );
-	
+
 	// ** Reinstating Information ** *
 	SetSpawnInfo( playerid, GetPlayerTeam( playerid ), iSkin, fX, fY, fZ - 0.4, fA, 0, 0, 0, 0, 0, 0 );
 	SpawnPlayer( playerid );
