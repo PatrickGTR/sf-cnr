@@ -3121,12 +3121,11 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	HidePlayerTogglableTextdraws( playerid );
 
-	/* ** Tax And Medical Fees ** */
+	/* ** Tax And Medical Fees **
 	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
 		ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~$100~w~ in medical fees" ) );
 		GivePlayerCash( playerid, -100 );
-	}
-	/* ** End Of Tax And Medical Fees ** */
+	} */
 
 	new
 		playerGangId = p_GangID[ playerid ];
@@ -4350,45 +4349,6 @@ CMD:race( playerid, params[ ] )
 		}
 	}
 	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/LEAVE/KICK/CONFIG/START/CONTRIBUTE/STOP]" );
-}
-
-CMD:dw( playerid, params[ ] ) return cmd_disposeweapon( playerid, params );
-CMD:disposeweapon(playerid, params[]) {
-
-	if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-
-	new
-	    iCurrentWeapon = GetPlayerWeapon( playerid ),
-	    iWeaponID[ 13 ],
-	    iWeaponAmmo[ 13 ]
-	;
-
-	if ( iCurrentWeapon != 0 )
-	{
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
-		{
-		    new
-				iWeapon,
-				iAmmo;
-
-			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
-
-			if ( iWeapon != iCurrentWeapon ) {
-			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
-			}
-		}
-
-		ResetPlayerWeapons( playerid );
-
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
-		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
-		}
-
-		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
-		return SendServerMessage( playerid, "You have dropped your weapon." );
-	} else {
-		return SendError( playerid, "You are not holding any weapon." );
-	}
 }
 
 CMD:suggest( playerid, params[ ] ) return cmd_feedback( playerid, params );
@@ -15464,7 +15424,7 @@ stock getCurrentTime( )
 }
 
 new
-	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { 0xFFFF, ... };
+	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { -1, ... };
 
 stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
 {
@@ -15481,17 +15441,21 @@ stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
     PlayerTextDrawShow( playerid, p_HelpBoxTD[ playerid ] );
 
     KillTimer( p_HideHelpDialogTimer[ playerid ] );
+    p_HideHelpDialogTimer[ playerid ] = -1;
 
-   	if ( timeout != 0 )
+   	if ( timeout != 0 ) {
    		p_HideHelpDialogTimer[ playerid ] = SetTimerEx( "HidePlayerHelpDialog", timeout, false, "d", playerid );
-
+   	}
 	return 1;
 }
 
 function HidePlayerHelpDialog( playerid )
 {
-	p_HideHelpDialogTimer[ playerid ] = 0xFFFF;
-	PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
+	if ( p_HideHelpDialogTimer[ playerid ] != -1 )
+	{
+		p_HideHelpDialogTimer[ playerid ] = -1;
+		PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
+	}
 }
 
 stock fix_NightThermalVisionHack( playerid ) // Created by wups
