@@ -30,7 +30,7 @@ enum E_SYNC_DATA
 
 	E_SKIN, 				E_WORLD, 					E_INTERIOR,
 	E_CURRENT_WEAPON, 		E_WEAPON_ID[ 13 ], 			E_WEAPON_AMMO[ 13 ],
-	E_TEAM
+	E_WANTED_LEVEL
 };
 
 enum E_DAMAGE_FEED
@@ -144,6 +144,8 @@ hook SetPlayerRandomSpawn( playerid )
 	{
 		//ResetPlayerWeapons( playerid );
 
+		SetPlayerWantedLevel( playerid, g_syncData[ playerid ][ E_WANTED_LEVEL ] );
+
 		SetPlayerHealth( playerid, g_syncData[ playerid ][ E_HEALTH ] );
 		SetPlayerArmour( playerid, g_syncData[ playerid ][ E_ARMOUR ] );
 		SetPlayerVirtualWorld( playerid, g_syncData[ playerid ][ E_WORLD ] );
@@ -152,10 +154,11 @@ hook SetPlayerRandomSpawn( playerid )
 		SetPlayerPos( playerid, g_syncData[ playerid ][ E_X ], g_syncData[ playerid ][ E_Y ], g_syncData[ playerid ][ E_Z ] );
 		SetPlayerFacingAngle( playerid, g_syncData[ playerid ][ E_A ] );
 
-		/*for( new slotid = 0; slotid < 13; slotid ++ ) {
+		/*
+		for( new slotid = 0; slotid < 13; slotid ++ ) {
 			GivePlayerWeapon( playerid, g_syncData[ playerid ][ E_WEAPON_ID ][ slotid ], g_syncData[ playerid ][ E_WEAPON_AMMO ][ slotid ] );
 		}
-*/
+		*/
 		SetPlayerArmedWeapon( playerid, g_syncData[ playerid ][ E_CURRENT_WEAPON ] );
 		SetCameraBehindPlayer( playerid );
 
@@ -537,6 +540,7 @@ stock SyncPlayer( playerid, bool: message = true )
 	g_syncData[ playerid ][ E_INTERIOR ] = GetPlayerInterior( playerid );
 	g_syncData[ playerid ][ E_TEAM ] = GetPlayerTeam( playerid );
 	g_syncData[ playerid ][ E_SKIN ] = GetPlayerSkin( playerid );
+	g_syncData[ playerid ][ E_WANTED_LEVEL ] = GetPlayerWantedLevel( playerid );
 
 	GetPlayerPos( playerid, g_syncData[ playerid ][ E_X ], g_syncData[ playerid ][ E_Y ], g_syncData[ playerid ][ E_Z ] );
 	GetPlayerFacingAngle( playerid, g_syncData[ playerid ][ E_A ] );
