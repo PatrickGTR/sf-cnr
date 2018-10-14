@@ -10617,6 +10617,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
         if (response)
 		{
+        	if ( strmatch( inputtext, "MAX" ) || strmatch( inputtext, "ALL" ) ) format( inputtext, 16, "%d", p_BankMoney[ playerid ] );
             if (!strlen(inputtext))
 			{
 			    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
@@ -10649,6 +10650,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
         if (response) {
+        	if ( strmatch( inputtext, "MAX" ) || strmatch( inputtext, "ALL" ) ) format( inputtext, 16, "%d", GetPlayerCash( playerid ) );
             if (!strlen(inputtext)) {
                 format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
                 ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
