@@ -514,7 +514,7 @@ stock Pool_RemovePlayer( playerid )
 	DestroyDynamicObject( p_PoolHoleGuide[ playerid ] );
 	p_PoolHoleGuide[ playerid ] = -1;
 	RestoreCamera( playerid );
-	HidePlayerHelpDialog( playerid );
+	//HidePlayerHelpDialog( playerid );
 
 	// check if the player is even in the table
 	if ( poolid != -1 && Iter_Contains( poolplayers< poolid >, playerid ) )

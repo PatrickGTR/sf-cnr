@@ -2829,10 +2829,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 
 		// Passive mode enabled for player?
 		if ( IsPlayerPassive( issuerid ) ) {
-			if ( p_PassiveModeExpireTimer[ issuerid ] == -1 ) {
+			/*if ( p_PassiveModeExpireTimer[ issuerid ] == -1 ) {
 				p_PassiveModeExpireTimer[ issuerid ] = PassiveMode_Reset( issuerid, 4 ); // it will just set it to anything but -1 for now
-			}
- 			return 0;
+			}*/
+ 			return ShowPlayerHelpDialog( issuerid, 2000, "~r~You cannot deathmatch with /passive enabled." ), 0;
 		}
 
 		// Passive mode enabled for damaged id?
@@ -3426,7 +3426,7 @@ public OnPlayerText( playerid, text[ ] )
 						}
 					}
 				    SendClientMessageToCops( -1, ""COL_BLUE"<Police Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, szBigString[ 1 ] );
-				    
+
 				    foreach(new i : Player)
 					{
 					    if ( ( p_AdminLevel[ i ] >= 5 || IsPlayerUnderCover( i ) ) && p_ToggleCopChat{ i } == true )
@@ -6196,9 +6196,13 @@ CMD:richlist( playerid, params[ ] )
 	SortDeepArray( g_richList, 1, .order = SORT_DESC );
 
 	// message
-	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Total Money\n";
-	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_richList[ i ] [ 0 ] ) && g_richList[ i ] [ 1 ] > 50000 ) {
- 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\n", szLargeString, ReturnPlayerName( g_richList[ i ] [ 0 ] ), g_richList[ i ] [ 0 ], cash_format( g_richList[ i ] [ 1 ] ) );
+	szLargeString = ""COL_WHITE"Player\t"COL_WHITE"Holding Money\t"COL_WHITE"Bank Money\n";
+	for ( new i = 0; i < MAX_PLAYERS; i ++ ) if ( IsPlayerConnected( g_richList[ i ] [ 0 ] ) && g_richList[ i ] [ 1 ] > 50000 )
+	{
+		new
+			rich_player = g_richList[ i ] [ 0 ];
+
+ 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\t{666666}%s\n", szLargeString, ReturnPlayerName( rich_player ), rich_player, cash_format( GetPlayerCash( rich_player ) ), cash_format( p_BankMoney[ rich_player ] ) );
 		is_empty = false;
 	}
 
@@ -7637,6 +7641,7 @@ CMD:c4( playerid, params[ ] )
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
 		if ( IsPlayerInCasino( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a casino." );
 		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an arena." );
+		if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as an innocent player in passive mode." );
 		if ( p_C4Amount[ playerid ] < 1 ) return SendError( playerid, "You don't have any C4's" );
 
 		#if defined __cnr__chuffsec
@@ -10476,6 +10481,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 
             TogglePlayerControllable( playerid, 1 );
+
+			if ( ! p_JobSet{ playerid } ) {
+				ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
+			}
+
             p_JobSet{ playerid } = true;
 
             //if ( !p_CitySet{ playerid } )
@@ -10489,6 +10499,21 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
         }
     }
+
+
+	if ( dialogid == DIALOG_PASSIVE_MODE )
+	{
+		if ( ! response || ! listitem ) {
+			ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
+		}
+
+		if ( listitem == 1 ) {
+			SendServerMessage( playerid, "Since you like roleplay, passive mode has been automatically enabled for you!" );
+		} else if ( listitem == 2 ) {
+			CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
+			SendServerMessage( playerid, "Since you like deathmatch, passive mode has been automatically enabled for you!" );
+		}
+	}
 	if ( dialogid == DIALOG_BOMB_SHOP )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
@@ -17887,7 +17912,10 @@ stock DisablePlayerSpawnProtection( playerid )
 stock SetPlayerPassiveMode( playerid )
 {
 	if ( IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) )
+	{
+		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
 		return 0;
+	}
 
 	// reset any labels etc
 	ResetPlayerPassiveMode( playerid );
@@ -17902,21 +17930,21 @@ stock SetPlayerPassiveMode( playerid )
 
 stock IsPlayerPassive( playerid )
 {
-	return ! IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) && ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
+	return ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
 }
 
 stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
 {
 	DestroyDynamic3DTextLabel( p_PassiveModeLabel[ playerid ] );
-	KillTimer( p_PassiveModeExpireTimer[ playerid ] );
+	//KillTimer( p_PassiveModeExpireTimer[ playerid ] );
 	p_PassiveModeLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	p_PassiveModeExpireTimer[ playerid ] = -1;
+	//p_PassiveModeExpireTimer[ playerid ] = -1;
 	p_PassiveModeDisabled{ playerid } = passive_disabled;
 	TextDrawHideForPlayer( playerid, g_PassiveModeTD );
 	return 1;
 }
 
-function PassiveMode_Reset( playerid, time_left )
+/*function PassiveMode_Reset( playerid, time_left )
 {
 	// if you happen to die then have a shot synced ... just reset normally
 	if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) {
@@ -17935,7 +17963,7 @@ function PassiveMode_Reset( playerid, time_left )
  		ShowPlayerHelpDialog( playerid, 1500, "Passive mode disabled in ~r~%d seconds.", time_left );
 	}
 	return 1;
-}
+}*/
 
 stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
