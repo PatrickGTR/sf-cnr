@@ -152,7 +152,7 @@ new
 ;
 
 /* ** Weed System ** */
-#define MAX_WEED_STORAGE 			6
+#define MAX_WEED_STORAGE 			( 10 )
 #define MAX_WEED                    ( 42 )
 enum E_WEED_DATA
 {
@@ -3071,12 +3071,11 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	HidePlayerTogglableTextdraws( playerid );
 
-	/* ** Tax And Medical Fees ** */
+	/* ** Tax And Medical Fees **
 	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
 		ShowPlayerHelpDialog( playerid, 5000, sprintf( "~w~You have paid ~r~$100~w~ in medical fees" ) );
 		GivePlayerCash( playerid, -100 );
-	}
-	/* ** End Of Tax And Medical Fees ** */
+	} */
 
 	new
 		playerGangId = p_GangID[ playerid ];
@@ -4308,45 +4307,6 @@ CMD:race( playerid, params[ ] )
 		}
 	}
 	return SendUsage( playerid, "/race [CREATE/INVITE/JOIN/LEAVE/KICK/CONFIG/START/CONTRIBUTE/STOP]" );
-}
-
-CMD:dw( playerid, params[ ] ) return cmd_disposeweapon( playerid, params );
-CMD:disposeweapon(playerid, params[]) {
-
-	if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-
-	new
-	    iCurrentWeapon = GetPlayerWeapon( playerid ),
-	    iWeaponID[ 13 ],
-	    iWeaponAmmo[ 13 ]
-	;
-
-	if ( iCurrentWeapon != 0 )
-	{
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
-		{
-		    new
-				iWeapon,
-				iAmmo;
-
-			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
-
-			if ( iWeapon != iCurrentWeapon ) {
-			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
-			}
-		}
-
-		ResetPlayerWeapons( playerid );
-
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
-		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
-		}
-
-		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
-		return SendServerMessage( playerid, "You have dropped your weapon." );
-	} else {
-		return SendError( playerid, "You are not holding any weapon." );
-	}
 }
 
 CMD:suggest( playerid, params[ ] ) return cmd_feedback( playerid, params );
@@ -5751,7 +5711,7 @@ CMD:weed( playerid, params[ ] )
 	else if ( strmatch( params, "collect" ) )
 	{
 		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
-		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
+		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You mustn't be inside a vehicle while collecting weed." );
 
 		new count = 0;
@@ -5784,7 +5744,7 @@ CMD:weed( playerid, params[ ] )
 	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
 		else if ( iAmount > p_WeedGrams[ playerid ] ) return SendError( playerid, "You only have %d grams of weed on you.", p_WeedGrams[ playerid ] );
-	    else if ( iAmount < 1 || iAmount > MAX_WEED_STORAGE ) return SendError( playerid, "You can only sell between 1 to " #MAX_WEED_STORAGE " grams of weed to a player." );
+	    else if ( iAmount < 1 || iAmount > MAX_WEED_STORAGE ) return SendError( playerid, "You can only sell between 1 to %d grams of weed to a player.", MAX_WEED_STORAGE );
 	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	    {
 	    	new
@@ -5821,7 +5781,7 @@ CMD:weed( playerid, params[ ] )
 			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
 			else if ( !IsPlayerJob( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
 			else if ( !p_WeedGrams[ dealerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID,  SendError( playerid, "Your dealer doesn't have any more weed." );
-			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
+			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
 			else
 			{
 	         	p_WeedGrams[ playerid ] += iGrams;
@@ -5848,7 +5808,7 @@ CMD:weed( playerid, params[ ] )
 		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot use this in jail." );
 		if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-		if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
+		// if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		//if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command in a vehicle." );
 	    //if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command if you're entering a vehicle." );
@@ -15407,7 +15367,7 @@ stock getCurrentTime( )
 }
 
 new
-	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { 0xFFFF, ... };
+	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { -1, ... };
 
 stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
 {
@@ -15424,17 +15384,21 @@ stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
     PlayerTextDrawShow( playerid, p_HelpBoxTD[ playerid ] );
 
     KillTimer( p_HideHelpDialogTimer[ playerid ] );
+    p_HideHelpDialogTimer[ playerid ] = -1;
 
-   	if ( timeout != 0 )
+   	if ( timeout != 0 ) {
    		p_HideHelpDialogTimer[ playerid ] = SetTimerEx( "HidePlayerHelpDialog", timeout, false, "d", playerid );
-
+   	}
 	return 1;
 }
 
 function HidePlayerHelpDialog( playerid )
 {
-	p_HideHelpDialogTimer[ playerid ] = 0xFFFF;
-	PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
+	if ( p_HideHelpDialogTimer[ playerid ] != -1 )
+	{
+		p_HideHelpDialogTimer[ playerid ] = -1;
+		PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
+	}
 }
 
 stock fix_NightThermalVisionHack( playerid ) // Created by wups

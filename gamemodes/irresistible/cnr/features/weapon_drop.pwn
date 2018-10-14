@@ -16,10 +16,11 @@
 #define WEAPON_DROP_ENABLED
 
 /* ** Definitions ** */
-#define MAX_WEAPON_DROPS 			( 50 )
+#define MAX_WEAPON_DROPS 			( 100 )
 
 #define WEAPON_HEALTH 				( 100 )
 #define WEAPON_ARMOUR 				( 101 )
+#define WEAPON_MONEY				( 102 )
 
 /* ** Variables ** */
 enum E_WEAPONDROP_DATA {
@@ -29,6 +30,7 @@ enum E_WEAPONDROP_DATA {
 
 static g_weaponDropData 		[ MAX_WEAPON_DROPS ] [ E_WEAPONDROP_DATA ];
 static Iterator: weapondrop 	< MAX_WEAPON_DROPS >;
+static p_PlayerPickupDelay 		[ MAX_PLAYERS ];
 
 static g_HealthPickup;
 
@@ -45,18 +47,16 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	static
-		Float: X, Float: Y, Float: Z;
+	new Float: X, Float: Y, Float: Z;
+	new expire_time = GetServerTime( ) + 180;
+
+	GetPlayerPos( playerid, X, Y, Z );
 
 	if ( IsPlayerConnected( killerid ) && ! IsPlayerNPC( killerid ) )
 	{
 		if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
 			return 1;
 
-		GetPlayerPos( playerid, X, Y, Z );
-
-		new
-			expire_time = GetServerTime( ) + 180;
 
 		for ( new slotid = 0; slotid < 13; slotid++ )
 		{
@@ -86,6 +86,30 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		if ( killer_dm_level >= 10 ) {
 			CreateWeaponPickup( WEAPON_HEALTH, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
 		}
+
+		// random armour drop (1% chance)
+		if ( killer_dm_level >= 50 && random( 101 ) == 66 ) {
+			CreateWeaponPickup( WEAPON_ARMOUR, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+		}
+	}
+
+	// drop player money
+	new
+		player_money = floatround( float( GetPlayerCash( playerid ) ) * 0.25 );
+
+	if ( player_money > 0 )
+	{
+		// half the amount lost through secure wallet
+		if ( p_SecureWallet{ playerid } ) {
+			player_money = floatround( float( player_money ) * 0.5 );
+		}
+
+		// message the player
+		ShowPlayerHelpDialog( playerid, 5000, "~w~You have dropped ~r~%s", cash_format( player_money ) );
+
+		// reduce player money
+		GivePlayerCash( playerid, -player_money );
+		CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
 	}
 	return 1;
 }
@@ -101,6 +125,10 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 		SetPlayerHealth( playerid, 100.0 );
 		return 1;
 	}
+
+	// ignore if theres a delay
+	if ( p_PlayerPickupDelay[ playerid ] > GetServerTime( ) )
+		return 1;
 
 	// Player Drops
 	foreach ( new dropid : weapondrop )
@@ -121,6 +149,29 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 
 					SetPlayerHealth( playerid, health );
 				}
+			}
+			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_HEALTH )
+			{
+				new
+					Float: armour;
+
+				if ( GetPlayerArmour( playerid, armour ) )
+				{
+					// no weed like effects
+					if ( ( armour += float( g_weaponDropData[ dropid ] [ E_AMMO ] ) ) > 100.0 ) {
+						armour = 100.0;
+					}
+
+					SetPlayerArmour( playerid, armour );
+				}
+			}
+			else if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_MONEY )
+			{
+				new
+					dropped_money = g_weaponDropData[ dropid ] [ E_AMMO ];
+
+				GivePlayerCash( playerid, dropped_money );
+				SendServerMessage( playerid, "You have found "COL_GOLD"%s"COL_WHITE" on the ground.", cash_format( dropped_money ) );
 			}
 			else
 			{
@@ -162,6 +213,88 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 	return 1;
 }
 
+/* ** Commands ** */
+CMD:moneybag( playerid, params[ ] ) return cmd_dropmoney( playerid, params );
+CMD:dm( playerid, params[ ] ) return cmd_dropmoney( playerid, params );
+CMD:dropmoney( playerid, params[ ] )
+{
+	new
+		money;
+
+	if ( sscanf( params, "d", money ) ) return SendUsage( playerid, "/dropmoney [AMOUNT]" );
+	else if ( money < 10000 ) return SendError( playerid, "The minimum amount you can drop is $10,000." );
+	else if ( money > GetPlayerCash( playerid ) ) return SendError( playerid, "You do not have this much money on you." );
+	else if ( GetPlayerVIPLevel( playerid ) < VIP_REGULAR ) return SendError( playerid, "You need to be V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" );
+	else if ( GetPVarInt( playerid, "dropmoney_cooldown" ) > GetServerTime( ) ) return SendError( playerid, "You must wait %d seconds before using this command again.", GetPVarInt( playerid, "dropmoney_cooldown" ) - GetServerTime( ) );
+	else
+	{
+		new
+			Float: X, Float: Y, Float: Z;
+
+		GetPlayerPos( playerid, X, Y, Z );
+
+		if ( CreateWeaponPickup( WEAPON_MONEY, money, 0, X, Y, Z, GetServerTime( ) + 300 ) != ITER_NONE ) {
+			p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 4;
+			SendServerMessage( playerid, "You have dropped a %s money bag. It will expire in five minutes.", cash_format( money ) );
+			GivePlayerCash( playerid, -money );
+			Streamer_Update( playerid );
+			SetPVarInt( playerid, "dropmoney_cooldown", GetServerTime( ) + 10 );
+		} else {
+			SendError( playerid, "Failed to create a money bag. Try again in a little bit." );
+		}
+	}
+	return 1;
+}
+
+CMD:disposeweapon( playerid, params[ ] ) return cmd_dropweapon( playerid, params );
+CMD:dw( playerid, params[ ] ) return cmd_dropweapon( playerid, params );
+CMD:dropweapon( playerid, params[ ] ) {
+
+	if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
+
+	new
+	    iCurrentWeapon = GetPlayerWeapon( playerid ),
+	    iWeaponID[ 13 ],
+	    iWeaponAmmo[ 13 ]
+	;
+
+	if ( iCurrentWeapon != 0 )
+	{
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
+		{
+		    new
+				iWeapon,
+				iAmmo;
+
+			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
+
+			if ( iWeapon != iCurrentWeapon ) {
+			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
+			}
+			else
+			{
+				new
+					Float: X, Float: Y, Float: Z;
+
+				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120 ) != ITER_NONE ) {
+					p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 3;
+				}
+			}
+		}
+
+		ResetPlayerWeapons( playerid );
+
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
+		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
+		}
+
+		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
+		return SendServerMessage( playerid, "You have dropped your weapon." );
+	} else {
+		return SendError( playerid, "You are not holding any weapon." );
+	}
+}
+
 /* ** Functions ** */
 stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, expire_time ) {
 
@@ -169,7 +302,23 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 
 	if ( handle != ITER_NONE )
 	{
-		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( weaponid == WEAPON_HEALTH ? 1240 : GetWeaponModel( weaponid ), 1, X, Y, Z );
+		new
+			modelid;
+
+		switch ( weaponid ) {
+			case WEAPON_HEALTH: modelid = 1240;
+			case WEAPON_MONEY: {
+				if ( ammo >= 1000 ) {
+					modelid = 1550;
+				} else {
+					modelid = 1212;
+				}
+			}
+			case WEAPON_ARMOUR: modelid = 1242;
+			default: modelid = GetWeaponModel( weaponid );
+		}
+
+		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z );
 		g_weaponDropData[ handle ] [ E_EXPIRE_TIMESTAMP ] = expire_time;
 		g_weaponDropData[ handle ] [ E_WEAPON_ID ] = weaponid;
 		g_weaponDropData[ handle ] [ E_AMMO ] = ammo;
