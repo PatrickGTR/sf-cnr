@@ -156,6 +156,7 @@ static stock
 		{ 5, "/destroybusiness", 	"Deletes a business" },
 		{ 5, "/seteventhost",		"Setting event host to player" },
 		{ 5, "/weather",			"Settings world weather" },
+		{ 5, "/viewpolicechat", 	"Viewing the police radio/chat" },
 
 		/* ** Level 6 Commands ** */
 		{ 6, "/reloadeditor",		"Reloads object editer script" },

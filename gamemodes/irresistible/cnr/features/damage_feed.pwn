@@ -16,9 +16,6 @@
 #define HIDE_FEED_DELAY 			( 3000 )
 #define MAX_UPDATE_RATE 			( 250 )
 
-#define TYPE_GIVEN 					( 1 )
-#define TYPE_TAKEN 					( 2 )
-
 #define TEXTDRAW_ADDON 				( 100.0 )
 
 /* ** Forwards ** */
@@ -49,6 +46,8 @@ static stock
 	//g_BulletTimer 				[ MAX_PLAYERS ],
 
 	bool: p_GotHit 					[ MAX_PLAYERS char ],
+	//bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
+	p_DamageObject 					[ MAX_PLAYERS ] = { -1, ... },
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
 	PlayerText: g_damageFeedGivenTD [ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -83,12 +82,34 @@ hook OnPlayerConnect( playerid )
 	PlayerTextDrawSetOutline(playerid, p_DamageTD[ playerid ], 1);
 	PlayerTextDrawSetProportional(playerid, p_DamageTD[ playerid ], 1);*/
 
+	/* ** Textdraws ** */
+	g_damageFeedGivenTD[ playerid ] = CreatePlayerTextDraw( playerid, ( 320.0 - TEXTDRAW_ADDON ), 340.0, "_");
+	PlayerTextDrawBackgroundColor(playerid, g_damageFeedGivenTD[ playerid ], 117 );
+	PlayerTextDrawAlignment( playerid, g_damageFeedGivenTD[ playerid ], 2 );
+	PlayerTextDrawFont( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, g_damageFeedGivenTD[ playerid ], 0.200000, 0.899999 );
+	PlayerTextDrawColor( playerid, g_damageFeedGivenTD[ playerid ], 0xDD2020FF );
+	PlayerTextDrawSetOutline( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, g_damageFeedGivenTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid, g_damageFeedGivenTD[ playerid ], 0 );
+
+	g_damageFeedTakenTD[ playerid ] = CreatePlayerTextDraw( playerid, ( TEXTDRAW_ADDON + 320.0 ), 340.0, "_");
+	PlayerTextDrawBackgroundColor(playerid, g_damageFeedTakenTD[ playerid ], 117 );
+	PlayerTextDrawAlignment( playerid, g_damageFeedTakenTD[ playerid ], 2 );
+	PlayerTextDrawFont( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawLetterSize( playerid, g_damageFeedTakenTD[ playerid ], 0.200000, 0.899999 );
+	PlayerTextDrawColor( playerid, g_damageFeedTakenTD[ playerid ], 1069804543 );
+	PlayerTextDrawSetOutline( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawSetProportional( playerid, g_damageFeedTakenTD[ playerid ], 1 );
+	PlayerTextDrawSetSelectable( playerid, g_damageFeedTakenTD[ playerid ], 0 );
+
 	return 1;
 }
 
 hook OnPlayerDisconnect( playerid, reason )
 {
 	p_HitmarkerSound{ playerid } = 0;
+	//p_SyncingPlayer{ playerid } = false;
 
 	return 1;
 }
@@ -143,10 +164,15 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, armour ) )
 			{
-				SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
+				DestroyObject( p_DamageObject[ playerid ] );
+
+				p_DamageObject[ playerid ] = CreateObject( armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
+				AttachObjectToPlayer( p_DamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+
+				//SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
 				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
 
-				Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
+				//Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
 				p_GotHit{ playerid } = true;
 			}
 		}
@@ -170,8 +196,10 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 function HideDamageObject( playerid )
 {
-	if( IsPlayerAttachedObjectSlotUsed( playerid, 4 ) )
-		RemovePlayerAttachedObject( playerid, 4 );
+	if( IsValidObject( p_DamageObject[ playerid ] ) ) {
+		DestroyObject( p_DamageObject[ playerid ] );
+		p_DamageObject[ playerid ] = -1;
+	}
 
 	p_GotHit{ playerid } = false;
 	return 1;
@@ -186,13 +214,6 @@ public OnPlayerFeedUpdate( playerid )
 	}
 
 	return 1;
-}
-
-stock CreateBulletLabel( playerid, weaponid, Float: amount )
-{
-	if ( IsPlayerInCasino( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerInMinigame( playerid ) )
-		return;
-
 }
 
 stock DamageFeedAddHitGiven( playerid, issuerid, Float: amount, weaponid )
@@ -215,60 +236,6 @@ stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
 
 stock UpdateDamageFeed( playerid, bool: modified = false )
 {
-	if ( !IsDamageFeedActive( playerid ) )
-	{
-		if ( g_damageFeedGivenTD[ playerid ] != PlayerText: INVALID_TEXT_DRAW ) {
-			PlayerTextDrawDestroy( playerid, g_damageFeedGivenTD[ playerid ] );
-			g_damageFeedGivenTD[ playerid ] = PlayerText: INVALID_TEXT_DRAW;
-		}
-
-		if ( g_damageFeedTakenTD[ playerid ] != PlayerText: INVALID_TEXT_DRAW ) {
-			PlayerTextDrawDestroy( playerid, g_damageFeedTakenTD[ playerid ] );
-			g_damageFeedTakenTD[ playerid ] = PlayerText: INVALID_TEXT_DRAW;
-		}
-
-		return 1;
-	}
-
-	/* ** Textdraws ** */
-	if ( g_damageFeedGivenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
-	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( 320.0 - TEXTDRAW_ADDON ), 340.0, "_");
-
-		if ( handle == PlayerText: INVALID_TEXT_DRAW )
-			return print("[DAMAGE FEED ERROR]: Unable to create TD (given damage)" );
-
-		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
-		PlayerTextDrawAlignment( playerid, handle, 2 );
-		PlayerTextDrawFont( playerid, handle, 1 );
-		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, 0xDD2020FF );
-		PlayerTextDrawSetOutline( playerid, handle, 1 );
-		PlayerTextDrawSetProportional( playerid, handle, 1 );
-		PlayerTextDrawSetSelectable( playerid, handle, 0 );
-
-		g_damageFeedGivenTD[ playerid ] = handle;
-	}
-
-	if ( g_damageFeedTakenTD[ playerid] == PlayerText: INVALID_TEXT_DRAW )
-	{
-		new PlayerText: handle = CreatePlayerTextDraw( playerid, ( TEXTDRAW_ADDON + 320.0 ), 340.0, "_");
-
-		if ( handle == PlayerText: INVALID_TEXT_DRAW )
-			return print("[DAMAGE FEED ERROR]: Unable to create TD (taken damage)" );
-
-		PlayerTextDrawBackgroundColor(playerid, handle, 117 );
-		PlayerTextDrawAlignment( playerid, handle, 2 );
-		PlayerTextDrawFont( playerid, handle, 1 );
-		PlayerTextDrawLetterSize( playerid, handle, 0.200000, 0.899999 );
-		PlayerTextDrawColor( playerid, handle, 1069804543 );
-		PlayerTextDrawSetOutline( playerid, handle, 1 );
-		PlayerTextDrawSetProportional( playerid, handle, 1 );
-		PlayerTextDrawSetSelectable( playerid, handle, 0 );
-
-		g_damageFeedTakenTD[ playerid ] = handle;
-	}
-
 	/* ** Core ** */
 	new szTick = GetTickCount( );
 	if ( szTick == 0 ) szTick = 1;
@@ -508,6 +475,53 @@ stock ShowSoundsMenu( playerid )
 	}
 	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
+
+/*stock SyncPlayer( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerInAnyVehicle( playerid ) || IsPlayerAFK( playerid ) )
+		return 0;
+
+	p_SyncingPlayer{ playerid } = true;
+
+	// ** Obtaining Information **
+	static
+		Float: fX, Float: fY, Float: fZ, Float: fA, Float: iHealth, Float: iArmour,
+		iSkin, iInterior, iWorld, iWeapon, weaponData[ 13 ][ 2 ];
+
+	GetPlayerHealth( playerid, iHealth );
+	GetPlayerArmour( playerid, iArmour );
+	iWeapon = GetPlayerWeapon( playerid );
+	iWorld = GetPlayerVirtualWorld( playerid );
+	iInterior = GetPlayerInterior( playerid );
+
+	GetPlayerPos( playerid, fX, fY, fZ );
+	GetPlayerFacingAngle( playerid, fA );
+
+	for( new slotid = 0; slotid < 13; slotid ++ ) {
+		GetPlayerWeaponData(playerid, slotid, weaponData[ slotid ] [ 0 ], weaponData[ slotid ] [ 1 ] );
+	}
+
+	ClearAnimations( playerid );
+
+	// ** Reinstating Information ** *
+	SetSpawnInfo( playerid, GetPlayerTeam( playerid ), iSkin, fX, fY, fZ - 0.4, fA, 0, 0, 0, 0, 0, 0 );
+	SpawnPlayer( playerid );
+
+	SetPlayerHealth( playerid, iHealth );
+	SetPlayerArmour( playerid, iArmour );
+
+	SetPlayerInterior( playerid, iInterior );
+	SetPlayerVirtualWorld( playerid, iWorld );
+
+	for( new slotid = 0; slotid < 13; slotid ++ ) {
+		GivePlayerWeapon(playerid, weaponData[ slotid ] [ 0 ], weaponData[ slotid ] [ 1 ] );
+	}
+
+	SetPlayerArmedWeapon( playerid, iWeapon );
+
+	SendServerMessage( playerid, "You are now synced." );
+	return 1;
+}*/
 
 /* ** Commands ** */
 CMD:hitmarker( playerid, params[ ] )

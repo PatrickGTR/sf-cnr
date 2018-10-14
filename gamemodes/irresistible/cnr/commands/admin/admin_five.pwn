@@ -20,6 +20,18 @@ CMD:armorall( playerid, params[ ] )
 	return 1;
 }
 
+CMD:viewpolicechat( playerid, params[ ] )
+{
+	if ( p_AdminLevel[ playerid ] < 5 && !IsPlayerUnderCover( playerid ) ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	p_ToggleCopChat{ playerid } = !p_ToggleCopChat{ playerid };
+
+	SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have %s viewing police.", p_ToggleCopChat{ playerid } == true ? ("toggled") : ("un-toggled") );
+    if ( !IsPlayerUnderCover( playerid ) ) {
+		AddAdminLogLineFormatted( "%s(%d) has %s viewing police chat", ReturnPlayerName( playerid ), playerid, p_ToggleCopChat{ playerid } == true ? ("toggled") : ("un-toggled") );
+    }
+	return 1;
+}
+
 CMD:check( playerid, params[ ] )
 {
 	new

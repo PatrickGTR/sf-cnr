@@ -210,8 +210,7 @@
 #define DIALOG_COMPONENTS_SELL 				1200
 #define DIALOG_HOUSE_SELL 					1201
 #define DIALOG_BUSINESS_SELL_CONFIRM 		1202
-#define DIALOG_PASSIVE_MODE					1203
-
+ 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
