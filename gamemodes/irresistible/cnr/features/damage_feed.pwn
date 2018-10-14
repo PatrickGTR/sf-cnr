@@ -23,6 +23,16 @@ forward OnPlayerFeedUpdate 			( playerid );
 forward OnPlayerTakenDamage 		( playerid, issuerid, Float: amount, weaponid, bodypart );
 
 /* ** Variables ** */
+enum E_SYNC_DATA
+{
+	Float: E_X,				Float: E_Y,					Float: E_Z,
+	Float: E_A, 			Float: E_HEALTH, 			Float: E_ARMOUR,
+
+	E_SKIN, 				E_WORLD, 					E_INTERIOR,
+	E_CURRENT_WEAPON, 		E_WEAPON_ID[ 13 ], 			E_WEAPON_AMMO[ 13 ],
+	E_TEAM
+};
+
 enum E_DAMAGE_FEED
 {
 	E_ISSUER, 				E_NAME[ MAX_PLAYER_NAME ], 			Float: E_AMOUNT,
@@ -41,12 +51,12 @@ new
 static stock
 	g_damageGiven 					[ MAX_PLAYERS ] [ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ],
 	g_damageTaken 					[ MAX_PLAYERS ] [ MAX_FEED_HEIGHT ] [ E_DAMAGE_FEED ],
-
+	g_syncData 						[ MAX_PLAYERS ] [ E_SYNC_DATA ],
 	//Text3D: g_BulletLabel			[ MAX_PLAYERS ],
 	//g_BulletTimer 				[ MAX_PLAYERS ],
 
 	bool: p_GotHit 					[ MAX_PLAYERS char ],
-	//bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
+	bool: p_SyncingPlayer 			[ MAX_PLAYERS char ],
 	p_DamageObject 					[ MAX_PLAYERS ] = { -1, ... },
 
 	PlayerText: g_damageFeedTakenTD	[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -109,7 +119,7 @@ hook OnPlayerConnect( playerid )
 hook OnPlayerDisconnect( playerid, reason )
 {
 	p_HitmarkerSound{ playerid } = 0;
-	//p_SyncingPlayer{ playerid } = false;
+	p_SyncingPlayer{ playerid } = false;
 
 	return 1;
 }
@@ -123,6 +133,42 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		PlayerPlaySound( playerid, g_HitmarkerSounds[ listitem ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
 		ShowSoundsMenu( playerid );
+	}
+
+	return 1;
+}
+
+hook SetPlayerRandomSpawn( playerid )
+{
+	if ( p_SyncingPlayer{ playerid } == true )
+	{
+		//ResetPlayerWeapons( playerid );
+
+		SetPlayerHealth( playerid, g_syncData[ playerid ][ E_HEALTH ] );
+		SetPlayerArmour( playerid, g_syncData[ playerid ][ E_ARMOUR ] );
+		SetPlayerVirtualWorld( playerid, g_syncData[ playerid ][ E_WORLD ] );
+		SetPlayerInterior( playerid, g_syncData[ playerid ][ E_INTERIOR ] );
+		SetPlayerSkin( playerid, g_syncData[ playerid ][ E_SKIN ] );
+		SetPlayerPos( playerid, g_syncData[ playerid ][ E_X ], g_syncData[ playerid ][ E_Y ], g_syncData[ playerid ][ E_Z ] );
+		SetPlayerFacingAngle( playerid, g_syncData[ playerid ][ E_A ] );
+
+		/*for( new slotid = 0; slotid < 13; slotid ++ ) {
+			GivePlayerWeapon( playerid, g_syncData[ playerid ][ E_WEAPON_ID ][ slotid ], g_syncData[ playerid ][ E_WEAPON_AMMO ][ slotid ] );
+		}
+*/
+		SetPlayerArmedWeapon( playerid, g_syncData[ playerid ][ E_CURRENT_WEAPON ] );
+		SetCameraBehindPlayer( playerid );
+
+		p_SyncingPlayer{ playerid } = false;
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+	return 1;
+}
+
+hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
+{
+	if ( newkeys & KEY_SPRINT && newkeys & KEY_AIM ) {
+		SyncPlayer( playerid, .message = false );
 	}
 
 	return 1;
@@ -476,56 +522,50 @@ stock ShowSoundsMenu( playerid )
 	ShowPlayerDialog( playerid, DIALOG_MODIFY_HITSOUND, DIALOG_STYLE_LIST, ""COL_WHITE"Hitmarker Sound", szSounds, "Select", "Close" );
 }
 
-/*stock SyncPlayer( playerid )
+stock SyncPlayer( playerid, bool: message = true )
 {
-	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerInAnyVehicle( playerid ) || IsPlayerAFK( playerid ) )
+	if ( !IsPlayerConnected( playerid ) || GetPlayerWeapon( playerid ) == WEAPON_SNIPER || !IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerInAnyVehicle( playerid ) || IsPlayerAFK( playerid ) )
 		return 0;
 
 	p_SyncingPlayer{ playerid } = true;
 
 	// ** Obtaining Information **
-	static
-		Float: fX, Float: fY, Float: fZ, Float: fA, Float: iHealth, Float: iArmour,
-		iSkin, iInterior, iWorld, iWeapon, weaponData[ 13 ][ 2 ];
+	GetPlayerHealth( playerid, g_syncData[ playerid ][ E_HEALTH ] );
+	GetPlayerArmour( playerid, g_syncData[ playerid ][ E_ARMOUR ] );
+	g_syncData[ playerid ][ E_CURRENT_WEAPON ] = GetPlayerWeapon( playerid );
+	g_syncData[ playerid ][ E_WORLD ] = GetPlayerVirtualWorld( playerid );
+	g_syncData[ playerid ][ E_INTERIOR ] = GetPlayerInterior( playerid );
+	g_syncData[ playerid ][ E_TEAM ] = GetPlayerTeam( playerid );
+	g_syncData[ playerid ][ E_SKIN ] = GetPlayerSkin( playerid );
 
-	GetPlayerHealth( playerid, iHealth );
-	GetPlayerArmour( playerid, iArmour );
-	iWeapon = GetPlayerWeapon( playerid );
-	iWorld = GetPlayerVirtualWorld( playerid );
-	iInterior = GetPlayerInterior( playerid );
-
-	GetPlayerPos( playerid, fX, fY, fZ );
-	GetPlayerFacingAngle( playerid, fA );
+	GetPlayerPos( playerid, g_syncData[ playerid ][ E_X ], g_syncData[ playerid ][ E_Y ], g_syncData[ playerid ][ E_Z ] );
+	GetPlayerFacingAngle( playerid, g_syncData[ playerid ][ E_A ] );
 
 	for( new slotid = 0; slotid < 13; slotid ++ ) {
-		GetPlayerWeaponData(playerid, slotid, weaponData[ slotid ] [ 0 ], weaponData[ slotid ] [ 1 ] );
+		GetPlayerWeaponData( playerid, slotid, g_syncData[ playerid ][ E_WEAPON_ID ][ slotid ], g_syncData[ playerid ][ E_WEAPON_AMMO ][ slotid ] );
 	}
 
+	//ResetPlayerWeapons( playerid );
 	ClearAnimations( playerid );
 
 	// ** Reinstating Information ** *
-	SetSpawnInfo( playerid, GetPlayerTeam( playerid ), iSkin, fX, fY, fZ - 0.4, fA, 0, 0, 0, 0, 0, 0 );
 	SpawnPlayer( playerid );
 
-	SetPlayerHealth( playerid, iHealth );
-	SetPlayerArmour( playerid, iArmour );
-
-	SetPlayerInterior( playerid, iInterior );
-	SetPlayerVirtualWorld( playerid, iWorld );
-
-	for( new slotid = 0; slotid < 13; slotid ++ ) {
-		GivePlayerWeapon(playerid, weaponData[ slotid ] [ 0 ], weaponData[ slotid ] [ 1 ] );
-	}
-
-	SetPlayerArmedWeapon( playerid, iWeapon );
-
-	SendServerMessage( playerid, "You are now synced." );
+	if ( message )
+		SendServerMessage( playerid, "You are now synced." );
 	return 1;
-}*/
+}
 
 /* ** Commands ** */
 CMD:hitmarker( playerid, params[ ] )
 {
 	ShowSoundsMenu( playerid );
+	return 1;
+}
+
+CMD:s( playerid, params[ ] ) return cmd_sync( playerid, params );
+CMD:sync( playerid, params[ ] )
+{
+	SyncPlayer( playerid );
 	return 1;
 }
