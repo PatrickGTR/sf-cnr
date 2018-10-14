@@ -152,7 +152,7 @@ new
 ;
 
 /* ** Weed System ** */
-#define MAX_WEED_STORAGE 			6
+#define MAX_WEED_STORAGE 			( 10 )
 #define MAX_WEED                    ( 42 )
 enum E_WEED_DATA
 {
@@ -5802,7 +5802,7 @@ CMD:weed( playerid, params[ ] )
 	else if ( strmatch( params, "collect" ) )
 	{
 		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
-		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
+		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You mustn't be inside a vehicle while collecting weed." );
 
 		new count = 0;
@@ -5835,7 +5835,7 @@ CMD:weed( playerid, params[ ] )
 	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
 		else if ( iAmount > p_WeedGrams[ playerid ] ) return SendError( playerid, "You only have %d grams of weed on you.", p_WeedGrams[ playerid ] );
-	    else if ( iAmount < 1 || iAmount > MAX_WEED_STORAGE ) return SendError( playerid, "You can only sell between 1 to " #MAX_WEED_STORAGE " grams of weed to a player." );
+	    else if ( iAmount < 1 || iAmount > MAX_WEED_STORAGE ) return SendError( playerid, "You can only sell between 1 to %d grams of weed to a player.", MAX_WEED_STORAGE );
 	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	    {
 	    	new
@@ -5872,7 +5872,7 @@ CMD:weed( playerid, params[ ] )
 			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
 			else if ( !IsPlayerJob( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
 			else if ( !p_WeedGrams[ dealerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID,  SendError( playerid, "Your dealer doesn't have any more weed." );
-			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry " #MAX_WEED_STORAGE " grams of weed." );
+			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
 			else
 			{
 	         	p_WeedGrams[ playerid ] += iGrams;
@@ -5899,7 +5899,7 @@ CMD:weed( playerid, params[ ] )
 		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot use this in jail." );
 		if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-		if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
+		// if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		//if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command in a vehicle." );
 	    //if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command if you're entering a vehicle." );
