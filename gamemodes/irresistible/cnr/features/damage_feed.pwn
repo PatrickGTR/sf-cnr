@@ -141,6 +141,7 @@ hook SetPlayerRandomSpawn( playerid )
 	if ( p_SyncingPlayer{ playerid } == true )
 	{
 		ResetPlayerWeapons( playerid );
+		DisablePlayerSpawnProtection( playerid );
 		SetPlayerWantedLevel( playerid, g_syncData[ playerid ] [ E_WANTED_LEVEL ] );
 
 		SetPlayerHealth( playerid, g_syncData[ playerid ] [ E_HEALTH ] );
@@ -157,7 +158,6 @@ hook SetPlayerRandomSpawn( playerid )
 
 		SetPlayerArmedWeapon( playerid, g_syncData[ playerid ] [ E_CURRENT_WEAPON ] );
 		SetCameraBehindPlayer( playerid );
-		DisablePlayerSpawnProtection( playerid );
 
 		p_SyncingPlayer{ playerid } = false;
 		return Y_HOOKS_BREAK_RETURN_1;
