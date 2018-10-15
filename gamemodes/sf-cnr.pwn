@@ -11137,7 +11137,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     			case 1:
     			{
     				p_ExplosiveBullets[ playerid ] += 10;
-    				ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_YES~~w~ to activate explosive bullets." );
+    				ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_NO~~w~ to activate explosive bullets." );
     			}
     			/*case 2: // taxes
     			{
