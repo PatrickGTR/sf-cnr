@@ -1866,9 +1866,10 @@ thread OnPlayerDuplicateAccountCheck( playerid )
 		rows, fields;
 
 	cache_get_data( rows, fields );
-	if ( rows > 3 )
+
+	if ( rows > 10 )
 	{
-		SendError( playerid, "Sorry, this IP has more than 3 users registered to it which is the maximum limit of users per IP." );
+		SendError( playerid, "Sorry, this IP has more than 10 users registered to it which is the maximum limit of users per IP." );
 		KickPlayerTimed( playerid );
 	}
 	else
