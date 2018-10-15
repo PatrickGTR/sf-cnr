@@ -263,7 +263,7 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 	mysql_single_query( szBigString );
 
 	// credit the buyer
-	GivePlayerBankMoney( playerid, -purchase_cost );
+	GivePlayerCash( playerid, -purchase_cost );
 	GivePlayerIrresistibleCoins( playerid, purchase_amount );
 	SendServerMessage( playerid, "You have successfully purchased %s IC (@ %s/IC) for %s.", number_format( purchase_amount, .decimals = 3 ), cash_format( ask_price ), cash_format( purchase_cost ) );
 	return 1;
