@@ -7239,8 +7239,8 @@ CMD:location( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is not accessible by civilians." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
-	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
-	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
+	else if ( ! IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
+	else if ( ! IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
 	//else if ( GetPlayerInterior( playerid ) != GetPlayerInterior( pID ) ) return SendError( playerid, "This player is inside a interior, the location is not viewable." );
 	else if ( p_AdminOnDuty{ pID } == true ) return SendError( playerid, "This is an admin on duty! You cannot track their proximity." );
 	else
@@ -7248,7 +7248,7 @@ CMD:location( playerid, params[ ] )
 	    new
 			szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
 
-		if ( !GetPlayerLocation( pID, szCity, szLocation ) )
+		if ( ! GetPlayerLocation( pID, szCity, szLocation ) )
 			return SendError( playerid, "This player has gone completely under the radar." );
 
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[LOCATION]"COL_WHITE" %s(%d) is located near %s in %s!", ReturnPlayerName( pID ), pID, szLocation, szCity );
