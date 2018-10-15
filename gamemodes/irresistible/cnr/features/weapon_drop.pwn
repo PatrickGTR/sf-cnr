@@ -275,7 +275,7 @@ CMD:moneybags( playerid, params[ ] )
 
 	szLargeString = ""COL_WHITE"Amount\t"COL_WHITE"Location\n";
 
-	foreach ( new dropid : weapondrop ) if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_MONEY ) {
+	foreach ( new dropid : weapondrop ) if ( ! g_weaponDropData[ dropid ] [ E_EXPIRE_TIMESTAMP ] && g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_MONEY  ) {
 
 		Streamer_GetFloatData( STREAMER_TYPE_PICKUP, g_weaponDropData[ dropid ] [ E_PICKUP ], E_STREAMER_X, X );
 		Streamer_GetFloatData( STREAMER_TYPE_PICKUP, g_weaponDropData[ dropid ] [ E_PICKUP ], E_STREAMER_Y, Y );
