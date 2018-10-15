@@ -157,6 +157,7 @@ hook SetPlayerRandomSpawn( playerid )
 
 		SetPlayerArmedWeapon( playerid, g_syncData[ playerid ] [ E_CURRENT_WEAPON ] );
 		SetCameraBehindPlayer( playerid );
+		DisablePlayerSpawnProtection( playerid );
 
 		p_SyncingPlayer{ playerid } = false;
 		return Y_HOOKS_BREAK_RETURN_1;
@@ -535,6 +536,9 @@ CMD:sync( playerid, params[ ] )
 
 	if ( IsPlayerInAnyVehicle( playerid ) )
 		return SendError( playerid, "You cannot synchronize yourself in a vehicle." );
+
+	if ( IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerKidnapped( playerid ) || IsPlayerTied( playerid ) || IsPlayerLoadingObjects( playerid ) || IsPlayerSpawnProtected( playerid ) )
+		return SendError( playerid, "You cannot synchronize yourself at the moment." );
 
 	if ( GetPlayerWeapon( playerid ) == WEAPON_SNIPER )
 		return SendError( playerid, "You cannot synchronize yourself holding a sniper." );

@@ -3251,6 +3251,8 @@ public OnPlayerDeath( playerid, killerid, reason )
 		p_Deaths[ playerid ] ++; // Usually other events do nothing
 		GivePlayerSeasonalXP( playerid, -10.0 ); // Deduct points, it's meant to be hard!!!
 	}
+
+    ClearPlayerWantedLevel( playerid );
 	return 1;
 }
 

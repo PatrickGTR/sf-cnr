@@ -21,16 +21,6 @@ hook OnPlayerConnect( playerid )
 	return 1;
 }
 
-#if defined AC_INCLUDED
-hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
-#else
-hook OnPlayerDeath( playerid, killerid, reason )
-#endif
-{
-    ClearPlayerWantedLevel( playerid );
-	return 1;
-}
-
 /* ** Hooked Functions ** */
 stock CNR_GetPlayerWantedLevel( playerid )
 {
