@@ -14,7 +14,7 @@
 #define	MAX_FACILITIES 				( 32 )
 #define MAX_FACILITY_BOMB 			( 2 )
 
-#define FACILITY_SPAWN_FEE			( 500 )
+#define FACILITY_SPAWN_FEE			( 2000 )
 
 #define FACILITY_AMMU_RESPECT 		( 75000.0 )
 #define FACILITY_BLOWUP_TIME 		( 10 )
