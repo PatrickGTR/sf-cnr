@@ -96,12 +96,12 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        	}
 
 	        	p_OffRadar{ playerid } = true;
-				p_OffRadarTimestamp[ playerid ] = GetServerTime( ) + 60;
+				p_OffRadarTimestamp[ playerid ] = GetServerTime( ) + 180;
 
 	        	GivePlayerCash( playerid, -25000 );
 
-	        	SendServerMessage( playerid, "You have hidden yourself from the radar (1 minute) for $25,000." );
-	        	ShowPlayerHelpDialog( playerid, 3000, "~g~~h~Hide from radar ~w~will be deactivate in 1 minute." );
+	        	SendServerMessage( playerid, "You have hidden yourself from the radar (3 minutes) for $25,000." );
+	        	ShowPlayerHelpDialog( playerid, 3000, "~g~~h~Hide from radar ~w~will be deactivate in 3 minutes." );
 
 	        	SetPlayerColor( playerid, setAlpha( GetPlayerColor( playerid ), 0x00 ) );
 	        	Beep( playerid );
