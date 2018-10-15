@@ -38,14 +38,24 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			return ShowPlayerCoinSellOrders( playerid );
 		}
 
+
 		new sellorderid = GetPVarInt( playerid, "playermarket_sellorder" );
 		new Float: purchase_amount;
 
-		if ( sscanf( inputtext, "f", purchase_amount ) )
+		if ( strmatch( inputtext, "ALL" ) || strmatch( inputtext, "MAX" ) )
+		{
+			purchase_amount = float( GetPlayerCash( playerid ) ) / float( GetPVarInt( playerid, "playermarket_askprice" ) );
+
+			if ( purchase_amount > GetPVarFloat( playerid, "playermarket_available" ) ) {
+				purchase_amount = GetPVarFloat( playerid, "playermarket_available" );
+			}
+		}
+		else if ( sscanf( inputtext, "f", purchase_amount ) )
 		{
 			return SendError( playerid, "Please specify a valid amount." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
 		}
-		else if ( ! ( 0.5 <= purchase_amount <= 10000.0 ) )
+
+		if ( ! ( 0.5 <= purchase_amount <= 10000.0 ) )
 		{
 			return SendError( playerid, "Please specify an amount between 0.5 and 10,000 IC." ), PlayerMarket_ShowSellOrder( playerid, sellorderid ), 1;
 		}
@@ -161,6 +171,8 @@ thread PlayerMarket_OnShowSellOrder( playerid, sellorderid )
 	new ask_price = cache_get_field_content_int( 0, "ASK_PRICE" );
 
 	SetPVarInt( playerid, "playermarket_sellorder", sellorderid );
+	SetPVarInt( playerid, "playermarket_askprice", ask_price );
+	SetPVarFloat( playerid, "playermarket_available", quantity );
 
 	format( szBigString, sizeof( szBigString ), ""COL_WHITE"This player has %s Irresistible Coins to sell at %s per coin.\n\nHow many Irresistible Coins would you like to buy?", number_format( quantity, .decimals = 3 ), cash_format( ask_price ) );
 	return ShowPlayerDialog( playerid, DIALOG_IC_BUY, DIALOG_STYLE_INPUT, ""COL_GOLD"Irresistible Coin - "COL_WHITE"Buy Coins", szBigString, "Buy", "Back" ), 1;
@@ -240,10 +252,10 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 	new after_fee_amount = floatround( float( purchase_cost ) * 0.995, floatround_floor );
 
 	if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
-		GivePlayerCash( sellerid, after_fee_amount ), Beep( sellerid );
+		GivePlayerBankMoney( sellerid, after_fee_amount ), Beep( sellerid );
 		SendServerMessage( sellerid, "You have successfully sold %s IC to %s(%d) for "COL_GOLD"%s"COL_WHITE" (-0.5%s fee)!", number_format( purchase_amount, .decimals = 3 ), ReturnPlayerName( playerid ), playerid, cash_format( after_fee_amount ), "%%" );
 	} else {
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = `CASH` + %d WHERE `ID` = %d", after_fee_amount, seller_account_id ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", after_fee_amount, seller_account_id ) );
 	}
 
 	// log the purchase
@@ -251,7 +263,7 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 	mysql_single_query( szBigString );
 
 	// credit the buyer
-	GivePlayerCash( playerid, -purchase_cost );
+	GivePlayerBankMoney( playerid, -purchase_cost );
 	GivePlayerIrresistibleCoins( playerid, purchase_amount );
 	SendServerMessage( playerid, "You have successfully purchased %s IC (@ %s/IC) for %s.", number_format( purchase_amount, .decimals = 3 ), cash_format( ask_price ), cash_format( purchase_cost ) );
 	return 1;

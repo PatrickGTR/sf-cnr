@@ -256,3 +256,7 @@ stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
 stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };
 
 stock IsPlayerLoggedIn( playerid ) return p_PlayerLogged{ playerid };
+
+stock GivePlayerBankMoney( playerid, money ) {
+	p_BankMoney[ playerid ] += money;
+}
