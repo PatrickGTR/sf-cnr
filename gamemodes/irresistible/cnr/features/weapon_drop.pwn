@@ -237,8 +237,9 @@ CMD:dropmoney( playerid, params[ ] )
 	if ( sscanf( params, "d", money ) ) return SendUsage( playerid, "/dropmoney [AMOUNT]" );
 	else if ( money < 25000 ) return SendError( playerid, "The minimum amount you can drop is $25,000." );
 	else if ( money > GetPlayerCash( playerid ) ) return SendError( playerid, "You do not have this much money on you." );
-	else if ( GetPlayerVIPLevel( playerid ) < VIP_REGULAR ) return SendError( playerid, "You need to be V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" );
+	//else if ( GetPlayerVIPLevel( playerid ) < VIP_REGULAR ) return SendError( playerid, "You need to be V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" );
 	else if ( p_PlayerPickupDelay[ playerid ] > GetServerTime( ) ) return SendError( playerid, "You must wait %d seconds before using this command again.", p_PlayerPickupDelay[ playerid ] - GetServerTime( ) );
+	else if ( GetPlayerVirtualWorld( playerid ) != 0 && GetPlayerInterior( playerid ) != 0 ) return SendError( playerid, "You need to be outside to use this command." );
 	else
 	{
 		new
