@@ -2544,13 +2544,13 @@ public OnPlayerSpawn( playerid )
 
 	SetPlayerColorToTeam( playerid );
 	SetPlayerVirtualWorld( playerid, 0 );
-	CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
 
 	if ( p_VIPLevel[ playerid ] >= VIP_REGULAR && p_VIPWep1{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep1{ playerid }, 200 );
 	if ( p_VIPLevel[ playerid ] >= VIP_BRONZE && p_VIPWep2{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep2{ playerid }, 200 );
 	if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPWep3{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep3{ playerid }, 200 );
-
 	if ( p_VIPLevel[ playerid ] >= VIP_BRONZE ) SetPlayerArmour( playerid, 100.0 ); // Free armour on spawn.
+
+	CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
 
 	SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[SPAWN INFO]"COL_WHITE" It has taken you %d milliseconds to spawn!", ( GetTickCount( ) - iTick ) );
 	return 1;
