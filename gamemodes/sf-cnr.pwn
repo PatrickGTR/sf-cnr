@@ -11570,7 +11570,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 			case 1:
 			{
-				format( szLargeString, 720,	""COL_GREY"Score:{FFFFFF} %d\n"\
+				format( szLargeString, 800,	""COL_GREY"Score:{FFFFFF} %d\n"\
 											""COL_GREY"XP:{FFFFFF} %s\n"\
 											""COL_GREY"Money:{FFFFFF} %s\n"\
 											""COL_GREY"Bank Money:{FFFFFF} %s\n"\
@@ -11579,7 +11579,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
 											GetPlayerScore( pID ), number_format( GetPlayerTotalExperience( pID ), .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
-				format( szLargeString, 720,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
+				format( szLargeString, 800,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Total Arrests:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Robberies:{FFFFFF} %d\n"\
@@ -11588,7 +11588,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				                          	""COL_GREY"Total Burglaries:{FFFFFF} %d\n",
 											szLargeString, p_OwnedHouses[ pID ], GetPlayerHouseSlots( pID ), p_OwnedVehicles[ pID ], GetPlayerVehicleSlots( pID ), p_Arrests[ pID ], p_Robberies[ pID ], p_Fires[ pID ], p_HitsComplete[ pID ], p_Burglaries[ pID ] );
 
-				format( szLargeString, 750,	"%s"COL_GREY"Total Jail Raids:{FFFFFF} %d\n"\
+				format( szLargeString, 800,	"%s"COL_GREY"Total Jail Raids:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Bank Raids:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Cars Jacked:{FFFFFF} %d\n"\
 				                          	""COL_GREY"Total Trucked Cargo:{FFFFFF} %d\n"\
