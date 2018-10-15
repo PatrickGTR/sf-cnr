@@ -53,7 +53,7 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 	new
 		iVehiclePrice = calculateVehicleSellPrice( vehicleid );
 
-	if ( IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) && p_Class[ playerid ] == CLASS_CIVILIAN )
+	if ( IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) && p_Class[ playerid ] == CLASS_CIVILIAN && iVehiclePrice )
 	{
 		if ( g_LastExportModel[ playerid ] == GetVehicleModel( vehicleid ) )
 		{
