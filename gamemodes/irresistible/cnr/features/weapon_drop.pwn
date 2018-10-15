@@ -57,8 +57,6 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 	if ( IsPlayerConnected( killerid ) && ! IsPlayerNPC( killerid ) )
 	{
-
-
 		for ( new slotid = 0; slotid < 13; slotid++ )
 		{
 		    new
@@ -110,7 +108,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 		// reduce player money
 		GivePlayerCash( playerid, -player_money );
-		CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+		CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, .include_player = playerid );
 	}
 	return 1;
 }
@@ -172,7 +170,21 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 					dropped_money = g_weaponDropData[ dropid ] [ E_AMMO ];
 
 				GivePlayerCash( playerid, dropped_money );
-				SendServerMessage( playerid, "You have found "COL_GOLD"%s"COL_WHITE" on the ground.", cash_format( dropped_money ) );
+
+				if ( ! g_weaponDropData[ dropid ] [ E_EXPIRE_TIMESTAMP ] && dropped_money )
+				{
+					new
+						szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+
+					if ( GetPlayerLocation( playerid, szCity, szLocation ) ) {
+						SendClientMessageToAllFormatted( -1, ""COL_GREEN"[MONEY BAG]"COL_WHITE" %s(%d) has picked up a %s money bag near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( dropped_money ), szLocation, szCity );
+					} else {
+						SendServerMessage( playerid, "You have found "COL_GOLD"%s"COL_WHITE" on the ground.", cash_format( dropped_money ) );
+					}
+
+				} else {
+					SendServerMessage( playerid, "You have found "COL_GOLD"%s"COL_WHITE" on the ground.", cash_format( dropped_money ) );
+				}
 			}
 			else
 			{
@@ -223,10 +235,10 @@ CMD:dropmoney( playerid, params[ ] )
 		money;
 
 	if ( sscanf( params, "d", money ) ) return SendUsage( playerid, "/dropmoney [AMOUNT]" );
-	else if ( money < 10000 ) return SendError( playerid, "The minimum amount you can drop is $10,000." );
+	else if ( money < 25000 ) return SendError( playerid, "The minimum amount you can drop is $25,000." );
 	else if ( money > GetPlayerCash( playerid ) ) return SendError( playerid, "You do not have this much money on you." );
 	else if ( GetPlayerVIPLevel( playerid ) < VIP_REGULAR ) return SendError( playerid, "You need to be V.I.P to use this, to become one visit "COL_GREY"donate.sfcnr.com" );
-	else if ( GetPVarInt( playerid, "dropmoney_cooldown" ) > GetServerTime( ) ) return SendError( playerid, "You must wait %d seconds before using this command again.", GetPVarInt( playerid, "dropmoney_cooldown" ) - GetServerTime( ) );
+	else if ( p_PlayerPickupDelay[ playerid ] > GetServerTime( ) ) return SendError( playerid, "You must wait %d seconds before using this command again.", p_PlayerPickupDelay[ playerid ] - GetServerTime( ) );
 	else
 	{
 		new
@@ -234,17 +246,54 @@ CMD:dropmoney( playerid, params[ ] )
 
 		GetPlayerPos( playerid, X, Y, Z );
 
-		if ( CreateWeaponPickup( WEAPON_MONEY, money, 0, X, Y, Z, GetServerTime( ) + 300 ) != ITER_NONE ) {
-			p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 4;
-			SendServerMessage( playerid, "You have dropped a %s money bag. It will expire in five minutes.", cash_format( money ) );
+		if ( CreateWeaponPickup( WEAPON_MONEY, money, 0, X, Y, Z, 0, .nonpassive_only = false ) != ITER_NONE )
+		{
+		    new
+				szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+
+			if ( ! GetPlayerLocation( playerid, szCity, szLocation ) )
+				return SendError( playerid, "You cannot place a money bag in this location." );
+
+			SendClientMessageToAllFormatted( -1, ""COL_GREEN"[MONEY BAG]"COL_WHITE" %s(%d) has dropped a %s money bag near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( money ), szLocation, szCity );
+			p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 5;
 			GivePlayerCash( playerid, -money );
 			Streamer_Update( playerid );
-			SetPVarInt( playerid, "dropmoney_cooldown", GetServerTime( ) + 10 );
-		} else {
+		}
+		else
+		{
 			SendError( playerid, "Failed to create a money bag. Try again in a little bit." );
 		}
 	}
 	return 1;
+}
+
+CMD:moneybags( playerid, params[ ] )
+{
+	new Float: X, Float: Y, Float: Z;
+	new szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+	new bool: has_results = false;
+
+	szLargeString = ""COL_WHITE"Amount\t"COL_WHITE"Location\n";
+
+	foreach ( new dropid : weapondrop ) if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_MONEY ) {
+
+		Streamer_GetFloatData( STREAMER_TYPE_PICKUP, g_weaponDropData[ dropid ] [ E_PICKUP ], E_STREAMER_X, X );
+		Streamer_GetFloatData( STREAMER_TYPE_PICKUP, g_weaponDropData[ dropid ] [ E_PICKUP ], E_STREAMER_Y, Y );
+		Streamer_GetFloatData( STREAMER_TYPE_PICKUP, g_weaponDropData[ dropid ] [ E_PICKUP ], E_STREAMER_Z, Z );
+
+		Get2DCity( szCity, X, Y, Z );
+		GetZoneFromCoordinates( szLocation, X, Y, Z );
+
+		format( szLargeString, sizeof( szLargeString ), "%s"COL_GOLD"%s\t%s, %s\n", szLargeString, cash_format( g_weaponDropData[ dropid ] [ E_AMMO ] ), szLocation, szCity );
+
+		has_results = true;
+	}
+
+	if ( has_results ) {
+		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "Money Bag Locations", szLargeString, "Close", "" ), 1;
+	} else {
+		return SendError( playerid, "There are no more money bags to show." );
+	}
 }
 
 CMD:disposeweapon( playerid, params[ ] ) return cmd_dropweapon( playerid, params );
@@ -277,7 +326,7 @@ CMD:dropweapon( playerid, params[ ] ) {
 				new
 					Float: X, Float: Y, Float: Z;
 
-				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120 ) != ITER_NONE ) {
+				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120, .nonpassive_only = false ) != ITER_NONE ) {
 					p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 3;
 				}
 			}
@@ -297,7 +346,7 @@ CMD:dropweapon( playerid, params[ ] ) {
 }
 
 /* ** Functions ** */
-stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, expire_time ) {
+stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, expire_time, bool: nonpassive_only = true, include_player = -1 ) {
 
 	new handle = Iter_Free( weapondrop );
 
@@ -319,11 +368,27 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 			default: modelid = GetWeaponModel( weaponid );
 		}
 
-		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z );
 		g_weaponDropData[ handle ] [ E_EXPIRE_TIMESTAMP ] = expire_time;
 		g_weaponDropData[ handle ] [ E_WEAPON_ID ] = weaponid;
 		g_weaponDropData[ handle ] [ E_AMMO ] = ammo;
 		g_weaponDropData[ handle ] [ E_SLOT_ID ] = slotid;
+
+		// create pickup, but for specific group
+		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z, .playerid = 0 );
+
+	  	// reset players in map icon/cp
+	  	Streamer_RemoveArrayData( STREAMER_TYPE_PICKUP, g_weaponDropData[ handle ] [ E_PICKUP ], E_STREAMER_PLAYER_ID, 0 );
+
+	  	// stream to non-passive players
+		foreach ( new i : Player )
+		{
+			if ( include_player != i && nonpassive_only && IsPlayerPassive( i ) )
+				continue;
+
+  			Streamer_AppendArrayData( STREAMER_TYPE_PICKUP, g_weaponDropData[ handle ] [ E_PICKUP ], E_STREAMER_PLAYER_ID, i );
+		}
+
+		// add to iterator
 		Iter_Add( weapondrop, handle );
 	}
 	else
