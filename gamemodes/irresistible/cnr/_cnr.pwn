@@ -17,6 +17,7 @@
 #include "irresistible\cnr\dialog_ids.pwn"
 #include "irresistible\cnr\entrances.pwn"
 #include "irresistible\cnr\checkpoints.pwn"
+#include "irresistible\cnr\wanted_level.pwn"
 
 // reliant on core definitions
 #include "irresistible\cnr\vip\_vip.pwn"

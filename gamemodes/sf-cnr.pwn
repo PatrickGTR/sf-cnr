@@ -1901,7 +1901,6 @@ public OnPlayerConnect( playerid )
 	mysql_function_query( dbHandle, Query, true, "OnPlayerBanCheck", "i", playerid );
 
 	TogglePlayerClock( playerid, 1 );
-    ClearPlayerWantedLevel( playerid );
 	SetPlayerColor( playerid, COLOR_GREY );
 	ResetPlayerCash( playerid );
 
@@ -2260,7 +2259,6 @@ public OnPlayerDisconnect( playerid, reason )
 	DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 	p_MiningExport[ playerid ] = 0xFFFF;
 	p_ContractedAmount[ playerid ] = 0;
-	ClearPlayerWantedLevel( playerid );
 	Delete3DTextLabel( p_InfoLabel[ playerid ] );
 	p_InfoLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_LabelColor[ playerid ] = COLOR_GREY;
@@ -2412,12 +2410,12 @@ public OnPlayerSpawn( playerid )
 	    // Show welcome messsage
 	   	ShowPlayerHelpDialog( playerid, 10000, "Welcome %s!~n~~n~If you have any questions, ~g~/ask!~w~~h~~n~~n~If you see anyone being unfair, report them with ~r~/report!~w~~n~~n~Have fun playing and don't forget to invite your friends! :)", ReturnPlayerName( playerid ) );
 	}
-	else
+	/*else
 	{
 		// Reset wanted level when a player spawns
 		if ( p_LastPlayerState{ playerid } != PLAYER_STATE_SPECTATING )
 			ClearPlayerWantedLevel( playerid );
-	}
+	}*/
 
 	if ( p_Jailed{ playerid } ) // Because some people can still exit the jail and play...
 		return SetPlayerHealth( playerid, INVALID_PLAYER_ID ), SetPlayerPosToPrison( playerid );
@@ -3253,8 +3251,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 		p_Deaths[ playerid ] ++; // Usually other events do nothing
 		GivePlayerSeasonalXP( playerid, -10.0 ); // Deduct points, it's meant to be hard!!!
 	}
-
-    ClearPlayerWantedLevel( playerid );
 	return 1;
 }
 
@@ -8916,7 +8912,6 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 
 	p_LastPlayerState{ playerid } = oldstate;
 
-
     if ( oldstate == PLAYER_STATE_SPECTATING )
     {
     	ResetPlayerWeapons( playerid );
@@ -10131,7 +10126,11 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			SetPlayerCash			( playerid, iCash );
 			SetPlayerScore			( playerid, iScore );
 			SetPlayerFightingStyle	( playerid, iFightStyle );
-			GivePlayerWantedLevel	( playerid, iWanted, true );
+
+			if ( iWanted ) {
+				SetPlayerWantedLevel( playerid, iWanted );
+				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[RESUME]{FFFFFF} Your wanted level has been set to %d as you are resuming your life.", GetPlayerWantedLevel( playerid ) );
+			}
 
 			p_AdminLevel[ playerid ] 		= cache_get_field_content_int( 0, "ADMINLEVEL", dbHandle );
 			p_BankMoney[ playerid ] 		= cache_get_field_content_int( 0, "BANKMONEY", dbHandle );
@@ -13554,71 +13553,6 @@ stock IsPlayerInPoliceCar( playerid )
 	new model = GetVehicleModel( GetPlayerVehicleID( playerid ) );
 	if ( model == 425 || model == 520|| model == 497 || model == 470 || model == 432 || model == 428 || model == 523 || model == 427 || model == 490 || model >= 596 && model <= 599 || model == 601 ) return true;
 	return false;
-}
-
-stock GivePlayerWantedLevel( playerid, wantedlevel, bool:loadingstats = false )
-{
-	static
-		szWanted[ 12 ];
-
-	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) )
-	    return 0;
-
-	if ( IsPlayerJailed( playerid ) )
-	{
-		SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[WANTED LEVEL]{FFFFFF} As you're jailed, wanted levels will not append.", wantedlevel, p_WantedLevel[ playerid ] );
-		return 1;
-	}
-
-	if ( wantedlevel == 0 )
-		return 0;
-
-    if ( ( p_WantedLevel[ playerid ] += wantedlevel ) < 0 )
-    	p_WantedLevel[ playerid ] = 0; // Negative wanted level?
-
-    if ( ( wantedlevel < 0 && p_WantedLevel[ playerid ] < 6 ) || wantedlevel > 0 )
-		SetPlayerWantedLevel( playerid, p_WantedLevel[ playerid ] );
-
-	if ( p_WantedLevel[ playerid ] > 0 )
-	{
-		if ( IsPlayerSpawned( playerid ) )
-		{
-			format( szWanted, sizeof( szWanted ), "] %d ]", p_WantedLevel[ playerid ] );
-			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], szWanted );
-			if ( ! p_inMovieMode{ playerid } ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
-		}
-	}
-	else
-	{
-		PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
-		Uncuff( playerid );
-	}
-
-	// regulate player color
-	SetPlayerColorToTeam( playerid );
-
-	/*if ( p_WantedLevel[ playerid ] > 2000 ) // 8hska7082bmahu
-	{
-		p_WantedLevel[ playerid ] = 2000;
-		SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[WANTED LEVEL]{FFFFFF} Your wanted level has reached its maximum. Further wanted levels will not append.", wantedlevel, p_WantedLevel[ playerid ] );
-
-		format( szBigString, 256, "[0xA1] %s(%d) :: %d :: %d\r\n", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], g_iTime );
-	    AddFileLogLine( "security.txt", szBigString );
-		return 1;
-	}*/
-
-	if ( !loadingstats ) SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[CRIME]{FFFFFF} Your wanted level has been modified by %d! Wanted level: %d", wantedlevel, p_WantedLevel[ playerid ] );
-	else SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[RESUME]{FFFFFF} Your wanted level has been set to %d as you are resuming your life.", p_WantedLevel[ playerid ] );
-	return 1;
-}
-
-stock ClearPlayerWantedLevel( playerid )
-{
-	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
-    p_WantedLevel[ playerid ] = 0;
-	SetPlayerWantedLevel( playerid, 0 );
-	SetPlayerColorToTeam( playerid );
 }
 
 stock IsWeaponBanned( weaponid ) {
