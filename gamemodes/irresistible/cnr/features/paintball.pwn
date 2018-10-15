@@ -567,6 +567,9 @@ stock hasPaintBallArena( playerid, &arena = -1 )
 	return false;
 }
 
+stock IsPlayerLeavingPaintball( playerid ) {
+	return p_LeftPaintball{ playerid };
+}
 
 /* ** Commands ** */
 

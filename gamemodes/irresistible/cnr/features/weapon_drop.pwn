@@ -47,7 +47,7 @@ hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
-	if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) )
+	if ( IsPlayerJailed( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerInEvent( playerid ) || IsPlayerDueling( playerid ) || IsPlayerLeavingPaintball( playerid ) )
 		return 1; // do not break return
 
 	new Float: X, Float: Y, Float: Z;
