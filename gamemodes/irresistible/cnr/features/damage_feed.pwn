@@ -209,15 +209,18 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 			if ( GetPlayerArmour( playerid, armour ) )
 			{
+				// reset damage object for player
 				DestroyObject( p_DamageObject[ playerid ] );
+				p_DamageObject[ playerid ] = -1;
 
-				p_DamageObject[ playerid ] = CreateObject( armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
-				AttachObjectToPlayer( p_DamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+				// show damage object if the player is not in a vehicle (otherwise their heli explodes)
+				if ( ! IsPlayerInAnyVehicle( playerid ) ) {
+					p_DamageObject[ playerid ] = CreateObject( armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0 );
+					AttachObjectToPlayer( p_DamageObject[ playerid ], playerid, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0 );
+					SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
+				}
 
-				//SetPlayerAttachedObject( playerid, 4, armour - amount <= 0.0 ? ( 1240 ) : ( 1242 ), 1, 1.400000, -0.004999, 0.034999, 4.499999, 83.500030, -3.799998, 1.000000, 1.000000, 1.026999 );
-				SetTimerEx( "HideDamageObject", 1000, false, "d", playerid );
-
-				//Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
+				// mark player as hit
 				p_GotHit{ playerid } = true;
 			}
 		}
