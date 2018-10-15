@@ -30,6 +30,7 @@
 #include "irresistible\cnr\features\chuffsec.pwn"
 #include "irresistible\cnr\features\gps.pwn"
 #include "irresistible\cnr\features\animations.pwn"
+#include "irresistible\cnr\features\roadblocks.pwn"
 #include "irresistible\cnr\features\spikestrips.pwn"
 #include "irresistible\cnr\features\perks.pwn"
 #include "irresistible\cnr\features\weapon_locker.pwn"
