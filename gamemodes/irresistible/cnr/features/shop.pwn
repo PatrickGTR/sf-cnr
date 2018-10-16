@@ -23,7 +23,8 @@ enum E_SHOP_ITEMS
 	SHOP_ITEM_BOBBY_PIN,
 	SHOP_ITEM_MONEY_CASE,
 	SHOP_ITEM_DRILL,
-	SHOP_ITEM_METAL_MELTER
+	SHOP_ITEM_METAL_MELTER,
+	SHOP_ITEM_WEED_SEED
 }
 
 enum E_SHOP_DATA
@@ -40,6 +41,7 @@ new
  		{ SHOP_ITEM_GAS_TANK,	 	true , "Gas Tank",			"Hydrogen Chloride", 		 	16,		330 },
  		{ SHOP_ITEM_CHASITY_BELT,	false, "Chastity Belt", 	"Protection from aids", 	 	1,		550 },
  		{ SHOP_ITEM_SECURE_WALLET,	false, "Secure Wallet", 	"Protection from robberies",  	1,		660 },
+ 		{ SHOP_ITEM_WEED_SEED,	 	false, "Weed Seed",			"Grow weed", 		 			8,		750 },
  		{ SHOP_ITEM_SCISSOR,	 	true , "Scissors", 			"Automatically cut ties", 		8,		1100 },
  		{ SHOP_ITEM_ROPES,	 		true , "Rope", 				"/tie", 					 	8,		1500 },
  		{ SHOP_ITEM_BOBBY_PIN,	 	true , "Bobby Pin", 		"Automatically break cuffs", 	16,		1950 }, // [1000] -makecopgreatagain
@@ -47,10 +49,20 @@ new
  		{ SHOP_ITEM_MONEY_CASE,		false, "Money Case", 		"Increases robbing amount", 	1,		4500 }, // [1250]
  		{ SHOP_ITEM_DRILL,	 		true , "Thermal Drill", 	"Halves safe cracking time",  	1,		5000 },
  		{ SHOP_ITEM_METAL_MELTER,	true , "Metal Melter", 		"/breakout", 				 	4,		7500 }
-	}
+	},
+
+	g_playerShopItems 				[ MAX_PLAYERS ] [ E_SHOP_ITEMS ] // gradually move to this
 ;
 
 /* ** Hooks ** */
+hook OnPlayerDisconnect( playerid, reason )
+{
+	for ( new i = 0; i < sizeof( g_shopItemData ); i ++ ) {
+		g_playerShopItems[ playerid ] [ E_SHOP_ITEMS: i ] = 0;
+	}
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_SHOP_MENU && response )
@@ -106,7 +118,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     			iAmount = 1,
 
     			i = GetPVarInt( playerid, "shop_item" ),
-    			iCurrentQuantity = GetShopItemVariable( playerid, i ),
+    			iCurrentQuantity = GetShopItemAmount( playerid, i ),
 
     			iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] )
     		;
@@ -128,7 +140,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     		if ( GetPlayerCash( playerid ) < ( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) ) SendError( playerid, "You cannot afford the price of the item(s)." );
     		else if ( iAmount <= 0 ) SendError( playerid, "You cannot buy anymore of this item." );
     		else {
-    			SetShopItemVariable( playerid, i, iCurrentQuantity + iAmount );
+    			SetPlayerShopItemAmount( playerid, i, iCurrentQuantity + iAmount );
     			GivePlayerCash( playerid, -( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
 				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
     		}
@@ -143,7 +155,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Functions ** */
 stock ShowPlayerShopMenu( playerid )
 {
-	static szString[ 800 ];
+	static szString[ 1024 ];
 
 	if ( szString[ 0 ] == '\0' )
 	{
@@ -155,7 +167,7 @@ stock ShowPlayerShopMenu( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_SHOP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Shop Items", szString, "Select", "Cancel" );
 }
 
-stock GetShopItemVariable( playerid, id )
+stock GetShopItemAmount( playerid, id )
 {
 	switch( g_shopItemData[ id ] [ E_ID ] )
 	{
@@ -171,11 +183,12 @@ stock GetShopItemVariable( playerid, id )
 		case SHOP_ITEM_FOIL: return p_AntiEMP[ playerid ];
 		case SHOP_ITEM_DRILL: return p_drillStrength[ playerid ];
 		case SHOP_ITEM_METAL_MELTER: return p_MetalMelter[ playerid ];
+		case SHOP_ITEM_WEED_SEED: return g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ];
 	}
 	return 0;
 }
 
-stock SetShopItemVariable( playerid, id, value )
+stock SetPlayerShopItemAmount( playerid, id, value )
 {
 	switch( g_shopItemData[ id ] [ E_ID ] )
 	{
@@ -191,8 +204,25 @@ stock SetShopItemVariable( playerid, id, value )
 		case SHOP_ITEM_FOIL: return p_AntiEMP[ playerid ] = value;
 		case SHOP_ITEM_DRILL: return p_drillStrength[ playerid ] = value;
 		case SHOP_ITEM_METAL_MELTER: return p_MetalMelter[ playerid ] = value;
+		case SHOP_ITEM_WEED_SEED: return g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ] = value;
 	}
 	return 0;
+}
+
+stock GivePlayerShopItem( playerid, E_SHOP_ITEMS: itemid, amount ) {
+	g_playerShopItems[ playerid ] [ itemid ] += amount;
+}
+
+stock GetPlayerShopItemAmount( playerid, E_SHOP_ITEMS: itemid ) {
+	return g_playerShopItems[ playerid ] [ itemid ];
+}
+
+stock GetShopItemCost( E_SHOP_ITEMS: item_id )
+{
+	for ( new i = 0; i < sizeof( g_shopItemData ); i ++ ) if ( g_shopItemData[ i ] [ E_ID ] == item_id ) {
+		return g_shopItemData[ i ] [ E_PRICE ];
+	}
+	return 1;
 }
 
 stock GetShopItemLimit( E_SHOP_ITEMS: item_id )

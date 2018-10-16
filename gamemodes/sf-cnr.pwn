@@ -151,19 +151,6 @@ new
 	Iterator:gates<MAX_GATES>
 ;
 
-/* ** Weed System ** */
-#define MAX_WEED_STORAGE 			( 10 )
-#define MAX_WEED                    ( 42 )
-enum E_WEED_DATA
-{
-	bool: E_CREATED,    E_OBJECT,       bool: E_CUT,
-	Float: E_X,         Float: E_Y,     Float: E_Z
-};
-
-new
-	g_weedData                      [ MAX_WEED ] [ E_WEED_DATA ]
-;
-
 /* ** Copten Codes ** */
 enum E_TEN_CODES
 {
@@ -549,7 +536,7 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( -2172.2017, 252.1113, 35.3388, 19, 0, -1, -1, -1, 750.0 ); // Paintball
 	CreateDynamicMapIcon( -2455.4487, 503.9236, 30.0781, 30, 0, -1, -1, -1, 750.0 ); // CIA-FBI
 	CreateDynamicMapIcon( -2489.8660, -16.8687, 25.6172, 58, 0, -1, -1, -1, 750.0 ); // Pawn Store
-	CreateDynamicMapIcon( -1840.3867, 1015.350, 45.6626, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
+	// CreateDynamicMapIcon( -1840.3867, 1015.350, 45.6626, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
 	CreateDynamicMapIcon( -1935.8773, 243.1236, 36.2211, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( -2720.6104, 217.7127, 4.31920, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( -2426.3296, 1021.7617, 50.8859, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray
@@ -557,7 +544,7 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( -1903.7902, 283.97430, 41.7187, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray
 
 	// Las Venturas
-	CreateDynamicMapIcon( 2597.58000, 2464.270, 10.8200, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
+	// CreateDynamicMapIcon( 2597.58000, 2464.270, 10.8200, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
 	CreateDynamicMapIcon( 1973.2057, 2162.2651, 10.6314, 63, 0, -1, -1, -1, 750.0 ); // Paint n Spray - Las Venturas
 	CreateDynamicMapIcon( 1607.2659, 1815.2485, 10.8203, 22, 0, -1, -1, -1, 750.0 ); // Hospital - Las Venturas
 	CreateDynamicMapIcon( -320.1947, 1048.2355, 20.3403, 22, 0, -1, -1, -1, 750.0 ); // Hospital - Fort Carson
@@ -570,7 +557,7 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( 2386.8342, 1048.7100, 10.1765, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 
 	// Los Santos
-	CreateDynamicMapIcon( 2597.5800,  2464.2700, 10.8200, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
+	//CreateDynamicMapIcon( 2597.5800,  2464.2700, 10.8200, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
 	CreateDynamicMapIcon( 626.96450, -571.74460, 17.9207, 30, 0, -1, -1, -1, 750.0 ); // Police Department - Dillimore
 	CreateDynamicMapIcon( 2031.3892, -1417.7322, 16.9922, 22, 0, -1, -1, -1, 750.0 ); // Hospital - Los Santos
 	CreateDynamicMapIcon( 1167.1241, -1335.4282, 28.9784, 22, 0, -1, -1, -1, 750.0 ); // Hospital - Los Santos
@@ -580,67 +567,12 @@ public OnGameModeInit()
 	CreateDynamicMapIcon( 2644.8589, -2038.8060, 13.5500, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( 1041.5466, -1023.0604, 31.7067, 27, 0, -1, -1, -1, 750.0 ); // Modshop
 	CreateDynamicMapIcon( 2635.2529, -2227.0149, 16.2969,  9, 0, -1, -1, -1, 750.0 ); // ShipYard
-	CreateDynamicMapIcon( 2456.1423, -1714.9557, 13.1630, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
+	//CreateDynamicMapIcon( 2456.1423, -1714.9557, 13.1630, 46, 0, -1, -1, -1, 750.0 ); // Weed Farm
 	CreateDynamicMapIcon( 1642.1968, -2335.4983, 13.5469,  5, 0, -1, -1, -1, 750.0 ); // Airport
 	CreateDynamicMapIcon( 1519.1024, -1451.9186, 13.6816, 30, 0, -1, -1, -1, 750.0 ); // CIA-FBI
 	CreateDynamicMapIcon( 1749.2073, -1948.8389, 13.4137, 42, 0, -1, -1, -1, 750.0 ); // TrainStation
 	CreateDynamicMapIcon( 815.69880, -1347.7256, 13.1043, 42, 0, -1, -1, -1, 750.0 ); // TrainStation
 	CreateDynamicMapIcon( 1911.2578, -1775.8676, 12.9470,  8, 0, -1, -1, -1, 750.0 ); // BombShop
-
-	/* ** Drug Dealer ** */
-
-	// San Fierro
-	CreateWeedPlant( -1840.90, 1034.53, 45.70, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( -1846.17, 1027.93, 45.70, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( -1835.89, 1030.38, 45.70, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( -1846.73, 1016.40, 45.72, 11.5, 1.86, 0.00 );
-	CreateWeedPlant( -1840.48, 1022.97, 46.12, 11.5, 1.86, 0.00 );
-	CreateWeedPlant( -1835.85, 1017.52, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1842.32, 1011.92, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1836.99, 1008.02, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1838.05, 997.580, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1847.71, 1005.00, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1842.39, 1001.95, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1838.40, 990.090, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1832.22, 1012.22, 45.82, 6.72, 0.84, 0.00 );
-	CreateWeedPlant( -1831.87, 1025.52, 45.82, 6.72, 0.84, 0.00 );
-
-	#if ENABLE_CITY_LV == true
-	// Las Venturas
-	CreateWeedPlant( 2567.580, 2463.27, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2572.580, 2462.69, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2577.580, 2464.02, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2582.580, 2465.27, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2587.580, 2462.27, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2592.580, 2464.77, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2597.580, 2464.27, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2568.991, 2468.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2573.991, 2469.39, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2578.991, 2470.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2583.991, 2469.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2588.991, 2467.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2593.991, 2468.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2598.991, 2470.19, 10.82, 0.00, 0.00, 0.00 );
-	CreateWeedPlant( 2603.093, 2466.90, 10.82, 0.00, 0.00, 0.00 );
-	#endif
-
-	#if ENABLE_CITY_LS == true
-	CreateWeedPlant( 2447.354, -1711.075, 13.5094, 0.0, 0.0, 0.0000 );
-	CreateWeedPlant( 2450.854, -1711.075, 13.5094, 0.0, 0.0, -13.59 );
-	CreateWeedPlant( 2446.565, -1715.559, 13.5094, 0.0, 0.0, 39.599 );
-	CreateWeedPlant( 2451.853, -1716.996, 13.5094, 0.0, 0.0, 0.0000 );
-	CreateWeedPlant( 2455.603, -1711.075, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2455.434, -1714.954, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2460.162, -1713.718, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2462.092, -1710.387, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2465.872, -1712.579, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2463.214, -1717.164, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2468.758, -1715.719, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2470.875, -1712.068, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2467.420, -1718.029, 13.5094, 0.0, 0.0, 59.900 );
-	CreateWeedPlant( 2459.837, -1717.633, 13.5094, 0.0, 0.0, 9.0000 );
-	CreateWeedPlant( 2454.947, -1718.407, 13.5094, 0.0, 0.0, -21.49 );
-	#endif
 
 	/* ** Custom Vehicles ** */
 	g_TrolleyVehicles[ 0 ] = AddStaticVehicle( 457, -2511.7935, 760.5610, 34.8990, 90.6223, 123, 1 ); // trolley
@@ -1413,7 +1345,6 @@ public ZoneTimer( )
         g_WorldDayCount = ( g_WorldDayCount == 6 ? 0 : g_WorldDayCount + 1 );
 		TextDrawSetString( g_WorldDayTD, GetDayToString( g_WorldDayCount ) );
 
-		RenewWeed( );
 		PlayerPlaceRandomHits( );
 
 		foreach(new p : Player) {
@@ -5692,137 +5623,6 @@ CMD:ask( playerid, params[ ] )
         SendClientMessageToAdmins( -1, "{FE5700}[QUESTION] %s(%d):{FFFFFF} %s", ReturnPlayerName( playerid ), playerid, szMessage );
 		SendClientMessageFormatted( playerid, -1, "{FE5700}[QUESTION]"COL_WHITE" You've asked \"%s\".", szMessage );
 	}
-	return 1;
-}
-
-CMD:weed( playerid, params[ ] )
-{
-	new
-		Float: X, Float: Y, Float: Z
-	;
-
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
-
-	if ( IsPlayerTied( playerid ) || IsPlayerTazed( playerid ) || IsPlayerCuffed( playerid ) || IsPlayerJailed( playerid ) || IsPlayerInMinigame( playerid ) )
-		return SendError( playerid, "You cannot use this command at the moment." );
-
-	if ( isnull( params ) ) return SendUsage( playerid, "/weed [COLLECT/SELL/BUY/USE]" );
-	else if ( strmatch( params, "collect" ) )
-	{
-		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
-		if ( p_WeedGrams[ playerid ] >= MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You mustn't be inside a vehicle while collecting weed." );
-
-		new count = 0;
-	    for( new i; i < MAX_WEED; i++ )
-	    {
-			if ( g_weedData[ i ] [ E_CREATED ] == false || g_weedData[ i ] [ E_CUT ] == true ) continue;
-			GetDynamicObjectPos( g_weedData[ i ] [ E_OBJECT ], X, Y, Z );
-
-			if ( IsPlayerInRangeOfPoint( playerid, 4.0, X, Y, Z ) && g_weedData[ i ] [ E_CUT ] == false )
-			{
-			    count++;
-                p_WeedGrams[ playerid ]++;
-                g_weedData[ i ] [ E_CUT ] = true;
-                MoveDynamicObject( g_weedData[ i ] [ E_OBJECT ], X, Y, Z - 5.0, 0.50 );
-                SendServerMessage( playerid, "You have collected a gram of "COL_GREEN"weed{FFFFFF}." );
-			  	break;
-		  	}
-	    }
-		if ( !count ) SendError( playerid, "You are not next to any weed plant." );
-	}
-	else if ( !strcmp( params, "sell", false, 4 ) )
-	{
-	    new pID, iAmount;
-
-		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
-	    else if ( p_SellingWeedTick[ playerid ] > g_iTime ) return SendError( playerid, "You must wait a minute before selling weed again." );
-		else if ( !p_WeedGrams[ playerid ] ) return SendError( playerid, "You don't have any weed with you." );
-	    else if ( sscanf( params[ 5 ],"uD(1)", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
-	    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
-		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
-		else if ( iAmount > p_WeedGrams[ playerid ] ) return SendError( playerid, "You only have %d grams of weed on you.", p_WeedGrams[ playerid ] );
-	    else if ( iAmount < 1 || iAmount > MAX_WEED_STORAGE ) return SendError( playerid, "You can only sell between 1 to %d grams of weed to a player.", MAX_WEED_STORAGE );
-	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
-	    {
-	    	new
-	    		iCost  = iAmount * 5000,
-	    		iTaxed = floatround( iCost * 0.8 )
-	    	;
-
-			if ( GetPlayerCash( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
-
-			p_WeedDealer[ pID ] = playerid;
-			p_WeedTick[ pID ] = GetTickCount( );
-			p_WeedSellingGrams[ pID ] = iAmount;
-			p_SellingWeedTick[ playerid ] = g_iTime + 60;
-			SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) is selling you %d gram(s) of weed for %s. "COL_ORANGE"/weed buy"COL_WHITE" to buy.", ReturnPlayerName( playerid ), playerid, iAmount, cash_format( iCost ) );
-			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, cash_format( iTaxed ) );
-	    }
-	    else SendError( playerid, "This player is not nearby." );
-	}
-	else if ( strmatch( params, "buy" ) )
-	{
-	    if ( !IsPlayerConnected( p_WeedDealer[ playerid ] ) ) return SendError( playerid, "Your dealer isn't connected anymore." );
-		else if ( hasTickcountPassed( p_WeedTick[ playerid ], 120000 ) ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, each deal goes for 2 minutes maximum. You were late." );
-		else
-		{
-		    new
-		    	dealerid = p_WeedDealer[ playerid ],
-		    	iGrams 	 = p_WeedSellingGrams[ playerid ],
-		    	iCost 	 = iGrams * 5000,
-		    	iTaxed 	 = floatround( iCost * 0.8 )
-		    ;
-
-			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", cash_format( iCost ), iGrams );
-			else if ( IsPlayerInPaintBall( dealerid ) || IsPlayerDueling( dealerid ) ) return SendError( playerid, "Your dealer cannot deal in an arena." );
-			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
-			else if ( !IsPlayerJob( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
-			else if ( !p_WeedGrams[ dealerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID,  SendError( playerid, "Your dealer doesn't have any more weed." );
-			else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
-			else
-			{
-	         	p_WeedGrams[ playerid ] += iGrams;
-	         	p_WeedGrams[ dealerid ] -= iGrams;
-
-				GivePlayerCash( playerid, -iCost );
-				GivePlayerCash( dealerid, iTaxed );
-
-				SendClientMessageFormatted( dealerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) has bought %d grams of weed off you for %s.", ReturnPlayerName( playerid ), playerid, iGrams, cash_format( iTaxed ) );
-				SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have bought %d grams of weed for %s.", iGrams, cash_format( iCost ) );
-
-				GivePlayerWantedLevel( dealerid, 6 );
-				GivePlayerWantedLevel( playerid, 6 );
-
-				Beep( dealerid );
-				p_WeedDealer[ playerid ] = INVALID_PLAYER_ID;
-			}
-		}
-	}
-	else if ( strmatch( params, "use" ) )
-	{
-    	if ( GetPVarInt( playerid, "weed_timestamp" ) > g_iTime ) return SendError( playerid, "You must wait at least %d seconds before using this command.", GetPVarInt( playerid, "weed_timestamp" ) - g_iTime );
-		if ( p_WeedGrams[ playerid ] < 1 ) return SendError( playerid, "You don't have any weed with you." );
-		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot use this in jail." );
-		if ( IsPlayerLoadingObjects( playerid ) ) return SendError( playerid, "You're in a object-loading state, please wait." );
-		if ( IsPlayerAttachedObjectSlotUsed( playerid, 0 ) ) return SendError( playerid, "You cannot use this command since you're robbing." );
-		// if ( IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You cannot use your own products, they are for resale only!" );
-		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-		//if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command in a vehicle." );
-	    //if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command if you're entering a vehicle." );
-	    //if ( GetPlayerState( playerid ) == PLAYER_STATE_EXIT_VEHICLE ) return SendError( playerid, "You cannot use this command if you're exiting a vehicle." );
-		//if ( p_InAnimation{ playerid } || GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_NONE ) return SendError( playerid, "You cannot use this command since you're in animation." );
-		SetPVarInt( playerid, "weed_timestamp", g_iTime + 120 );
-		p_WeedGrams[ playerid ]--;
-		SetPlayerHealth( playerid, 150 );
-		SetPlayerDrunkLevel( playerid, 5000 );
-		SendServerMessage( playerid, "You have smoked a gram of weed." );
-		DestroyDynamic3DTextLabel( p_WeedLabel[ playerid ] );
-	    p_WeedLabel[ playerid ] = CreateDynamic3DTextLabel( "Blazed W33D Recently!", COLOR_GREEN, X, Y, Z + 1.0, 15, playerid );
-		//ApplyAnimation( playerid, "GANGS", "smkcig_prtl", 4.1, 0, 1, 1, 0, 0, 1 );
-	}
-	else return SendUsage( playerid, "/weed [COLLECT/SELL/BUY/USE]" );
 	return 1;
 }
 
@@ -11184,13 +10984,13 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    		}
 		    		else
 		    		{
-		    			new iCurrentQuantity = GetShopItemVariable( playerid, i );
+		    			new iCurrentQuantity = GetShopItemAmount( playerid, i );
 			    		new iLimit = g_shopItemData[ i ] [ E_LIMIT ] + ( 2 * p_VIPLevel[ playerid ] );
 
 			    		if ( iCurrentQuantity >= iLimit )
 			    			return SendError( playerid, "You cannot buy more of this item with your rewards points." );
 
-		    			SetShopItemVariable( playerid, i, iCurrentQuantity + 1 );
+		    			SetPlayerShopItemAmount( playerid, i, iCurrentQuantity + 1 );
 		    		}
 
 		    		// deduct points
@@ -11606,7 +11406,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				new
 					Float: fDrill = float( p_drillStrength[ playerid ] ) / float( MAX_DRILL_STRENGTH ) * 100.0;
 
-				format( szLargeString, 700, ""COL_GREY"Thermal Drill:{FFFFFF} %0.0f%%\n"\
+				format( szLargeString, 750, ""COL_GREY"Thermal Drill:{FFFFFF} %0.0f%%\n"\
 											""COL_GREY"Ropes:{FFFFFF} %d\n"\
 											""COL_GREY"Metal Melters:{FFFFFF} %d\n"\
 											""COL_GREY"Scissors:{FFFFFF} %d\n"\
@@ -11615,7 +11415,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Money Case:{FFFFFF} %s\n",
 											fDrill, p_Ropes[ pID ], p_MetalMelter[ pID ], p_Scissors[ pID ], p_WeedGrams[ pID ], p_Methamphetamine{ pID }, p_MoneyBag{ pID } == true ? ( "Yes" ) : ( "No" ) );
 
-				format( szLargeString, 700, "%s"COL_GREY"Aluminium Foil:{FFFFFF} %d\n"\
+				format( szLargeString, 750, "%s"COL_GREY"Aluminium Foil:{FFFFFF} %d\n"\
 											""COL_GREY"Secure Wallet:{FFFFFF} %s\n"\
 											""COL_GREY"Bobby Pins:{FFFFFF} %d\n"\
 											""COL_GREY"C4:{FFFFFF} %d\n"\
@@ -11626,7 +11426,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											szLargeString, p_AntiEMP[ pID ], p_SecureWallet{ pID } == true ? ( "Yes" ) : ( "No" ), p_BobbyPins[ pID ], p_C4Amount[ pID ], p_AidsVaccine{ pID } == true ? ("Yes") : ("No"),
 											p_CausticSoda{ pID }, p_MuriaticAcid{ pID }, p_HydrogenChloride{ pID } );
 
-				format( szLargeString, 700, "%s"COL_GREY"Fireworks:{FFFFFF} %d\n"COL_GREY"Explosive Bullets:{FFFFFF} %d\n", szLargeString, p_Fireworks[ pID ], p_ExplosiveBullets[ pID ] );
+				format( szLargeString, 750, "%s"COL_GREY"Weed Seeds:"COL_WHITE" %d\n"\
+											""COL_GREY"Fireworks:{FFFFFF} %d\n"\
+											""COL_GREY"Explosive Bullets:{FFFFFF} %d\n",
+											szLargeString, GetPlayerShopItemAmount( playerid, SHOP_ITEM_WEED_SEED ), p_Fireworks[ pID ], p_ExplosiveBullets[ pID ] );
+
 				ShowPlayerDialog( playerid, DIALOG_STATS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Item Statistics", szLargeString, "Okay", "Back" );
 			}
 			case 3: Streak_ShowPlayer( pID, DIALOG_STATS_REDIRECT, "Back", playerid );
@@ -14821,44 +14625,6 @@ stock SyncObject( playerid, Float: offsetX = 0.005, Float: offsetY = 0.005, Floa
 
 	if ( GetPlayerPos( playerid, X, Y, Z ) )
 		SetPlayerPos( playerid, X + offsetX, Y + offsetY, Z + offsetZ );
-}
-
-CreateWeedPlant( Float: X, Float: Y, Float: Z, Float: rX, Float: rY, Float: rZ )
-{
-	new ID = -1;
-	for( new i; i < MAX_WEED; i++ )
-	{
-	    if ( !g_weedData[ i ] [ E_CREATED ] ) {
-			ID = i;
-			break;
-		}
-	}
-	if ( ID != -1 )
-	{
-		g_weedData[ ID ] [ E_CREATED ] = true;
-		g_weedData[ ID ] [ E_OBJECT ] = CreateDynamicObject( 822, X, Y, Z, rX, rY, rZ );
-		g_weedData[ ID ] [ E_CUT ] = false;
-		g_weedData[ ID ] [ E_X ] = X;
-		g_weedData[ ID ] [ E_Y ] = Y;
-		g_weedData[ ID ] [ E_Z ] = Z;
-	}
-	return ID;
-}
-
-stock RenewWeed( )
-{
-    for( new i; i < MAX_WEED; i++ )
-	{
-	    if ( g_weedData[ i ] [ E_CREATED ] == true && g_weedData[ i ] [ E_CUT ] == true )
-	    {
-	        StopDynamicObject( g_weedData[ i ] [ E_OBJECT ] );
-           	MoveDynamicObject( g_weedData[ i ] [ E_OBJECT ], g_weedData[ i ] [ E_X ], g_weedData[ i ] [ E_Y ], g_weedData[ i ] [ E_Z ], 0.75 );
-			g_weedData[ i ] [ E_CREATED ] = true;
-		    g_weedData[ i ] [ E_CUT ] = false;
-			//DestroyDynamicObject( g_weedData[ i ] [ E_OBJECT ] );
-			//g_treeData[ i ] [ E_OBJECT ] = CreateDynamicObject( 822, g_weedData[ i ] [ E_X ], g_weedData[ i ] [ E_Y ], g_weedData[ i ] [ E_Z ], g_weedData[ i ] [ E_RX ], g_weedData[ i ] [ E_RY ], 0.0 );
-		}
-	}
 }
 
 stock AddAdminLogLineFormatted( format[ ], va_args<> )
