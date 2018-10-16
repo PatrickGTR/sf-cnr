@@ -5,6 +5,9 @@
  * Purpose: static map icons in the server
  */
 
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
 /* ** Functions ** */
 hook OnScriptInit( )
 {

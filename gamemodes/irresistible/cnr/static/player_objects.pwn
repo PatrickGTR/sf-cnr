@@ -1,9 +1,12 @@
 /*
  * Irresistible Gaming 2018
  * Developed by Lorenc Pekaj
- * Module: static_cnr\player_objects.inc
+ * Module: cnr\static\player_objects.inc
  * Purpose: player associated objects, including but not limited to interiors
  */
+
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
 
 /* ** Functions ** */
 hook OnScriptInit( )
