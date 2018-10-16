@@ -76,7 +76,12 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		{
 			if ( ! g_weedData[ weedid ] [ E_GROW_TIME ] )
 			{
-				if ( player_class != CLASS_POLICE ) {
+				if ( player_class != CLASS_POLICE )
+				{
+					if ( g_weedData[ weedid ] [ E_USER_ID ] != playerid )
+					{
+						SendServerMessage( g_weedData[ weedid ] [ E_USER_ID ], "%s(%d) has stolen a gram of weed from your plant!", ReturnPlayerName( playerid ), playerid );
+					}
 					GivePlayerWantedLevel( playerid, 6 ); // give wanted level to police
 				}
 
