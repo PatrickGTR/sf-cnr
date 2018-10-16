@@ -10,9 +10,30 @@
 
 /* ** Definitions ** */
 #define FILE_BUILD					"v11.40.120"
+
 #define SERVER_NAME					"San Fierro Cops And Robbers (0.3.7)"
+#define SERVER_MODE_TEXT 			"Cops And Robbers / DM / Gangs"
+#define SERVER_MAP 					"San Fierro"
+#define SERVER_LANGUAGE				"English"
+
 #define SERVER_WEBSITE				"www.sfcnr.com"
 #define SERVER_IP					"54.36.127.43:7777"
+
+/* ** Hooks ** */
+hook OnScriptInit( )
+{
+	SetGameModeText( SERVER_MODE_TEXT );
+
+	SetServerRule( "hostname", SERVER_NAME );
+	SetServerRule( "language", SERVER_LANGUAGE );
+	SetServerRule( "mapname", SERVER_MAP );
+
+	UsePlayerPedAnims( );
+	AllowInteriorWeapons( 0 );
+	EnableStuntBonusForAll( 0 );
+	DisableInteriorEnterExits( );
+	return 1;
+}
 
 /* ** Functions ** */
 stock IsPlayerLeadMaintainer( playerid )

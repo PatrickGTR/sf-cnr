@@ -319,16 +319,6 @@ main()
 
 public OnGameModeInit()
 {
-	SetGameModeText( "Cops And Robbers / DM / Gangs" );
-	SetServerRule( "hostname", SERVER_NAME );
-	SetServerRule( "language", "English" );
-	SetServerRule( "mapname", "San Fierro" );
-
-	UsePlayerPedAnims( );
-	AllowInteriorWeapons( 0 );
-	EnableStuntBonusForAll( 0 );
-	DisableInteriorEnterExits( );
-
 	#if defined DEBUG_MODE
 	mysql_log( LOG_ERROR | LOG_WARNING );
 	#endif
@@ -10604,19 +10594,10 @@ public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 //      Functions      //
 /////////////////////////
 
-stock SetServerRule( rule[ ], value[ ] )
+stock SetServerRule( const rule[ ], const value[ ] )
 {
-	new string[ 80 ];
-	format( string, sizeof( string ), "%s %s", rule, value );
-	SendRconCommand( string );
+	return SendRconCommand( sprintf( "%s %s", rule, value ) );
 }
-
-/*stock ReturnPlayerName( playerid )
-{
-	GetPlayerName( playerid, szSmallString, MAX_PLAYER_NAME );
-	if ( !IsPlayerConnected( playerid ) ) szSmallString = "No-one";
-	return szSmallString;
-}*/
 
 stock SetPlayerPosToPrison( playerid )
 {
