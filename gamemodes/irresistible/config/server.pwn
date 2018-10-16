@@ -15,7 +15,8 @@
 #define SERVER_IP					"54.36.127.43:7777"
 
 /* ** Functions ** */
-stock IsPlayerLeadMaintainer( playerid ) {
+stock IsPlayerLeadMaintainer( playerid )
+{
 	return GetPlayerAccountID( playerid ) == 1; // limits money, coin, xp spawning to this user
 }
 
@@ -25,4 +26,12 @@ stock IsPlayerServerMaintainer( playerid )
 		account_id = GetPlayerAccountID( playerid );
 
 	return IsPlayerLeadMaintainer( playerid ) || account_id == 277833 || account_id == 758617; // same as lead maintainer, just cant spawn money/xp/coins
+}
+
+stock IsPlayerUnderCover( playerid ) // StefiTV852, Shepard23, JamesComey
+{
+	new
+		account_id = GetPlayerAccountID( playerid );
+
+	return ( account_id == 577142 || account_id == 536230 || account_id == 668504 ) && IsPlayerLoggedIn( playerid );
 }

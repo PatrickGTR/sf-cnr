@@ -251,7 +251,7 @@ public OnPlayerLeaveGang( playerid, gangid, reason )
 /* ** Commands ** */
 CMD:clans( playerid, params[ ] )
 {
-	mysql_function_query( dbHandle, "SELECT * FROM `GANGS` WHERE `CLAN_TAG` IS NOT NULL ORDER BY `SCORE` DESC", true, "readclans", "d", playerid );
+	mysql_function_query( dbHandle, "SELECT * FROM `GANGS` WHERE `CLAN_TAG` IS NOT NULL ORDER BY `SCORE` DESC", true, "OnListClans", "d", playerid );
 	return 1;
 }
 
@@ -650,7 +650,38 @@ thread OnGangColeaderLoad( gangid ) {
 	}
 }
 
-thread readclans( playerid )
+thread OnListGangMembers( playerid, gangid, page )
+{
+	new
+	    rows, i;
+
+	cache_get_data( rows, tmpVariable );
+
+	if ( rows )
+	{
+		static
+			userName[ MAX_PLAYER_NAME ];
+
+		for( i = 0, szLargeString[ 0 ] = '\0'; i < rows; i++ )
+		{
+			cache_get_field_content( i, "NAME", userName );
+			format( szLargeString, sizeof( szLargeString ), "%s%s%s\n", szLargeString, cache_get_field_content_int( i, "ONLINE", dbHandle ) ? ( #COL_GREEN ) : ( #COL_WHITE ), userName );
+		}
+
+		SetPVarInt( playerid, "gang_members_id", gangid );
+		SetPVarInt( playerid, "gang_members_results", rows );
+		SetPVarInt( playerid, "gang_members_page", page );
+		ShowPlayerDialog( playerid, DIALOG_GANG_LIST_MEMBERS, DIALOG_STYLE_LIST, sprintf( ""COL_WHITE"Gang Members - Page %d", page + 1 ), szLargeString, rows >= 20 ? ( "Next" ) : ( "Close" ), "Back" );
+	}
+	else
+	{
+		// Notify user
+		SendError( playerid, "This gang no longer has any members." );
+	}
+	return 1;
+}
+
+thread OnListClans( playerid )
 {
 	new
 	    rows, fields
@@ -1025,4 +1056,19 @@ stock SplitPlayerCashForGang( playerid, Float: cashRobbed )
 		GivePlayerCash( playerid, iRoundedRobbed );
 	}
 	return 1;
+}
+
+stock GetOnlineGangMembers( gangid, &afk_members = 0 )
+{
+	if ( gangid == INVALID_GANG_ID )
+		return 0;
+
+	new
+		iPlayers = 0;
+
+	foreach ( new playerid : Player ) if ( p_GangID[ playerid ] == gangid ) {
+		if ( IsPlayerAFK( playerid ) ) afk_members ++;
+		iPlayers ++;
+	}
+	return iPlayers;
 }
