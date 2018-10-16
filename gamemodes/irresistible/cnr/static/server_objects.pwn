@@ -6,7 +6,7 @@
  */
 
 /* ** Functions ** */
-function initializeServerObjects( )
+hook OnScriptInit( )
 {
 	// Classes
 	CreateDynamicObject( 14846, 242.121002, 77.313003, 1605.078002, 0.000000, 0.000000, 0.000000, .priority = 9999, .streamdistance = -1.0 );

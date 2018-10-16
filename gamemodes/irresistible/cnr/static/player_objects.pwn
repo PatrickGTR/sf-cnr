@@ -6,7 +6,7 @@
  */
 
 /* ** Functions ** */
-stock initializeObjects( )
+hook OnScriptInit( )
 {
 	// Garden House
 	CreateDynamicObject(636, -2562.06, 329.14, 14.43,   0.00, -90.00, 0.00);

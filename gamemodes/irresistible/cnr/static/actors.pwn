@@ -86,7 +86,7 @@ new
 	}
 ;
 
-stock initializeActors( )
+hook OnScriptInit( )
 {
 	for( new i = 0; i < sizeof( g_actorData ); i++ )
 	{
