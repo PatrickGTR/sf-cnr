@@ -112,12 +112,12 @@ CMD:copwarn( playerid, params [ ] )
 
 		if ( iWarns >= MAX_CLASS_BAN_WARNS )
 		{
-	        AddAdminLogLineFormatted( "%s(%d) has cop-banned %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+	        AddAdminLogLineFormatted( "%s(%d) has cop-banned %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 		    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has cop-banned %s(%d) due to excessive cop-warnings "COL_GREEN"[REASON: %s]", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID, reason );
 		}
 		else
 		{
-	        AddAdminLogLineFormatted( "%s(%d) has cop-warned %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+	        AddAdminLogLineFormatted( "%s(%d) has cop-warned %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 		    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has cop-warned %s(%d) "COL_GREEN"[REASON: %s]", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID, reason );
 		}
 	}
@@ -147,12 +147,12 @@ CMD:armywarn( playerid, params [ ] )
 
 		if ( iWarns >= MAX_CLASS_BAN_WARNS )
 		{
-	        AddAdminLogLineFormatted( "%s(%d) has army-banned %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+	        AddAdminLogLineFormatted( "%s(%d) has army-banned %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 		    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has army-banned %s(%d) due to excessive army-warnings "COL_GREEN"[REASON: %s]", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID, reason );
 		}
 		else
 		{
-	        AddAdminLogLineFormatted( "%s(%d) has army-warned %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+	        AddAdminLogLineFormatted( "%s(%d) has army-warned %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 		    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has army-warned %s(%d) "COL_GREEN"[REASON: %s]", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID, reason );
 		}
 	}
@@ -174,7 +174,7 @@ CMD:rcopwarn( playerid, params [ ] )
 		new
 			iWarns = WarnPlayerClass( pID, .bArmy = false, .iPoints = -1 );
 
-        AddAdminLogLineFormatted( "%s(%d) has removed a cop-warn from %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+        AddAdminLogLineFormatted( "%s(%d) has removed a cop-warn from %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 	    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has removed a cop-warn from %s(%d)!", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID );
 	}
 	return 1;
@@ -195,7 +195,7 @@ CMD:rarmywarn( playerid, params [ ] )
 		new
 			iWarns = WarnPlayerClass( pID, .bArmy = true, .iPoints = -1 );
 
-        AddAdminLogLineFormatted( "%s(%d) has removed an army-warn from %s(%d) [%d/" #MAX_CLASS_BAN_WARNS "]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns );
+        AddAdminLogLineFormatted( "%s(%d) has removed an army-warn from %s(%d) [%d/%d]", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, iWarns, MAX_CLASS_BAN_WARNS );
 	    SendGlobalMessage( -1, ""COL_PINK"[ADMIN]{FFFFFF} %s has removed an army-warn from %s(%d)!", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), pID );
 	}
 	return 1;

@@ -9,12 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Variables ** */
-new Text: g_classTextdrawBox[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
-new Text: g_classTextdrawDescription[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
-new Text: g_classTextdrawName[ sizeof( CLASS_NAMES ) ] = { Text: INVALID_TEXT_DRAW, ... };
-
 new
-	Text:  g_ClassBoxTD        		= Text: INVALID_TEXT_DRAW,
 	Text:  g_ObjectLoadTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_WebsiteTD        		= Text: INVALID_TEXT_DRAW,
 	Text:  g_MotdTD               	= Text: INVALID_TEXT_DRAW,
@@ -52,106 +47,6 @@ new
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-	g_ClassBoxTD = TextDrawCreate(40.000000, 170.000000, "_");
-	TextDrawBackgroundColor(g_ClassBoxTD, 255);
-	TextDrawFont(g_ClassBoxTD, 1);
-	TextDrawLetterSize(g_ClassBoxTD, 0.500000, 16.000000);
-	TextDrawColor(g_ClassBoxTD, -1);
-	TextDrawSetOutline(g_ClassBoxTD, 0);
-	TextDrawSetProportional(g_ClassBoxTD, 1);
-	TextDrawSetShadow(g_ClassBoxTD, 1);
-	TextDrawUseBox(g_ClassBoxTD, 1);
-	TextDrawBoxColor(g_ClassBoxTD, 144);
-	TextDrawTextSize(g_ClassBoxTD, 170.000000, 10.000000);
-
-	for ( new i = 0; i < sizeof( g_classTextdrawBox ); i ++ )
-	{
-		g_classTextdrawBox[ i ] = TextDrawCreate(40.000000, 138.000000, "_");
-		TextDrawBackgroundColor(g_classTextdrawBox[ i ], 255);
-		TextDrawFont(g_classTextdrawBox[ i ], 1);
-		TextDrawLetterSize(g_classTextdrawBox[ i ], 0.500000, 3.000000);
-		TextDrawColor(g_classTextdrawBox[ i ], -1);
-		TextDrawSetOutline(g_classTextdrawBox[ i ], 0);
-		TextDrawSetProportional(g_classTextdrawBox[ i ], 1);
-		TextDrawSetShadow(g_classTextdrawBox[ i ], 1);
-		TextDrawUseBox(g_classTextdrawBox[ i ], 1);
-		TextDrawBoxColor(g_classTextdrawBox[ i ], CLASS_COLORS[ i ]);
-		TextDrawTextSize(g_classTextdrawBox[ i ], 170.000000, 10.000000);
-
-		szLargeString[ 0 ] = '\0';
-
-		switch ( i )
-		{
-			case 0: {
-				strcat( szLargeString,	"- Select different types of jobs~n~" \
-										"- Able to rob stores and players~n~" \
-										"- Can gang up with players~n~" \
-										"~g~~h~- Accessible to everybody" );
-			}
-			case 1:	{
-				strcat( szLargeString,	"- Protect the city from criminals~n~" \
-										"- Access to police gun lockers~n~" \
-										"- Can arrest/jail people~n~" \
-										"~g~~h~- Accessible to everybody" );
-			}
-			case 2:	{
-				strcat( szLargeString,	"- Protect the city from criminals~n~" \
-										"- Access to police gun lockers~n~" \
-										"- Can arrest/jail people~n~" \
-										"- Can set roadblocks on roads~n~" \
-										"- Can set spike traps on roads~n~" \
-										"~r~~h~- Requires 10,000 XP or more" );
-			}
-			case 3: {
-				strcat( szLargeString,	"- Protect the city from criminals~n~" \
-										"- Access to police gun lockers~n~" \
-										"- Can arrest/jail people~n~" \
-										"- Can set roadblocks on roads~n~" \
-										"- Can set spike traps on roads~n~" \
-										"- Can use combat vehicles~n~" \
-										"~r~~h~- Requires 20,000 XP or more" );
-			}
-			case 4: {
-				strcat( szLargeString,	"- Protect the city from criminals~n~" \
-										"- Access to police gun lockers~n~" \
-										"- Can arrest/jail people~n~" \
-										"- Can set roadblocks on roads~n~" \
-										"- Can set spike traps on roads~n~" \
-										"- Hidden from radar~n~" \
-										"~r~~h~- Requires 15,000 XP or more" );
-			}
-			case 5: {
-				strcat( szLargeString,	"- Can heal and cure players~n~" \
-										"- Ambulance passengers pay you~n~"\
-										"- Able to rob stores and players~n~" \
-										"~r~~h~- Requires 1,000 XP or more" );
-			}
-			case 6: {
-				strcat( szLargeString,	"- Protect the city from fires~n~" \
-										"- Firetrucks able to extinguish fires~n~"\
-										"- Able to rob stores and players~n~" \
-										"~r~~h~- Requires 1,000 XP or more" );
-			}
-		}
-
-		g_classTextdrawDescription[ i ] = TextDrawCreate(43.000000, 171.000000, szLargeString);
-		TextDrawBackgroundColor(g_classTextdrawDescription[ i ], 0);
-		TextDrawFont(g_classTextdrawDescription[ i ], 1);
-		TextDrawLetterSize(g_classTextdrawDescription[ i ], 0.190000, 1.100000);
-		TextDrawColor(g_classTextdrawDescription[ i ], -1);
-		TextDrawSetOutline(g_classTextdrawDescription[ i ], 1);
-		TextDrawSetProportional(g_classTextdrawDescription[ i ], 1);
-
-		g_classTextdrawName[ i ] = TextDrawCreate(46.000000, 141.000000, CLASS_NAMES[ i ] );
-		TextDrawBackgroundColor(g_classTextdrawName[ i ], 0);
-		TextDrawFont(g_classTextdrawName[ i ], 3);
-		TextDrawLetterSize(g_classTextdrawName[ i ], 0.550000, 2.099999);
-		TextDrawColor(g_classTextdrawName[ i ], i == 0 ? 0x000000FF : 0xFFFFFFFF );
-		TextDrawSetOutline(g_classTextdrawName[ i ], 1);
-		TextDrawSetProportional(g_classTextdrawName[ i ], 1);
-		TextDrawSetSelectable(g_classTextdrawName[ i ], 0);
-	}
-
 	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
 	TextDrawAlignment(g_NotManyPlayersTD, 2);
 	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);

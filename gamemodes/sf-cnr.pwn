@@ -79,7 +79,6 @@ new bool: False = false;
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
-#define MAX_CLASS_BAN_WARNS			3
 #define MAX_BURGLARY_SLOTS          8
 #define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
@@ -324,6 +323,7 @@ public OnGameModeInit()
 	SetServerRule( "hostname", SERVER_NAME );
 	SetServerRule( "language", "English" );
 	SetServerRule( "mapname", "San Fierro" );
+
 	UsePlayerPedAnims( );
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
@@ -354,92 +354,6 @@ public OnGameModeInit()
 	AddServerVariable( "hitman_budget", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "connectsong", "http://files.sfcnr.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 	AddServerVariable( "discordurl", "http://sfcnr.com/discord", GLOBAL_VARTYPE_STRING );
-
-	/* ** CIVILIAN ** */
-	CLASS_CIVILIAN_RANGE[ 0 ] = AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
-	AddPlayerClass( 289, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 1
-	AddPlayerClass( 273, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 2
-	AddPlayerClass( 271, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 3
-	AddPlayerClass( 208, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 4
-	AddPlayerClass( 268, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 5
-	AddPlayerClass( 292, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 6
-	AddPlayerClass( 293, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 7
-	AddPlayerClass(  3, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	8
-	AddPlayerClass(  4, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	9
-	AddPlayerClass(  2, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  10
-	AddPlayerClass(  7, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  11
-	AddPlayerClass( 12, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  12
-	AddPlayerClass( 13, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  13
-	AddPlayerClass( 14, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  14
-	AddPlayerClass( 15, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  15
-	AddPlayerClass( 17, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  16
-	AddPlayerClass( 19, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  17
-	AddPlayerClass( 20, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  18
-	AddPlayerClass( 21, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  19
-	AddPlayerClass( 22, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	20
-	AddPlayerClass( 23, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	21
-	AddPlayerClass( 24, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	22
-	AddPlayerClass( 26, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	23
-	AddPlayerClass( 28, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	24
-	AddPlayerClass( 29, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	25
-	AddPlayerClass( 30, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	26
-	AddPlayerClass( 31, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	27
-	AddPlayerClass( 32, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	28
-	AddPlayerClass( 33, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	29
-	AddPlayerClass( 34, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	30
-	AddPlayerClass( 35, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	31
-	AddPlayerClass( 36, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	32
-	AddPlayerClass( 37, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	33
-	AddPlayerClass( 38, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	34
-	AddPlayerClass( 46, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	35
-	AddPlayerClass( 47, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	36
-	AddPlayerClass( 48, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	37
-	AddPlayerClass( 59, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	38
-	AddPlayerClass( 60, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	39
-	AddPlayerClass( 63, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	40
-	AddPlayerClass( 64, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	41
-	AddPlayerClass( 152, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	42
-	AddPlayerClass( 237, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	43
-	AddPlayerClass( 78, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	44
-	AddPlayerClass( 79, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	45
-	AddPlayerClass( 134, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 46
-	AddPlayerClass( 100, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 47
-	AddPlayerClass( 101, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 48
-	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
-
-	/* ** FBI ** */
-	CLASS_FBI_RANGE[ 0 ] = AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 50
-	AddPlayerClass( 71, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );  // 51
-	CLASS_FBI_RANGE[ 1 ] = AddPlayerClass( 285, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 52
-
-	/* ** ARMY ** */
-	CLASS_ARMY_RANGE = AddPlayerClass( 287, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 53
-
-	/* ** CIA ** */
-	CLASS_CIA_RANGE[ 0 ] = AddPlayerClass( 303, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 54
-	AddPlayerClass( 304, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 55
-	CLASS_CIA_RANGE[ 1 ] = AddPlayerClass( 305, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 56
-
-	/* ** FIRE ** */
-	CLASS_FIRE_RANGE[ 0 ] = AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 57
-	AddPlayerClass( 278, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 58
-	CLASS_FIRE_RANGE[ 1 ] = AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 59
-
-	/* ** MEDIC ** */
-	CLASS_MEDIC_RANGE[ 0 ] = AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
-	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 61
-	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
-	CLASS_MEDIC_RANGE[ 1 ] = AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
-
-	/* ** POLICE ** */
-	CLASS_POLICE_RANGE[ 0 ] = AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
-	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 67
-	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 68
-	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 69
-	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 70
-	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 71
-	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 72
-	CLASS_POLICE_RANGE[ 1 ] = AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
 
  	/* ** Discord configuration ** */
  	#if ENABLE_DISCORD == true
@@ -1453,8 +1367,9 @@ public OnTwitterHTTPResponse( index, response_code, data[ ] )
 
 public OnPlayerRequestClass( playerid, classid )
 {
+	p_Spawned{ playerid } = false;
+	p_InfectedHIV{ playerid } = false;
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
-    TextDrawShowForPlayer( playerid, g_ClassBoxTD );
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
@@ -1475,127 +1390,7 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	p_MoneyBag{ playerid } = false;
-	RemovePlayerAttachedObject( playerid, 1 );
-
-	// SetPlayerPos( playerid, 	-1971.1536, 129.4870, 27.6875 );
-	// SetPlayerFacingAngle( playerid,	90.0 );
-	SetPlayerPos( playerid, 229.613998, 87.164001, 1605.039978 );
-	SetPlayerFacingAngle( playerid, -90.000000 );
-	SetPlayerInterior( playerid, 0 );
-	SetPlayerVirtualWorld( playerid, 0 );
-	//SetPlayerCameraPos(		playerid, 	-1974.1431, 133.3700, 29.7107 );
-	//SetPlayerCameraLookAt(	playerid, 	-1970.6431, 129.3700, 28.2107 );
-
-	if ( p_ClassSelection{ playerid } == false )
-	{
-		static const Float: START_POS[ 3 ] = { 243.5, 87.23, 1605.9 };
-		static const Float: FINAL_POS[ 3 ] = { 231.9, 87.23, 1605.9 };
-
-		InterpolateCameraPos( playerid, START_POS[ 0 ], START_POS[ 1 ], START_POS[ 2 ], FINAL_POS[ 0 ], FINAL_POS[ 1 ], FINAL_POS[ 2 ], 17500, CAMERA_MOVE );
-		InterpolateCameraLookAt( playerid, FINAL_POS[ 0 ], FINAL_POS[ 1 ], FINAL_POS[ 2 ], FINAL_POS[ 0 ] - 0.4, FINAL_POS[ 1 ], FINAL_POS[ 2 ] - 0.05, 15000, CAMERA_MOVE );
-
-		// InterpolateCameraPos( playerid, -1976.4252, 119.9899, 30.0, -1974.0302, 133.0427, 27.6940, 10000, CAMERA_MOVE );
-		// InterpolateCameraLookAt( playerid, -1974.0302,133.0427,27.6940, -1971.1536,129.4870,27.6875, 10000, CAMERA_MOVE );
-
-		p_ClassSelection{ playerid } = true;
-	}
-
-	SetPlayerAttachedObject( playerid, 1, 19560, 6, 0.084999, 0.060998, -0.164999, 3.8, 81.6001, -19.3, .materialcolor1 = 0xFF000000 );
-	Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
-
-	// ApplyAnimation( playerid, "MISC", "SEAT_TALK_02", 2.0, 1, 0, 0, 0, 0 );
-	if ( GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_CARRY ) {
-		TogglePlayerControllable( playerid, 0 );
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
-	}
-
-	p_Spawned				{ playerid } = false;
-	p_InfectedHIV			{ playerid } = false;
-
-	if ( CLASS_CIVILIAN_RANGE[ 0 ] <= classid <= CLASS_CIVILIAN_RANGE[ 1 ] )
-    {
-		p_Class[ playerid ] = ( CLASS_CIVILIAN );
-		//SetPlayerTeam( playerid, NO_TEAM );
-		SetPlayerColorToTeam( playerid );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 0 );
-    }
-	else if ( CLASS_POLICE_RANGE[ 0 ] <= classid <= CLASS_POLICE_RANGE[ 1 ] )
-    {
-		p_Class[ playerid ] = ( CLASS_POLICE );
-		SetPlayerColor( playerid, COLOR_POLICE );
-		//SetPlayerTeam( playerid, CLASS_POLICE );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-
-		ShowPlayerClassTextdraw( playerid, 1 );
-    }
-    else if ( CLASS_FBI_RANGE[ 0 ] <= classid <=  CLASS_FBI_RANGE[ 1 ] )
-    {
-		p_Class[ playerid ] = ( CLASS_POLICE );
-		//SetPlayerTeam( playerid, CLASS_POLICE );
-		SetPlayerColor( playerid, COLOR_FBI );
-		p_inFBI{ playerid } = true;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 2 );
-    }
-    else if ( classid == CLASS_ARMY_RANGE )
-    {
-		p_Class[ playerid ] = ( CLASS_POLICE );
-		SetPlayerColor( playerid, COLOR_ARMY );
-		//SetPlayerTeam( playerid, CLASS_POLICE );
-		p_inFBI{ playerid } = true;
-		p_inArmy{ playerid } = true;
-		p_inCIA{ playerid } = true;
-		ShowPlayerClassTextdraw( playerid, 3 );
-    }
-    else if ( CLASS_CIA_RANGE[ 0 ] <= classid <= CLASS_CIA_RANGE[ 1 ] )
-    {
-		p_Class[ playerid ] = ( CLASS_POLICE );
-		SetPlayerColor( playerid, COLOR_CIA );
-		//SetPlayerTeam( playerid, CLASS_POLICE );
-		p_inFBI{ playerid } = true;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = true;
-		ShowPlayerClassTextdraw( playerid, 4 );
-    }
-    else if ( CLASS_FIRE_RANGE[ 0 ] <= classid <= CLASS_FIRE_RANGE[ 1 ] )
-	{
-		p_Class[ playerid ] = ( CLASS_FIREMAN );
-		SetPlayerColor( playerid, COLOR_FIREMAN );
-		//SetPlayerTeam( playerid, NO_TEAM );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 6 );
-	}
-    else if ( CLASS_MEDIC_RANGE[ 0 ] <= classid <= CLASS_MEDIC_RANGE[ 1 ] )
-	{
-		p_Class[ playerid ] = ( CLASS_MEDIC );
-		SetPlayerColor( playerid, COLOR_MEDIC );
-		//SetPlayerTeam( playerid, NO_TEAM );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 5 );
-	}
 	return 1;
-}
-
-stock ShowPlayerClassTextdraw( playerid, classid ) {
-	for ( new i = 0; i < sizeof( CLASS_COLORS ); i ++ ) if ( i != classid ) {
-		TextDrawHideForPlayer( playerid, g_classTextdrawBox[ i ] );
-		TextDrawHideForPlayer( playerid, g_classTextdrawDescription[ i ] );
-		TextDrawHideForPlayer( playerid, g_classTextdrawName[ i ] );
-	}
-
-	TextDrawShowForPlayer( playerid, g_classTextdrawBox[ classid ] );
-	TextDrawShowForPlayer( playerid, g_classTextdrawDescription[ classid ] );
-	TextDrawShowForPlayer( playerid, g_classTextdrawName[ classid ] );
 }
 
 public OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
@@ -2114,12 +1909,6 @@ public OnPlayerSpawn( playerid )
 	p_InGarage[ playerid ] = -1;
 	StopSound( playerid );
 	CancelEdit( playerid );
-
-	// Approved spawn?
-	if ( !approveClassSpawned( playerid ) ) {
-		SendClientMessageToAdmins( -1, ""COL_PINK"[ABNORMAL SPAWN]"COL_GREY" %s(%d) - %d skin - %d ping - %s IP", ReturnPlayerName( playerid ), playerid, GetPlayerSkin( playerid ), GetPlayerPing( playerid ), ReturnPlayerIP( playerid ) );
-	    return KickPlayerTimed( playerid ), 1;
-	}
 
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
@@ -7879,80 +7668,6 @@ public OnRconCommand(cmd[])
 
 public OnPlayerRequestSpawn( playerid )
 {
-	// army limit
-	/*if ( IsPlayerArmy( playerid ) )
-	{
-		static const ARMY_LIMIT = 15;
-
-		new players = Iter_Count( Player );
-		new army_limit = floatround( float( players ) / ARMY_LIMIT );
-		new army_players = 0;
-
-		// count army players
-		foreach ( new armyid : Player ) if ( p_inArmy{ armyid } && armyid != playerid )
-			army_players ++;
-
-		if ( army_players >= army_limit ) {
-			SendError( playerid, "Army is currently restricted to %d personnel. Need %d more players online for an additional slot.", army_limit, ( ( army_limit + 1 ) * ARMY_LIMIT ) - players );
-			return 0;
-		}
-	}*/
-
-	return approveClassSpawned( playerid );
-}
-
-stock approveClassSpawned( playerid ) {
-
-	// is logged in
-	if ( ! IsPlayerLoggedIn( playerid ) )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must be authenticated to play the game." ), 0;
-
-	// is verified
-	if ( ! IsPlayerSecurityFullyVerified( playerid ) )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must be verified to play the game." ), 0;
-
-	// is cop/army banned
-	if ( p_CopBanned{ playerid } == MAX_CLASS_BAN_WARNS && ( IsPlayerPolice( playerid ) || IsPlayerFBI( playerid ) || IsPlayerCIA( playerid ) ) )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You are banned from using the police class(es). Use "COL_GREY"/unbanme"COL_WHITE" to pay for an unban." ), 0;
-
-	if ( p_ArmyBanned{ playerid } == MAX_CLASS_BAN_WARNS && IsPlayerArmy( playerid ) )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You are banned from using the army class. Use "COL_GREY"/unbanme"COL_WHITE" to pay for an unban." ), 0;
-
-	// wanted level an issue?
-	if ( p_WantedLevel[ playerid ] > 0 && ( IsPlayerPolice( playerid ) || IsPlayerFBI( playerid ) || IsPlayerCIA( playerid ) || GetPlayerSkin( playerid ) == 287 ) )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must not have a wanted level to use this class." ), 0;
-
-	// get player total experience
-	new Float: total_experience = GetPlayerTotalExperience( playerid );
-
-	// bought xp
-	if ( IsPlayerFBI( playerid ) && total_experience < 10000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 10,000 Total XP to use this class." ), 0;
-
-	if ( IsPlayerArmy( playerid ) && total_experience < 20000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 20,000 Total XP to use this class." ), 0;
-
-	if ( IsPlayerCIA( playerid ) && total_experience < 15000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 15,000 Total XP to use this class." ), 0;
-
-	if ( IsPlayerFireman( playerid ) && total_experience < 1000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 1,000 Total XP to use this class." ), 0;
-
-	if ( IsPlayerMedic( playerid ) && total_experience < 2000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 Total XP to use this class." ), 0;
-
-	// job not set
-	if ( !p_JobSet{ playerid } ) // || !p_CitySet{ playerid } )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must ensure your job have been properly set." ), 0; // and city
-
-	// hide textdraws
-	for ( new i = 0; i < sizeof( CLASS_COLORS ); i ++ ) {
-		TextDrawHideForPlayer( playerid, g_classTextdrawBox[ i ] );
-		TextDrawHideForPlayer( playerid, g_classTextdrawDescription[ i ] );
-		TextDrawHideForPlayer( playerid, g_classTextdrawName[ i ] );
-	}
-	TextDrawHideForPlayer( playerid, g_ClassBoxTD );
-	RemovePlayerAttachedObject( playerid, 1 );
 	return 1;
 }
 
@@ -9945,11 +9660,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
-											""COL_GREY"Cop Warns:{FFFFFF} %d/" #MAX_CLASS_BAN_WARNS "\n"\
-											""COL_GREY"Army Warns:{FFFFFF} %d/" #MAX_CLASS_BAN_WARNS "\n"\
+											""COL_GREY"Cop Warns:{FFFFFF} %d/%d\n"\
+											""COL_GREY"Army Warns:{FFFFFF} %d/%d\n"\
 											""COL_GREY"V.I.P Job:{FFFFFF} %s\n"\
 											""COL_GREY"Current Job:{FFFFFF} %s",
-											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, p_ArmyBanned{ pID }, p_VIPLevel[ pID ] < VIP_GOLD ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
+											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, MAX_CLASS_BAN_WARNS, p_ArmyBanned{ pID }, MAX_CLASS_BAN_WARNS, p_VIPLevel[ pID ] < VIP_GOLD ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
 
 				if ( gangid != -1 ) {
 					format( szLargeString, 750, "%s\n"COL_GREY"Gang:"COL_WHITE" %s(%d)", szLargeString, g_gangData[ gangid ] [ E_NAME ], gangid );
@@ -9959,6 +9674,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 			case 1:
 			{
+				new
+					Float: total_experience;
+
+				GetPlayerTotalExperience( pID, total_experience );
+
 				format( szLargeString, 800,	""COL_GREY"Score:{FFFFFF} %d\n"\
 											""COL_GREY"XP:{FFFFFF} %s\n"\
 											""COL_GREY"Money:{FFFFFF} %s\n"\
@@ -9966,7 +9686,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Kills:{FFFFFF} %d\n"\
 											""COL_GREY"Deaths:{FFFFFF} %d\n"\
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
-											GetPlayerScore( pID ), number_format( GetPlayerTotalExperience( pID ), .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
+											GetPlayerScore( pID ), number_format( total_experience, .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
 				format( szLargeString, 800,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\

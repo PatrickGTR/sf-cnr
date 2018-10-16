@@ -100,17 +100,6 @@ stock Float: GetPlayerLevel( playerid, E_LEVELS: level )
 	return player_level > 100.0 ? 100.0 : player_level;
 }
 
-stock Float: GetPlayerTotalExperience( playerid )
-{
-	new
-		Float: experience = 0.0;
-
-	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
-		experience += g_playerExperience[ playerid ] [ E_LEVELS: l ];
-	}
-	return experience;
-}
-
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
@@ -125,8 +114,9 @@ hook OnPlayerUpdateEx( playerid )
 	if ( IsPlayerLoggedIn( playerid ) )
 	{
 		new
-			Float: total_experience = GetPlayerTotalExperience( playerid );
+			Float: total_experience;
 
+		GetPlayerTotalExperience( playerid, total_experience );
 		PlayerTextDrawSetString( playerid, p_ExperienceTD[ playerid ], sprintf( "%08.0f", total_experience ) );
 	}
 	return 1;
@@ -366,6 +356,12 @@ stock GetRankFromXP( Float: xp ) {
 			break;
 
 	return iRank;
+}
+
+stock GetPlayerTotalExperience( playerid, &Float: experience ) {
+	for ( new l = 0; l < sizeof ( g_levelData ); l ++ ) {
+		experience += g_playerExperience[ playerid ] [ E_LEVELS: l ];
+	}
 }
 
 stock GetPlayerRank( playerid ) {
