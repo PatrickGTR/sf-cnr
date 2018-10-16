@@ -13,8 +13,6 @@
 	#error "This module requires weapon data functions"
 #endif
 
-#define WEAPON_DROP_ENABLED
-
 /* ** Definitions ** */
 #define MAX_WEAPON_DROPS 			( 100 )
 
@@ -38,6 +36,12 @@ static g_HealthPickup;
 hook OnGameModeInit( )
 {
 	g_HealthPickup = CreateDynamicPickup( 1240, 3, -1980.3679, 884.4898, 45.2031 );
+	return 1;
+}
+
+hook OnServerUpdate( )
+{
+	ClearInactiveWeaponDrops( );
 	return 1;
 }
 
@@ -394,7 +398,7 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 	}
 	else
 	{
-		ClearInactiveWeaponDrops( gettime( ) );
+		ClearInactiveWeaponDrops( );
 	}
 	return handle;
 }
@@ -409,8 +413,11 @@ stock DestroyWeaponPickup( handle )
 	return 1;
 }
 
-stock ClearInactiveWeaponDrops( global_timestamp )
+stock ClearInactiveWeaponDrops( )
 {
+	new
+		global_timestamp = GetServerTime( );
+
 	foreach ( new dropid : weapondrop ) if ( g_weaponDropData[ dropid ] [ E_EXPIRE_TIMESTAMP ] != 0 && global_timestamp > g_weaponDropData[ dropid ] [ E_EXPIRE_TIMESTAMP ] )
 	{
 		new

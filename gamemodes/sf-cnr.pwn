@@ -948,11 +948,6 @@ public OnServerUpdateTimer( )
 	// Restore and Replenish Stuff
     if ( g_iTime > g_RestoreRobberiesBribes )
     {
-    #if defined WEAPON_DROP_ENABLED
-    	// Replenish Weapon Drops
-    	ClearInactiveWeaponDrops( g_iTime );
-    #endif
-
     	// Replenish Vaults
 		for( new i = 0; i < sizeof( g_bankvaultData ); i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
 		{
