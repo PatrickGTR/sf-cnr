@@ -123,15 +123,21 @@ CMD:weed( playerid, params[ ] )
 		if ( GetPlayerVirtualWorld( playerid ) != 0 && GetPlayerInterior( playerid ) != 0 ) return SendError( playerid, "You cannot use this inside an interior." );
 		if ( ! GetPlayerShopItemAmount( playerid, SHOP_ITEM_WEED_SEED ) ) return SendError( playerid, "You don't have any weed seeds to plant." );
 
-		new
-			planted_weed = Weed_GetPlayerWeedPlants( playerid );
+		new planted_weed = Weed_GetPlayerWeedPlants( playerid );
+		new planted_weed_limit = Weed_GetPlantLimit( playerid );
 
-		if ( planted_weed >= 5 ) {
-			return SendError( playerid, "You can only plant 5 plants at a time." );
+		if ( planted_weed >= planted_weed_limit ) {
+			return SendError( playerid, "You can only plant %d plants at a time.", planted_weed_limit );
 		}
 
 		GetPlayerPos( playerid, X, Y, Z );
 		MapAndreas_FindZ_For2DCoord( X, Y, Z );
+
+		foreach ( new weedid : weedplants ) {
+			if ( IsPointToPoint( 2.0, g_weedData[ weedid ] [ E_X ], g_weedData[ weedid ] [ E_Y ], g_weedData[ weedid ] [ E_Z ], X, Y, Z ) ) {
+				return SendError( playerid, "You cannot plant a weed plant too near to one." );
+			}
+		}
 
 		if ( Weed_CreatePlant( playerid, X, Y, Z ) != ITER_NONE ) {
 			GivePlayerWantedLevel( playerid, 2 );
@@ -148,7 +154,7 @@ CMD:weed( playerid, params[ ] )
 		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
 	    else if ( p_SellingWeedTick[ playerid ] > g_iTime ) return SendError( playerid, "You must wait a minute before selling weed again." );
 		else if ( !p_WeedGrams[ playerid ] ) return SendError( playerid, "You don't have any weed with you." );
-	    else if ( sscanf( params[ 5 ],"uD(1)", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
+	    else if ( sscanf( params[ 5 ], "ud", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
 	    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
@@ -252,8 +258,11 @@ stock Weed_CreatePlant( playerid, Float: X, Float: Y, Float: Z, required_time = 
 
 	if ( weedid != ITER_NONE )
 	{
+		static const Float: WEED_LOWER_OFFSET = 1.50; // put it 1.5m into the ground
+		static const Float: WEED_RAISE_OFFSET = 0.35; // then raise it 0.35m to grow
+
 		g_weedData[ weedid ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s's Weed Plant\n"COL_WHITE"0.0%% Grown", ReturnPlayerName( playerid ) ), COLOR_GREEN, X, Y, Z + 0.5, 30.0 );
-		g_weedData[ weedid ] [ E_OBJECT ] = CreateDynamicObject( 19473, X, Y, Z - 1.5, 0.0, 0.0, 0.0 );
+		g_weedData[ weedid ] [ E_OBJECT ] = CreateDynamicObject( 19473, X, Y, Z - WEED_LOWER_OFFSET, 0.0, 0.0, 0.0 );
 		g_weedData[ weedid ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, COLOR_GREEN, -1, -1, -1, 250.0 );
 		g_weedData[ weedid ] [ E_GROW_TIME ] = GetServerTime( ) + required_time;
 		g_weedData[ weedid ] [ E_USER_ID ] = playerid;
@@ -262,7 +271,7 @@ stock Weed_CreatePlant( playerid, Float: X, Float: Y, Float: Z, required_time = 
 		g_weedData[ weedid ] [ E_Z ] = Z;
 
 		Streamer_Update( playerid );
-		MoveDynamicObject( g_weedData[ weedid ] [ E_OBJECT ], X, Y, Z + 0.6, ( 0.6 / float( required_time ) ) * 3.5 );
+		MoveDynamicObject( g_weedData[ weedid ] [ E_OBJECT ], X, Y, Z + WEED_RAISE_OFFSET, ( WEED_LOWER_OFFSET + WEED_RAISE_OFFSET ) / float( required_time ) );
 
 		Iter_Add( weedplants, weedid );
 	}
@@ -299,4 +308,20 @@ stock Weed_GetPlayerWeedPlants( playerid )
 		count ++;
 	}
 	return count;
+}
+
+stock Weed_GetPlantLimit( playerid )
+{
+	new
+		vip_level = GetPlayerVIPLevel( playerid );
+
+	if ( vip_level >= VIP_GOLD ) {
+		return 15;
+	}
+	else if ( vip_level >= VIP_BRONZE ) {
+		return 10;
+	}
+	else {
+		return 5;
+	}
 }
