@@ -157,7 +157,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 	            new Float: vZ, vehicleid = GetPlayerVehicleID( playerid );
 				GetVehicleZAngle( vehicleid, vZ ), SetVehicleZAngle( vehicleid, vZ );
-				p_DamageSpamCount{ playerid } = 0;
                 RepairVehicle( vehicleid );
                 GivePlayerCash( playerid, -9900 );
 				SendServerMessage( playerid, "You have fixed and flipped your vehicle for $9,900." );
@@ -175,7 +174,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
             	new vehicleid = GetPlayerVehicleID( playerid );
 				PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-				p_DamageSpamCount{ playerid } = 0;
                 RepairVehicle( vehicleid );
                 GivePlayerCash( playerid, -7500 );
 				SendServerMessage( playerid, "You have repaired your car for $7,500." );

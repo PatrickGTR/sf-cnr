@@ -1684,7 +1684,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_SpawningIndex[ playerid ] = 0;
 	p_IncorrectLogins{ playerid } = 0;
 	p_VehicleBringCooldown[ playerid ] = 0;
-	p_DamageSpamCount{ playerid } = 0;
 	p_AntiTextSpamCount{ playerid } = 0;
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
 	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
@@ -4417,7 +4416,6 @@ CMD:mech( playerid, params[ ] )
    		}
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 	 	SendServerMessage( playerid, "You have repaired this vehicle." );
 	 	p_AntiMechFixSpam[ playerid ] = g_iTime + 10;
@@ -4477,7 +4475,6 @@ CMD:mech( playerid, params[ ] )
    		}
 
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
-		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 		GetVehicleZAngle( iVehicle, vZ ), SetVehicleZAngle( iVehicle, vZ );
 	 	SendServerMessage( playerid, "You have flipped and fixed this vehicle." );
@@ -7008,29 +7005,6 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 
 public OnVehicleDamageStatusUpdate( vehicleid, playerid )
 {
-    GetVehicleDamageStatus( vehicleid, panels, doors, lights, tires );
-	if ( GetPlayerState( playerid ) == PLAYER_STATE_DRIVER )
-	{
-	    if ( lights || tires )
-	        return 1;
-
-		new time = GetTickCount( );
-		switch( time - p_DamageSpamTime[ playerid ] )
-		{
-			case 0 .. 500:
-			{
-				p_DamageSpamCount{ playerid } ++;
-				if ( p_DamageSpamCount{ playerid } >= 10 )
-				{
-					SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for car particle spam.", ReturnPlayerName( playerid ), playerid );
-					Kick( playerid );
-					return 1;
-				}
-			}
-			default: p_DamageSpamCount{ playerid } = 0;
-		}
-		p_DamageSpamTime[ playerid ] = time;
- 	}
 	return 1;
 }
 
@@ -7548,33 +7522,6 @@ public OnPlayerClickPlayerTextDraw(playerid, PlayerText: playertextid)
     return 1;
 }
 
-public OnPlayerPickUpDynamicPickup( playerid, pickupid )
-{
-	if ( pickupid != PreviousPickupID[ playerid ] )
-	{
-		new
-			iTimestamp = g_iTime; // Call it once, because swag
-
-		if ( LastPickupTimestamp[ playerid ] > iTimestamp )
-		{
-			new
-				Float: distance = GetPlayerDistanceFromPoint( playerid, p_LastPickupPos[ playerid ] [ 0 ], p_LastPickupPos[ playerid ] [ 1 ], p_LastPickupPos[ playerid ] [ 2 ] );
-
-			//if ( distance < 50.0 ) printf( "[AC WARN] Player ID %d has entered a pickup near him really fast. (distance: %0.2fm, time: %ds)", playerid, distance, LastPickupTimestamp[ playerid ] - iTimestamp );
-			if ( distance > 50.0 )
-			{
-	        	SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for rapid pickup spam.", ReturnPlayerName( playerid ), playerid );
-				BanEx( playerid, "Pickup Spam" );
-				return 0;
-			}
-		}
-		LastPickupTimestamp[ playerid ] = iTimestamp + 1;
-		PreviousPickupID[ playerid ] = pickupid;
-	}
-	GetPlayerPos( playerid, p_LastPickupPos[ playerid ] [ 0 ], p_LastPickupPos[ playerid ] [ 1 ], p_LastPickupPos[ playerid ] [ 2 ] );
-	return 1;
-}
-
 public OnVehicleMod( playerid, vehicleid, componentid )
 {
 	return 1;
@@ -8020,6 +7967,16 @@ function unpause_Player( playerid )
 		else if ( detection == CHEAT_TYPE_WEAPON )
 		{
 			SendClientMessageToAdmins( -1, ""COL_PINK"[ANTI-CHEAT]"COL_GREY" %s(%d) has been detected for weapon hack (%s).", ReturnPlayerName( playerid ), playerid, ReturnWeaponName( params ) );
+		}
+		else if ( detection == CHEAT_TYPE_CAR_PARTICLE_SPAM )
+		{
+			SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been kicked for car particle spam.", ReturnPlayerName( playerid ), playerid );
+			Kick( playerid );
+		}
+		else if( detection == CHEAT_TYPE_PICKUP_SPAM )
+		{
+        	SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for rapid pickup spam.", ReturnPlayerName( playerid ), playerid );
+			BanEx( playerid, "Pickup Spam" );
 		}
 		else
 		{

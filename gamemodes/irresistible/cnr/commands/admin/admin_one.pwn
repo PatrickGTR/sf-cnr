@@ -42,7 +42,6 @@ CMD:arepair( playerid, params[ ] )
 		if ( !g_adminSpawnedCar{ iVehicle } )
 			return SendError( playerid, "This is not an admin spawned vehicle." );
 
-		p_DamageSpamCount{ playerid } = 0;
 	 	RepairVehicle( iVehicle );
 		PlayerPlaySound( playerid, 1133, 0.0, 0.0, 5.0 );
 
