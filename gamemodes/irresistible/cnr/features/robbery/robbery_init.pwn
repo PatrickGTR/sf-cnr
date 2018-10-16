@@ -131,13 +131,13 @@ hook OnScriptInit( )
 	CreateMultipleRobberies( "Gas Station",      	ROBBERY_SAFE_PAY, -20.583150, -58.166736, 1002.99329, 180.00000, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 	CreateRobberyNPC( "Gas Cashier",				ROBBERY_BOT_PAY, -22.2767,-57.6385,1003.5469,354.5035, 7, 28, 29, 49, 32, 33, 34, 20, 52, 56, 73, 92, 68, 74, 77 );
 
-	CreateMultipleRobberies( "Drug House", 			floatround( float( ROBBERY_SAFE_PAY ) * 1.5 ), 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
-	CreateRobberyNPC( "Triad Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
-	CreateRobberyNPC( "Mafia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 1.5 ), 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
+	CreateMultipleRobberies( "Drug House", 			floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), 2201.009521, -1212.770874, 1048.462890, 0.0000000, 11, 26, 27, 94, 31, 44, 10, 15 );
+	CreateRobberyNPC( "Triad Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.0 ), 2200.4556,-1218.9237,1049.0234,30.6198, 120, 11, 44, 27, 94 ); // TRIADS
+	CreateRobberyNPC( "Mafia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.0 ), 2200.4556,-1218.9237,1049.0234,30.6198, 272, 31, 26, 10, 15 ); // Mafia
 
-	CreateRobberyNPC( "Militia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.5 ), -2376.437011, 1554.111572, 2.117187, 180.000000, 127, -1 ); // Mafia
-	CreateMultipleRobberies( "Militia Ship - Safe 1", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.723388, 1554.588500, 1.567188, -60.8000000, -1 );
-	CreateMultipleRobberies( "Militia Ship - Safe 2", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.0 ), -2367.303466, 1553.833862, 2.517187, -60.8000000, -1 );
+	CreateRobberyNPC( "Militia Boss",					floatround( float( ROBBERY_BOT_PAY ) * 2.75 ), -2376.437011, 1554.111572, 2.117187, 180.000000, 127, -1 ); // Mafia
+	CreateMultipleRobberies( "Militia Ship - Safe 1", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.75 ), -2367.723388, 1554.588500, 1.567188, -60.8000000, -1 );
+	CreateMultipleRobberies( "Militia Ship - Safe 2", 	floatround( float( ROBBERY_SAFE_PAY ) * 2.75 ), -2367.303466, 1553.833862, 2.517187, -60.8000000, -1 );
 
 	CreateMultipleRobberies( "Film Studio", 		ROBBERY_SAFE_PAY, 2327.151123, 914.138305, 1056.10510, -90.00000, -1 ); // custom obj
 	CreateMultipleRobberies( "Grotti Cars", 		ROBBERY_SAFE_PAY, 542.361816, -1303.610351, 16.725925, 180.00000, -1 );
