@@ -1,17 +1,15 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\wanted_level.pwn
+ * Purpose: server-sided wanted level system (hooks the natives)
  */
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
-/* ** Definitions ** */
-
 /* ** Variables ** */
-new
+new stock
    	p_WantedLevel       			[ MAX_PLAYERS ];
 
 /* ** Hooks ** */
@@ -57,15 +55,6 @@ stock CNR_SetPlayerWantedLevel( playerid, level )
 
 	// regulate player color
 	SetPlayerColorToTeam( playerid );
-
-	/*if ( p_WantedLevel[ playerid ] > 2000 ) { // 8hska7082bmahu
-		p_WantedLevel[ playerid ] = 2000;
-		SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[WANTED LEVEL]{FFFFFF} Your wanted level has reached its maximum. Further wanted levels will not append.", wantedlevel, p_WantedLevel[ playerid ] );
-
-		format( szBigString, 256, "[0xA1] %s(%d) :: %d :: %d\r\n", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], g_iTime );
-	    AddFileLogLine( "security.txt", szBigString );
-		return 1;
-	}*/
 
 	// set it to the variable value
 	return SetPlayerWantedLevel( playerid, p_WantedLevel[ playerid ] );
