@@ -278,6 +278,43 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		else return ShowAmmunationMenu( playerid, "{FFFFFF}Gang Facility - Purchase Weapons", DIALOG_FACILITY_AMMU );
 	}
+
+	else if ( dialogid == DIALOG_FACILITY_SPAWN )
+	{
+		if ( ! response )
+			return ShowPlayerSpawnMenu( playerid );
+
+		new gangid = p_GangID[ playerid ];
+
+		if ( gangid == INVALID_GANG_ID )
+			return SendError( playerid, "You are not in any gang." ), ShowPlayerSpawnMenu( playerid );
+
+		static city[ MAX_ZONE_NAME ], location[ MAX_ZONE_NAME ];
+
+		szLargeString = ""COL_WHITE"City\t"COL_WHITE"Location\n";
+
+		new x = 0;
+
+		foreach ( new handle : gangfacilities ) if ( g_gangData[ gangid ] [ E_SQL_ID ] == g_gangFacilities[ handle ] [ E_GANG_SQL_ID ] )
+		{
+			if ( x == listitem )
+			{
+				new
+					Float: X, Float: Y;
+
+				Turf_GetCentrePos( g_gangFacilities[ handle ] [ E_TURF_ID ], X, Y );
+
+			    Get2DCity( city, X, Y );
+			    GetZoneFromCoordinates( location, X, Y );
+
+        		SetPlayerSpawnLocation( playerid, "GNG", handle );
+			 	SendServerMessage( playerid, "Spawning has been set the gang facility located in "COL_GREY"%s, %s"COL_WHITE".", location, city );
+			 	break;
+			}
+			x ++;
+		}
+		return 1;
+	}
 	return 1;
 }
 

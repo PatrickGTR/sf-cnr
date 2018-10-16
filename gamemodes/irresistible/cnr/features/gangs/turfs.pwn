@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\gangs\turfs.pwn
+ * Purpose: turfing module for gangs
  */
 
 /* ** Includes ** */
@@ -416,6 +416,41 @@ hook OnGameModeInit( )
 	return 1;
 }
 
+hook OnServerGameDayEnd( )
+{
+	// payday for gangs holding turfs
+	foreach ( new g : gangs )
+	{
+		new
+			afk_members, online_members = GetOnlineGangMembers( g, .afk_members = afk_members );
+
+		if ( online_members >= TAKEOVER_NEEDED_PEOPLE )
+		{
+			new
+				profit = 0;
+
+			foreach( new zoneid : turfs ) if ( g_gangTurfData[ zoneid ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == g )
+			{
+				// facilities will not pay out respect
+				if ( g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] == INVALID_GANG_ID ) {
+					g_gangData[ g ] [ E_RESPECT ] ++;
+				}
+
+				// accumulate profit
+				profit += Turf_GetProfitability( zoneid, online_members - afk_members );
+			}
+
+			GiveGangCash( g, profit );
+
+	    	if ( profit > 0 ) {
+	    		SaveGangData( g );
+	    		SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", cash_format( profit ) );
+	    	}
+		}
+	}
+	return 1;
+}
+
 hook OnPlayerEnterDynArea( playerid, areaid )
 {
 	if ( ! IsPlayerNPC( playerid ) )
@@ -448,6 +483,96 @@ hook OnPlayerLeaveDynArea( playerid, areaid )
 		else CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, INVALID_GANG_TURF );
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
+/* ** Commands ** */
+CMD:takeover( playerid, params[ ] )
+{
+	if ( p_GangID[ playerid ] == INVALID_GANG_ID )
+		return SendError( playerid, "You are not in any gang." );
+
+	if ( p_Class[ playerid ] != CLASS_CIVILIAN )
+		return SendError( playerid, "This is restricted to civilians only." );
+
+	if ( GetPlayerInterior( playerid ) != 0 && GetPlayerVirtualWorld( playerid ) != 0 )
+	    return SendError( playerid, "You cannot do this inside interiors." );
+
+	if ( IsPlayerJailed( playerid ) || IsPlayerUsingOrbitalCannon( playerid ) )
+		return SendError( playerid, "You cannot do this at the moment." );
+
+	new
+		g_isAFK = 0,
+		g_inAir = 0
+	;
+
+    foreach ( new z : Reverse(turfs) )
+	{
+		if ( IsPlayerInDynamicArea( playerid, g_gangTurfData[ z ] [ E_AREA ] ) )
+     	{
+	    	new gangid = p_GangID[ playerid ];
+
+	        if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid ) return SendError( playerid, "This turf is already captured by your gang." );
+			if ( g_gangzoneAttacker[ z ] != INVALID_GANG_ID ) return SendError( playerid, "This turf is currently being attacked." );
+
+			new opposing_count = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] ); // Opposing check
+			// existing gang members
+			if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && opposing_count ) {
+				return SendError( playerid, "There are gang members within this turf, kill them!" );
+	        }
+
+	        new attacking_count = GetPlayersInGangZone( z, gangid, g_isAFK, g_inAir );
+
+	        if ( attacking_count < TAKEOVER_NEEDED_PEOPLE && ( attacking_count + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE )
+		   		return SendError( playerid, "You cannot start a turf war if gang members are AFK or extremely high above ground." );
+
+	        //if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && dCount < TAKEOVER_NEEDED_PEOPLE + 1 && ( dCount + g_isAFK + g_inAir ) >= TAKEOVER_NEEDED_PEOPLE + 1 )
+		   	//	return SendError( playerid, "You need at least %d gang members to start a gang war with another gang.", TAKEOVER_NEEDED_PEOPLE + 1 );
+
+		   	// Facility check
+		   	if ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangTurfData[ z ] [ E_FACILITY_GANG ] ) )
+		   	{
+		   		new facility_gang = g_gangTurfData[ z ] [ E_FACILITY_GANG ];
+		   		new facility_members = GetOnlineGangMembers( facility_gang );
+
+		   		if ( g_gangTurfData[ z ] [ E_OWNER ] == facility_gang ) {
+			   		if ( facility_members < 3 ) {
+			   			return SendError( playerid, "This facility requires at least %d of its gang members online for a takeover.", 3 - facility_members );
+			   		}
+			   		else if ( attacking_count < 3 ) {
+		   				return SendError( playerid, "You need at least %d gang members to take over this facility.", 3 - attacking_count );
+			   		}
+		   		}
+		   	}
+
+		   	// Begin takeover
+			if ( attacking_count >= TAKEOVER_NEEDED_PEOPLE && ! opposing_count )
+	        {
+				g_gangzoneAttacker[ z ] = gangid;
+	            g_gangzoneAttackCount[ z ] = 0;
+              	GangZoneFlashForAll( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
+              	SendClientMessage( playerid, g_gangData[ gangid ] [ E_COLOR ], "[TURF]{FFFFFF} You are now beginning to take over the turf. Stay inside the area with your gang for 60 seconds. Don't die." );
+
+	            if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
+	            {
+	            	new
+						szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+					GetZoneFromCoordinates( szLocation, min_x, min_y );
+
+	            	SendClientMessageToGang( g_gangTurfData[ z ] [ E_OWNER ], g_gangData[ g_gangTurfData[ z ] [ E_OWNER ] ] [ E_COLOR ], "[GANG]"COL_WHITE" Our territory is being attacked by "COL_GREY"%s"COL_WHITE" in %s, defend it!", g_gangData[ g_gangzoneAttacker[ z ] ] [ E_NAME ], szLocation );
+	            }
+	        }
+	        else
+	        {
+	        	SendError( playerid, "You need at least %d member(s) to take over this turf.", TAKEOVER_NEEDED_PEOPLE );
+	        }
+	        return 1;
+	    }
+	}
+	return SendError( playerid, "You are not in any gangzone." );
 }
 
 /* ** Functions ** */
@@ -533,4 +658,83 @@ stock Turf_GetProfitability( zoneid, gang_members, Float: default_pay = 4000.0 )
 
 	// return rounded number
 	return floatround( default_pay );
+}
+
+stock Turf_ResetGangTurfs( gangid )
+{
+ 	foreach ( new z : turfs )
+ 	{
+ 		if ( g_gangTurfData[ z ] [ E_OWNER ] == gangid )
+ 		{
+			new
+				facility_gang = g_gangTurfData[ z ] [ E_FACILITY_GANG ];
+
+		   	if ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangTurfData[ z ] [ E_FACILITY_GANG ] ) )
+		   	{
+	    		g_gangTurfData[ z ] [ E_COLOR ] = setAlpha( g_gangData[ facility_gang ] [ E_COLOR ], 0x80 );
+	 			g_gangTurfData[ z ] [ E_OWNER ] = facility_gang;
+				GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], g_gangTurfData[ z ] [ E_COLOR ] );
+		   	}
+		   	else
+		   	{
+	 			g_gangTurfData[ z ] [ E_COLOR ] = COLOR_GANGZONE;
+	 			g_gangTurfData[ z ] [ E_OWNER ] = INVALID_GANG_ID;
+				GangZoneShowForAll( g_gangTurfData[ z ] [ E_ID ], COLOR_GANGZONE );
+		   	}
+ 		}
+ 	}
+}
+
+stock Turf_ShowGangOwners( playerid )
+{
+	if ( ! Iter_Count( turfs ) )
+		return SendError( playerid, "There is currently no trufs on the server." );
+
+	szHugeString[ 0 ] = '\0';
+
+	foreach( new turfid : turfs )
+	{
+		new
+			szLocation[ MAX_ZONE_NAME ], Float: min_x, Float: min_y;
+
+		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+		Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ turfid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+
+		GetZoneFromCoordinates( szLocation, min_x, min_y );
+
+	    if ( g_gangTurfData[ turfid ][ E_OWNER ] == INVALID_GANG_ID ) {
+	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREY"Unoccupied\n", szHugeString, szLocation );
+	    }
+	    else {
+	    	format( szHugeString, sizeof( szHugeString ), "%s%s\t{%06x}%s\n", szHugeString, szLocation, g_gangTurfData[ turfid ][ E_COLOR ] >>> 8 , ReturnGangName( g_gangTurfData[ turfid ][ E_OWNER ] ) );
+	    }
+	}
+	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Gang Turfs", szHugeString, "Close", "" );
+}
+
+stock Turf_RedrawPlayerGangZones( playerid, gangid )
+{
+	foreach ( new x : turfs )
+    {
+    	// set the new color to the turfs
+    	if ( g_gangTurfData[ x ] [ E_OWNER ] == gangid ) {
+    		g_gangTurfData[ x ] [ E_COLOR ] = setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 );
+    	}
+
+    	// resume flashing if gang war
+    	if ( g_gangzoneAttacker[ x ] == gangid ) {
+    		GangZoneStopFlashForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ] );
+    		GangZoneFlashForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ], setAlpha( g_gangData[ gangid ] [ E_COLOR ], 0x80 ) );
+    	} else {
+	        GangZoneHideForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ] );
+	        GangZoneShowForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
+    	}
+    }
+    return 1;
+}
+
+stock Turf_GetCentrePos( zoneid, &Float: X, &Float: Y ) // should return the centre but will do for now
+{
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_X, X );
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_Y, Y );
 }
