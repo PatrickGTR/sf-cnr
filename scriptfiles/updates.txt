@@ -1,29 +1,8 @@
-(+) Newly registered players will be asked if they prefer DM or RP - if they like RP, passive mode is on.
-(+) Added confirmation dialog before selling a home / business / vehicle components.
-(+) Pilot and train minijobs are now saved to the database (and in /highscores).
-(+) Adds some strippers in the LV brothel (for fun).
-(+) Adds Hide From Minimap perk (costs $25,000) ... hides you for 1 minute.
-(+) Fire tracker is now /fires ... and it shows the fires on the map as red blips.
-(+) New hitmarker system ... activate using /cp - Now shows taken/given damage!
-(+) Level 5 admins can now view the police chat.
-(+) If you die, you will drop 25% of the money you are currently holding.
-(+) Adds a system to resync your player (/sync) ... restores your stamina basically.
-(+) You can create /moneybags by dropping your money (/dm, /dropmoney).
-(+) Armour randomly drops for players with over level 50 DM.
-(+) Type MAX/ALL into bank deposits/withdrawals or IC purchases and it will enter the max amount.
-(/) Passive mode now completely disables deathmatch. 
-(/) IC sold will automatically be credited to your bank account.
-(/) You can now set spikes in non-air and non-sea vehicles using your CAPSLOCK key.
-(/) Car jackers now need to wait only 1 min before exporting another vehicle (before 2 min).
-(/) Players with level 100 in a specific level are able to accrue more XP in the level.
-(/) Explosive rounds used on vehicles will have a more significant impact.
-(/) Explosive rounds require the key N to activate.
-(/) Rank is now XP based now (prior score based).
-(/) Hide from radar will now last 3 minutes.
-(*) Should be faster to place multiple drills using left alt.
-(*) Fixes death bug with players suiciding in a vehicle.
-(*) Fixed Alcatraz map escaping issues.
-(*) Addressed issue with being unable to rob ChuffSec.
-(*) Fixed issue with business exports being randomly canceled.
-(*) ATMs in facilities are now operational.
-(-) Removed a counter in cluckin' bell for ease of access to the safe.
+(+) Brand new weed system. Buy weed seeds, plant them with "/weed plant" and use LALT to pick them.
+(/) Drug house and militia ship payouts are increased.
+(/) "/moneybags" only shows bags that are dropped by players ("/dropmoney").
+(/) It now costs $2,000 per spawn at a facility.
+(*) Roadblocks have been re-added back into the server.
+(*) Paintball players leaving no longer drop money.
+(*) Bug fixes for "/sync" ... it accidentally refilled your HP.
+(*) Damage object does not show above your head if you're in a vehicle (blew helis up).
