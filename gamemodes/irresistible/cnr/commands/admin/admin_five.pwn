@@ -352,7 +352,7 @@ CMD:achangename( playerid, params[ ] )
 	else if ( sscanf( params, "us[24]", pID, nName ) ) return SendUsage( playerid, "/achangename [PLAYER_ID] [NEW_NAME]" );
 	else if ( !IsPlayerConnected( pID ) ) SendError( playerid, "Invalid Player ID." );
 	else if ( !isValidPlayerName( nName ) ) return SendError( playerid, "Invalid Name Character." );
-	else if ( p_OwnedHouses[ pID ] > 0 || GetPlayerOwnedApartments( pID ) > 0 ) return SendError( playerid, "This player has a house and/or apartment." ), SendError( pID, ""COL_ORANGE"In order to change your name, you must sell your houses and/or apartment.");
+	else if ( p_OwnedHouses[ pID ] > 0 || NovicHotel_GetPlayerApartments( pID ) > 0 ) return SendError( playerid, "This player has a house and/or apartment." ), SendError( pID, ""COL_ORANGE"In order to change your name, you must sell your houses and/or apartment.");
 	else
 	{
 	    format( szQuery, sizeof( szQuery ), "SELECT `NAME` FROM `USERS` WHERE `NAME` = '%s'", mysql_escape( nName ) );

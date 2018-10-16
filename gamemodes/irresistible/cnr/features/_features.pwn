@@ -43,6 +43,7 @@
 #include "irresistible\cnr\features\weed.pwn"
 #include "irresistible\cnr\features\race.pwn"
 #include "irresistible\cnr\features\gates.pwn"
+#include "irresistible\cnr\features\hotel_da_novic.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"

@@ -130,7 +130,6 @@ new
 	p_DamageSpamCount				[ MAX_PLAYERS char ],
 	p_PingImmunity                  [ MAX_PLAYERS char ],
 	p_Fires                         [ MAX_PLAYERS ],
-	p_ApartmentEnter                [ MAX_PLAYERS char ],
 	p_AntiTieSpam                   [ MAX_PLAYERS ],
 	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_RansomAmount                  [ MAX_PLAYERS ],

@@ -200,24 +200,6 @@ new
    	p_C4Amount          			[ MAX_PLAYERS ]
 ;
 
-/* ** Apartment System ** */
-#define MAX_AFLOORS                 ( 20 )
-
-enum E_FLAT_DATA
-{
-	E_OWNER[ 24 ],    		E_NAME[ 30 ], 		E_LOCKED,
-	bool: E_CREATED,		E_FURNITURE
-};
-
-new
-	g_apartmentData                 [ 19 ] [ E_FLAT_DATA ], // A1 = 19 Floors
-	g_apartmentElevator             = INVALID_OBJECT_ID,
-	g_apartmentElevatorGate         = INVALID_OBJECT_ID,
-    g_apartmentElevatorLevel        = 0,
-	g_apartmentElevatorDoor1		[ MAX_AFLOORS ]	= INVALID_OBJECT_ID,
-	g_apartmentElevatorDoor2		[ MAX_AFLOORS ] = INVALID_OBJECT_ID
-;
-
 /* ** Casino Rewards Points ** */
 #define CASINO_REWARDS_PAYOUT_PERCENT	20.0
 #define CASINO_REWARDS_DIVISOR 			10.0 	// 1000 points becomes 1 point
@@ -379,34 +361,6 @@ public OnGameModeInit()
 	// Signs - User friendly addition
 	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-
-	// Apartments
-	CreateDynamicObject( 4587, -1971.51, 1356.26, 65.32,   0.00, 0.00, -180.00, .priority = 1 );
-	CreateDynamicObject( 3781, -1971.50, 1356.27, 28.26,   0.00, 0.00, -180.00, .priority = 1 );
-	CreateDynamicObject( 3781, -1971.50, 1356.27, 55.54,   0.00, 0.00, -180.00, .priority = 1 );
-	CreateDynamicObject( 3781, -1971.50, 1356.27, 82.77,   0.00, 0.00, -180.00, .priority = 1 );
-	CreateDynamicObject( 3781, -1971.50, 1356.27, 109.89,  0.00, 0.00, -180.00, .priority = 1 );
-	CreateDynamicObject( 4605, -1992.10, 1353.31, 1.11,    0.00, 0.00, -180.00, .priority = 1 );
-
-	g_apartmentElevator = CreateDynamicObject( 18755, -1955.09, 1365.51, 8.36, 0.00, 0.00, 90.00 );
-
-	for( new level, Float: Z; level < MAX_AFLOORS; level++ )
-	{
-		switch( level )
-		{
-		    case 0:     Z = 8.36;
-		    case 1:     Z = 17.03;
-		    default:    Z = 17.03 + ( ( level - 1 ) * 5.447 );
-		}
-		g_apartmentElevatorDoor1[ level ] = CreateDynamicObject( 18756, -1955.05, 1361.64, Z, 0.00, 0.00, -90.00 );
-		g_apartmentElevatorDoor2[ level ] = CreateDynamicObject( 18757, -1955.05, 1361.64, Z, 0.00, 0.00, -90.00 );
-	}
-
-	// Bank
-	g_bankvaultData[ CITY_SF ] [ E_OBJECT ] = CreateDynamicObject( 18766, -1412.565063, 859.274536, 983.132873, 0.000000, 90.000000, 90.000000 );
-	g_bankvaultData[ CITY_LV ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ CITY_LV ] [ E_WORLD ] );
-	g_bankvaultData[ CITY_LS ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ CITY_LS ] [ E_WORLD ] );
-	SetDynamicObjectMaterial( g_bankvaultData[ CITY_SF ] [ E_OBJECT ], 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
 
 	// Boat Hiest
 	g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ] = CreateDynamicObject( 19435, -2371.416992, 1552.027709, 1.907187, 0.000000, 0.000000, 28.0000, g_bankvaultData[ VAULT_BOAT ] [ E_WORLD ] );
@@ -607,23 +561,6 @@ thread onRemoveInactiveRows( type )
 
 		strreplace( szNormalString, "\r\n", "" );
 	    printf( "[INACTIVITY] %s", szNormalString );
-	}
-	return 1;
-}
-
-public OnDynamicObjectMoved( objectid )
-{
-	if ( objectid == g_apartmentElevator )
-	{
-		DestroyDynamicObject( g_apartmentElevatorGate ), g_apartmentElevatorGate = INVALID_OBJECT_ID;
-
-		new Float: Y, Float: Z, i = g_apartmentElevatorLevel;
-		GetDynamicObjectPos( g_apartmentElevatorDoor1[ i ], Y, Y, Z );
-		MoveDynamicObject( g_apartmentElevatorDoor1[ i ], -1956.8068, Y, Z, 5.0 );
-
-		GetDynamicObjectPos( g_apartmentElevatorDoor2[ i ], Y, Y, Z );
-		MoveDynamicObject( g_apartmentElevatorDoor2[ i ], -1953.3468, Y, Z, 5.0 );
-		return 1;
 	}
 	return 1;
 }
@@ -4021,24 +3958,6 @@ CMD:ransom( playerid, params[ ] )
 		p_RansomTimestamp[ victimid ] = g_iTime + 15;
 	}
 	else return SendError( playerid, "This player is not nearby." );
-	return 1;
-}
-
-CMD:flat( playerid, params[ ] )
-{
-	new count = 0;
-	szBigString[ 0 ] = '\0';
-	for( new i; i < sizeof( g_apartmentData ); i++ ) if ( g_apartmentData[ i ] [ E_CREATED ] )
-	{
-		if ( strmatch( g_apartmentData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-		{
-		    count++;
-		    format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, g_apartmentData[ i ] [ E_NAME ] );
-		}
-	}
-	if ( count == 0 ) return SendError( playerid, "You don't own any apartments." );
-
-	ShowPlayerDialog( playerid, DIALOG_FLAT_CONFIG, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", szBigString, "Select", "Cancel" );
 	return 1;
 }
 
@@ -8005,54 +7924,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	    			}
 	    		}
 	    	}
-
-	    	// Call Elevator Down
-		    if ( ! iVehicle )
-		    {
-				if ( IsPlayerInArea( playerid, -2005.859375, -1917.968750, 1339.843750, 1396.484375 ) && GetPlayerInterior( playerid ) == 0 )
-				{
-					GetDynamicObjectPos( g_apartmentElevator, X, Y, Z );
-					if ( IsPlayerInRangeOfPoint( playerid, 2.0, X, Y, Z ) )
-					{
-						ClearAnimations( playerid ); // clear-fix
-
-					    if ( IsDynamicObjectMoving( g_apartmentElevator ) )
-					        return SendError( playerid, "You must wait for the elevator to stop operating to select a floor again." );
-
-		                szLargeString[ 0 ] = '\0';
-		                strins( szLargeString, "Ground Floor\n", 0 );
-		                for( new i; i < sizeof( g_apartmentData ); i++ ) // First floor
-		                {
-		                    if ( g_apartmentData[ i ] [ E_CREATED ] )
-		                    	format( szLargeString, sizeof( szLargeString ), "%s%s - %s\n", szLargeString, g_apartmentData[ i ] [ E_OWNER ], g_apartmentData[ i ] [ E_NAME ] );
-							else
-							    strcat( szLargeString, "$5,000,000 - Available For Purchase!\n" );
-						}
-
-						ShowPlayerDialog( playerid, DIALOG_APARTMENTS, DIALOG_STYLE_LIST, "{FFFFFF}Apartments", szLargeString, "Select", "Cancel" );
-						return 1;
-					}
-
-					for( new floors; floors < MAX_AFLOORS; floors++ )
-					{
-						GetDynamicObjectPos( g_apartmentElevatorDoor1[ floors ], X, Y, Z );
-	                	if ( IsPlayerInRangeOfPoint( playerid, 4.0, X, Y, Z ) )
-	                	{
-							ClearAnimations( playerid ); // clear-fix
-						    if ( IsDynamicObjectMoving( g_apartmentElevator ) ) {
-			       				SendError( playerid, "The elevator is operating, please wait." );
-			       				break;
-							}
-
-		    				PlayerPlaySound( playerid, 1085, 0.0, 0.0, 0.0 );
-							apartment_CallElevator( floors ); // First floor
-							break;
-	                	}
-					}
-					return 1;
-				}
-
-			}
 		}
 	}
 
@@ -9846,133 +9717,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		else ShowAmmunationMenu( playerid );
 	}
-	if ( ( dialogid == DIALOG_APARTMENTS ) && response )
-	{
-		new Float: X, Float: Y, Float: Z;
-		GetDynamicObjectPos( g_apartmentElevator, X, Y, Z );
-		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, X, Y, Z ) )
-			return SendError( playerid, "You must be near the elevator to use this!" );
-
-	    if ( listitem == 0 ) apartment_CallElevator( 0 );
-	    else
-	    {
-			new id = listitem - 1;
-			p_ApartmentEnter{ playerid } = id;
-			if ( strmatch( g_apartmentData[ id ] [ E_OWNER ], "No-one" ) || isnull( g_apartmentData[ id ] [ E_OWNER ] ) || !g_apartmentData[ id ] [ E_CREATED ] )
-			{
-			 	ShowPlayerDialog( playerid, DIALOG_APARTMENTS_BUY, DIALOG_STYLE_MSGBOX, "{FFFFFF}Are you interested?", "{FFFFFF}This apartment is available for sale. The price is $5,000,000.\nIf you wish to buy it, please click 'Purchase'.", "Purchase", "Deny" );
-			}
-			else if ( !strmatch( g_apartmentData[ id ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-			    if ( g_apartmentData[ id ] [ E_LOCKED ] ) {
-					return SendError( playerid, "This apartment has been locked by its owner." );
-				}
-			}
-	    	apartment_CallElevator( id + 1 );
-		}
-	}
-	if ( ( dialogid == DIALOG_APARTMENTS_BUY ) && response )
-	{
-	    if ( GetPlayerOwnedApartments( playerid ) > 0 )
-	        return SendError( playerid, "You can only own one apartment." );
-
-	    if ( GetPlayerCash( playerid ) < 5000000 )
-	        return SendError( playerid, "You don't have enough money for this ($5,000,000)." );
-
-		GivePlayerCash( playerid, -5000000 );
-		autosaveStart( playerid, true ); // auto-save
-
-		new aID = p_ApartmentEnter{ playerid };
-		g_apartmentData[ aID ] [ E_CREATED ] = true;
-		format( g_apartmentData[ aID ] [ E_OWNER ], 24, "%s", ReturnPlayerName( playerid ) );
-		format( g_apartmentData[ aID ] [ E_NAME ], 30, "Apartment %d", aID );
-		g_apartmentData[ aID ] [ E_LOCKED ] = 0;
-
-		format( szNormalString, 100, "INSERT INTO `APARTMENTS` VALUES (%d,'%s','Apartment %d',0)", aID, mysql_escape( ReturnPlayerName( playerid ) ), aID );
-	    mysql_single_query( szNormalString );
-
-		SendServerMessage( playerid, "You have purchased an apartment for "COL_GOLD"$5,000,000"COL_WHITE"." );
-	}
-	if ( ( dialogid == DIALOG_FLAT_CONFIG ) && response )
-	{
-		for( new id, x = 0; id < sizeof( g_apartmentData ); id ++ )
-		{
-			if ( g_apartmentData[ id ] [ E_CREATED ] && strmatch( g_apartmentData[ id ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-		       	if ( x == listitem )
-		      	{
-					SetPVarInt( playerid, "flat_editing", id );
-		      	    SendServerMessage( playerid, "You are now controlling the settings over "COL_GREY"%s", g_apartmentData[ id ] [ E_NAME ] );
-		      		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-		      		break;
-				}
-		      	x++;
-			}
-		}
-	}
-	if ( dialogid == DIALOG_FLAT_CONTROL )
-	{
-	    if ( !response )
-	        return cmd_flat( playerid, "config" );
-
-		switch( listitem )
-		{
-		    case 0:
-		    {
-		    	SetPlayerSpawnLocation( playerid, "APT", GetPVarInt( playerid, "flat_editing" ) );
-				SendServerMessage( playerid, "You have set your spawning location to the specified apartment. To stop this you can use \"/flat stopspawn\"." );
-				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-			}
-			case 1:
-			{
-		        new id = GetPVarInt( playerid, "flat_editing" );
-             	g_apartmentData[ id ] [ E_LOCKED ] = ( g_apartmentData[ id ] [ E_LOCKED ] == 1 ? 0 : 1 );
-				format( Query, 100, "UPDATE `APARTMENTS` SET `LOCKED`=%d WHERE `ID`=%d", g_apartmentData[ id ] [ E_LOCKED ], id );
-				mysql_single_query( Query );
-				SendServerMessage( playerid, "You have %s the specified apartment.", g_apartmentData[ id ] [ E_LOCKED ] == 1 ? ( "locked" ) : ( "unlocked" ) );
-				ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-			}
-		    case 2:
-		    {
-		   		ShowPlayerDialog( playerid, DIALOG_FLAT_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Owned Apartments", ""COL_WHITE"Input the apartment title you want to change with:", "Submit", "Back" );
-			}
-		    case 3: ShowPlayerDialog( playerid, DIALOG_YOU_SURE_APART, DIALOG_STYLE_MSGBOX, "{FFFFFF}Owned Apartments", ""COL_WHITE"Are you sure that you want to sell your apartment?", "Yes", "No" );
-		}
-	}
-	if ( dialogid == DIALOG_YOU_SURE_APART )
-	{
-		if ( !response )
-   			return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-
-		new id = GetPVarInt( playerid, "flat_editing" );
-
-		g_apartmentData[ id ] [ E_CREATED ] = false;
-		strcpy( g_apartmentData[ id ] [ E_OWNER ], "No-one" );
-		// format( g_apartmentData[ id ] [ E_OWNER ], MAX_PLAYER_NAME, "%s", "No-one" );
-		format( g_apartmentData[ id ] [ E_NAME ], 30, "Apartment %d", id );
-		g_apartmentData[ id ] [ E_LOCKED ] = 0;
-
-		format( szNormalString, 40, "DELETE FROM `APARTMENTS` WHERE `ID`=%d", id );
-	    mysql_single_query( szNormalString );
-
-        GivePlayerCash( playerid, 3000000 );
-
-   		return SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have successfully sold your apartment for "COL_GOLD"$3,000,000"COL_WHITE".");
-	}
-	if ( ( dialogid == DIALOG_FLAT_TITLE ) )
-	{
-	    if ( !response )
-	        return ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-
-		if ( !strlen( inputtext ) )
-			return ShowPlayerDialog( playerid, DIALOG_FLAT_TITLE, DIALOG_STYLE_INPUT, "{FFFFFF}Owned Apartments", ""COL_WHITE"Input the apartment title you want to change with:\n\n"COL_RED"Must be more than 0 characters.", "Submit", "Back" );
-
-		new id = GetPVarInt( playerid, "flat_editing" );
-		mysql_single_query( sprintf( "UPDATE `APARTMENTS` SET `NAME`='%s' WHERE `ID`=%d", mysql_escape( inputtext ), id ) );
-		format( g_apartmentData[ id ] [ E_NAME ], 30, "%s", inputtext );
- 		SendServerMessage( playerid, "You have successfully changed the name of your apartment." );
-  		ShowPlayerDialog( playerid, DIALOG_FLAT_CONTROL, DIALOG_STYLE_LIST, "{FFFFFF}Owned Apartments", "Spawn Here\nLock Apartment\nModify Apartment Name\nSell Apartment", "Select", "Back" );
-	}
 	if ( ( dialogid == DIALOG_ONLINE_JOB ) && response )
 	{
 	 	new
@@ -10881,18 +10625,13 @@ function SetPlayerRandomSpawn( playerid )
 		// standard apartment
 		else if ( strmatch( p_SpawningKey[ playerid ], "APT" ) )
 		{
-			if ( g_apartmentData[ index ] [ E_CREATED ] && strmatch( g_apartmentData[ index ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-				pauseToLoad( playerid );
-			    SetPlayerInterior( playerid, 0 );
-			    SetPlayerFacingAngle( playerid, 180.0 );
-			    SetPlayerPos( playerid, -1955.0114, 1360.8344, 17.03 + ( index * 5.447 ) );
+			if ( NovicHotel_IsOwner( playerid, index ) ) {
+				NovicHotel_SetPlayerToFloor( playerid, index );
 			    return 1;
 			}
 			else ResetSpawnLocation( playerid );
 		}
 	}
-
 
 	new
 		city = p_SpawningCity{ playerid } >= MAX_CITIES ? random( MAX_CITIES ) : p_SpawningCity{ playerid };
@@ -11179,57 +10918,6 @@ stock AddFileLogLine( file[ ], input[ ] )
     fwrite(fHandle, input);
     fclose(fHandle);
     return 1;
-}
-
-new svApartments = -1;
-
-stock loadApartmentsFromDatabase( )
-{
-	new
-	    szQuery[ 45 ],
-	    loadingTick = GetTickCount( )
-	;
-
-	for( new i; i < sizeof( g_apartmentData ); i++ )
-	{
-	    format( szQuery, sizeof( szQuery ), "SELECT * FROM `APARTMENTS` WHERE `ID`=%d LIMIT 0,1", i );
-	    mysql_function_query( dbHandle, szQuery, true, "OnApartmentLoad", "i", i );
-	}
-	printf( "[FLATS]: %d apartments have been loaded. (Tick: %dms)", svApartments, GetTickCount( ) - loadingTick );
-}
-
-thread OnApartmentLoad( )
-{
-	new
-		rows, fields, i = -1, aID,
-		Field[ 5 ],
-	    loadingTick = GetTickCount( )
-	;
-
-	cache_get_data( rows, fields );
-	if ( rows )
-	{
-		while( ++i < rows )
-		{
-			cache_get_field_content( i, "ID", Field ),			aID = strval( Field );
-			cache_get_field_content( i, "OWNER", g_apartmentData[ aID ] [ E_OWNER ], dbHandle, 24 );
-			cache_get_field_content( i, "NAME", g_apartmentData[ aID ] [ E_NAME ], dbHandle, 30 );
-			cache_get_field_content( i, "LOCKED", Field ), g_apartmentData[ aID ] [ E_LOCKED ] = strval( Field );
-			g_apartmentData[ aID ] [ E_CREATED ] = true;
-		}
-	}
-	printf( "[FLATS]: %d apartments have been loaded. (Tick: %dms)", i, GetTickCount( ) - loadingTick );
-	return 1;
-}
-
-stock GetPlayerOwnedApartments( playerid )
-{
-	for( new i; i < sizeof( g_apartmentData ); i++ ) if ( g_apartmentData[ i ] [ E_CREATED ] )
-	{
-		if ( strmatch( g_apartmentData[ i ][ E_OWNER ], ReturnPlayerName( playerid ) ) )
-		    return 1;
-	}
-	return 0;
 }
 
 stock GetPlayerIDFromName( pName[ ] )
@@ -12104,34 +11792,6 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false )
 			return i;
 	}
 	return -1;
-}
-
-stock apartment_CallElevator( level )
-{
-	new Float: Z, Float: LastZ;
-
-	if ( level >= MAX_AFLOORS )
-	    return -1; // Invalid Floor
-
-	switch( level ) {
-	    case 0:     Z = 8.36;
-	    case 1:     Z = 17.03;
-	    default:    Z = 17.03 + ( ( level - 1 ) * 5.447 );
-	}
-
-	GetDynamicObjectPos( g_apartmentElevatorDoor1[ g_apartmentElevatorLevel ], LastZ, LastZ, LastZ );
-	MoveDynamicObject( g_apartmentElevatorDoor1[ g_apartmentElevatorLevel ], -1955.05, 1361.64, LastZ, 5.0 );
-	MoveDynamicObject( g_apartmentElevatorDoor2[ g_apartmentElevatorLevel ], -1955.05, 1361.64, LastZ, 5.0 );
-
-	DestroyDynamicObject( g_apartmentElevatorGate ), g_apartmentElevatorGate = INVALID_OBJECT_ID;
-	g_apartmentElevatorGate = CreateDynamicObject( 19304, -1955.08, 1363.74, LastZ, 0.00, 0.00, 0.00 );
- 	SetObjectInvisible( g_apartmentElevatorGate ); // Just looks ugly...
-	MoveDynamicObject( g_apartmentElevatorGate, -1955.08, 1363.74, Z, 7.0 );
-
-	MoveDynamicObject( g_apartmentElevator, -1955.09, 1365.51, Z, 7.0 );
-
-	g_apartmentElevatorLevel = level; // For the last level.
-	return 1;
 }
 
 stock randarg( ... )
@@ -13374,11 +13034,7 @@ thread OnPlayerChangeName( playerid, Float: iCoinRequirement, newName[ ] )
     	}
 
     	// Update apartments
-	 	mysql_single_query( sprintf( "UPDATE `APARTMENTS` SET `OWNER` = '%s' WHERE `OWNER` = '%s'", mysql_escape( newName ), mysql_escape( ReturnPlayerName( playerid ) ) ) );
-
-    	for( new i = 0; i < sizeof( g_apartmentData ); i++ )
-    		if ( strmatch( g_apartmentData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-				format( g_apartmentData[ i ] [ E_OWNER ], 24, "%s", newName );
+    	NovicHotel_UpdateOwnerName( playerid, newName );
 
     	// Update username
 		SetPlayerName( playerid, newName );
