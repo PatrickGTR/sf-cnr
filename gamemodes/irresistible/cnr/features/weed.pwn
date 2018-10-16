@@ -261,7 +261,7 @@ stock Weed_CreatePlant( playerid, Float: X, Float: Y, Float: Z, required_time = 
 		g_weedData[ weedid ] [ E_Z ] = Z;
 
 		Streamer_Update( playerid );
-		MoveDynamicObject( g_weedData[ weedid ] [ E_OBJECT ], X, Y, Z + 0.9, ( 0.9 / float( required_time ) ) * 2.8 ); // takes about 9 minutes to appear
+		MoveDynamicObject( g_weedData[ weedid ] [ E_OBJECT ], X, Y, Z + 0.6, ( 0.6 / float( required_time ) ) * 3.5 );
 
 		Iter_Add( weedplants, weedid );
 	}
