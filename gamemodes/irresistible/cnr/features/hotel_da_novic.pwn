@@ -31,6 +31,9 @@ static stock
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
+	// Load apartments
+	mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "NovicHotel_Load", "" );
+
 	// Apartments
 	CreateDynamicObject( 4587, -1971.51, 1356.26, 65.32, 0.00, 0.00, -180.00, .priority = 1 );
 	CreateDynamicObject( 3781, -1971.50, 1356.27, 28.26, 0.00, 0.00, -180.00, .priority = 1 );
@@ -271,7 +274,7 @@ hook OnDynamicObjectMoved( objectid )
 }
 
 /* ** SQL Threads ** */
-thread OnApartmentLoad( )
+thread NovicHotel_Load( )
 {
 	new
 		rows, fields, i = -1, aID,
