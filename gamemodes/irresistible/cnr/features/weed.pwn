@@ -134,6 +134,7 @@ CMD:weed( playerid, params[ ] )
 		MapAndreas_FindZ_For2DCoord( X, Y, Z );
 
 		if ( Weed_CreatePlant( playerid, X, Y, Z ) != ITER_NONE ) {
+			GivePlayerWantedLevel( playerid, 2 );
 			GivePlayerShopItem( playerid, SHOP_ITEM_WEED_SEED, -1 );
 			return SendServerMessage( playerid, "You have planted weed. It will take %s to grow.", secondstotime( WEED_REQUIRED_GROW_TIME ) );
 		} else {
@@ -251,7 +252,7 @@ stock Weed_CreatePlant( playerid, Float: X, Float: Y, Float: Z, required_time = 
 
 	if ( weedid != ITER_NONE )
 	{
-		g_weedData[ weedid ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s's Weed Plant\n"COL_WHITE"0.0%% Grown", ReturnPlayerName( playerid ) ), COLOR_GREEN, X, Y, Z + 0.5, 15.0 );
+		g_weedData[ weedid ] [ E_LABEL ] = CreateDynamic3DTextLabel( sprintf( "%s's Weed Plant\n"COL_WHITE"0.0%% Grown", ReturnPlayerName( playerid ) ), COLOR_GREEN, X, Y, Z + 0.5, 30.0 );
 		g_weedData[ weedid ] [ E_OBJECT ] = CreateDynamicObject( 19473, X, Y, Z - 1.5, 0.0, 0.0, 0.0 );
 		g_weedData[ weedid ] [ E_MAP_ICON ] = CreateDynamicMapIcon( X, Y, Z, 0, COLOR_GREEN, -1, -1, -1, 250.0 );
 		g_weedData[ weedid ] [ E_GROW_TIME ] = GetServerTime( ) + required_time;
