@@ -90,6 +90,171 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	return 1;
 }
 
+hook OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
+{
+	if ( progressid == PROGRESS_ROBBING || progressid == PROGRESS_SAFEPICK )
+	{
+		new
+			Float: distance = distanceFromSafe( playerid, params );
+
+		new abort = ( !IsPlayerSpawned( playerid ) || !IsPlayerConnected( playerid ) || IsPlayerTied( playerid ) || IsPlayerInAnyVehicle( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_WASTED || IsPlayerAFK( playerid ) || params == -1 || distance > 1.5 || distance < 0.0 || canceled );
+
+		if ( g_Debugging )
+		{
+			//SendClientMessageFormatted( playerid, COLOR_YELLOW, "distance: %f, params: %d, player: %d, jacked: %d", distance, params, p_UsingRobberySafe	[ playerid ], g_robberyData[ params ] [ E_STATE ] );
+			new robberyid = params; printf("[DEBUG] [ROBBERY] [%d] Robbing/Picking [progress : %d, distance : %f, abort : %d] { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
+				robberyid, progressid, distance, abort,
+				g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
+				g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
+				g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
+		}
+
+		if ( abort )
+		{
+			RemovePlayerAttachedObject( playerid, 0 );
+			g_robberyData 		[ params ] [ E_STATE ] = STATE_NONE;
+			p_UsingRobberySafe	[ playerid ] = -1;
+			return StopProgressBar( playerid ), 1;
+		}
+
+		// force angle
+		SetPlayerFacingAngle( playerid, g_robberyData[ params ] [ E_DOOR_ROT ] );
+	}
+	return 1;
+}
+
+hook OnProgressCompleted( playerid, progressid, params )
+{
+	static
+		Float: X, Float: Y, Float: Z;
+
+	if ( progressid == PROGRESS_ROBBING )
+	{
+		new
+			robberyid = params,//p_UsingRobberySafe[ playerid ],
+			Float: distance = distanceFromSafe( playerid, robberyid )
+		;
+
+		if ( robberyid != -1 && distance < 2.5 || distance > 0.0 )
+		{
+			if ( IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
+			{
+		        if ( g_robberyData[ robberyid ] [ E_STATE ] != STATE_ROBBED ) return SendError( playerid, "This safe can no longer be robbed." );
+		        else
+		        {
+				    static szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
+
+					ClearAnimations 	( playerid );
+		        	g_robberyData 		[ robberyid ] [ E_STATE ] = STATE_NONE;
+    				p_UsingRobberySafe 	[ playerid ] = -1;
+
+    				new businessid = g_robberyData[ robberyid ] [ E_BUSINESS_ID ];
+
+					if ( businessid == -1 && IsPlayerConnected( playerid ) && p_MoneyBag{ playerid } == true ) {
+						new extra_loot = floatround( float( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ) * ROBBERY_MONEYCASE_BONUS );
+						g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = extra_loot;
+					}
+
+					if ( GetPlayerInterior( playerid ) != 0 )
+					{
+					    if ( p_LastEnteredEntrance[ playerid ] != -1 )
+					  	{
+					  		new id = p_LastEnteredEntrance[ playerid ];
+						    Get2DCity( szCity, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] );
+						    GetZoneFromCoordinates( szLocation, g_entranceData[ id ] [ E_EX ], g_entranceData[ id ] [ E_EY ], g_entranceData[ id ] [ E_EZ ] );
+						    if ( !strmatch( szCity, "San Fierro" ) && !strmatch( szCity, "Las Venturas" ) && !strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] /= 2; // Halve Profit outside SF, LV & LS
+							//if ( strmatch( szCity, "Las Venturas" ) || strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = floatround( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] * 0.75 ); // Remove 25%
+							SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
+					    }
+					    else if ( p_InBusiness[ playerid ] != -1 )
+					    {
+						    Get2DCity( szCity, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
+						    GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
+							SendGlobalMessage( COLOR_GOLD, "[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s"COL_WHITE" near %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szLocation, szCity );
+					    }
+					    else
+					    {
+					    	SendServerMessage( playerid, "You've been kicked due to suspected teleport hacking." );
+					    	KickPlayerTimed( playerid );
+					    	return 1;
+					    }
+					}
+					else
+					{
+						GetPlayerPos( playerid, X, Y, Z );
+					    Get2DCity( szCity, X, Y, Z );
+					    if ( !strmatch( szCity, "San Fierro" ) && !strmatch( szCity, "Las Venturas" ) && !strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] /= 2; // Halve Profit outside SF, LV & LS
+						//if ( strmatch( szCity, "Las Venturas" ) || strmatch( szCity, "Los Santos" ) ) g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = floatround( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] * 0.75 ); // Remove 25%
+						SendGlobalMessage( -1, ""COL_GOLD"[ROBBERY]"COL_WHITE" %s(%d) has robbed "COL_GOLD"%s"COL_WHITE" from %s in %s!", ReturnPlayerName( playerid ), playerid, cash_format( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ), g_robberyData[ robberyid ] [ E_NAME ], szCity );
+					}
+
+					GivePlayerScore( playerid, 2 );
+					GivePlayerWantedLevel( playerid, 6 );
+					GivePlayerExperience( playerid, E_ROBBERY );
+		        	SplitPlayerCashForGang( playerid, float( g_robberyData[ robberyid ] [ E_SAFE_LOOT ] ) );
+					g_robberyData[ robberyid ] [ E_SAFE_LOOT ] = 0;
+					DestroyDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] );
+					g_robberyData[ robberyid ] [ E_SAFE_MONEY ] = INVALID_OBJECT_ID;
+					g_robberyData[ robberyid ] [ E_ROBBED ] = true;
+    				g_robberyData[ robberyid ] [ E_ROB_TIME ] = g_iTime + MAX_ROBBERY_WAIT;
+           			//SendClientMessageToAdmins(COLOR_ORANGE,"%s(%d) robbed safe %d (%d sec)", ReturnPlayerName( playerid ), playerid, robberyid, g_robberyData[ robberyid ] [ E_ROB_TIME ] - gettime());
+
+					if ( g_Debugging )
+					{
+						printf("[DEBUG] [ROBBERY] [%d] Store Robbed [progress : %d, distance : %f] { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
+							robberyid, progressid, distance,
+							g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
+							g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
+							g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
+					}
+					ach_HandlePlayerRobbery( playerid );
+		        }
+			}
+		}
+	}
+	else if ( progressid == PROGRESS_SAFEPICK )
+	{
+		new
+			robberyid = p_UsingRobberySafe[ playerid ],
+			Float: distance = distanceFromSafe( playerid, robberyid )
+		;
+
+		if ( robberyid != -1 && 0.0 < distance <= 2.5 )
+		{
+			if ( !g_robberyData[ robberyid ] [ E_ROBBED ] && !IsValidDynamicObject( g_robberyData[ robberyid ] [ E_SAFE_MONEY ] ) )
+			{
+				static
+					Float: pZ, Float: sZ;
+
+		        if ( g_robberyData[ robberyid ] [ E_STATE ] != STATE_PICKED ) return SendError( playerid, "This safe can no longer be picked." );
+
+		        p_UsingRobberySafe[ playerid ] = -1;
+				RemovePlayerAttachedObject( playerid, 0 );
+		        SendServerMessage( playerid, "You've opened the safe door." );
+
+		        g_robberyData[ robberyid ] [ E_STATE ] 	  = STATE_NONE;
+		        g_robberyData[ robberyid ] [ E_ROBTIMER ] = SetTimerEx( "onSafeBust", 1000, false, "dddd", playerid, robberyid, ROBBERY_TYPE_LABOR, 0 );
+
+				if ( g_Debugging )
+				{
+					printf("[DEBUG] [ROBBERY] [%d] Safe Picked [progress : %d, distance : %f] { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
+						robberyid, progressid, distance,
+						g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
+						g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
+						g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
+				}
+
+       	 		GetDynamicObjectPos( g_robberyData[ robberyid ] [ E_SAFE ], sZ, sZ, sZ );
+				GetPlayerPos( playerid, pZ, pZ, pZ );
+
+        		if ( sZ < pZ )
+					ApplyAnimation( playerid, "ROB_BANK", "CAT_Safe_Open", 4.1, 0, 0, 0, 0, 0, 0 );
+			}
+		}
+	}
+	return 1;
+}
+
 /* ** Functions ** */
 stock CreateRobberyCheckpoint( szName[ 32 ], iRobValue, Float: fX, Float: fY, Float: fZ, Float: rotation, worldid )
 {

@@ -188,6 +188,97 @@ hook OnVehicleDeath( vehicleid, killerid )
 	return 1;
 }
 
+hook OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
+{
+	if ( progressid == PROGRESS_CHEMICAL || progressid == PROGRESS_GRAB_METH )
+	{
+		if ( !IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) || !IsPlayerInMethlab( playerid ) || canceled )
+			return DeletePVar( playerid, "pouring_chemical" ), StopProgressBar( playerid ), 1;
+	}
+	return 1;
+}
+
+hook OnProgressCompleted( playerid, progressid, params )
+{
+	static
+		Float: X, Float: Y, Float: Z;
+
+	if ( progressid == PROGRESS_CHEMICAL )
+	{
+		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) )
+		{
+			new
+				chemical = GetPVarInt( playerid, "pouring_chemical" ),
+				vehicleid = GetPlayerMethLabVehicle( playerid )
+			;
+
+			DeletePVar( playerid, "pouring_chemical" );
+
+			switch( chemical )
+			{
+				case CHEMICAL_MU: 	p_MuriaticAcid{ playerid } --,		SetGVarInt( "meth_acid", 0, vehicleid );
+				case CHEMICAL_CS: 	p_CausticSoda{ playerid } --,		SetGVarInt( "meth_soda", 0, vehicleid );
+				case CHEMICAL_HLC: 	p_HydrogenChloride{ playerid } --,	SetGVarInt( "meth_chloride", 0, vehicleid );
+			}
+
+			if ( GetGVarInt( "meth_ingredient", vehicleid ) != chemical )
+			{
+				DeleteGVar( "meth_ingredient", vehicleid );
+				DeleteGVar( "meth_soda", vehicleid );
+				DeleteGVar( "meth_acid", vehicleid );
+				DeleteGVar( "meth_chloride", vehicleid );
+				DeleteGVar( "meth_chef", vehicleid );
+				SendServerMessage( playerid, "You have put the whole chemical. The methlab has exploded." );
+				GetPlayerPos( playerid, X, Y, Z );
+				CreateExplosionForPlayer( playerid, X, Y, Z - 0.75, 0, 10.0 );
+				SetPlayerHealth( playerid, -1 );
+			}
+			else
+			{
+				SetGVarInt( "meth_chef", playerid, vehicleid );
+
+				SetGVarInt( "meth_smoke", CreateDynamicObject( 18726, 0.0, 0.0, -1000.0, 0.000000, 0.000000, 0.000000 ), vehicleid );
+				AttachDynamicObjectToVehicle( GetGVarInt( "meth_smoke", vehicleid ), vehicleid, -0.524999, -0.974999, -0.375000, 0.000000, 0.000000, 0.000000 );
+
+				ShowPlayerHelpDialog( playerid, 5000, "Okay, okay, everything seems to be cooking fine. Wait till for the next chemical to be added." );
+   				if ( !IsPlayerUsingRadio( playerid ) ) PlayAudioStreamForPlayer( playerid, "http://files.sfcnr.com/game_sounds/meth_cooking.mp3", 1476.0394, 1464.3358, 1012.1190, 5.0, 1 );
+				SetGVarInt( "meth_cooktimer", SetTimerEx( "OnMethamphetamineCooking", 10000, false, "ddd", playerid, vehicleid, chemical ), vehicleid );
+			}
+		}
+	}
+	else if ( progressid == PROGRESS_GRAB_METH )
+	{
+		if ( IsPlayerInRangeOfPoint( playerid, 2.0, 2084.2842, 1234.0254, 414.7454 ) && IsPlayerInMethlab( playerid ) )
+		{
+			new
+				vehicleid = GetPlayerMethLabVehicle( playerid ),
+				objectid = GetGVarInt( "meth_yield", vehicleid )
+			;
+
+			if ( !( IsValidDynamicObject( objectid ) && Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID ) == 1579 ) )
+				return SendError( playerid, "Someone just took the last batch of the meth!" );
+
+			if ( p_Methamphetamine{ playerid } >= 128 )
+				return SendError( playerid, "You can only export a maximum of 128 pounds of meth." );
+
+			p_Methamphetamine{ playerid } ++;
+
+			DestroyDynamicObject( GetGVarInt( "meth_yield", vehicleid ) );
+
+			// Reset meth data
+			DeleteGVar( "meth_yield", vehicleid );
+			DeleteGVar( "meth_ingredient", vehicleid );
+			DeleteGVar( "meth_soda", vehicleid );
+			DeleteGVar( "meth_acid", vehicleid );
+			DeleteGVar( "meth_chloride", vehicleid );
+			DeleteGVar( "meth_chef", vehicleid );
+
+			SendServerMessage( playerid, "You've yielded a pound of meth. Take your bags over to "COL_GREY"Cluckin' Bell"COL_WHITE" for exportation." );
+		}
+	}
+	return 1;
+}
+
 /* ** Callbacks ** */
 public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 {
