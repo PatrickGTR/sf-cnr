@@ -34,6 +34,12 @@ static stock
 ;
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
+	return 1;
+}
+
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
 	if ( PRESSED( KEY_LOOK_BEHIND ) ) // MMB to open gate
