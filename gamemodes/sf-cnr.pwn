@@ -577,53 +577,6 @@ public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, 
 	return 1;
 }
 
-public OnPlayerEditDynamicObject( playerid, objectid, response, Float: x, Float: y, Float: z, Float: rx, Float: ry, Float: rz )
-{
-	new
-		houseid = p_InHouse[ playerid ];
-
-    if ( houseid != -1 )
-    {
-	 	new editing_house = GetPVarInt( playerid, "furniture_house" );
-	 	new editing_furniture = GetPVarInt( playerid, "furniture_id" );
-
-	    if ( houseid != editing_house )
-	   		return SendError( playerid, "There was an issue editing the furniture of this home, try again." );
-
-	   	if ( ! IsPlayerHomeOwner( playerid, houseid ) )
-	   	 	return SendError( playerid, "You are not the owner of this house." );
-
-		static Float: lastX, Float: lastY, Float: lastZ;
-		static Float: lastRX, Float: lastRY, Float: lastRZ;
-
-		GetDynamicObjectPos( objectid, lastX, lastY, lastZ );
-		GetDynamicObjectRot( objectid, lastRX, lastRY, lastRZ );
-
-		switch ( response )
-		{
-		    case EDIT_RESPONSE_FINAL:
-		    {
-				SetDynamicObjectPos( objectid, x, y, z );
-				SetDynamicObjectRot( objectid, rx, ry, rz );
-
-				format( szBigString, sizeof( szBigString ), "UPDATE `FURNITURE` SET `X`=%f,`Y`=%f,`Z`=%f,`RX`=%f,`RY`=%f,`RZ`=%f WHERE `ID`=%d AND `HOUSE_ID`=%d", x, y, z, rx, ry, rz, editing_furniture, editing_house );
-				mysql_single_query( szBigString );
-
-				SendServerMessage( playerid, "Furniture has been successfully updated." );
-	        	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
-			}
-			case EDIT_RESPONSE_CANCEL:
-			{
-				SetDynamicObjectPos( objectid, lastX, lastY, lastZ );
-				SetDynamicObjectRot( objectid, lastRX, lastRY, lastRZ );
-				SendServerMessage( playerid, "You have canceled editing the piece of furniture selected." );
-	        	ShowPlayerDialog( playerid, DIALOG_FURNITURE, DIALOG_STYLE_LIST, "{FFFFFF}Furniture", "Purchase Furniture\nSelect Furniture Easily\nSelect Furniture Manually\nSelect Furniture Nearest\n"COL_RED"Remove All Furniture", "Confirm", "Back" );
-			}
-		}
-	}
-	return 1;
-}
-
 public OnGameModeExit( )
 {
 	KillTimer( rl_ServerUpdate );
