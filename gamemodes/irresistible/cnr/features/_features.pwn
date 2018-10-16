@@ -42,6 +42,7 @@
 #include "irresistible\cnr\features\damage_feed.pwn"
 #include "irresistible\cnr\features\weed.pwn"
 #include "irresistible\cnr\features\race.pwn"
+#include "irresistible\cnr\features\gates.pwn"
 
 // disabled
 // #include "irresistible\cnr\features\eastereggs.pwn"

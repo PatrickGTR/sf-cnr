@@ -225,17 +225,11 @@ CMD:editgate( playerid, params[ ] )
 
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
 	else if ( sscanf( params, "d", gID ) ) return SendUsage( playerid, "/editgate [GATE_ID]" );
-	else if ( !Iter_Contains( gates, gID ) ) return SendError( playerid, "Invalid Gate ID" );
+	else if ( ! Gate_Exists( gID ) ) return SendError( playerid, "Invalid Gate ID" );
 	else
 	{
-		format( szLargeString, sizeof( szLargeString ),
-			""COL_RED"Remove This Gate?\t \nOwner ID\t"COL_GREY"%d\nName\t"COL_GREY"%s\nPassword\t"COL_GREY"%s\nModel\t"COL_GREY"%d\nSpeed\t"COL_GREY"%f\nRange\t"COL_GREY"%f\nPause\t"COL_GREY"%d MS\nGang ID\t%d\nChange Closed Positioning\t \nChange Opened Positioning\t ",
-			g_gateData[ gID ] [ E_OWNER ], g_gateData[ gID ] [ E_NAME ], g_gateData[ gID ] [ E_PASS ], g_gateData[ gID ] [ E_MODEL ], g_gateData[ gID ] [ E_SPEED ], g_gateData[ gID ] [ E_RANGE ], g_gateData[ gID ] [ E_TIME ], g_gateData[ gID ] [ E_GANG_SQL_ID ]
-		);
-
-		SetPVarInt( playerid, "gate_editing", gID );
+		SetPlayerEditGate( playerid, gID );
 		SaveToAdminLog( playerid, gID, "editing gate" );
-		ShowPlayerDialog( playerid, DIALOG_GATE, DIALOG_STYLE_TABLIST, "{FFFFFF}Edit Gate", szLargeString, "Select", "Cancel" );
 	}
 	return 1;
 }
