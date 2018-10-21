@@ -36,7 +36,9 @@ stock AC_RepairVehicle( vehicleid )
 /* ** Hooks ** */
 hook OnPlayerDisconnect( playerid, reason )
 {
-	p_DamageSpamCount{ playerid } = 0;
+	if ( 0 <= playerid < MAX_PLAYERS ) {
+		p_DamageSpamCount{ playerid } = 0;
+	}
 	return 1;
 }
 
