@@ -205,13 +205,13 @@ hook OnPlayerUpdate( playerid )
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 
-hook OnPlayerSpawn( playerid )
+/*hook OnPlayerSpawn( playerid )
 {
 	if ( IsPlayerSecurityDriver( playerid ) ) {
 		return Y_HOOKS_BREAK_RETURN_1;
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
-}
+}*/
 
 hook OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float: fY, Float: fZ )
 {

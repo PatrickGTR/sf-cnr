@@ -246,6 +246,11 @@ hook OnScriptInit( )
 
 hook OnPlayerSpawn( playerid )
 {
+	// prevent npcs from being treated like players
+	if ( IsPlayerNPC( playerid ) ) {
+		return Y_HOOKS_BREAK_RETURN_1; // add a callback otherwise OnNpcSpawn
+	}
+
 	// check if this spawn is even approved
 	if ( ! IsPlayerClassApproved( playerid ) )
 	{
