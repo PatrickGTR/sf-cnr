@@ -313,17 +313,18 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	else if ( dialogid == DIALOG_NEXT_PAGE_VIP && response )
 	{
 		static
-			vip_description[ 1250 ];
+			vip_description[ 1350 ];
 
 		if ( vip_description[ 0 ] == '\0' )
 		{
 			vip_description = " \t"COL_PLATINUM"Platinum VIP\t"COL_DIAMOND"Diamond VIP\n";
-			strcat( vip_description, "Money\t"COL_GREEN"$12,500,000\t"COL_GREEN"$25,000,000\n" );
-			strcat( vip_description, "House\tY\tY\n" );
-			strcat( vip_description, "Vehicle\tY\tY\n" );
-			strcat( vip_description, "Garage\tY\tY\n" );
-			strcat( vip_description, "Gate\tN\tY\n" );
-			strcat( vip_description, "Weed Business\tN\tY\n" );
+			strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_GREEN"$50.00 USD\t"COL_GREEN"$100.00 USD\n" );
+			strcat( vip_description, "Money Provided\t$12,500,000\t$25,000,000\n" );
+			strcat( vip_description, "House Provided\tY\tY\n" );
+			strcat( vip_description, "Vehicle Provided\tY\tY\n" );
+			strcat( vip_description, "Garage Provided\tY\tY\n" );
+			strcat( vip_description, "Gate Provided\tN\tY\n" );
+			strcat( vip_description, "Weed Business Provided\tN\tY\n" );
 			strcat( vip_description, "House Customization\tMedium\tLarge\n" );
 			strcat( vip_description, "Total house slots\t10\tunlimited\n" );
 			strcat( vip_description, "Total garage slots\t10\tunlimited\n" );
@@ -352,7 +353,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			strcat( vip_description, "Ability to adjust your label's color (/labelcolor)\tY\tY\n" );
 			strcat( vip_description, "Can show a message to people you kill (/deathmsg)\tY\tY\n" );
 			strcat( vip_description, "Can adjust the sound of your hitmarker (/hitmarker)\tY\tY\n" );
-			strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_PLATINUM"$50.00 USD\t"COL_DIAMOND"$100.00 USD" );
 		}
 		return ShowPlayerDialog( playerid, DIALOG_BUY_VIP, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Donate for V.I.P", vip_description, "Buy VIP", "Close" );
 	}
@@ -430,17 +430,18 @@ CMD:donate( playerid, params[ ] ) return cmd_vip( playerid, params );
 CMD:vip( playerid, params[ ] )
 {
 	static
-		vip_description[ 1350 ];
+		vip_description[ 1420 ];
 
 	if ( vip_description[ 0 ] == '\0' )
 	{
 		vip_description = " \t"COL_WHITE"Regular VIP\t"COL_BRONZE"Bronze VIP\t"COL_GOLD"Gold VIP\n";
-		strcat( vip_description, "Money\t"COL_GREEN"$500,000\t"COL_GREEN"$2,500,000\t"COL_GREEN"$5,000,000\n" );
-		strcat( vip_description, "House\tN\tY\tY\n" );
-		strcat( vip_description, "Vehicle\tN\tN\tY\n" );
-		strcat( vip_description, "Garage\tN\tN\tN\n" );
-		strcat( vip_description, "Gate\tN\tN\tN\n" );
-		strcat( vip_description, "Weed Business\tN\tN\tN\n" );
+		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_GREEN"$5.00 USD\t"COL_GREEN"$15.00 USD\t"COL_GREEN"$25.00 USD\n" );
+		strcat( vip_description, "Money Provided\t$500,000\t$2,500,000\t$5,000,000\n" );
+		strcat( vip_description, "House Provided\tN\tY\tY\n" );
+		strcat( vip_description, "Vehicle Provided\tN\tN\tY\n" );
+		strcat( vip_description, "Garage Provided\tN\tN\tN\n" );
+		strcat( vip_description, "Gate Provided\tN\tN\tN\n" );
+		strcat( vip_description, "Weed Business Provided\tN\tN\tN\n" );
 		strcat( vip_description, "House Customization\tN\tN\tSmall\n" );
 		strcat( vip_description, "Total house slots\t5\t6\t8\n" );
 		strcat( vip_description, "Total garage slots\t5\t6\t8\n" );
@@ -469,7 +470,6 @@ CMD:vip( playerid, params[ ] )
 		strcat( vip_description, "Ability to adjust your label's color (/labelcolor)\tY\tY\tY\n" );
 		strcat( vip_description, "Can show a message to people you kill (/deathmsg)\tY\tY\tY\n" );
 		strcat( vip_description, "Can adjust the sound of your hitmarker (/hitmarker)\tY\tY\tY\n" );
-		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_WHITE"$5.00\t"COL_BRONZE"$15.00 USD\t"COL_GOLD"$25.00 USD" );
 	}
 	ShowPlayerDialog( playerid, DIALOG_NEXT_PAGE_VIP, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Donate for V.I.P", vip_description, "See More", "Close" );
 	return 1;
