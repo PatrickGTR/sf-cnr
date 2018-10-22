@@ -334,6 +334,31 @@ stock getClosestRobberySafe( playerid, &Float: dis = 99999.99 )
 	return object;
 }
 
+stock GetEntranceClosestRobberySafe( entranceid, &Float: distance = FLOAT_INFINITY )
+{
+    new iCurrent = INVALID_PLAYER_ID, Float: fTmp;
+	new world = GetEntranceWorld( entranceid );
+
+	foreach ( new robberyid : RobberyCount )
+	{
+		if ( world != 0 && g_robberyData[ robberyid ] [ E_WORLD ] != -1 && g_robberyData[ robberyid ] [ E_WORLD ] != world )
+			continue;
+
+		static
+			Float: X, Float: Y, Float: Z;
+
+		if ( GetEntranceInsidePos( entranceid, X, Y, Z ) )
+		{
+	        if ( 0.0 < ( fTmp = GetDistanceBetweenPoints( g_robberyData[ robberyid ] [ E_DOOR_X ], g_robberyData[ robberyid ] [ E_DOOR_Y ], g_robberyData[ robberyid ] [ E_DOOR_Z ], X, Y, Z ) ) < distance ) // Y_Less mentioned there's no need to sqroot
+	        {
+	            distance = fTmp;
+	            iCurrent = robberyid;
+	        }
+		}
+    }
+    return iCurrent;
+}
+
 stock GetXYInFrontOfSafe( robberyid, &Float: X, &Float: Y, &Float: Z, Float: distance = 1.1 ) // old 1.25
 {
 	static

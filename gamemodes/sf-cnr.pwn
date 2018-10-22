@@ -1731,6 +1731,7 @@ public OnPlayerSpawn( playerid )
 	p_InGarage[ playerid ] = -1;
 	StopSound( playerid );
 	CancelEdit( playerid );
+	HidePlayerHelpDialog( playerid );
 
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
@@ -7390,6 +7391,25 @@ public OnPlayerAccessEntrance( playerid, entranceid )
     if ( g_entranceData[ entranceid ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
         return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" ), 0;
     }
+
+    // robbery helper
+	if ( p_Class[ playerid ] != CLASS_POLICE )
+	{
+		if ( ! IsPlayerInBank( playerid ) ) p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, GetEntranceClosestRobberySafe( entranceid ) );
+		else
+		{
+			new iCity, iWorld = GetPlayerVirtualWorld( playerid );
+
+			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity++ )
+				if ( iWorld != 0 && iWorld == g_bankvaultData[ iCity ] [ E_WORLD ] )
+					break;
+
+			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] )
+				ShowPlayerHelpDialog( playerid, 5000, "This ~g~~h~bank~w~~h~ is available for a heist." );
+			else
+				ShowPlayerHelpDialog( playerid, 5000, "This bank is ~r~~h~unavailable for a heist." );
+		}
+	}
     return 1;
 }
 
@@ -7503,42 +7523,14 @@ public OnPlayerExitedMenu( playerid )
 
 public OnPlayerInteriorChange( playerid, newinteriorid, oldinteriorid )
 {
-	if ( p_InHouse[ playerid ] == -1 && p_LastEnteredEntrance[ playerid ] != -1 && newinteriorid != 0 && oldinteriorid == 0 && p_Class[ playerid ] != CLASS_POLICE ) {
-
-		if ( !IsPlayerInBank( playerid ) ) p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, -1 );
-		else
-		{
-			new
-				iCity,
-				iWorld = GetPlayerVirtualWorld( playerid )
-			;
-
-			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity++ )
-				if ( iWorld != 0 && iWorld == g_bankvaultData[ iCity ] [ E_WORLD ] )
-					break;
-
-			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] )
-				ShowPlayerHelpDialog( playerid, 5000, "This ~g~~h~bank~w~~h~ is available for a heist." );
-			else
-				ShowPlayerHelpDialog( playerid, 5000, "This bank is ~r~~h~unavailable for a heist." );
-		}
-	}
-
 	SyncSpectation( playerid );
 	return 1;
 }
 
 function OnSafeHelperUpdate( playerid, robberyid )
 {
-	if ( robberyid == -1 )
-	{
-		p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, getClosestRobberySafe( playerid ) );
-		return 1;
-	}
-
 	new
-		Float: distance = distanceFromSafe( playerid, robberyid )
-	;
+		Float: distance = distanceFromSafe( playerid, robberyid );
 
 	if ( robberyid == INVALID_OBJECT_ID || distance > 100.0 || ! IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || IsPlayerInCasino( playerid ) || IsPlayerPlayingPool( playerid ) )
 	{
@@ -7554,7 +7546,7 @@ function OnSafeHelperUpdate( playerid, robberyid )
 		return 0;
 	}
 
-	if ( distance < 2.0 )
+	if ( 0.0 < distance < 2.0 )
 	{
 		p_SafeHelperTimer[ playerid ] = -1;
 		ShowPlayerHelpDialog( playerid, 7500, "Great, you've ~g~~h~found the safe.~w~~h~~n~~n~To rob the safe, hit ~r~~h~Left Alt~w~~h~ key." );
@@ -12032,11 +12024,8 @@ stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
 
 function HidePlayerHelpDialog( playerid )
 {
-	if ( p_HideHelpDialogTimer[ playerid ] != -1 )
-	{
-		p_HideHelpDialogTimer[ playerid ] = -1;
-		PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
-	}
+	p_HideHelpDialogTimer[ playerid ] = -1;
+	PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
 }
 
 stock fix_NightThermalVisionHack( playerid ) // Created by wups
