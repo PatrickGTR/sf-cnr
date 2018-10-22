@@ -9054,16 +9054,20 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	if ( ( dialogid == DIALOG_VIP_LOCKER ) && response )
 	{
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-	    if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this while you're in an event." );
-		if ( listitem == 0 )
+	    if ( IsPlayerJailed( playerid ) )
+	    	return SendError( playerid, "You cannot use this while you're in jail." );
+
+	    if ( IsPlayerInEvent( playerid ) )
+	    	return SendError( playerid, "You cannot use this while you're in an event." );
+
+	 	if ( p_VIPLevel[ playerid ] < VIP_BRONZE )
+	     	return SendError( playerid, "You must be a Bronze V.I.P to acquire this." );
+
+		if ( ! IsPlayerInRangeOfPoint( playerid, 5.0, -1966.1591, 852.7100, 1214.2678 ) && ! IsPlayerInRangeOfPoint( playerid, 5.0, -1944.1324, 830.0725, 1214.2678 ) && ! IsPlayerInRangeOfPoint( playerid, 5.0, 60.3115, 121.5226, 1017.4534 ) )
+			return SendError( playerid, "You must be near a gun vending machine inside the V.I.P lounge to use this." );
+
+		if ( ! listitem )
 		{
-		 	if ( p_VIPLevel[ playerid ] < VIP_BRONZE )
-		     	return SendError( playerid, "You must be a Bronze V.I.P to acquire this." );
-
-			if ( !IsPlayerInRangeOfPoint( playerid, 5.0, -1966.1591, 852.7100, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, -1944.1324, 830.0725, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, 60.3115, 121.5226, 1017.4534 ) )
-				return SendError( playerid, "You must be near a gun vending machine inside the V.I.P lounge to use this." );
-
             if ( p_VIPArmourRedeem[ playerid ] > g_iTime && p_VIPLevel[ playerid ] < VIP_DIAMOND )
  				return SendError( playerid, "You must wait %d seconds to redeem another armour set again.", p_VIPArmourRedeem[ playerid ] - g_iTime );
 
