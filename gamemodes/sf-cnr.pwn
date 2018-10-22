@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-// #pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
 
 #define DEBUG_MODE
@@ -7154,7 +7154,20 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 		return ShowPlayerRewardsMenu( playerid );
 
 	if ( checkpointid == g_Checkpoints[ CP_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_COUNTRY_BANK_MENU ] || checkpointid == g_Checkpoints[ CP_BANK_MENU_LS ] )
- 		return ShowPlayerBankMenuDialog( playerid ), 1;
+	{
+		new
+			in_lvbank = GetPlayerVirtualWorld( playerid ) == GetBankVaultWorld( CITY_LV ) && GetPlayerInterior( playerid ) == 1;
+
+		if ( checkpointid == g_Checkpoints[ CP_BANK_MENU ] && g_bankvaultData[ CITY_SF ] [ E_TIMESTAMP ] > g_iTime ) {
+			return SendError( playerid, "This bank has been robbed recently, you cannot access the terminal for %s.", secondstotime( g_bankvaultData[ CITY_SF ] [ E_TIMESTAMP ] - GetServerTime( ) ) );
+		}
+		else if ( checkpointid == g_Checkpoints[ CP_BANK_MENU_LS ] && ( ( ! in_lvbank && g_bankvaultData[ CITY_LS ] [ E_TIMESTAMP ] > g_iTime ) || ( in_lvbank && g_bankvaultData[ CITY_LV ] [ E_TIMESTAMP ] > g_iTime ) ) ) {
+			return SendError( playerid, "This bank has been robbed recently, you cannot access the terminal for %s.", secondstotime( g_bankvaultData[ in_lvbank ? CITY_LV : CITY_LS ] [ E_TIMESTAMP ] - GetServerTime( ) ) );
+		}
+		else {
+ 			return ShowPlayerBankMenuDialog( playerid ), 1;
+		}
+	}
 
  	if ( checkpointid == g_Checkpoints[ CP_CASINO_BAR ] )
  		return ShowPlayerDialog( playerid, DIALOG_CASINO_BAR, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Casino Bar", ""COL_WHITE"Bar Item\t"COL_WHITE"Casino Rewards Points\nBeer\t"COL_GOLD"20.0 Points\nCigar\t"COL_GOLD"20.0 Points\nWine\t"COL_GOLD"20.0 Points", "Buy", "Close" ), 1;
@@ -7395,19 +7408,29 @@ public OnPlayerAccessEntrance( playerid, entranceid )
     // robbery helper
 	if ( p_Class[ playerid ] != CLASS_POLICE )
 	{
-		if ( ! IsPlayerInBank( playerid ) ) p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, GetEntranceClosestRobberySafe( entranceid ) );
+		new safe_world = GetRobberySafeWorld( entranceid );
+
+		// check if robbery is a bank
+		if ( safe_world != GetBankVaultWorld( CITY_SF ) && safe_world != GetBankVaultWorld( CITY_LS ) && safe_world != GetBankVaultWorld( CITY_LV ) )
+		{
+			p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, GetEntranceClosestRobberySafe( entranceid ) );
+		}
 		else
 		{
-			new iCity, iWorld = GetPlayerVirtualWorld( playerid );
+			new
+				iCity;
 
-			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity++ )
-				if ( iWorld != 0 && iWorld == g_bankvaultData[ iCity ] [ E_WORLD ] )
+			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity ++ ) {
+				if ( safe_world != 0 && safe_world == g_bankvaultData[ iCity ] [ E_WORLD ] ) {
 					break;
+				}
+			}
 
-			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] )
+			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] ) {
 				ShowPlayerHelpDialog( playerid, 5000, "This ~g~~h~bank~w~~h~ is available for a heist." );
-			else
+			} else {
 				ShowPlayerHelpDialog( playerid, 5000, "This bank is ~r~~h~unavailable for a heist." );
+			}
 		}
 	}
     return 1;
@@ -12538,21 +12561,10 @@ stock AddPlayerNote( playerid, authorid, note[ ] ) {
 
 stock IsPlayerInBank( playerid )
 {
-	static const
-		valid_values[ 2 ] = { 536870913, 2 }
-	;
-
-	if ( GetPlayerInterior( playerid ) > 3 )
-		return false;
-
 	new
-		value = GetPlayerVirtualWorld( playerid );
+		world = GetPlayerVirtualWorld( playerid );
 
-	if ( 23 <= value <= 56 ) {
-		value -= 23;
-		return ( valid_values[ value >>> 5 ] & ( 1 << ( value & 31 ) ) ) || false;
-	}
-	return false;
+	return GetPlayerInterior( playerid ) < 3 && world == GetBankVaultWorld( CITY_SF ) || world == GetBankVaultWorld( CITY_LS ) || world == GetBankVaultWorld( CITY_LV );
 }
 
 stock displayAchievements( playerid, dialogid = DIALOG_NULL, szSecondButton[ ] = "", forid = INVALID_PLAYER_ID )

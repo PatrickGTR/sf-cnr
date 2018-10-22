@@ -375,3 +375,7 @@ stock GetEntranceInsidePos( entranceid, &Float: X, &Float: Y, &Float: Z ) {
 stock GetEntranceWorld( entranceid ) {
 	return g_entranceData[ entranceid ] [ E_WORLD ];
 }
+
+stock GetEntranceInterior( entranceid ) {
+	return g_entranceData[ entranceid ] [ E_INTERIOR ];
+}
