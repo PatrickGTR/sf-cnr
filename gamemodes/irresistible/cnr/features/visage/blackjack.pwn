@@ -117,18 +117,6 @@ new
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-    // Reset Textdraw Variables
-    for ( new i = 0; i < MAX_BLACKJACK_TABLES; i ++ ) {
-        for ( new x = 0; x < MAX_BLACKJACK_CARDS; x ++ ) {
-            g_blackjackDealerCards[ i ] [ x ] = Text: INVALID_TEXT_DRAW;
-            for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) {
-                g_blackjackPlayerCards[ i ] [ x ] [ p ] = Text: INVALID_TEXT_DRAW;
-                g_blackjackSlotData[ i ] [ p ] = -1;
-            }
-        }
-        initializeBlackjackTextdraws( i );
-    }
-
     // for tracking bets
     AddServerVariable( "blackjack_bets", "0.0", GLOBAL_VARTYPE_FLOAT );
     AddServerVariable( "blackjack_wins", "0.0", GLOBAL_VARTYPE_FLOAT );
@@ -327,6 +315,20 @@ stock CreateBlackjackTable( payout, Float: X, Float: Y, Float: Z, Float: Angle, 
 		SetDynamicActorInvulnerable( g_blackjackData[ id ] [ E_ACTOR ], true );
 		SetDynamicActorVirtualWorld( g_blackjackData[ id ] [ E_ACTOR ], world );
 
+        // reset textdraw values
+        for ( new x = 0; x < MAX_BLACKJACK_CARDS; x ++ ) {
+            g_blackjackDealerCards[ id ] [ x ] = Text: INVALID_TEXT_DRAW;
+
+            for ( new p = 0; p < MAX_BLACKJACK_PLAYERS; p ++ ) {
+                g_blackjackPlayerCards[ id ] [ x ] [ p ] = Text: INVALID_TEXT_DRAW;
+                g_blackjackSlotData[ id ] [ p ] = -1;
+            }
+        }
+
+        // create the blackjack textdraws
+        InitializeBlackjackTextdraws( id );
+
+        // reset and add to iterator
         ResetBlackjackTable( id );
         Iter_Add( blackjacktables, id );
     }
@@ -697,7 +699,7 @@ stock SendClientMessageToBlackjack( tableid, colour, format[ ], va_args<> )
     return 1;
 }
 
-stock initializeBlackjackTextdraws( id )
+stock InitializeBlackjackTextdraws( id )
 {
     g_blackjackTurnTD[ id ] = TextDrawCreate(330.000000, 204.000000, "Lorenc has 5 seconds");
     TextDrawAlignment(g_blackjackTurnTD[ id ], 2);
