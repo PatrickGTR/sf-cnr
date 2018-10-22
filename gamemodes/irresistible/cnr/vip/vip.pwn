@@ -310,6 +310,52 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		return ShowPlayerDialog( playerid, DIALOG_CHANGENAME, DIALOG_STYLE_INPUT, "Change your name", ""COL_WHITE"What would you like your new name to be? And also, double check!", "Change", "Back" );
 	}
+	else if ( dialogid == DIALOG_NEXT_PAGE_VIP && response )
+	{
+		static
+			vip_description[ 1250 ];
+
+		if ( vip_description[ 0 ] == '\0' )
+		{
+			vip_description = " \t"COL_PLATINUM"Platinum VIP\t"COL_DIAMOND"Diamond VIP\n";
+			strcat( vip_description, "Money\t"COL_GREEN"$12,500,000\t"COL_GREEN"$25,000,000\n" );
+			strcat( vip_description, "House\tY\tY\n" );
+			strcat( vip_description, "Vehicle\tY\tY\n" );
+			strcat( vip_description, "Garage\tY\tY\n" );
+			strcat( vip_description, "Gate\tN\tY\n" );
+			strcat( vip_description, "Weed Business\tN\tY\n" );
+			strcat( vip_description, "House Customization\tMedium\tLarge\n" );
+			strcat( vip_description, "Total house slots\t10\tunlimited\n" );
+			strcat( vip_description, "Total garage slots\t10\tunlimited\n" );
+			strcat( vip_description, "Total business slots\t10\tunlimited\n" );
+			strcat( vip_description, "Total vehicle slots\t10\t20\n" );
+			strcat( vip_description, "Weapons on spawn\t2\t2\n" );
+			strcat( vip_description, "Armour on spawn\t100%\t100%\n" );
+			strcat( vip_description, "Coin generation increase\t10%\t25%\n" );
+			strcat( vip_description, "Ability to transfer coins P2P\tY\tY\n" );
+			strcat( vip_description, "Ability to sell coins on the coin market (/ic sell)\tY\tY\n" );
+			strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tY\n" );
+			strcat( vip_description, "Premium home listing fees waived\tY\tY\n" );
+			strcat( vip_description, "Tax reduction\t0%\t50%\n" );
+			strcat( vip_description, "Inactive asset protection\t14 days\t31 days\n" );
+			strcat( vip_description, "Total Vehicle component editing slots\t8\t10\n" );
+			strcat( vip_description, "Furniture slots available\t45\t50\n" );
+			strcat( vip_description, "V.I.P Lounge Weapon Redeeming Cooldown\t1 min\tno limit\n" );
+			strcat( vip_description, "V.I.P Tag On Forum\tY\tY\n" );
+			strcat( vip_description, "Access to V.I.P chat\tY\tY\n" );
+			strcat( vip_description, "Access to V.I.P lounge\tY\tY\n" );
+			strcat( vip_description, "Can spawn with a specific skin\tY\tY\n" );
+			strcat( vip_description, "Access to V.I.P toys\tY\tY\n" );
+			strcat( vip_description, "Access to custom gang colors (/gangcolor)\tY\tY\n" );
+			strcat( vip_description, "Access to extra house weapon storage slots\tY\tY\n" );
+			strcat( vip_description, "Can play custom radio URLs (/radio)\tY\tY\n" );
+			strcat( vip_description, "Ability to adjust your label's color (/labelcolor)\tY\tY\n" );
+			strcat( vip_description, "Can show a message to people you kill (/deathmsg)\tY\tY\n" );
+			strcat( vip_description, "Can adjust the sound of your hitmarker (/hitmarker)\tY\tY\n" );
+			strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_PLATINUM"$50.00 USD\t"COL_DIAMOND"$100.00 USD" );
+		}
+		return ShowPlayerDialog( playerid, DIALOG_BUY_VIP, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Donate for V.I.P", vip_description, "Buy VIP", "Close" );
+	}
 	else if ( dialogid == DIALOG_BUY_VIP && response )
 	{
 		return ShowPlayerCoinMarketDialog( playerid );
@@ -384,27 +430,34 @@ CMD:donate( playerid, params[ ] ) return cmd_vip( playerid, params );
 CMD:vip( playerid, params[ ] )
 {
 	static
-		vip_description[ 1300 ];
+		vip_description[ 1350 ];
 
-	if ( vip_description[ 0 ] == '\0' ) {
-		vip_description = " \t"COL_WHITE"Regular VIP\t"COL_BRONZE"Bronze VIP\t"COL_GOLD"Gold V.I.P\n";
-		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_WHITE"$5.00 /mo\t"COL_BRONZE"$10.00 /mo\t"COL_GOLD"$18.00 /mo\n" );
-		strcat( vip_description, "Total house slots\t5\t10\tunlimited\n" );
-		strcat( vip_description, "Total garage slots*\t5\t10\tunlimited\n" );
-		strcat( vip_description, "Total business slots\t5\t10\tunlimited\n" );
-		strcat( vip_description, "Total vehicle slots\t5\t10\t20\n" );
-		strcat( vip_description, "Weapons on spawn\t1\t2\t3\n" );
-		strcat( vip_description, "Armour on spawn\t0%\t100%\t100%\n" );
-		strcat( vip_description, "Coin generation increase\t0%\t10%\t25%\n" );
+	if ( vip_description[ 0 ] == '\0' )
+	{
+		vip_description = " \t"COL_WHITE"Regular VIP\t"COL_BRONZE"Bronze VIP\t"COL_GOLD"Gold VIP\n";
+		strcat( vip_description, "Money\t"COL_GREEN"$500,000\t"COL_GREEN"$2,500,000\t"COL_GREEN"$5,000,000\n" );
+		strcat( vip_description, "House\tN\tY\tY\n" );
+		strcat( vip_description, "Vehicle\tN\tN\tY\n" );
+		strcat( vip_description, "Garage\tN\tN\tN\n" );
+		strcat( vip_description, "Gate\tN\tN\tN\n" );
+		strcat( vip_description, "Weed Business\tN\tN\tN\n" );
+		strcat( vip_description, "House Customization\tN\tN\tSmall\n" );
+		strcat( vip_description, "Total house slots\t5\t6\t8\n" );
+		strcat( vip_description, "Total garage slots\t5\t6\t8\n" );
+		strcat( vip_description, "Total business slots\t5\t6\t8\n" );
+		strcat( vip_description, "Total vehicle slots\t3\t4\t6\n" );
+		strcat( vip_description, "Weapons on spawn\t1\t1\t2\n" );
+		strcat( vip_description, "Armour on spawn\t0%\t0%\t100%\n" );
+		strcat( vip_description, "Coin generation increase\t0%\t0%\t0%\n" );
 		strcat( vip_description, "Ability to transfer coins P2P\tN\tY\tY\n" );
 		strcat( vip_description, "Ability to sell coins on the coin market (/ic sell)\tN\tY\tY\n" );
-		strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tN\tY\n" );
-		strcat( vip_description, "Premium home listing fees waived\tN\tN\tY\n" );
-		strcat( vip_description, "Tax reduction\t0%\t0%\t50%\n" );
-		strcat( vip_description, "Inactive asset protection\t14\t14\t30\n" );
-		strcat( vip_description, "Total Vehicle component editing slots\t4\t6\t10\n" );
-		strcat( vip_description, "Furniture slots available\t30\t40\t50\n" );
-		strcat( vip_description, "V.I.P Lounge Weapon Redeeming Cooldown\t5 min\t1 min\tnone\n" );
+		strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tN\tN\n" );
+		strcat( vip_description, "Premium home listing fees waived\tN\tN\tN\n" );
+		strcat( vip_description, "Tax reduction\t0%\t0%\t0%\n" );
+		strcat( vip_description, "Inactive asset protection\t14 days\t14 days\t14 days\n" );
+		strcat( vip_description, "Total Vehicle component editing slots\t3\t4\t6\n" );
+		strcat( vip_description, "Furniture slots available\t30\t35\t40\n" );
+		strcat( vip_description, "V.I.P Lounge Weapon Redeeming Cooldown\t5 min\t5 min\t5 min\n" );
 		strcat( vip_description, "V.I.P Tag On Forum\tY\tY\tY\n" );
 		strcat( vip_description, "Access to V.I.P chat\tY\tY\tY\n" );
 		strcat( vip_description, "Access to V.I.P lounge\tY\tY\tY\n" );
@@ -415,9 +468,10 @@ CMD:vip( playerid, params[ ] )
 		strcat( vip_description, "Can play custom radio URLs (/radio)\tY\tY\tY\n" );
 		strcat( vip_description, "Ability to adjust your label's color (/labelcolor)\tY\tY\tY\n" );
 		strcat( vip_description, "Can show a message to people you kill (/deathmsg)\tY\tY\tY\n" );
-		strcat( vip_description, "Can adjust the sound of your hitmarker (/hitmarker)\tY\tY\tY" );
+		strcat( vip_description, "Can adjust the sound of your hitmarker (/hitmarker)\tY\tY\tY\n" );
+		strcat( vip_description, ""COL_GREEN"Price (USD)\t"COL_WHITE"$5.00\t"COL_BRONZE"$15.00 USD\t"COL_GOLD"$25.00 USD" );
 	}
-	ShowPlayerDialog( playerid, DIALOG_BUY_VIP, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Donate for V.I.P", vip_description, "Buy Now", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_NEXT_PAGE_VIP, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Donate for V.I.P", vip_description, "See More", "Close" );
 	return 1;
 }
 
@@ -504,7 +558,7 @@ stock GetPlayerGarageSlots( playerid ) return GetPlayerHouseSlots( playerid );
 stock GetPlayerVehicleSlots( playerid )
 {
 	static const
-		slots[ 5 ] = { 3, 6, 8, 10, 20 };
+		slots[ 6 ] = { 3, 4, 6, 8, 10, 20 };
 
 	return slots[ GetPlayerVIPLevel( playerid ) ] + p_ExtraAssetSlots{ playerid };
 }
@@ -512,7 +566,7 @@ stock GetPlayerVehicleSlots( playerid )
 stock GetPlayerPimpVehicleSlots( playerid )
 {
 	static const
-		slots[ 5 ] = { 2, 4, 6, 8, 10 };
+		slots[ 6 ] = { 2, 3, 4, 6, 8, 10 };
 
 	return slots[ GetPlayerVIPLevel( playerid ) ];
 }

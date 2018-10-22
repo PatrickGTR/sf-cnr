@@ -211,6 +211,7 @@
 #define DIALOG_HOUSE_SELL 					1201
 #define DIALOG_BUSINESS_SELL_CONFIRM 		1202
 #define DIALOG_PASSIVE_MODE					1203
+#define DIALOG_NEXT_PAGE_VIP				1204
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

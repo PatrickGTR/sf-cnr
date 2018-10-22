@@ -3797,7 +3797,7 @@ CMD:gettaxrate( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:tax( playerid, params[ ] )
 {
-	new Float: tax_discount = p_VIPLevel[ playerid ] >= VIP_GOLD ? 0.5 : 1.0;
+	new Float: tax_discount = p_VIPLevel[ playerid ] >= VIP_DIAMOND ? 0.5 : 1.0;
 	new Float: tax_rate = GetGVarFloat( "taxrate" ) * tax_discount;
 	new player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * ( tax_rate / 100.0 ) );
 	if ( player_tax < 0 ) player_tax = 0;
@@ -4523,10 +4523,10 @@ CMD:myaccid( playerid, params[ ] )
 
 CMD:job( playerid, params[ ] )
 {
-    if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPJob{ playerid } != p_Job{ playerid } )
+    if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } != p_Job{ playerid } )
     	return SendServerMessage( playerid, "Your jobs are "COL_GOLD"%s"COL_WHITE" and "COL_GOLD"%s"COL_WHITE".", GetJobName( p_Job{ playerid } ), GetJobName( p_VIPJob{ playerid } ) );
 
-    if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPJob{ playerid } == p_Job{ playerid } )
+    if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } == p_Job{ playerid } )
     	return SendServerMessage( playerid, "Your jobs are "COL_GOLD"%s"COL_WHITE" and your VIP job is disabled.", GetJobName( p_Job{ playerid } ) );
 
    	SendServerMessage( playerid, "Your job is a "COL_GOLD"%s"COL_WHITE".", GetJobName( p_Job{ playerid } ) );
@@ -9397,7 +9397,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Army Warns:{FFFFFF} %d/%d\n"\
 											""COL_GREY"V.I.P Job:{FFFFFF} %s\n"\
 											""COL_GREY"Current Job:{FFFFFF} %s",
-											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, MAX_CLASS_BAN_WARNS, p_ArmyBanned{ pID }, MAX_CLASS_BAN_WARNS, p_VIPLevel[ pID ] < VIP_GOLD ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
+											szLargeString, VIPToString( p_VIPLevel[ pID ] ), vipSeconds > 0 ? secondstotime( vipSeconds ) : ( "N/A" ), p_CopBanned{ pID }, MAX_CLASS_BAN_WARNS, p_ArmyBanned{ pID }, MAX_CLASS_BAN_WARNS, p_VIPLevel[ pID ] < VIP_DIAMOND ? ( "N/A" ) : GetJobName( p_VIPJob{ pID } ), GetJobName( p_Job{ pID } ) );
 
 				if ( gangid != -1 ) {
 					format( szLargeString, 750, "%s\n"COL_GREY"Gang:"COL_WHITE" %s(%d)", szLargeString, g_gangData[ gangid ] [ E_NAME ], gangid );
