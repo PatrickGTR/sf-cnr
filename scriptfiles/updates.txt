@@ -1,8 +1,4 @@
-(+) Brand new weed system. Buy weed seeds, plant them with "/weed plant" and use LALT to pick them.
-(/) Drug house and militia ship payouts are increased.
-(/) "/moneybags" only shows bags that are dropped by players ("/dropmoney").
-(/) It now costs $2,000 per spawn at a facility.
-(*) Roadblocks have been re-added back into the server.
-(*) Paintball players leaving no longer drop money.
-(*) Bug fixes for "/sync" ... it accidentally refilled your HP.
-(*) Damage object does not show above your head if you're in a vehicle (blew helis up).
+(+) Restores legacy VIP system. See /vip for the full list of features. Renew for $5!
+(/) You cannot use a bank's terminal once it has been robbed.
+(/) Players get wanted when they plant weed.
+(*) Fixes issue with "/b production" where your associated businesses are not shown.
