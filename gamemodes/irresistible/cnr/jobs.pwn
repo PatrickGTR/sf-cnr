@@ -27,7 +27,7 @@
 
 /* ** Functions ** */
 stock IsPlayerJob( playerid, jobid ) {
-	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPJob{ playerid } == jobid );
+	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } == jobid );
 }
 
 stock GetJobIDFromName( szJob[ ] )

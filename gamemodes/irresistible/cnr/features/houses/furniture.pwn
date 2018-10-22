@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Module: cnr\features\houses\furniture.pwn
+ * Purpose: furniture module for homes
  */
 
 /* ** Includes ** */
@@ -463,7 +463,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	   	if ( !IsPlayerHomeOwner( playerid, houseid ) )
 	   	 	return SendError( playerid, "You are not the owner of this house." );
 
-		new vip_slots = 20 + ( p_VIPLevel[ playerid ] * 10 );
+		new vip_slots = 25 + ( GetPlayerVIPLevel( playerid ) * 5 );
+
+		if ( vip_slots > MAX_FURNITURE )
+			vip_slots = MAX_FURNITURE; // just to be sure
+
 		new total_furniture = Iter_Count( housefurniture[ houseid ] );
 
 		if ( total_furniture > vip_slots )

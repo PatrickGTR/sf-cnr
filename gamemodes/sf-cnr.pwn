@@ -414,24 +414,24 @@ public OnGameModeInit()
 	mysql_function_query( dbHandle, "DELETE a2,a3 FROM `USERS` a1 " \
 									"LEFT JOIN `FURNITURE` a2 on a1.`ID` = a2.`OWNER` "\
 									"LEFT JOIN `APARTMENTS` a3 on a1.`NAME` = a3.`OWNER` "\
-									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 3, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 3 );
+									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 3 );
 
 	mysql_function_query( dbHandle, "UPDATE `USERS` a1 JOIN `HOUSES` a2 ON a1.`NAME` = a2.`OWNER` "\
 									"SET a2.`NAME`='Home', a2.`OWNER`='No-one', a2.`TX`=" #H_DEFAULT_X ", a2.`TY`=" #H_DEFAULT_Y ", a2.`TZ`=" #H_DEFAULT_Z ", a2.`INTERIOR`=2, a2.`PASSWORD`='N/A', a2.`WEAPONS`='0.0.0.0.0.0.0.', a2.`AMMO`='-1.-1.-1.-1.-1.-1.-1.' "\
-									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 3, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 4 );
+									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 4 );
 
 	// Truncate banned players after 2 weeks
 	mysql_function_query( dbHandle, "UPDATE `USERS` a1 JOIN `BANS` a2 ON a1.`NAME` = a2.`NAME` "\
 									"SET a1.`BANKMONEY`=0, a1.`CASH`=0 "\
-									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 3, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 5 );
+									"WHERE UNIX_TIMESTAMP()-a1.`LASTLOGGED` > IF(a1.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 5 );
 
 	// Update vehicles with inactive garages.
 	mysql_function_query( dbHandle, "UPDATE `VEHICLES` v JOIN `GARAGES` g ON g.`ID` = v.`GARAGE` JOIN `USERS` u ON u.`ID` = v.`OWNER` "\
 									"SET v.`X`=g.`X`, v.`Y`=g.`Y`, v.`Z`=g.`Z`, v.`GARAGE`=-1 "\
-									"WHERE v.`GARAGE` != -1 AND UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 3, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 6 );
+									"WHERE v.`GARAGE` != -1 AND UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 6 );
 
 	// mysql_function_query( dbHandle, "UPDATE `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` SET g.`OWNER`=0, g.`INTERIOR`=0 WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 1209600;", true, "onRemoveInactiveRows", "d", 6 );
-	mysql_function_query( dbHandle, "DELETE g FROM `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 3, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 7 );
+	mysql_function_query( dbHandle, "DELETE g FROM `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 7 );
 
 	// Remove 25% of wealth off 2 weeks inactive players.
 	// mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 8 );
@@ -1134,10 +1134,10 @@ public ZoneTimer( )
 						Float: iCoinGenRate = 35.0;
 
 					// VIP check
-					if ( p_VIPLevel[ playerid ] >= VIP_GOLD )
+					if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND )
 						iCoinGenRate *= 0.75; // Reduce by 25% if Diamond
 
-					else if ( p_VIPLevel[ playerid ] == VIP_BRONZE )
+					else if ( p_VIPLevel[ playerid ] == VIP_PLATINUM )
 						iCoinGenRate *= 0.90; // Reduce by 10% if Diamond
 
 					// Happy Hour
@@ -1927,9 +1927,9 @@ public OnPlayerSpawn( playerid )
 	SetPlayerVirtualWorld( playerid, 0 );
 
 	if ( p_VIPLevel[ playerid ] >= VIP_REGULAR && p_VIPWep1{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep1{ playerid }, 200 );
-	if ( p_VIPLevel[ playerid ] >= VIP_BRONZE && p_VIPWep2{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep2{ playerid }, 200 );
-	if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPWep3{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep3{ playerid }, 200 );
-	if ( p_VIPLevel[ playerid ] >= VIP_BRONZE ) SetPlayerArmour( playerid, 100.0 ); // Free armour on spawn.
+	if ( p_VIPLevel[ playerid ] >= VIP_GOLD && p_VIPWep2{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep2{ playerid }, 200 );
+	if ( p_VIPLevel[ playerid ] >= VIP_PLATINUM && p_VIPWep3{ playerid } != 0 ) GivePlayerWeapon( playerid, p_VIPWep3{ playerid }, 200 );
+	if ( p_VIPLevel[ playerid ] >= VIP_GOLD ) SetPlayerArmour( playerid, 100.0 ); // Free armour on spawn.
 
 	CallLocalFunction( "SetPlayerRandomSpawn", "d", playerid );
 
@@ -2330,7 +2330,7 @@ thread OnTaxEconomy( starting )
 
 		// players
 		foreach ( new playerid : Player ) {
-			new Float: tax_discount = p_VIPLevel[ playerid ] >= VIP_GOLD ? 0.5 : 1.0;
+			new Float: tax_discount = p_VIPLevel[ playerid ] >= VIP_DIAMOND ? 0.5 : 1.0;
 			new player_tax = floatround( float( GetPlayerTotalCash( playerid ) ) * tax_rate * tax_discount );
 
 			if ( player_tax > 0 ) {
@@ -2352,7 +2352,7 @@ thread OnTaxEconomy( starting )
 		}
 
 		// queries
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH`=`CASH`*IF(`VIP_PACKAGE`>=3,%f,%f),`BANKMONEY`=`BANKMONEY`*IF(`VIP_PACKAGE`>=3,%f,%f) WHERE `ONLINE`=0 AND (`BANKMONEY`+`CASH`)>0", 1.0 - tax_rate / 2.0, 1.0 - tax_rate, 1.0 - tax_rate / 2.0, 1.0 - tax_rate ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH`=`CASH`*IF(`VIP_PACKAGE`>=3,%f,%f),`BANKMONEY`=`BANKMONEY`*IF(`VIP_PACKAGE`>=5,%f,%f) WHERE `ONLINE`=0 AND (`BANKMONEY`+`CASH`)>0", 1.0 - tax_rate / 2.0, 1.0 - tax_rate, 1.0 - tax_rate / 2.0, 1.0 - tax_rate ) );
 		mysql_single_query( sprintf( "UPDATE `BUSINESSES` SET `BANK`=`BANK`*%f WHERE `BANK`>0", 1.0 - tax_rate ) );
 		mysql_single_query( sprintf( "UPDATE `GANGS` SET `BANK`=`BANK`*%f WHERE `BANK`>0", 1.0 - tax_rate ) );
 
@@ -4184,7 +4184,7 @@ CMD:vipcmds( playerid, params[ ] )
 CMD:vipspawnwep( playerid, params[ ] )
 {
 	if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-	format( szNormalString, sizeof( szNormalString ), "%s\n"COL_BRONZE"%s\n"COL_GOLD"%s", p_VIPWep1{ playerid } ? ReturnWeaponName( p_VIPWep1{ playerid } ) : ( "Nothing" ), p_VIPWep2{ playerid } ? ReturnWeaponName( p_VIPWep2{ playerid } ) : ( "Nothing" ), p_VIPWep3{ playerid } ? ReturnWeaponName( p_VIPWep3{ playerid } ) : ( "Nothing" ) );
+	format( szNormalString, sizeof( szNormalString ), "%s\n"COL_GOLD"%s\n"COL_PLATINUM"%s", p_VIPWep1{ playerid } ? ReturnWeaponName( p_VIPWep1{ playerid } ) : ( "Nothing" ), p_VIPWep2{ playerid } ? ReturnWeaponName( p_VIPWep2{ playerid } ) : ( "Nothing" ), p_VIPWep3{ playerid } ? ReturnWeaponName( p_VIPWep3{ playerid } ) : ( "Nothing" ) );
     ShowPlayerDialog( playerid, DIALOG_VIP_WEP, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Weapons", szNormalString, "Select", "" );
 	return 1;
 }
@@ -4246,8 +4246,8 @@ CMD:vipjob( playerid, params[ ] )
 	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
 		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
-	if ( p_VIPLevel[ playerid ] < VIP_GOLD )
-		return SendError( playerid, "This command requires you to be Gold V.I.P." );
+	if ( p_VIPLevel[ playerid ] < VIP_DIAMOND )
+		return SendError( playerid, "This command requires you to be Diamond V.I.P." );
 
 	if ( isnull( params ) )
 		return SendUsage( playerid, "/vipjob [PART OF JOB NAME]" );
@@ -9064,16 +9064,16 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			if ( !IsPlayerInRangeOfPoint( playerid, 5.0, -1966.1591, 852.7100, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, -1944.1324, 830.0725, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, 60.3115, 121.5226, 1017.4534 ) )
 				return SendError( playerid, "You must be near a gun vending machine inside the V.I.P lounge to use this." );
 
-            if ( p_VIPArmourRedeem[ playerid ] > g_iTime && p_VIPLevel[ playerid ] < VIP_GOLD )
+            if ( p_VIPArmourRedeem[ playerid ] > g_iTime && p_VIPLevel[ playerid ] < VIP_DIAMOND )
  				return SendError( playerid, "You must wait %d seconds to redeem another armour set again.", p_VIPArmourRedeem[ playerid ] - g_iTime );
 
 			SetPlayerArmour( playerid, 100.0 );
-			p_VIPArmourRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_BRONZE ? 60 : 300 );
+			p_VIPArmourRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_PLATINUM ? 60 : 300 );
 			SendServerMessage( playerid, "You have redeemed an armour set." );
 		}
 		else
 		{
-		    if ( p_VIPWeaponRedeem[ playerid ] > g_iTime && p_VIPLevel[ playerid ] < VIP_GOLD )
+		    if ( p_VIPWeaponRedeem[ playerid ] > g_iTime && p_VIPLevel[ playerid ] < VIP_DIAMOND )
 		        return SendError( playerid, "You must wait %d seconds to redeem another weapon again.", p_VIPWeaponRedeem[ playerid ] - g_iTime );
 
 		    new weaponid;
@@ -9085,7 +9085,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    }
 		    GivePlayerWeapon( playerid, weaponid, 0xFFFF );
 		    SendServerMessage( playerid, "You have redeemed a %s.", ReturnWeaponName( weaponid ) );
-			p_VIPWeaponRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_BRONZE ? 60 : 300 );
+			p_VIPWeaponRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_PLATINUM ? 60 : 300 );
 		}
 	}
 	if ( ( dialogid == DIALOG_FIGHTSTYLE ) && response )
@@ -9150,8 +9150,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	if ( ( dialogid == DIALOG_VIP_WEP ) && response )
 	{
-	    if ( listitem == 1 && p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You can only use this slot if you are a "COL_BRONZE"Bronze V.I.P{FFFFFF} or higher." );
-	    if ( listitem == 2 && p_VIPLevel[ playerid ] < VIP_GOLD ) return SendError( playerid, "You can only use this slot if you are a "COL_GOLD"Gold V.I.P{FFFFFF} or higher." );
+	    if ( listitem == 1 && p_VIPLevel[ playerid ] < VIP_GOLD ) return SendError( playerid, "You can only use this slot if you are a "COL_BRONZE"Gold V.I.P{FFFFFF} or higher." );
+	    if ( listitem == 2 && p_VIPLevel[ playerid ] < VIP_PLATINUM ) return SendError( playerid, "You can only use this slot if you are a "COL_GOLD"Platinum V.I.P{FFFFFF} or higher." );
 	    ShowPlayerDialog( playerid, DIALOG_VIP_WEP_SELECT, DIALOG_STYLE_LIST, "{FFFFFF}Weapon Select", ""COL_RED"Remove Weapon On This Slot\n9mm Pistol\nSilenced Pistol\nDesert Eagle\nShotgun\nSawn-off Shotgun\nSpas 12\nMac 10\nMP5\nAK-47\nM4\nTec 9\nRifle\nSniper", "Select", "Cancel");
 		p_VIPWep_Modify{ playerid } = listitem;
 	}
@@ -9725,68 +9725,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		DeletePVar( playerid, "just_donated" );
 		return UpdateGlobalDonated( playerid, fAmount, !response );
 	}
-	/*if ( dialogid == DIALOG_DONATED_PLATBRONZE )
-	{
-		if ( response )
-		{
-			new
-				pID;
-
-			if ( sscanf( inputtext, "u", pID ) )
-			{
-				SendError( playerid, "Please enter a player's ID or name." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
-			}
-			else if ( !IsPlayerConnected( pID ) )
-			{
-				SendError( playerid, "This player is not connected." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
-			}
-			else
-			{
-				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[V.I.P]"COL_WHITE" You have gifted Bronze V.I.P to %s(%d)!", ReturnPlayerName( pID ), pID );
-				SetPlayerVipLevel( pID, VIP_BRONZE );
-				ShowPlayerVipRedeemedDialog( playerid );
-			}
-		}
-		else
-		{
-	 		AddPlayerNote( playerid, -1, "{CD7F32}Bronze V.I.P" #COL_WHITE );
-			SendServerMessage( playerid, "Okay. This has been noted down for your account and will be given to you at a stage that you want, do contact Lorenc though." );
-			ShowPlayerVipRedeemedDialog( playerid );
-		}
-	}*/
-	/*if ( dialogid == DIALOG_DONATED_DIAGOLD )
-	{
-		if ( response )
-		{
-			new
-				pID;
-
-			if ( sscanf( inputtext, "u", pID ) )
-			{
-				SendError( playerid, "Please enter a player's ID or name." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
-			}
-			else if ( !IsPlayerConnected( pID ) )
-			{
-				SendError( playerid, "This player is not connected." );
-				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
-			}
-			else
-			{
-				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[V.I.P]"COL_WHITE" You have gifted Gold V.I.P to %s(%d)!", ReturnPlayerName( pID ), pID );
-				SetPlayerVipLevel( pID, VIP_GOLD );
-				ShowPlayerVipRedeemedDialog( playerid );
-			}
-		}
-		else
-		{
-	 		AddPlayerNote( playerid, -1, ""COL_GOLD"Gold V.I.P" #COL_WHITE );
-			SendServerMessage( playerid, "Okay. This has been noted down for your account and will be given to you at a stage that you want, do contact Lorenc though." );
-			ShowPlayerVipRedeemedDialog( playerid );
-		}
-	}*/
 	if ( ( dialogid == DIALOG_UNBAN_CLASS ) && response )
 	{
 		cmd_unbanme( playerid, "" );
@@ -12103,27 +12041,6 @@ stock hasBadDrivebyWeapon( playerid )
 			return true;
 
 	return false;
-}
-
-stock SetPlayerVipLevel( pID, level, interval = 2592000 )
-{
-	if ( IsPlayerConnected( pID ) )
-	{
-		// force upgrade
-		if ( p_VIPLevel[ pID ] < level ) {
-			p_VIPLevel[ pID ] = level;
-		}
-
-		if ( level ) {
-		    if ( p_VIPExpiretime[ pID ] > g_iTime ) p_VIPExpiretime[ pID ] += interval;
-		    else p_VIPExpiretime[ pID ] += ( g_iTime + interval );
-		}
-
-		// expire the players vip if level 0
-		else {
-			p_VIPExpiretime[ pID ] = 0;
-		}
-	}
 }
 
 stock CensoreString( query[ ], characters = 5 )

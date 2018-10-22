@@ -21,7 +21,7 @@
 #define ICM_PAGE_DEFAULT 			( 0 )
 #define ICM_PAGE_CASHCARD 			( 1 )
 #define ICM_PAGE_ASSETS 			( 2 )
-#define ICM_PAGE_UPGRADE 			( 3 )
+//#define ICM_PAGE_UPGRADE 			( 3 )
 
 #define VIP_REGULAR 				( 1 )
 #define VIP_BRONZE 					( 2 )
@@ -51,8 +51,10 @@ enum E_IC_MARKET_DATA
 new
 	g_irresistibleVipItems			[ ] [ E_IC_MARKET_DATA ] =
 	{
-		{ VIP_GOLD,		"Gold V.I.P",		1800.0 },
-		{ VIP_BRONZE,	"Bronze V.I.P", 	1000.0 },
+		{ VIP_DIAMOND,	"Diamond V.I.P",	10000.0 },
+		{ VIP_PLATINUM,	"Platinum V.I.P",	5000.0 },
+		{ VIP_GOLD,		"Gold V.I.P",		2500.0 },
+		{ VIP_BRONZE,	"Bronze V.I.P", 	1500.0 },
 		{ VIP_REGULAR, 	"Regular V.I.P",	500.0 }
 	},
 	g_irresistibleCashCards 		[ ] [ E_IC_MARKET_DATA ] =
@@ -70,8 +72,8 @@ new
 		{ ICM_COKE_BIZ,	"Coke Business",		1500.0 },
 		{ ICM_METH_BIZ,	"Meth Business",		700.0 },
 		{ ICM_WEED_BIZ,	"Weed Business",		500.0 },
-		{ ICM_VEHICLE,	"Select Vehicle",		450.0 },
-		{ ICM_HOUSE,	"Select House",			400.0 },
+		{ ICM_VEHICLE,	"Select Vehicle",		500.0 },
+		{ ICM_HOUSE,	"Select House",			500.0 },
 		{ ICM_GATE,		"Custom Gate",			350.0 },
 		{ ICM_VEH_SLOT,	"Extra Vehicle Slot", 	350.0 },
 		{ ICM_GARAGE,	"Select Garage", 		250.0 },
@@ -85,58 +87,25 @@ new
 
 ;
 
-/* ** Forwards ** */
-forward Float: GetPlayerUpgradeVIPCost( playerid, Float: days_left = 30.0 );
-
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_IC_MARKET && response )
 	{
-		new current_vip = GetPlayerVIPLevel( playerid );
-		new Float: days_left = float( GetPlayerVIPDuration( playerid ) ) / 86400.0;
+		//new current_vip = GetPlayerVIPLevel( playerid );
 
-		if ( listitem == sizeof( g_irresistibleVipItems ) )
-		{
-			new
-				Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
-
-			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 && upgrade_cost )
-			{
-				p_CoinMarketPage{ playerid } = ICM_PAGE_UPGRADE;
-				return ShowPlayerDialog( playerid, DIALOG_YOU_SURE_VIP, DIALOG_STYLE_MSGBOX, ""COL_GOLD"Irresistible Coin -{FFFFFF} Confirmation", sprintf( ""COL_WHITE"Are you sure that you want to spend %s IC?", number_format( upgrade_cost, .decimals = 2 ) ), "Yes", "No" );
-			}
-			else
-			{
-				SendError( playerid, "Upgrading your V.I.P is currently unavailable." );
-				return ShowPlayerCoinMarketDialog( playerid );
-			}
-		}
-		else if ( listitem == sizeof( g_irresistibleVipItems ) + 1 ) {
+		if ( listitem == sizeof( g_irresistibleVipItems ) ) {
 			return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_CASHCARD );
 		}
-		else if ( listitem == sizeof( g_irresistibleVipItems ) + 2 ) {
+		else if ( listitem == sizeof( g_irresistibleVipItems ) + 1 ) {
 			return ShowPlayerHomeListings( playerid );
 		}
-		else if ( listitem > sizeof( g_irresistibleVipItems ) + 2 ) {
+		else if ( listitem > sizeof( g_irresistibleVipItems ) + 1 ) {
 			return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_ASSETS );
 		}
 		else {
 			new Float: iCoinRequirement = g_irresistibleVipItems[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
-			new selected_vip = g_irresistibleVipItems[ listitem ] [ E_ID ];
-
-			if ( current_vip > VIP_GOLD ) {
-				current_vip = VIP_GOLD;
-			}
-
-			if ( current_vip != 0 && current_vip != selected_vip ) {
-				if ( current_vip > selected_vip ) {
-					SendError( playerid, "You must wait until your V.I.P is expired in order to downgrade it." );
-				} else {
-					SendError( playerid, "You must upgrade your current V.I.P level first." );
-				}
-				return ShowPlayerCoinMarketDialog( playerid );
-			}
+			//new selected_vip = g_irresistibleVipItems[ listitem ] [ E_ID ];
 
 			p_CoinMarketPage{ playerid } = ICM_PAGE_DEFAULT;
 			p_CoinMarketSelectedItem{ playerid } = listitem;
@@ -168,65 +137,16 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( !response )
 			return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
 
-		new current_vip = GetPlayerVIPLevel( playerid );
 		new Float: player_coins = GetPlayerIrresistibleCoins( playerid );
-		new Float: days_left = float( GetPlayerVIPDuration( playerid ) ) / 86400.0;
 
 		// restore listitem of whatever player selected
 		listitem = p_CoinMarketSelectedItem{ playerid };
 
-		// upgrade player vip
-		if ( p_CoinMarketPage{ playerid } == ICM_PAGE_UPGRADE )
-		{
-			if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 )
-			{
-				new Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
-				new new_vip_item = ( current_vip == VIP_BRONZE ? 0 : 1 );
-
-				if ( player_coins < upgrade_cost ) {
-					SendError( playerid, "You need around %s coins before you can upgrade your V.I.P!", number_format( upgrade_cost - player_coins, .decimals = 2 ) );
-					return ShowPlayerCoinMarketDialog( playerid, p_CoinMarketPage{ playerid } );
-				}
-
-				// if it's zero then the player is not regular/bronze
-				if ( upgrade_cost )
-				{
-					// set level no interval, deduct and notify
-					SetPlayerVipLevel( playerid, g_irresistibleVipItems[ new_vip_item ] [ E_ID ], .interval = 0 );
-					GivePlayerIrresistibleCoins( playerid, -upgrade_cost );
-					SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have upgraded to %s for %s Irresistible Coins!", g_irresistibleVipItems[ new_vip_item ] [ E_NAME ], number_format( upgrade_cost, .decimals = 0 ) );
-				}
-				else
-				{
-					SendError( playerid, "There seemed to be an error while upgrading your V.I.P, please contact Lorenc." );
-				}
-				return 1;
-			}
-			else
-			{
-				SendError( playerid, "Upgrading your V.I.P is currently unavailable." );
-				return ShowPlayerCoinMarketDialog( playerid );
-			}
-		}
-
 		// default page
-		else if ( p_CoinMarketPage{ playerid } == ICM_PAGE_DEFAULT )
+		if ( p_CoinMarketPage{ playerid } == ICM_PAGE_DEFAULT )
 		{
 			new Float: iCoinRequirement = g_irresistibleVipItems[ listitem ] [ E_PRICE ] * GetGVarFloat( "vip_discount" );
 			new selected_vip = g_irresistibleVipItems[ listitem ] [ E_ID ];
-
-			if ( current_vip > VIP_GOLD ) {
-				current_vip = VIP_GOLD;
-			}
-
-			if ( current_vip != 0 && current_vip != selected_vip ) {
-				if ( current_vip > selected_vip ) {
-					SendError( playerid, "You must wait until your V.I.P is expired in order to downgrade it." );
-				} else {
-					SendError( playerid, "You must upgrade your current V.I.P level first." );
-				}
-				return ShowPlayerCoinMarketDialog( playerid );
-			}
 
 			if ( player_coins < iCoinRequirement ) {
 				SendError( playerid, "You need around %s coins before you can get this V.I.P!", number_format( iCoinRequirement - player_coins, .decimals = 2 ) );
@@ -243,7 +163,18 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have redeemed %s V.I.P for %s Irresistible Coins! Congratulations! :D", VIPToString( selected_vip ), number_format( iCoinRequirement, .decimals = 0 ) );
 
 			// Redirect player
-			ShowPlayerVipRedeemedDialog( playerid );
+			if ( selected_vip == VIP_DIAMOND )
+			{
+				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else if ( selected_vip == VIP_PLATINUM )
+			{
+				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else
+			{
+				ShowPlayerVipRedeemedDialog( playerid );
+			}
 			return 1;
 		}
 
@@ -383,6 +314,68 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 		return ShowPlayerCoinMarketDialog( playerid );
 	}
+	else if ( dialogid == DIALOG_DONATED_PLATBRONZE )
+	{
+		if ( response )
+		{
+			new
+				pID;
+
+			if ( sscanf( inputtext, "u", pID ) )
+			{
+				SendError( playerid, "Please enter a player's ID or name." );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else if ( !IsPlayerConnected( pID ) )
+			{
+				SendError( playerid, "This player is not connected." );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_PLATBRONZE, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Platinum V.I.P, you have the option of gifting Bronze VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else
+			{
+				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[V.I.P]"COL_WHITE" You have gifted Bronze V.I.P to %s(%d)!", ReturnPlayerName( pID ), pID );
+				SetPlayerVipLevel( pID, VIP_BRONZE );
+				ShowPlayerVipRedeemedDialog( playerid );
+			}
+		}
+		else
+		{
+	 		AddPlayerNote( playerid, -1, "{CD7F32}Bronze V.I.P" #COL_WHITE );
+			SendServerMessage( playerid, "This has been noted down for your account and will be given to you at a stage that you want, contact an executive." );
+			ShowPlayerVipRedeemedDialog( playerid );
+		}
+	}
+	else if ( dialogid == DIALOG_DONATED_DIAGOLD )
+	{
+		if ( response )
+		{
+			new
+				pID;
+
+			if ( sscanf( inputtext, "u", pID ) )
+			{
+				SendError( playerid, "Please enter a player's ID or name." );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else if ( !IsPlayerConnected( pID ) )
+			{
+				SendError( playerid, "This player is not connected." );
+				ShowPlayerDialog( playerid, DIALOG_DONATED_DIAGOLD, DIALOG_STYLE_INPUT, ""COL_GOLD"SF-CNR Donation", ""COL_WHITE"As you've redeemed Diamond V.I.P, you have the option of gifting Gold VIP to someone.\n\nIf you would like to gift it to yourself, type your name/id or the person you're gifting it to.\n\n"COL_ORANGE"If you just don't know yet, cancel and PM Lorenc on the forum when you make a decision!", "Gift it!", "I'll Think!" );
+			}
+			else
+			{
+				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[V.I.P]"COL_WHITE" You have gifted Gold V.I.P to %s(%d)!", ReturnPlayerName( pID ), pID );
+				SetPlayerVipLevel( pID, VIP_GOLD );
+				ShowPlayerVipRedeemedDialog( playerid );
+			}
+		}
+		else
+		{
+	 		AddPlayerNote( playerid, -1, ""COL_GOLD"Gold V.I.P" #COL_WHITE );
+			SendServerMessage( playerid, "This has been noted down for your account and will be given to you at a stage that you want, contact an executive." );
+			ShowPlayerVipRedeemedDialog( playerid );
+		}
+	}
 	return 1;
 }
 
@@ -437,35 +430,20 @@ stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 	new Float: discount = GetGVarFloat( "vip_discount" );
 	new szMarket[ 512 ] = ""COL_GREY"Item Name\t"COL_GREY"Coins Needed\n";
 
-	if ( page == ICM_PAGE_DEFAULT || page == ICM_PAGE_UPGRADE )
+	if ( page == ICM_PAGE_DEFAULT )
 	{
-		new current_vip = GetPlayerVIPLevel( playerid );
-		new Float: days_left = float( GetPlayerVIPDuration( playerid ) ) / 86400.0;
-
-		if ( current_vip > VIP_GOLD ) {
-			current_vip = VIP_GOLD;
-		}
+		//new current_vip = GetPlayerVIPLevel( playerid );
 
 		for( new i = 0; i < sizeof( g_irresistibleVipItems ); i++ )
 		{
 			new Float: iCoinRequirement = g_irresistibleVipItems[ i ] [ E_PRICE ] * discount;
 
-			if ( current_vip != 0 && current_vip != g_irresistibleVipItems[ i ] [ E_ID ] ) {
+			/*if ( current_vip != 0 && current_vip != g_irresistibleVipItems[ i ] [ E_ID ] ) {
 				format( szMarket, sizeof( szMarket ), "%s{333333}%s\t{333333}%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
-			} else {
-				format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
-			}
-		}
+			} else { }*/
 
-		// upgrade vip
-		new
-			Float: upgrade_cost = floatround( GetPlayerUpgradeVIPCost( playerid, days_left ), floatround_ceil );
-
-		if ( current_vip >= VIP_REGULAR && current_vip < VIP_GOLD && days_left >= 7.0 && upgrade_cost )
-		{
-			format( szMarket, sizeof( szMarket ), "%sUpgrade V.I.P\t"COL_GOLD"%s\n", szMarket, number_format( upgrade_cost, .decimals = 0 ) );
+			format( szMarket, sizeof( szMarket ), "%s%s\t"COL_GOLD"%s\n", szMarket, g_irresistibleVipItems[ i ] [ E_NAME ], number_format( iCoinRequirement, .decimals = 0 ) );
 		}
-		else strcat( szMarket, "{333333}Upgrade V.I.P\t{333333}Unavailable\n" );
 
 		// thats it
 		strcat( szMarket, ""COL_GREEN"Buy shark cards...\t"COL_GREEN">>>\n" );
@@ -502,11 +480,17 @@ stock GetPlayerHouseSlots( playerid )
 
 	switch( vip_level )
 	{
-		case VIP_GOLD, VIP_PLATINUM, VIP_DIAMOND:
-			slots = 255; // 99 infinite
+		case VIP_DIAMOND:
+			slots = 255; // infinite
+
+		case VIP_PLATINUM:
+			slots = 10;
+
+		case VIP_GOLD:
+			slots = 8;
 
 		case VIP_BRONZE:
-			slots = 10;
+			slots = 6;
 
 		case VIP_REGULAR:
 			slots = 5;
@@ -520,21 +504,17 @@ stock GetPlayerGarageSlots( playerid ) return GetPlayerHouseSlots( playerid );
 stock GetPlayerVehicleSlots( playerid )
 {
 	static const
-		slots[ 4 ] = { 3, 5, 10, 20 };
+		slots[ 5 ] = { 3, 6, 8, 10, 20 };
 
-	new vip_level = GetPlayerVIPLevel( playerid );
-
-	return slots[ ( vip_level > VIP_GOLD ? VIP_GOLD : vip_level ) ] + p_ExtraAssetSlots{ playerid };
+	return slots[ GetPlayerVIPLevel( playerid ) ] + p_ExtraAssetSlots{ playerid };
 }
 
 stock GetPlayerPimpVehicleSlots( playerid )
 {
 	static const
-		slots[ 4 ] = { 3, 4, 6, 10 };
+		slots[ 5 ] = { 2, 4, 6, 8, 10 };
 
-	new vip_level = GetPlayerVIPLevel( playerid );
-
-	return slots[ ( vip_level > VIP_GOLD ? VIP_GOLD : vip_level ) ];
+	return slots[ GetPlayerVIPLevel( playerid ) ];
 }
 
 stock VIPToString( viplvl )
@@ -544,8 +524,8 @@ stock VIPToString( viplvl )
 
 	switch( viplvl )
 	{
-	    case VIP_DIAMOND: string = "Legacy Diamond";
-	    case VIP_PLATINUM: string = "Legacy Platinum";
+	    case VIP_DIAMOND: string = "Diamond";
+	    case VIP_PLATINUM: string = "Platinum";
 	    case VIP_GOLD: string = "Gold";
 		case VIP_BRONZE: string = "Bronze";
 		case VIP_REGULAR: string = "Regular";
@@ -571,22 +551,64 @@ stock VIPToColor( viplvl )
 	return string;
 }
 
-stock Float: GetPlayerUpgradeVIPCost( playerid, Float: days_left = 30.0 )
+stock SetPlayerVipLevel( playerid, level, interval = 2592000 )
 {
-	new
-		current_vip = GetPlayerVIPLevel( playerid );
+	if ( ! IsPlayerConnected( playerid ) )
+		return;
 
-	if ( current_vip != VIP_BRONZE && current_vip != VIP_REGULAR )
-		return 0.0;
-
-	new
-		Float: total_cost = 0.0;
-
-	switch ( current_vip )
-	{
-		case VIP_BRONZE: total_cost = g_irresistibleVipItems[ 0 ] [ E_PRICE ] - g_irresistibleVipItems[ 1 ] [ E_PRICE ];
-		case VIP_REGULAR: total_cost = g_irresistibleVipItems[ 1 ] [ E_PRICE ] - g_irresistibleVipItems[ 2 ] [ E_PRICE ];
+	// force upgrade
+	if ( p_VIPLevel[ playerid ] < level ) {
+		p_VIPLevel[ playerid ] = level;
 	}
 
-	return total_cost * GetGVarFloat( "vip_discount" ) * ( days_left / 30.0 );
+	// check if player already has vip
+	if ( level ) {
+	    if ( p_VIPExpiretime[ playerid ] > g_iTime ) p_VIPExpiretime[ playerid ] += interval;
+	    else p_VIPExpiretime[ playerid ] += ( g_iTime + interval );
+	}
+
+	// expire the players vip if level 0
+	else {
+		p_VIPExpiretime[ playerid ] = 0;
+	}
+
+	// give player appropriate notes/items
+	switch ( level )
+	{
+		case VIP_REGULAR:
+		{
+			GivePlayerCash( playerid, 500000 );
+		}
+		case VIP_BRONZE:
+		{
+			GivePlayerCash( playerid, 2500000 );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Bronze)" );
+			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		}
+		case VIP_GOLD:
+		{
+			GivePlayerCash( playerid, 5000000 );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Gold)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Gold)" );
+			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House and Vehicle. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		}
+		case VIP_PLATINUM:
+		{
+			GivePlayerCash( playerid, 12500000 );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Platinum)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Platinum)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Garage" );
+			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House, Vehicle and Garage. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		}
+		case VIP_DIAMOND:
+		{
+			GivePlayerCash( playerid, 25000000 );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Diamond)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Diamond)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Garage (Diamond)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Gate (Diamond)" );
+			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Weed Business (Diamond)" );
+			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House, Vehicle, Garage, Gate and Weed Biz. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
+		}
+	}
 }

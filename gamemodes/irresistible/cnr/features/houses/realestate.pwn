@@ -126,7 +126,7 @@ CMD:estate( playerid, params[ ] )
 		else if ( ! IsPlayerHomeOwner( playerid, houseid ) ) return SendError( playerid, "You are not the owner of this home." );
 		else if ( coins < 25.0 ) return SendError( playerid, "Please specify an ask price greater than 25.00 IC." );
 		else if ( coins > 25000.0 ) return SendError( playerid, "Please specify an ask price less than 25,000 IC." );
-		else if ( GetPlayerCash( playerid ) < HOUSE_LISTING_FEE && GetPlayerVIPLevel( playerid ) < VIP_GOLD ) return SendError( playerid, "You need at least %s to create a house listing.", cash_format( HOUSE_LISTING_FEE ) );
+		else if ( GetPlayerCash( playerid ) < HOUSE_LISTING_FEE && GetPlayerVIPLevel( playerid ) < VIP_PLATINUM ) return SendError( playerid, "You need at least %s to create a house listing.", cash_format( HOUSE_LISTING_FEE ) );
 		else
 		{
 			mysql_tquery( dbHandle, sprintf( "SELECT * FROM `HOUSE_LISTINGS` WHERE `HOUSE_ID` = %d AND `SALE_DATE` IS NULL", houseid ), "HouseListing_OnCreateListing", "ddf", playerid, houseid, coins );
@@ -135,7 +135,7 @@ CMD:estate( playerid, params[ ] )
 	}
 	else
 	{
-		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_GOLD ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
+		SendServerMessage( playerid, "You can list your own home using "COL_GREY"/estate list"COL_WHITE" for %s.", p_VIPLevel[ playerid ] < VIP_PLATINUM ? ( cash_format( HOUSE_LISTING_FEE ) ) : ( "FREE" ) );
 		return ShowPlayerHomeListings( playerid );
 	}
 }
@@ -308,7 +308,7 @@ thread HouseListing_OnCreateListing( playerid, houseid, Float: ask_price )
 	if ( ! rows )
 	{
 		// debit user account
-		if ( GetPlayerVIPLevel( playerid ) < VIP_GOLD ) {
+		if ( GetPlayerVIPLevel( playerid ) < VIP_PLATINUM ) {
 			GivePlayerCash( playerid, -HOUSE_LISTING_FEE );
 		}
 
