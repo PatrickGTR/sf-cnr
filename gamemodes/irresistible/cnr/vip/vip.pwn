@@ -636,32 +636,32 @@ stock SetPlayerVipLevel( playerid, level, interval = 2592000 )
 		case VIP_BRONZE:
 		{
 			GivePlayerCash( playerid, 2500000 );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Bronze)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P House (Bronze)" # COL_WHITE );
 			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
 		}
 		case VIP_GOLD:
 		{
 			GivePlayerCash( playerid, 5000000 );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Gold)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Gold)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P House (Gold)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Vehicle (Gold)" # COL_WHITE );
 			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House and Vehicle. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
 		}
 		case VIP_PLATINUM:
 		{
 			GivePlayerCash( playerid, 12500000 );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Platinum)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Platinum)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Garage" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P House (Platinum)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Vehicle (Platinum)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Garage" # COL_WHITE );
 			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House, Vehicle and Garage. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
 		}
 		case VIP_DIAMOND:
 		{
 			GivePlayerCash( playerid, 25000000 );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P House (Diamond)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Vehicle (Diamond)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Garage (Diamond)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Gate (Diamond)" # COL_WHITE );
-			AddPlayerNote( playerid, 1, COL_GOLD # "V.I.P Weed Business (Diamond)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P House (Diamond)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Vehicle (Diamond)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Garage (Diamond)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Gate (Diamond)" # COL_WHITE );
+			AddPlayerNote( playerid, -1, COL_GOLD # "V.I.P Weed Business (Diamond)" # COL_WHITE );
 			SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House, Vehicle, Garage, Gate and Weed Biz. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
 		}
 	}
