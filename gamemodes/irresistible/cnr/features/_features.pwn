@@ -15,6 +15,7 @@
 #include "irresistible\cnr\features\robbery\_robbery.pwn"
 #include "irresistible\cnr\features\visage\_visage.pwn"
 #include "irresistible\cnr\features\minijobs\_minijobs.pwn"
+#include "irresistible\cnr\features\stocks\_stocks.pwn"
 
 // other
 #include "irresistible\cnr\features\shop.pwn"
