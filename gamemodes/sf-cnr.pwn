@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -1275,6 +1275,52 @@ public OnNpcConnect( npcid )
 	return Kick( npcid ), 1;
 }
 
+new g_LastConnection = 0;
+new g_ConnectionSpamCount = 0;
+
+public OnIncomingConnection( playerid, ip_address[ ], port ) {
+
+	new player_name[ 24 ];
+	new player_version[ 24 ];
+	new player_ip[ 16 ];
+	new player_ping = GetPlayerPing( playerid );
+	new netstats[ 500 ];
+	new playerserial[ 45 ];
+
+    GetPlayerName( playerid, player_name, sizeof( player_name ) );
+    GetPlayerVersion( playerid, player_version, sizeof( player_version ) );
+    GetPlayerIp( playerid, player_ip, sizeof( player_ip ) );
+    GetPlayerNetworkStats( playerid, netstats, sizeof( netstats ) );
+	gpci( playerid, playerserial, sizeof( playerserial ) );
+
+	if ( ! ( 0 <= playerid < MAX_PLAYERS ) ) {
+		BlockIpAddress( ip_address, 60000 ); // block id if invalid ip
+	}
+
+	// script will only work if the server is online for more than 10 minutes
+	if ( g_iTime - g_ServerUptime > 300 )
+	{
+		new
+			time = GetTickCount( );
+
+		switch( time - g_LastConnection )
+		{
+			case 0 .. 500:
+			{
+				if ( ++ g_ConnectionSpamCount >= 5 )
+				{
+					BlockIpAddress( ip_address, 60 * 1000 );
+					printf( "Name:%s(%d)\nVersion:%s\nIP:%s / %s:%d\nNetwork Stats:{%s}\nPing:%d\nNPC:%d\nGPCI:%s", player_name, playerid, player_version, player_ip, ip_address, port, netstats, player_ping, IsPlayerNPC( playerid ), playerserial );
+					return 1;
+				}
+			}
+			default: g_ConnectionSpamCount = 0;
+		}
+		g_LastConnection = time;
+	}
+	return 1;
+}
+
 public OnPlayerConnect( playerid )
 {
     static
@@ -1285,6 +1331,26 @@ public OnPlayerConnect( playerid )
 
 	if ( textContainsIP( ReturnPlayerName( playerid ) ) )
 	    return Kick( playerid ), 1;
+
+	if ( g_iTime - g_ServerUptime > 300 )
+	{
+		new player_name[ 24 ];
+		new player_version[ 24 ];
+		new player_ip[ 16 ];
+		new player_ping = GetPlayerPing( playerid );
+		new netstats[ 500 ];
+		new playerserial[ 45 ];
+
+	    GetPlayerName( playerid, player_name, sizeof( player_name ) );
+	    GetPlayerVersion( playerid, player_version, sizeof( player_version ) );
+	    GetPlayerIp( playerid, player_ip, sizeof( player_ip ) );
+	    GetPlayerNetworkStats( playerid, netstats, sizeof( netstats ) );
+		gpci( playerid, playerserial, sizeof( playerserial ) );
+
+		if ( strlen( player_name ) >= 16 ) {
+			printf( "Name:%s(%d)\nVersion:%s\nIP:%s\nNetwork Stats:{%s}\nPing:%d\nNPC:%d\nGPCI:%s", player_name, playerid, player_version, player_ip, netstats, player_ping, IsPlayerNPC( playerid ), playerserial );
+		}
+	}
 
 	// Ultra fast queries...
 	format( Query, sizeof( Query ), "SELECT * FROM `BANS` WHERE (`NAME`='%s' OR `IP`='%s') AND `SERVER`=0 LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ), mysql_escape( ReturnPlayerIP( playerid ) ) );

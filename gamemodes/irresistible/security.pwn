@@ -119,8 +119,9 @@ hook OnPlayerDisconnect( playerid, reason )
 
 #if defined DEBUG_MODE
 	// aims to clear the banned from the server bug
-	public OnIncomingConnection( playerid, ip_address[ ], port ) {
+	hook OnIncomingConnection( playerid, ip_address[ ], port ) {
 		SendRconCommand( "reloadbans" );
+		return 1;
 	}
 #endif
 
