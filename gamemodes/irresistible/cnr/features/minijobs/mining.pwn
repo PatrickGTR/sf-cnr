@@ -378,6 +378,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 			p_MiningExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );
+			StockMarket_UpdateEarnings( E_STOCK_MINING_COMPANY, cashEarned );
 			GivePlayerScore( playerid, floatround( oresExported / 2 ) ); // 16 score is a bit too much for ore... so half that = 8
 			//GivePlayerExperience( playerid, E_MINING, float( oresExported ) * 0.2 );
 			SendServerMessage( playerid, "You have exported %d rock ore(s) to an industry, earning you "COL_GOLD"%s"COL_WHITE".", oresExported, cash_format( cashEarned ) );

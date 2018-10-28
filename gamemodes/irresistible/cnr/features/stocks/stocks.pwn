@@ -11,7 +11,7 @@
 /* ** Definitions ** */
 #define MAX_STOCKS					( 32 )
 
-#define STOCK_REPORTING_PERIOD 		( 500 ) // 1 day
+#define STOCK_REPORTING_PERIOD 		( 600 ) // 1 day
 
 #define STOCK_REPORTING_PERIODS 	( 30 ) // last 30 periods (days)
 
@@ -33,6 +33,11 @@ enum E_STOCK_MARKET_PRICE_DATA
 {
 	E_SQL_ID,				Float: E_PRICE,
 	Float: E_EARNINGS
+};
+
+enum
+{
+	E_STOCK_MINING_COMPANY
 };
 
 static stock
@@ -378,7 +383,7 @@ stock StockMarket_UpdateEarnings( stockid, amount )
 		return 0;
 
 	printf( "Current Earnings: %f, Prior Earnings: %f", g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ], g_stockMarketPriceData[ stockid ] [ 1 ] [ E_EARNINGS ] );
-	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] += amount;
+	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] += float( amount );
 	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `CURRENT_EARNINGS` = `CURRENT_EARNINGS` + %d WHERE `ID` = %d", g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ], g_stockMarketPriceData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
 }
