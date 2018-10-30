@@ -23,16 +23,16 @@
 /* ** Variables ** */
 enum E_STOCK_MARKET_DATA
 {
-	E_NAME[ 64 ],			E_SYMBOL[ 4 ],			Float: E_MAX_SHARES,
+	E_NAME[ 64 ],			E_SYMBOL[ 4 ],			E_MAX_SHARES,
 
 	// market maker
-	Float: E_IPO_SHARES,	Float: E_IPO_PRICE
+	Float: E_IPO_SHARES,			Float: E_IPO_PRICE
 };
 
 enum E_STOCK_MARKET_PRICE_DATA
 {
 	E_SQL_ID,				Float: E_PRICE,
-	Float: E_POOL
+	Float: E_EARNINGS
 };
 
 enum
@@ -42,13 +42,13 @@ enum
 
 static stock
 	g_stockMarketData 				[ MAX_STOCKS ] [ E_STOCK_MARKET_DATA ],
-	g_stockMarketReportData 		[ MAX_STOCKS ] [ STOCK_REPORTING_PERIODS ] [ E_STOCK_MARKET_PRICE_DATA ],
+	g_stockMarketPriceData 			[ MAX_STOCKS ] [ STOCK_REPORTING_PERIODS ] [ E_STOCK_MARKET_PRICE_DATA ],
 	Iterator: stockmarkets 			< MAX_STOCKS >
 ;
 
 /* ** Forwards / Getters ** */
 stock Float: StockMarket_GetCurrentPrice( stockid ) {
-	return g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ];
+	return g_stockMarketPriceData[ stockid ] [ 0 ] [ E_PRICE ];
 }
 
 /* ** Hooks ** */
@@ -76,7 +76,7 @@ hook OnServerUpdate( )
 		// create a new reporting period for every stock there
 		foreach ( new s : stockmarkets )
 		{
-			StockMarket_ReleaseDividends( s );
+			StockMarket_CreateReport( s );
 		}
 
 		print( "Successfully created new reporting period for all online companies" );
@@ -139,17 +139,18 @@ thread Stock_UpdateReportingPeriods( stockid )
 	{
 		for ( new row = 0; row < rows; row ++ )
 		{
-			g_stockMarketReportData[ stockid ] [ row ] [ E_SQL_ID ] = cache_get_field_content_int( row, "ID" );
-			g_stockMarketReportData[ stockid ] [ row ] [ E_POOL ] = cache_get_field_content_float( row, "POOL" );
+			g_stockMarketPriceData[ stockid ] [ row ] [ E_SQL_ID ] = cache_get_field_content_int( row, "ID" );
+			g_stockMarketPriceData[ stockid ] [ row ] [ E_PRICE ] = cache_get_field_content_float( row, "CURRENT_PRICE" );
+			g_stockMarketPriceData[ stockid ] [ row ] [ E_EARNINGS ] = cache_get_field_content_float( row, "CURRENT_EARNINGS" );
 		}
 	}
 	else // no historical reporting data, restock the market maker
 	{
 		// set current stock market prices to IPO
-		//g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
+		g_stockMarketPriceData[ stockid ] [ 1 ] [ E_PRICE ] = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
 
 		// create report for the company using the IPO price
-		//StockMarket_ReleaseDividends( stockid );
+		StockMarket_CreateReport( stockid );
 
 		// give market maker shares
 		StockMarket_GiveShares( stockid, STOCK_MM_USER_ID, g_stockMarketData[ stockid ] [ E_IPO_SHARES ] ); // , g_stockMarketData[ stockid ] [ E_IPO_PRICE ]
@@ -159,7 +160,7 @@ thread Stock_UpdateReportingPeriods( stockid )
 
 thread StockMarket_InsertReport( stockid )
 {
-	g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] = cache_insert_id( );
+	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_SQL_ID ] = cache_insert_id( );
 	return 1;
 }
 
@@ -173,7 +174,7 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 	}
 
 	// check if the player has the money for the purchase
-	new Float: ask_price = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ];
+	new Float: ask_price = g_stockMarketPriceData[ stockid ] [ 1 ] [ E_PRICE ];
 	new purchase_cost = floatround( ask_price * shares );
 
 	if ( GetPlayerCash( playerid ) < purchase_cost ) {
@@ -215,7 +216,7 @@ thread StockMarket_OnShowBuySlip( playerid, stockid )
 		szBigString, sizeof ( szBigString ),
 		""COL_WHITE"You can buy shares of %s for "COL_GREEN"%s"COL_WHITE" each.\n\nThere are %s available shares to buy.",
 		g_stockMarketData[ stockid ] [ E_NAME ],
-		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
+		cash_format( g_stockMarketPriceData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
 		number_format( available_quantity, .decimals = 3 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_BUY, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szBigString, "Buy", "Close" );
@@ -258,72 +259,6 @@ thread StockMarket_OnShowShares( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Close" ), 1;
 }
 
-thread Stock_OnDividendPayout( stockid )
-{
-	new
-		rows = cache_get_row_count( );
-
-	// pay out existing shareholders
-	if ( rows )
-	{
-		new
-			Float: total_shares = g_stockMarketData[ stockid ] [ E_MAX_SHARES ];
-
-		for ( new row = 0; row < rows; row ++ )
-		{
-			new account_id = cache_get_field_content_int( row, "USER_ID" );
-			new Float: shares_owned = cache_get_field_content_float( row, "SHARES" );
-
-			new Float: dividend_rate = shares_owned / total_shares;
-			new dividend_payout = floatround( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] * dividend_rate );
-
-			new
-				shareholder;
-
-			foreach ( shareholder : Player ) if ( GetPlayerAccountID( shareholder ) == account_id ) {
-				break;
-			}
-
-			if ( 0 <= shareholder < MAX_PLAYERS && Iter_Contains( Player, shareholder ) ) {
-				GivePlayerBankMoney( shareholder, dividend_payout ), Beep( shareholder );
-				SendServerMessage( shareholder, "A "COL_GOLD"%s"COL_WHITE" dividend (%0.2f%s) has been paid out for owning %s!", cash_format( dividend_payout ), dividend_rate * 100.0, "%%", g_stockMarketData[ stockid ] [ E_NAME ] );
-			} else {
-				mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", dividend_payout, account_id ) );
-			}
-		}
-	}
-
-	// store temporary stock info
-	new temp_stock_price_data[ MAX_STOCKS ] [ STOCK_REPORTING_PERIODS ] [ E_STOCK_MARKET_PRICE_DATA ];
-	temp_stock_price_data = g_stockMarketReportData;
-
-	// shift all earnings by one
-	for ( new r = 0; r < sizeof( g_stockMarketReportData[ ] ) - 2; r ++ ) {
-		g_stockMarketReportData[ stockid ] [ r + 1 ] [ E_POOL ] = temp_stock_price_data[ stockid ] [ r ] [ E_POOL ];
-	}
-
-	// reset earnings
-	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] = 1.0; // set to 1 instead of 0 to prevent errors
-
-	// insert to database the old information
-	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "INSERT INTO `STOCK_REPORTS` (`STOCK_ID`, `POOL`) VALUES (%d, %f)", stockid, g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] );
-	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "d", stockid );
-	return 1;
-}
-
-thread Stock_UpdateMaximumShares( stockid )
-{
-	new
-		rows = cache_get_row_count( );
-
-	if ( rows ) {
-		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = cache_get_field_content_float( 0, "TOTAL_SHARES" );
-	} else {
-		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
-	}
-	return 1;
-}
-
 /* ** Command ** */
 CMD:increase( playerid, params[ ] ) {
 	StockMarket_UpdateEarnings( 0, strval( params ) );
@@ -331,32 +266,34 @@ CMD:increase( playerid, params[ ] ) {
 }
 
 CMD:newreport( playerid, params[ ] ) {
-	StockMarket_ReleaseDividends( 0 );
+	StockMarket_CreateReport( 0 );
 	return 1;
 }
 
 CMD:stocks( playerid, params[ ] ) return cmd_stockmarkets( playerid, params );
 CMD:stockmarkets( playerid, params[ ] )
 {
-	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Max Shares\t"COL_WHITE"Dividend Per Share ($)\n";
+	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Current Price\t"COL_WHITE"Price Change (24H)\n";
 
 	foreach ( new s : stockmarkets )
 	{
-		new
-			Float: payout = g_stockMarketReportData[ s ] [ 0 ] [ E_POOL ] / g_stockMarketData[ s ] [ E_MAX_SHARES ];
+		printf("%f %f\n", g_stockMarketPriceData[ s ] [ 0 ] [ E_EARNINGS ], g_stockMarketPriceData[ s ] [ 1 ] [ E_EARNINGS ]);
+		new Float: price_difference = ( g_stockMarketPriceData[ s ] [ 1 ] [ E_EARNINGS ] / g_stockMarketPriceData[ s ] [ 2 ] [ E_EARNINGS ] - 1.0 ) * 100.0;
+		new Float: current_price = g_stockMarketPriceData[ s ] [ 1 ] [ E_PRICE ];
 
 		format(
 			szLargeString, sizeof( szLargeString ),
-			"%s%s (%s)\t%s\t"COL_GREEN"%s\n",
+			"%s%s (%s)\t"COL_GREEN"%s\t%s%s%%\n",
 			szLargeString,
 			g_stockMarketData[ s ] [ E_NAME ],
 			g_stockMarketData[ s ] [ E_SYMBOL ],
-			number_format( g_stockMarketData[ s ] [ E_MAX_SHARES ], .decimals = 0 ),
-			cash_format( payout, .decimals = 2 )
+			cash_format( current_price, .decimals = 0 ),
+			price_difference >= 0.0 ? ( COL_GREEN ) : ( COL_RED ),
+			number_format( price_difference, .decimals = 2 )
 		);
 	}
 
-	SendServerMessage( playerid, "The stock market will payout dividends in %s.", secondstotime( GetServerVariableInt( "stock_report_time" ) - GetServerTime( ) ) );
+	SendServerMessage( playerid, "The stock market will close in %s.", secondstotime( GetServerVariableInt( "stock_report_time" ) - GetServerTime( ) ) );
 	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Buy", "Close" );
 }
 
@@ -378,15 +315,13 @@ stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ip
 		g_stockMarketData[ stockid ] [ E_IPO_PRICE ] = ipo_price;
 
 		// reset stock price information
-		for ( new r = 0; r < sizeof( g_stockMarketReportData[ ] ); r ++ ) {
-			g_stockMarketReportData[ stockid ] [ r ] [ E_POOL ] = 1.0;
+		for ( new r = 0; r < sizeof( g_stockMarketPriceData[ ] ); r ++ ) {
+			g_stockMarketPriceData[ stockid ] [ r ] [ E_PRICE ] = 0.0;
+			g_stockMarketPriceData[ stockid ] [ r ] [ E_EARNINGS ] = 1.0;
 		}
 
 		// load price information if there is
- 		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_REPORTS` WHERE `STOCK_ID`=%d ORDER BY `REPORTING_TIME` DESC LIMIT %d", stockid, sizeof( g_stockMarketReportData[ ] ) ), "Stock_UpdateReportingPeriods", "d", stockid );
-
- 		// load the maximum number of shares
-		mysql_tquery( dbHandle, sprintf( "SELECT SUM(`SHARES`) AS TOTAL_SHARES FROM `STOCK_OWNERS` WHERE `STOCK_ID`=0", stockid ), "Stock_UpdateMaximumShares", "d", stockid );
+ 		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_REPORTS` WHERE `STOCK_ID`=%d ORDER BY `REPORTING_TIME` DESC LIMIT %d", stockid, sizeof( g_stockMarketPriceData[ ] ) ), "Stock_UpdateReportingPeriods", "d", stockid );
 
  		// add to iterator
 		Iter_Add( stockmarkets, stockid );
@@ -394,10 +329,51 @@ stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ip
 	return stockid;
 }
 
-static stock StockMarket_ReleaseDividends( stockid )
+stock StockMarket_CreateReport( stockid )
 {
-	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "SELECT * as `TOTAL_SHARES` FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d", stockid, stockid );
-	mysql_tquery( dbHandle, szBigString, "Stock_OnDividendPayout", "d", stockid );
+	// limit a 20% loss for players
+	new Float: circuit_breaker = g_stockMarketPriceData[ stockid ] [ 1 ] [ E_EARNINGS ] * 0.8;
+
+	if ( g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] < circuit_breaker ) {
+		g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] = circuit_breaker;
+	}
+
+	// change stock price proportional to earnings increase/decrease
+	new Float: price_difference = g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] / g_stockMarketPriceData[ stockid ] [ 1 ] [ E_EARNINGS ];
+	printf("Earnings %f\n", price_difference );
+
+	if ( ( g_stockMarketPriceData[ stockid ] [ 0 ] [ E_PRICE ] = g_stockMarketPriceData[ stockid ] [ 1 ] [ E_PRICE ] * price_difference ) < 1.0 ) {
+		g_stockMarketPriceData[ stockid ] [ 0 ] [ E_PRICE ] = 1.0;
+	}
+
+	// store temporary stock info
+	new temp_stock_price_data[ MAX_STOCKS ] [ STOCK_REPORTING_PERIODS ] [ E_STOCK_MARKET_PRICE_DATA ];
+	temp_stock_price_data = g_stockMarketPriceData;
+
+	// shift all earnings by one
+	for ( new r = 0; r < sizeof( g_stockMarketPriceData[ ] ) - 2; r ++ ) {
+		g_stockMarketPriceData[ stockid ] [ r + 1 ] [ E_PRICE ] = temp_stock_price_data[ stockid ] [ r ] [ E_PRICE ];
+		g_stockMarketPriceData[ stockid ] [ r + 1 ] [ E_EARNINGS ] = temp_stock_price_data[ stockid ] [ r ] [ E_EARNINGS ];
+	}
+
+	// set current price to previous reporting period price
+	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_PRICE ] = g_stockMarketPriceData[ stockid ] [ 1 ] [ E_PRICE ];
+
+	// reset earnings
+	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] = 1.0; // set to 1 instead of 0 to prevent errors
+
+	// insert to database the old information
+	mysql_format(
+		dbHandle, szBigString, sizeof ( szBigString ),
+		"INSERT INTO `STOCK_REPORTS` (`STOCK_ID`, `CURRENT_PRICE`, `CURRENT_EARNINGS`) VALUES (%d, %f, %f)",
+		stockid,
+		g_stockMarketPriceData[ stockid ] [ 0 ] [ E_PRICE ],
+		g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ]
+	);
+
+	// todo: adjust sell orders
+
+	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "d", stockid );
 	return 1;
 }
 
@@ -406,10 +382,14 @@ stock StockMarket_UpdateEarnings( stockid, amount )
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 		return 0;
 
-	printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
-	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] += float( amount );
-	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL` = `POOL` + %d WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
+	printf( "Current Earnings: %f, Prior Earnings: %f", g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ], g_stockMarketPriceData[ stockid ] [ 1 ] [ E_EARNINGS ] );
+	g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ] += float( amount );
+	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `CURRENT_EARNINGS` = `CURRENT_EARNINGS` + %d WHERE `ID` = %d", g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ], g_stockMarketPriceData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
+}
+
+stock Float: StockMarket_GetEarnings( stockid ) {
+	return g_stockMarketPriceData[ stockid ] [ 0 ] [ E_EARNINGS ];
 }
 
 stock StockMarket_GiveShares( stockid, accountid, Float: shares )
@@ -432,7 +412,8 @@ static stock StockMarket_ShowBuySlip( playerid, stockid )
 	CREATE TABLE IF NOT EXISTS `STOCK_REPORTS` (
 		`ID` int(11) primary key auto_increment,
 		`STOCK_ID` int(11),
-		`POOL` float,
+		`CURRENT_PRICE` float,
+		`CURRENT_EARNINGS` float,
 		`REPORTING_TIME` TIMESTAMP default CURRENT_TIMESTAMP
 	);
 
