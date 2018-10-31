@@ -275,6 +275,8 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 
 		new Float: sold_shares = amount_remaining > sell_order_shares ? sell_order_shares : amount_remaining;
 
+		StockMarket_CreateTradeLog( stockid, GetPlayerAccountID( playerid ), sell_order_user_id, sold_shares, ask_price );
+
 		new Float: sold_amount_fee = sold_shares * ask_price * STOCK_MARKET_TRADING_FEE;
 
 		UpdateServerVariableFloat( "stock_trading_fees", GetServerVariableFloat( "stock_trading_fees" ) + ( sold_amount_fee / 1000.0 ) );
@@ -545,7 +547,7 @@ CMD:shares( playerid, params[ ] )
 }
 
 /* ** Functions ** */
-stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price )
+static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price )
 {
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 	{
@@ -591,7 +593,7 @@ stock StockMarket_UpdateEarnings( stockid, amount )
 	return 1;
 }
 
-stock StockMarket_GiveShares( stockid, accountid, Float: shares )
+static stock StockMarket_GiveShares( stockid, accountid, Float: shares )
 {
 	mysql_format(
 		dbHandle, szBigString, sizeof ( szBigString ),
@@ -601,12 +603,22 @@ stock StockMarket_GiveShares( stockid, accountid, Float: shares )
 	mysql_single_query( szBigString );
 }
 
-stock StockMarket_UpdateSellOrder( stockid, accountid, Float: shares )
+static stock StockMarket_UpdateSellOrder( stockid, accountid, Float: shares )
 {
 	mysql_format(
 		dbHandle, szBigString, sizeof ( szBigString ),
 		"INSERT INTO `STOCK_SELL_ORDERS` (`STOCK_ID`, `USER_ID`, `SHARES`) VALUES (%d, %d, %f) ON DUPLICATE KEY UPDATE `SHARES` = `SHARES` + %f",
 		stockid, accountid, shares, shares
+	);
+	mysql_single_query( szBigString );
+}
+
+static stock StockMarket_CreateTradeLog( stockid, buyer_acc, seller_acc, Float: shares, Float: price )
+{
+	mysql_format(
+		dbHandle, szBigString, sizeof ( szBigString ),
+		"INSERT INTO `STOCK_TRADE_LOG` (`STOCK_ID`, `BUYER_ID`, `SELLER_ID`, `SHARES`, `PRICE`) VALUES (%d, %d, %d, %f, %f)",
+		stockid, buyer_acc, seller_acc, shares, price
 	);
 	mysql_single_query( szBigString );
 }
@@ -655,5 +667,16 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		`SHARES` float,
 		`LIST_DATE` TIMESTAMP default CURRENT_TIMESTAMP,
 		PRIMARY KEY (STOCK_ID, USER_ID)
+	);
+
+	DROP TABLE `STOCK_TRADE_LOG`;
+	CREATE TABLE IF NOT EXISTS `STOCK_TRADE_LOG` (
+		`ID` int(11) primary key auto_increment,
+		`STOCK_ID` int(11),
+		`BUYER_ID` int(11),
+		`SELLER_ID` int(11),
+		`SHARES` float,
+		`PRICE` float,
+		`LIST_DATE` TIMESTAMP default CURRENT_TIMESTAMP
 	);
  */
