@@ -208,6 +208,7 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 			new earned_money = floatround( float( g_orePrices[ g_miningData[ ore ] [ E_ORE ] ] ) * 0.5 );
 
 			GivePlayerCash( playerid, earned_money );
+			StockMarket_UpdateEarnings( E_STOCK_MINING_COMPANY, earned_money );
 			SendServerMessage( playerid, "You have crushed a "COL_GREY"%s"COL_WHITE" Ore and earned "COL_GOLD"%s"COL_WHITE".", getOreName( g_miningData[ ore ] [ E_ORE ] ), cash_format( earned_money ) );
 			RemoveEquippedOre( playerid );
 		}
