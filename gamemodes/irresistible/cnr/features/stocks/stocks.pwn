@@ -52,11 +52,6 @@ static stock
 	Float: p_PlayerShares 			[ MAX_PLAYERS ] [ MAX_STOCKS ]
 ;
 
-/* ** Forwards / Getters ** */
-stock Float: StockMarket_GetCurrentPrice( stockid ) {
-	return g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ];
-}
-
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
@@ -347,9 +342,8 @@ thread StockMarket_OnShowShares( playerid )
 
 		if ( Iter_Contains( stockmarkets, stockid ) )
 		{
-			new Float: current_price = StockMarket_GetCurrentPrice( stockid );
+			new Float: current_price = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ];
 			new Float: shares = cache_get_field_content_float( row, "SHARES" );
-
 
 			format(
 				szLargeString, sizeof( szLargeString ),
@@ -442,10 +436,18 @@ thread Stock_UpdateMaximumShares( stockid )
 	new
 		rows = cache_get_row_count( );
 
-	if ( rows ) {
+	if ( rows )
+	{
 		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = cache_get_field_content_float( 0, "SHARES_OWNED" ) + cache_get_field_content_float( 0, "SHARES_HELD" );
-		printf("%f shares", g_stockMarketData[ stockid ] [ E_MAX_SHARES ]);
-	} else {
+
+		// rows shown but still showing as 0 maximum shares? set it to the ipo issued amount
+		if ( ! g_stockMarketData[ stockid ] [ E_MAX_SHARES ] )
+		{
+			g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
+		}
+	}
+	else
+	{
 		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
 	}
 	return 1;
@@ -468,6 +470,8 @@ thread StockMarket_OnCancelOrder( playerid )
 
 			mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, player_account ) );
 			StockMarket_GiveShares( stockid, player_account, shares );
+
+			SendServerMessage( playerid, "You have cancelled your order of to sell %s shares of %s.", number_format( shares, .decimals = 3 ), g_stockMarketData[ stockid ] [ E_NAME ] );
 		}
 		return 1;
 	}
@@ -566,9 +570,9 @@ stock StockMarket_UpdateEarnings( stockid, amount )
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 		return 0;
 
-	printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] += float( amount );
-	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL` = `POOL` + %d WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
+	printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
+	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL`=%f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
 }
 
