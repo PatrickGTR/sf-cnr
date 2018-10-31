@@ -205,8 +205,10 @@ thread Stock_UpdateReportingPeriods( stockid )
 		// set current stock market prices to IPO
 		g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
 
-		// create report for the company using the IPO price
-		StockMarket_ReleaseDividends( stockid );
+		// create 2 reports for the company using the IPO price ... this way the price is not $0
+		for ( new i = 0; i < 2; i ++ ) {
+			StockMarket_ReleaseDividends( stockid );
+		}
 
 		// put market maker shares on the market
 		StockMarket_UpdateSellOrder( stockid, STOCK_MM_USER_ID, g_stockMarketData[ stockid ] [ E_IPO_SHARES ] );
