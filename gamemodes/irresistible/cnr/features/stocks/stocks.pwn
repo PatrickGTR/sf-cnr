@@ -43,6 +43,7 @@ enum
 
 static const Float: STOCK_MARKET_POOL_FACTOR = 100000.0; // for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
 static const Float: STOCK_MARKET_PRICE_FACTOR = 5.0;
+static const Float: STOCK_MARKET_TRADING_FEE = 0.01;
 
 static stock
 	g_stockMarketData 				[ MAX_STOCKS ] [ E_STOCK_MARKET_DATA ],
@@ -57,6 +58,7 @@ hook OnScriptInit( )
 {
 	// server variables
 	AddServerVariable( "stock_report_time", "0", GLOBAL_VARTYPE_INT );
+	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// create markets
 	CreateStockMarket( 0, "The Mining Company", "MC", 100000.0, 25.0, 250.0 ); // 25m mcap max
@@ -151,7 +153,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				StockMarket_GiveShares( stockid, GetPlayerAccountID( playerid ), -shares );
 			}
 			StockMarket_UpdateSellOrder( stockid, GetPlayerAccountID( playerid ), shares );
-			SendServerMessage( playerid, "You have placed a sell order for %s shares at %s each. "COL_ORANGE"To cancel your sell order, /shares cancel", number_format( shares, .decimals = 3 ), cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+			SendServerMessage( playerid, "You have placed a sell order for %s shares at %s each. "COL_ORANGE"To cancel your sell order, /shares cancel", number_format( shares, .decimals = 2 ), cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
 			return 1;
 		}
 		return StockMarket_ShowSellSlip( playerid, stockid );
@@ -243,8 +245,14 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 	new Float: ask_price = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ];
 	new purchase_cost = floatround( ask_price * shares );
 
-	if ( GetPlayerCash( playerid ) < purchase_cost ) {
-		return SendError( playerid, "You need at least %s to purchase this many shares.", cash_format( purchase_cost ) ), StockMarket_ShowBuySlip( playerid, stockid ), 1;
+	new Float: purchase_fee = ask_price * shares * STOCK_MARKET_TRADING_FEE;
+
+	UpdateServerVariableFloat( "stock_trading_fees", GetServerVariableFloat( "stock_trading_fees" ) + ( purchase_fee / 1000.0 ) );
+
+	new purchase_cost_plus_fee = purchase_cost + floatround( purchase_fee );
+
+	if ( GetPlayerCash( playerid ) < purchase_cost_plus_fee ) {
+		return SendError( playerid, "You need at least %s to purchase this many shares.", cash_format( purchase_cost_plus_fee ) ), StockMarket_ShowBuySlip( playerid, stockid ), 1;
 	}
 
 	new
@@ -264,13 +272,18 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 		}
 
 		new Float: sold_shares = amount_remaining > sell_order_shares ? sell_order_shares : amount_remaining;
-		new sold_amount = floatround( sold_shares * ask_price );
+
+		new Float: sold_amount_fee = sold_shares * ask_price * STOCK_MARKET_TRADING_FEE;
+
+		UpdateServerVariableFloat( "stock_trading_fees", GetServerVariableFloat( "stock_trading_fees" ) + ( sold_amount_fee / 1000.0 ) );
+
+		new sold_amount_minus_fee = floatround( sold_shares * ask_price - sold_amount_fee );
 
 		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
-			GivePlayerBankMoney( sellerid, sold_amount ), Beep( sellerid );
-			SendServerMessage( sellerid, "You have sold %s %s shares to %s(%d) for "COL_GOLD"%s"COL_WHITE"!", number_format( sold_shares, .decimals = 3 ), g_stockMarketData[ stockid ] [ E_NAME ], ReturnPlayerName( playerid ), playerid, cash_format( sold_amount ) );
+			GivePlayerBankMoney( sellerid, sold_amount_minus_fee ), Beep( sellerid );
+			SendServerMessage( sellerid, "You have sold %s %s shares to %s(%d) for "COL_GOLD"%s"COL_WHITE" (plus %0.1f%s fee)!", number_format( sold_shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ], ReturnPlayerName( playerid ), playerid, cash_format( sold_amount_minus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
 		} else {
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", sold_amount, sell_order_user_id ) );
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", sold_amount_minus_fee, sell_order_user_id ) );
 		}
 
 		// remove the sell order if there is little to no shares available
@@ -296,8 +309,8 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 	StockMarket_GiveShares( stockid, GetPlayerAccountID( playerid ), shares );
 
 	// reduce player balance and alert
-	GivePlayerCash( playerid, -purchase_cost );
-	SendServerMessage( playerid, "You have successfully purchased %s shares of %s (@ %s/ea) for %s.", number_format( shares, .decimals = 3 ), g_stockMarketData[ stockid ] [ E_NAME ], cash_format( ask_price, .decimals = 2 ), cash_format( purchase_cost ) );
+	GivePlayerCash( playerid, -purchase_cost_plus_fee );
+	SendServerMessage( playerid, "You have purchased %s shares of %s (@ %s/ea) for %s. (inc. %0.1f%s fee)", number_format( shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ], cash_format( ask_price, .decimals = 2 ), cash_format( purchase_cost_plus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
 	return 1;
 }
 
@@ -318,7 +331,7 @@ thread StockMarket_OnShowBuySlip( playerid, stockid )
 		""COL_WHITE"You can buy shares of %s for "COL_GREEN"%s"COL_WHITE" each.\n\nThere are %s available shares to buy.",
 		g_stockMarketData[ stockid ] [ E_NAME ],
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
-		number_format( available_quantity, .decimals = 3 )
+		number_format( available_quantity, .decimals = 2 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_BUY, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szBigString, "Buy", "Close" );
 	return 1;
@@ -351,7 +364,7 @@ thread StockMarket_OnShowShares( playerid )
 				szLargeString,
 				g_stockMarketData[ stockid ] [ E_NAME ],
 				g_stockMarketData[ stockid ] [ E_SYMBOL ],
-				number_format( shares, .decimals = 3 ),
+				number_format( shares, .decimals = 2 ),
 				cash_format( current_price, .decimals = 2 ),
 				cash_format( floatround( shares * current_price ) )
 			);
@@ -471,7 +484,7 @@ thread StockMarket_OnCancelOrder( playerid )
 			mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, player_account ) );
 			StockMarket_GiveShares( stockid, player_account, shares );
 
-			SendServerMessage( playerid, "You have cancelled your order of to sell %s shares of %s.", number_format( shares, .decimals = 3 ), g_stockMarketData[ stockid ] [ E_NAME ] );
+			SendServerMessage( playerid, "You have cancelled your order of to sell %s shares of %s.", number_format( shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ] );
 		}
 		return 1;
 	}
@@ -609,7 +622,7 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		""COL_WHITE"You can sell shares of %s for "COL_GREEN"%s"COL_WHITE" each.\n\nThough, you will have to wait until a person buys them.\n\nYou have %s available shares to sell.",
 		g_stockMarketData[ stockid ] [ E_NAME ],
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
-		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 3 )
+		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 2 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_SELL, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Close" );
 	return 1;
