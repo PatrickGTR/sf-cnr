@@ -38,7 +38,8 @@ enum E_STOCK_MARKET_PRICE_DATA
 
 enum
 {
-	E_STOCK_MINING_COMPANY
+	E_STOCK_MINING_COMPANY,
+	E_STOCK_AMMUNATION
 };
 
 static const Float: STOCK_MARKET_POOL_FACTOR = 100000.0; // for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
@@ -62,6 +63,7 @@ hook OnScriptInit( )
 
 	// create markets
 	CreateStockMarket( E_STOCK_MINING_COMPANY, "The Mining Company", "MC", 100000.0, 25.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_AMMUNATION, "Ammu-Nation", "A", 100000.0, 25.0, 250.0 ); // 25m mcap max
 	return 1;
 }
 
@@ -499,16 +501,6 @@ thread StockMarket_OnCancelOrder( playerid )
 }
 
 /* ** Command ** */
-CMD:increase( playerid, params[ ] ) {
-	StockMarket_UpdateEarnings( 0, strval( params ) );
-	return 1;
-}
-
-CMD:newreport( playerid, params[ ] ) {
-	StockMarket_ReleaseDividends( 0 );
-	return 1;
-}
-
 CMD:stocks( playerid, params[ ] ) return cmd_stockmarkets( playerid, params );
 CMD:stockmarkets( playerid, params[ ] )
 {
@@ -582,13 +574,17 @@ static stock StockMarket_ReleaseDividends( stockid )
 	return 1;
 }
 
-stock StockMarket_UpdateEarnings( stockid, amount )
+stock StockMarket_UpdateEarnings( stockid, amount, Float: factor = 1.0 )
 {
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 		return 0;
 
-	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] += float( amount );
-	//printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
+	// ensure that pool remains always above 0 dollars
+	if ( ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] += float( amount ) * factor ) < 0.0 ) {
+		g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] = 0.0;
+	}
+
+	// save to database
 	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL`=%f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
 }
