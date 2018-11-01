@@ -98,7 +98,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 	// drop player money
 	new
-		player_money = floatround( float( GetPlayerCash( playerid ) ) * 0.25 );
+		player_money = floatround( float( GetPlayerCash( playerid ) ) * 0.1 );
 
 	if ( player_money > 0 )
 	{
