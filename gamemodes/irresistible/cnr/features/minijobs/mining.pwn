@@ -261,7 +261,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		// mine the ore
 		if ( GetPlayerWeapon( playerid ) == WEAPON_SHOVEL )
 		{
-			if ( ! IsPlayerUsingAnimation( playerid ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 4 ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
+			if ( ! IsPlayerUsingAnimation( playerid ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 4 ) && ! IsPlayerAttachedObjectSlotUsed( playerid, 3 ) && ! IsPlayerMining( playerid ) )
 			{
 				static
 					Float: X, Float: Y, Float: Z;
