@@ -12,6 +12,19 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Macros ** */
+#define GetServerVariableInt		GetGVarInt
+#define GetServerVariableFloat		GetGVarFloat
+
+#define UpdateServerVariableString(%0,%1) \
+	(UpdateServerVariable(%0, 0, 0, %1, GLOBAL_VARTYPE_STRING))
+
+#define UpdateServerVariableInt(%0,%1) \
+	(UpdateServerVariable(%0, %1, 0, "", GLOBAL_VARTYPE_INT))
+
+#define UpdateServerVariableFloat(%0,%1) \
+	(UpdateServerVariable(%0, 0, %1, "", GLOBAL_VARTYPE_FLOAT))
+
 /* ** Hooks ** */
 hook OnGameModeInit( )
 {

@@ -208,15 +208,6 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 9842, -2920.5703, 461.7969, -61.3906, 0.25);
 	RemoveBuildingForPlayer(playerid, 9829, -2920.5703, 461.7969, -61.3906, 0.25);
 
-	// Kidz Killer Clan HQ
-	RemoveBuildingForPlayer(playerid, 1396, -1723.5781, 188.9219, 27.0313, 0.25);
-	RemoveBuildingForPlayer(playerid, 1397, -1728.9141, 188.9063, 22.5156, 0.25);
-	RemoveBuildingForPlayer(playerid, 10774, -1739.2109, 166.7109, 5.6875, 0.25);
-	RemoveBuildingForPlayer(playerid, 1376, -1728.9141, 188.9063, 22.5156, 0.25);
-	RemoveBuildingForPlayer(playerid, 1386, -1728.9141, 188.9063, 35.7422, 0.25);
-	RemoveBuildingForPlayer(playerid, 1377, -1754.3906, 188.9219, 29.8203, 0.25);
-	RemoveBuildingForPlayer(playerid, 1378, -1723.5781, 188.9219, 27.0313, 0.25);
-
 	// CHUKYCDM LS
 	RemoveBuildingForPlayer(playerid, 1219, 1284.1797, -1239.6406, 12.9141, 0.25);
 	RemoveBuildingForPlayer(playerid, 1227, 1322.1875, -1235.8828, 13.4375, 0.25);
@@ -226,14 +217,6 @@ stock removeExcessiveBuildings( playerid )
 
 	// Crypton Base
 	RemoveBuildingForPlayer(playerid, 626, 1243.5078, -1640.4609, 28.4219, 100.0);
-
-	// iTRiiPY Base [OP]
-	RemoveBuildingForPlayer(playerid, 11024, -2076.2734, 359.3203, 44.5938, 0.25);
-	RemoveBuildingForPlayer(playerid, 3868, -2022.0859, 347.1328, 49.1563, 125.0);
-	RemoveBuildingForPlayer(playerid, 3867, -2049.7344, 336.8672, 49.1563, 125.0);
-	RemoveBuildingForPlayer(playerid, 10946, -2076.6563, 354.3672, 35.7891, 0.25);
-	RemoveBuildingForPlayer(playerid, 11403, -2076.6563, 354.3672, 35.7891, 0.25);
-	RemoveBuildingForPlayer(playerid, 10949, -2076.2734, 359.3203, 44.5938, 0.25);
 
 	// Wang Cars
 	RemoveBuildingForPlayer(playerid, 1615, -1966.8984, 252.1484, 43.6563, 0.25);
