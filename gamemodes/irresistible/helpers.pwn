@@ -349,9 +349,13 @@ stock number_format( { _, Float, Text3D, Menu, Text, DB, DBResult, bool, File }:
         }
     }
 
-    if ( prefix != '\0' ) {
-        // new minus = strfind( s_szReturn, "-" );
-        strins( s_szReturn, "$", s_szReturn[ 0 ] == '-' ); // no point finding -
+    if ( prefix != '\0' )
+    {
+        static
+            prefix_string[ 2 ];
+
+        prefix_string[ 0 ] = prefix;
+        strins( s_szReturn, prefix_string, s_szReturn[ 0 ] == '-' ); // no point finding -
     }
     return s_szReturn;
 }
