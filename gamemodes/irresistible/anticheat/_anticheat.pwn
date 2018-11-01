@@ -158,6 +158,7 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 
 /* ** Modules (remove to disable) ** */
 #include "irresistible\anticheat\money.pwn"
+#include "irresistible\anticheat\bot_attack.pwn"
 #include "irresistible\anticheat\hitpoints.pwn"
 #include "irresistible\anticheat\weapon.pwn"
 #include "irresistible\anticheat\carmod_checker.pwn"
