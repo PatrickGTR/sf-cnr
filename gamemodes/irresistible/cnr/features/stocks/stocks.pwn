@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc Pekaj
- * Module: cnrs
- * Purpose:
+ * Module: cnr\features\stocks\stocks.pwn
+ * Purpose: stock market system for players
  */
 
 /* ** Includes ** */
@@ -11,7 +11,7 @@
 /* ** Definitions ** */
 #define MAX_STOCKS					( 32 )
 
-#define STOCK_REPORTING_PERIOD 		( 600 ) // 1 day
+#define STOCK_REPORTING_PERIOD 		( 86400 ) // 1 day
 
 #define STOCK_REPORTING_PERIODS 	( 30 ) // last 30 periods (days)
 
@@ -61,7 +61,7 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// create markets
-	CreateStockMarket( 0, "The Mining Company", "MC", 100000.0, 25.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_MINING_COMPANY, "The Mining Company", "MC", 100000.0, 25.0, 250.0 ); // 25m mcap max
 	return 1;
 }
 
@@ -141,7 +141,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		if ( sscanf( inputtext, "d", input_shares ) ) SendError( playerid, "You must use a valid value." );
 		else if ( input_shares > floatround( p_PlayerShares[ playerid ] [ stockid ], floatround_floor ) ) SendError( playerid, "You do not have this many shares available to sell." );
-		else if ( input_shares <= 1 ) SendError( playerid, "The minimum number of shares you can sell is 1." );
+		else if ( input_shares < 1 ) SendError( playerid, "The minimum number of shares you can sell is 1." );
 		else
 		{
 			new
@@ -408,7 +408,7 @@ thread Stock_OnDividendPayout( stockid )
 
 			if ( 0 <= shareholder < MAX_PLAYERS && Iter_Contains( Player, shareholder ) ) {
 				GivePlayerBankMoney( shareholder, dividend_payout ), Beep( shareholder );
-				SendServerMessage( shareholder, "A "COL_GOLD"%s"COL_WHITE" dividend (%0.2f%s) has been paid out for owning %s!", cash_format( dividend_payout ), dividend_rate * 100.0, "%%", g_stockMarketData[ stockid ] [ E_NAME ] );
+				SendServerMessage( shareholder, "You have been paid a "COL_GOLD"%s"COL_WHITE" dividend (%0.2f%s) for owning %s!", cash_format( dividend_payout ), dividend_rate * 100.0, "%%", g_stockMarketData[ stockid ] [ E_NAME ] );
 			} else {
 				mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", dividend_payout, account_id ) );
 			}
@@ -588,7 +588,7 @@ stock StockMarket_UpdateEarnings( stockid, amount )
 		return 0;
 
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] += float( amount );
-	printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
+	//printf( "Current Pool: %f, Prior Pool: %f", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 1 ] [ E_POOL ] );
 	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL`=%f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
 }
@@ -677,6 +677,6 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		`SELLER_ID` int(11),
 		`SHARES` float,
 		`PRICE` float,
-		`LIST_DATE` TIMESTAMP default CURRENT_TIMESTAMP
+		`DATE` TIMESTAMP default CURRENT_TIMESTAMP
 	);
  */
