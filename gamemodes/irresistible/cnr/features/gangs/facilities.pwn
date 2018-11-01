@@ -264,7 +264,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						}
 
 						GivePlayerCash( playerid, -price );
-						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, price, .factor = 0.5 );
+						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, price, .factor = 0.25 );
 
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );

@@ -9584,7 +9584,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] * ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 35 ? 1 : 5 ) );
 						SetPlayerArmedWeapon( playerid, 0 );
 						GivePlayerCash( playerid, -( price ) );
-						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, price, .factor = 0.5 );
+						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, price, .factor = 0.25 );
 						RedirectAmmunation( playerid, p_WeaponDealMenu{ playerid }, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL_BUY, 0.75, 5 );
 						break;
 		            }
@@ -9628,7 +9628,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 						GivePlayerCash( playerid, -iCostPrice );
 
-						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, iCostPrice, .factor = 0.5 );
+						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, iCostPrice, .factor = 0.25 );
 						RedirectAmmunation( playerid, p_AmmunationMenu{ playerid } );
 
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
