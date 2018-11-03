@@ -7474,6 +7474,7 @@ public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 			DestroyDynamicRaceCP( p_PawnStoreExport[ playerid ] );
 			p_PawnStoreExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );
+			StockMarket_UpdateEarnings( E_STOCK_PAWN_STORE, cashEarned, 1.0 );
 			GivePlayerWantedLevel( playerid, items * 2 );
 			SendServerMessage( playerid, "You have sold %d furniture item(s) to the Pawn Store, earning you "COL_GOLD"%s"COL_WHITE".", GetGVarInt( szItems ), cash_format( cashEarned ) );
 			DeleteGVar( szItems );

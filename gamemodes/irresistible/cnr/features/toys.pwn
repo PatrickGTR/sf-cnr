@@ -422,6 +422,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			    UnlockPlayerToy( playerid, g_ToyData[ id ] [ E_ID ] );
 			    GivePlayerCash( playerid, -g_ToyData[ id ] [ E_PRICE ] );
+				StockMarket_UpdateEarnings( E_STOCK_PAWN_STORE, g_ToyData[ id ] [ E_PRICE ], 0.25 );
 				showToyCategoryItems( playerid, p_ToyCategorySelected{ playerid }, .pawnshop = true );
 	      		SendServerMessage( playerid, "You have bought a "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", g_ToyData[ id ] [ E_NAME ], cash_format( g_ToyData[ id ] [ E_PRICE ] ) );
 			}
