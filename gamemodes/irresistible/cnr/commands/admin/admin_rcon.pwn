@@ -551,7 +551,7 @@ CMD:kickall( playerid, params[ ] )
 	if ( !IsPlayerAdmin( playerid ) ) return 0;
 	SetServerRule( "password", "updating" );
 	SendClientMessageToAll( -1, ""COL_PINK"[ADMIN]"COL_WHITE" Everyone has been kicked from the server due to a server update." );
-	for( new i; i < MAX_PLAYERS; i++ ) if ( IsPlayerConnected( i ) && ! IsPlayerNPC( i ) && p_AccountID[ i ] != 1 ) {
+	for ( new i = 0; i < MAX_PLAYERS; i++ ) if ( IsPlayerConnected( i ) && ! IsPlayerNPC( i ) && ! IsPlayerServerMaintainer( i ) ) {
 		Kick( i );
 	}
 	return 1;
