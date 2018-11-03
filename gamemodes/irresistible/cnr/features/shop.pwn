@@ -140,9 +140,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     		if ( GetPlayerCash( playerid ) < ( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) ) SendError( playerid, "You cannot afford the price of the item(s)." );
     		else if ( iAmount <= 0 ) SendError( playerid, "You cannot buy anymore of this item." );
     		else {
+    			new total_cost = g_shopItemData[ i ] [ E_PRICE ] * iAmount;
     			SetPlayerShopItemAmount( playerid, i, iCurrentQuantity + iAmount );
-    			GivePlayerCash( playerid, -( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
-				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( g_shopItemData[ i ] [ E_PRICE ] * iAmount ) );
+    			GivePlayerCash( playerid, -total_cost );
+				StockMarket_UpdateEarnings( E_STOCK_SUPA_SAVE, total_cost, 0.25 );
+				SendServerMessage( playerid, "You have bought %dx "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE".", iAmount, g_shopItemData[ i ] [ E_NAME ], cash_format( total_cost ) );
     		}
 
     		ShowPlayerDialog( playerid, DIALOG_SHOP_AMOUNT, DIALOG_STYLE_LIST, "{FFFFFF}Shop Items - Buy Quantity", "Buy 1\nBuy 5\nBuy Max", "Select", "Back" );

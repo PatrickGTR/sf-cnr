@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-#pragma option -d3
+//#pragma option -d3
 #pragma dynamic 7200000
 
 //#define DEBUG_MODE

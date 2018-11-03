@@ -401,6 +401,7 @@ CMD:meth( playerid, params[ ] )
 			cashEarned = p_Methamphetamine{ playerid } * ( 5000 + random( 1000 ) );
 
 		GivePlayerCash( playerid, cashEarned );
+		StockMarket_UpdateEarnings( E_STOCK_CLUCKIN_BELL, cashEarned, .factor = 0.3 );
 		SendServerMessage( playerid, "You have exported %d bags of meth, earning you "COL_GOLD"%s"COL_WHITE".", p_Methamphetamine{ playerid }, cash_format( cashEarned ) );
 		p_Methamphetamine{ playerid } = 0;
 	}

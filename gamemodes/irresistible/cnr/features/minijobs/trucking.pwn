@@ -173,12 +173,13 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			}
 
 			new
-				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 2.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
+				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 3.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
 
 			ach_HandleTruckingCouriers( playerid );
 			PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
 
 			GivePlayerScore( playerid, 1 + floatround( p_TruckingDistance[ playerid ] / 1000.0 ) );
+			StockMarket_UpdateEarnings( E_STOCK_TRUCKING_COMPANY, iCashEarned, .factor = 1.0 );
 			GivePlayerCash( playerid, iCashEarned );
 
 			p_TruckingDistance		[ playerid ] = 0.0;
@@ -253,13 +254,13 @@ CMD:work( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be an ordinary civilian to use this command." );
-	else if ( sscanf( params, "S(NORMAL)[7]", szDifficulty ) ) return SendUsage( playerid, "/work [NORMAL/HARDER]" );
+	else if ( sscanf( params, "s[7]", szDifficulty ) ) return SendUsage( playerid, "/work [NORMAL/HARD]" );
 	else if ( strmatch( szDifficulty, "STOP" ) )
 	{
 		StopPlayerTruckingCourier( playerid );
 		return SendServerMessage( playerid, "Your trucking mission has been stopped." );
 	}
-	else if ( !strmatch( szDifficulty, "NORMAL" ) && !strmatch( szDifficulty, "HARDER" ) ) return SendUsage( playerid, "/work [NORMAL/HARDER/STOP]" );
+	else if ( !strmatch( szDifficulty, "NORMAL" ) && !strmatch( szDifficulty, "HARD" ) ) return SendUsage( playerid, "/work [NORMAL/HARD/STOP]" );
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You must be a driver of a vehicle to work." );
 	else if ( !iModel ) return SendError( playerid, "You are not in any vehicle." );
 	else
@@ -281,7 +282,7 @@ CMD:work( playerid, params[ ] )
 				p_WorkCooldown			[ playerid ] = g_iTime + 60;
 
 				p_TruckingTrailerModel	{ playerid } = getTrailerType( iTrailer );
-				p_TruckingTrailer 		{ playerid } = getRandomTrailerLoad( p_TruckingTrailerModel{ playerid }, strmatch( szDifficulty, "HARDER" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
+				p_TruckingTrailer 		{ playerid } = getRandomTrailerLoad( p_TruckingTrailerModel{ playerid }, strmatch( szDifficulty, "HARD" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
 
 				p_TruckingRoute[ playerid ] { 0 } = getClosestTruckingRoute( playerid );
 

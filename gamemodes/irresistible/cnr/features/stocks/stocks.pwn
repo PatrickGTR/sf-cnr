@@ -24,7 +24,8 @@
 
 /* ** Constants ** */
 static const Float: STOCK_MARKET_POOL_FACTOR = 100000.0; 	// for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
-static const Float: STOCK_MARKET_PRICE_FACTOR = 3.5;		// for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
+static const Float: STOCK_MARKET_PRICE_FACTOR = 3.0;		// for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
+//static const Float: STOCK_MARKET_PRICE_FLOOR = 20.0; 		// the price in which the price will always be above or equal to
 
 static const Float: STOCK_MARKET_TRADING_FEE = 0.01;		// trading fee (buy/sell) percentage as decimal
 
@@ -48,7 +49,11 @@ enum E_STOCK_MARKET_PRICE_DATA
 enum
 {
 	E_STOCK_MINING_COMPANY,
-	E_STOCK_AMMUNATION
+	E_STOCK_AMMUNATION,
+	E_STOCK_VEHICLE_DEALERSHIP,
+	E_STOCK_SUPA_SAVE,
+	E_STOCK_TRUCKING_COMPANY,
+	E_STOCK_CLUCKIN_BELL
 };
 
 static stock
@@ -67,8 +72,11 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// create markets
-	CreateStockMarket( E_STOCK_MINING_COMPANY, "The Mining Company", "MC", 100000.0, 25.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_MINING_COMPANY, "The Mining Company", "MC", 100000.0, 25.0, 500.0 ); // 50m mcap max
 	CreateStockMarket( E_STOCK_AMMUNATION, "Ammu-Nation", "A", 100000.0, 25.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, "Vehicle Dealership", "VD", 100000.0, 100.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, "The Trucking Company", "TC", 100000.0, 50.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL, "Cluckin' Bell", "CB", 100000.0, 50.0, 250.0 ); // 25m mcap max
 	return 1;
 }
 
@@ -184,7 +192,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				shares;
 
 			if ( sscanf( inputtext, "d", shares ) ) SendError( playerid, "You must use a valid value." );
-			else if ( shares < 10 ) SendError( playerid, "The minimum number of shares you can buy is 10." );
+			else if ( shares < 1 ) SendError( playerid, "The minimum number of shares you can buy is 1." );
 			else
 			{
 				mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d ORDER BY `LIST_DATE` ASC", stockid ), "StockMarket_OnPurchaseOrder", "ddf", playerid, stockid, float( shares ) );
@@ -213,8 +221,6 @@ thread Stock_UpdateReportingPeriods( stockid )
 			g_stockMarketReportData[ stockid ] [ row ] [ E_SQL_ID ] = cache_get_field_content_int( row, "ID" );
 			g_stockMarketReportData[ stockid ] [ row ] [ E_POOL ] = cache_get_field_content_float( row, "POOL" );
 			g_stockMarketReportData[ stockid ] [ row ] [ E_PRICE ] = cache_get_field_content_float( row, "PRICE" );
-
-			printf("%d %0.0f %0.2f {%d}", stockid, g_stockMarketReportData[ stockid ] [ row ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ row ] [ E_PRICE ], row );
 		}
 	}
 	else // no historical reporting data, restock the market maker
@@ -237,7 +243,7 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 {
 	// set the new price of the company
 	new // TODO: use parabola for factor difficulty?
-		Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / STOCK_MARKET_POOL_FACTOR) * STOCK_MARKET_PRICE_FACTOR + g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
+		Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / STOCK_MARKET_POOL_FACTOR) * STOCK_MARKET_PRICE_FACTOR + g_stockMarketData[ stockid ] [ E_IPO_PRICE ]; // STOCK_MARKET_PRICE_FLOOR;
 
 	if ( new_price > g_stockMarketData[ stockid ] [ E_MAX_PRICE ] ) { // dont want wild market caps
 		new_price = g_stockMarketData[ stockid ] [ E_MAX_PRICE ];

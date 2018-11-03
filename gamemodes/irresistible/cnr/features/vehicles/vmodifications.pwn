@@ -405,6 +405,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								Float: X, Float: Y, Float: Z;
 
 							GivePlayerCash( playerid, -g_vehicleComponentsData[ i ] [ E_PRICE ] );
+							StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, g_vehicleComponentsData[ i ] [ E_PRICE ], 0.05 );
 
 							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_CREATED ] [ slotid ] = true;
 							g_vehiclePimpData[ ownerid ] [ vehicleid ] [ E_DISABLED ] [ slotid ] = false;
