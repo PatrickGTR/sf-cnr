@@ -546,6 +546,9 @@ CMD:sync( playerid, params[ ] )
 	if ( GetPlayerWeapon( playerid ) == WEAPON_SNIPER )
 		return SendError( playerid, "You cannot synchronize yourself holding a sniper." );
 
+	if ( IsPlayerPassive( playerid ) )
+		return SendError( playerid, "You cannot use this feature while in passive mode." );
+
 	new
 		curr_server_time = GetServerTime( );
 
