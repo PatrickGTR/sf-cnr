@@ -267,6 +267,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						StockMarket_UpdateEarnings( E_STOCK_AMMUNATION, price, .factor = 0.25 );
 
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
+						else if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 102 ) {
+							p_ExplosiveBullets[ playerid ] += g_AmmunationWeapons[ i ] [ E_AMMO ];
+							ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_NO~~w~ to activate explosive bullets." );
+						}
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
 
       					RedirectAmmunation( playerid, gun_category, "{FFFFFF}Gang Facility - Purchase Weapons", DIALOG_FACILITY_AMMU_BUY, gun_discount );

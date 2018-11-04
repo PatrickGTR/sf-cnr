@@ -24,7 +24,8 @@ enum E_SHOP_ITEMS
 	SHOP_ITEM_MONEY_CASE,
 	SHOP_ITEM_DRILL,
 	SHOP_ITEM_METAL_MELTER,
-	SHOP_ITEM_WEED_SEED
+	SHOP_ITEM_WEED_SEED,
+	SHOP_ITEM_FIREWORKS
 }
 
 enum E_SHOP_DATA
@@ -48,9 +49,9 @@ new
  		{ SHOP_ITEM_FOIL,	 		true , "Aluminium Foil", 	"Automatically deflect EMP",	8,		3400 },
  		{ SHOP_ITEM_MONEY_CASE,		false, "Money Case", 		"Increases robbing amount", 	1,		4500 }, // [1250]
  		{ SHOP_ITEM_DRILL,	 		true , "Thermal Drill", 	"Halves safe cracking time",  	1,		5000 },
- 		{ SHOP_ITEM_METAL_MELTER,	true , "Metal Melter", 		"/breakout", 				 	4,		7500 }
+ 		{ SHOP_ITEM_METAL_MELTER,	true , "Metal Melter", 		"/breakout", 				 	4,		7500 },
+ 		{ SHOP_ITEM_FIREWORKS,		true , "Firework", 			"/fireworks", 				 	0,		50000 }
 	},
-
 	g_playerShopItems 				[ MAX_PLAYERS ] [ E_SHOP_ITEMS ] // gradually move to this
 ;
 
@@ -69,7 +70,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     {
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
 
-        if ( g_shopItemData[ listitem ] [ E_LIMIT ] == 1 )
+        if ( g_shopItemData[ listitem ] [ E_LIMIT ] <= 1 )
         {
         	ShowPlayerShopMenu( playerid );
 
@@ -97,6 +98,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         		{
         			if ( p_drillStrength[ playerid ] == MAX_DRILL_STRENGTH ) return SendError( playerid, "You have already purchased this item." );
         			p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
+        		}
+        		case SHOP_ITEM_FIREWORKS:
+        		{
+        			GivePlayerFireworks( playerid, 1 );
         		}
         	}
 			GivePlayerCash( playerid, -( g_shopItemData[ listitem ] [ E_PRICE ] ) );
@@ -130,7 +135,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     			case 2: iAmount = iLimit;
     		}
 
-    		if ( ( iCurrentQuantity + iAmount ) > iLimit )
+    		if ( iLimit != 0 && ( iCurrentQuantity + iAmount ) > iLimit )
     		{
     			// Specified more than he can carry!
     			if ( ( iAmount = iLimit - iCurrentQuantity ) != 0 )

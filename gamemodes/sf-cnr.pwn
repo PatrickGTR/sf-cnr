@@ -212,13 +212,20 @@ enum E_REWARDS_DATA
 
 new
 	g_casinoRewardsItems[ ] [ E_REWARDS_DATA ] = {
-		{ "Fireworks", 2500.0 },
-		{ "10 Explosive Bullets", 5000.0 },
-		// { "No Tax For 1 Hour", 25000.0 },
+		{ "10 Explosive Bullets", 12500.0 },
 		{ "Highroller Access", 200000.0 }
 	},
-	g_casinoRewardsShopItems[ ] = {
-		5, 6, 7, 8, 9, 10, 11
+	E_SHOP_ITEMS: g_casinoRewardsShopItems[ ] = {
+		SHOP_ITEM_TIE,
+		SHOP_ITEM_SCISSOR,
+		SHOP_ITEM_ROPES,
+		SHOP_ITEM_FOIL,
+		SHOP_ITEM_BOBBY_PIN,
+		SHOP_ITEM_MONEY_CASE,
+		SHOP_ITEM_DRILL,
+		SHOP_ITEM_METAL_MELTER,
+		SHOP_ITEM_WEED_SEED,
+		SHOP_ITEM_FIREWORKS
 	},
 	Float: p_CasinoRewardsPoints 		[ MAX_PLAYERS ],
 	bool: p_IsCasinoHighRoller 			[ MAX_PLAYERS char ],
@@ -8965,18 +8972,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
     		switch ( rewards_item )
     		{
-    			case 0: GivePlayerFireworks( playerid, 1 ); // fireworks
-    			case 1:
+    			case 0:
     			{
     				p_ExplosiveBullets[ playerid ] += 10;
     				ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_NO~~w~ to activate explosive bullets." );
     			}
-    			/*case 2: // taxes
-    			{
-					p_TaxTime[ playerid ] = ( p_TaxTime[ playerid ] > p_Uptime[ playerid ] ? p_TaxTime[ playerid ] : p_Uptime[ playerid ] ) + 3600;
-					mysql_single_query( sprintf( "UPDATE `USERS` SET `TAX_TIME`=%d WHERE `ID`=%d", p_TaxTime[ playerid ], p_AccountID[ playerid ] ) );
-    			}*/
-    			case 2: // highroller
+    			case 1: // highroller
     			{
     				if ( p_IsCasinoHighRoller{ playerid } ) return SendError( playerid, "You are already considered a casino highroller." );
 					mysql_single_query( sprintf( "UPDATE `USERS` SET `VISAGE_HIGHROLLER`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
@@ -8993,7 +8994,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    }
 	    else
 	    {
-		    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( i ) )
+		    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( g_shopItemData[ i ] [ E_ID ] ) )
 		    {
 		    	if ( x == listitem )
 		    	{
@@ -9541,7 +9542,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		  	return 1;
 		}
 
-		if ( p_VIPLevel[ playerid ] < VIP_GOLD && listitem == MENU_ARMOR ) {
+		if ( p_VIPLevel[ playerid ] < VIP_GOLD && listitem == MENU_SPECIAL ) {
 			SendError( playerid, "You are not Gold V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 			return ShowAmmunationMenu( playerid, "{FFFFFF}Weapon Deal - Purchase Weapons", DIALOG_WEAPON_DEAL );
 		}
@@ -9582,6 +9583,10 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						SetPVarInt( playerid, "purchased_weapon", GetPVarInt( playerid, "purchased_weapon" ) + 1 );
 						SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} You have purchased %s for "COL_GOLD"%s"COL_WHITE".", g_AmmunationWeapons[ i ] [ E_NAME ], cash_format( price ) );
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, 100.0 );
+						else if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 102 ) {
+							p_ExplosiveBullets[ playerid ] += g_AmmunationWeapons[ i ] [ E_AMMO ];
+							ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_NO~~w~ to activate explosive bullets." );
+						}
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] * ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 35 ? 1 : 5 ) );
 						SetPlayerArmedWeapon( playerid, 0 );
 						GivePlayerCash( playerid, -( price ) );
@@ -9633,6 +9638,10 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 						RedirectAmmunation( playerid, p_AmmunationMenu{ playerid } );
 
 						if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 101 ) SetPlayerArmour( playerid, float( g_AmmunationWeapons[ i ] [ E_AMMO ] ) );
+						else if ( g_AmmunationWeapons[ i ] [ E_WEPID ] == 102 ) {
+							p_ExplosiveBullets[ playerid ] += g_AmmunationWeapons[ i ] [ E_AMMO ];
+							ShowPlayerHelpDialog( playerid, 3000, "Press ~r~~k~~CONVERSATION_NO~~w~ to activate explosive bullets." );
+						}
 						else GivePlayerWeapon( playerid, g_AmmunationWeapons[ i ] [ E_WEPID ], g_AmmunationWeapons[ i ] [ E_AMMO ] );
 
 						SendServerMessage( playerid, "You have purchased %s(%d) for "COL_GOLD"%s"COL_WHITE"%s.", g_AmmunationWeapons[ i ] [ E_NAME ], g_AmmunationWeapons[ i ] [ E_AMMO ], cash_format( iCostPrice ), bDealer ? ( " (inc. discount)" ) : ( "" ) );
@@ -13193,7 +13202,7 @@ stock ShowPlayerRewardsMenu( playerid )
 	if ( szString[ 0 ] == '\0' )
 	{
 		strcat( szString, ""COL_WHITE"Item\t"COL_WHITE"Purpose\t"COL_WHITE"Rewards Points\n" );
-		for( new i; i < sizeof( g_shopItemData ); i++ ) if ( IsCasinoRewardsShopItem( i ) ) {
+		for( new i; i < sizeof( g_shopItemData ); i++ ) if ( IsCasinoRewardsShopItem( g_shopItemData[ i ] [ E_ID ] ) ) {
 			new Float: rewards_cost = ( float( g_shopItemData[ i ] [ E_PRICE ] ) * CASINO_REWARDS_COST_MP ) / CASINO_REWARDS_DIVISOR;
 	 		format( szString, sizeof( szString ), "%s%s\t"COL_GREY"%s\t"COL_GOLD"%s points\n", szString, g_shopItemData[ i ] [ E_NAME ], g_shopItemData[ i ] [ E_USAGE ], points_format( rewards_cost ) );
 		}
@@ -13204,7 +13213,7 @@ stock ShowPlayerRewardsMenu( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_CASINO_REWARDS, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Casino Rewards Items", szString, "Buy", "Cancel" );
 }
 
-stock IsCasinoRewardsShopItem( itemid ) {
+stock IsCasinoRewardsShopItem( E_SHOP_ITEMS: itemid ) {
 	for ( new i = 0; i < sizeof( g_casinoRewardsShopItems ); i ++ ) if ( itemid == g_casinoRewardsShopItems[ i ] ) {
 		return true;
 	}
@@ -13223,6 +13232,7 @@ stock GetPlayerFireworks( playerid ) return p_Fireworks[ playerid ];
 stock GivePlayerFireworks( playerid, fireworks ) {
 	p_Fireworks[ playerid ] += fireworks;
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `FIREWORKS`=%d WHERE `ID`=%d", p_Fireworks[ playerid ], p_AccountID[ playerid ] ) );
+	return 1;
 }
 
 stock ShowPlayerSpawnMenu( playerid ) {
