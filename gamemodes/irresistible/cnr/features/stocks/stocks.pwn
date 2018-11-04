@@ -341,7 +341,7 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 
 		new sold_amount_minus_fee = floatround( sold_shares * ask_price - sold_amount_fee );
 
-		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
+		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) && IsPlayerLoggedIn( sellerid ) ) {
 			GivePlayerBankMoney( sellerid, sold_amount_minus_fee ), Beep( sellerid );
 			SendServerMessage( sellerid, "You have sold %s %s shares to %s(%d) for "COL_GOLD"%s"COL_WHITE" (plus %0.1f%s fee)!", number_format( sold_shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ], ReturnPlayerName( playerid ), playerid, cash_format( sold_amount_minus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
 		} else {

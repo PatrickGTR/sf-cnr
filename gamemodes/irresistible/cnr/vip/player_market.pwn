@@ -251,7 +251,7 @@ thread PlayerMarket_OnPurchaseOrder( playerid, sellorderid, Float: purchase_amou
 
 	new after_fee_amount = floatround( float( purchase_cost ) * 0.995, floatround_floor );
 
-	if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) ) {
+	if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) && IsPlayerLoggedIn( sellerid )  ) {
 		GivePlayerBankMoney( sellerid, after_fee_amount ), Beep( sellerid );
 		SendServerMessage( sellerid, "You have successfully sold %s IC to %s(%d) for "COL_GOLD"%s"COL_WHITE" (-0.5%s fee)!", number_format( purchase_amount, .decimals = 3 ), ReturnPlayerName( playerid ), playerid, cash_format( after_fee_amount ), "%%" );
 	} else {
