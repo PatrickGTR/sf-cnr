@@ -54,7 +54,9 @@ enum
 	E_STOCK_SUPA_SAVE,
 	E_STOCK_TRUCKING_COMPANY,
 	E_STOCK_CLUCKIN_BELL,
-	E_STOCK_PAWN_STORE
+	E_STOCK_PAWN_STORE,
+	E_STOCK_CASINO,
+	E_STOCK_GOVERNMENT
 };
 
 static stock
@@ -80,6 +82,8 @@ hook OnScriptInit( )
 	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, "The Trucking Company", "TC", 100000.0, 50.0, 250.0 ); // 25m mcap max
 	CreateStockMarket( E_STOCK_CLUCKIN_BELL, "Cluckin' Bell", "CB", 100000.0, 50.0, 250.0 ); // 25m mcap max
 	CreateStockMarket( E_STOCK_PAWN_STORE, "Pawn Store", "PS", 100000.0, 50.0, 250.0 ); // 25m mcap max
+	CreateStockMarket( E_STOCK_CASINO, "Casino", "CAS", 100000.0, 990.0, 5000.0 ); // 500m mcap max
+	CreateStockMarket( E_STOCK_GOVERNMENT, "Government", "GOV", 100000.0, 750.0, 5000.0 ); // 500m mcap max
 	return 1;
 }
 

@@ -282,7 +282,7 @@ hook OnVehicleDeath( vehicleid, killerid )
 						GivePlayerScore( killerid, 2 );
 						GivePlayerCash( killerid, payout );
 						if ( p_Class[ killerid ] != CLASS_POLICE ) GivePlayerWantedLevel( killerid, 6 ), GivePlayerExperience( killerid, E_ROBBERY );
-						else GivePlayerExperience( killerid, E_POLICE );
+						else GivePlayerExperience( killerid, E_POLICE ), StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, payout, 0.05 );
 						SendGlobalMessage( -1, ""COL_GREY"[BUSINESS]"COL_WHITE" %s(%d) has destroyed a business vehicle and earned "COL_GOLD"%s"COL_WHITE"!", ReturnPlayerName( killerid ), killerid, cash_format( payout ) );
 					}
 				}

@@ -94,6 +94,7 @@ hook OnPlayerUpdateEx( playerid )
 								GivePlayerScore( playerid, 2 );
 								//GivePlayerExperience( playerid, E_FIREMAN );
 								GivePlayerCash( playerid, FIRE_EXTINGUISH_PAYOUT );
+								StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, FIRE_EXTINGUISH_PAYOUT, 0.01 );
 								HouseFire_Remove( i );
 						    }
 							return 1;

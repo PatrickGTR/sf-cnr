@@ -14526,7 +14526,7 @@ hook OnScriptInit( )
 	SetDynamicObjectMaterial( tmpVariable, 3, 0, "none", "none", 0 );
 	tmpVariable = CreateDynamicObject( 8292, -1571.861938, 784.846069, 8.309066, 0.000000, 0.000000, -34.899982, -1, -1, -1 );
 	SetDynamicObjectMaterial( tmpVariable, 1, 0, "none", "none", 0 );
-	SetDynamicObjectMaterialText( tmpVariable, 0, "Fioren & Rose", 120, "Impact", 50, 0, -8003, 0, 1 );
+	SetDynamicObjectMaterialText( tmpVariable, 0, "Silent Squad", 120, "Impact", 50, 0, -8003, 0, 1 );
 	CreateDynamicObject( 3267, -1580.901977, 815.234985, 21.360000, 0.000000, 0.000000, -48.000000, -1, -1, -1 );
 	CreateDynamicObject( 3069, -1623.957153, 814.621276, 5.559740, 18.200000, 0.000000, 0.000000, -1, -1, -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -1572.207031, 746.304016, 7.000000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 5722, "sunrise01_lawn", "fakestone1_LA", 0 );
