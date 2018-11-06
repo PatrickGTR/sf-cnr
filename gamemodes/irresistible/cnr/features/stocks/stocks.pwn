@@ -23,8 +23,6 @@
 #define STOCK_MM_USER_ID			( 0 )
 
 /* ** Constants ** */
-//static const Float: STOCK_MARKET_PRICE_FLOOR = 20.0; 		// the price in which the price will always be above or equal to
-
 static const Float: STOCK_MARKET_TRADING_FEE = 0.01;		// trading fee (buy/sell) percentage as decimal
 
 static const Float: STOCK_DEFAULT_START_POOL = 0.0; 		// the default amount that the pool is set to upon a new report
@@ -74,15 +72,15 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR
-	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	100.0,		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
-	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		10.0 );
-	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		10.0 );
+	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	100.0,		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		20.0 );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		20.0 );
 	return 1;
 }
 
@@ -247,9 +245,9 @@ thread Stock_UpdateReportingPeriods( stockid )
 
 thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price )
 {
-	// set the new price of the company
-	new // TODO: use parabola for factor difficulty?
-		Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + g_stockMarketData[ stockid ] [ E_IPO_PRICE ]; // STOCK_MARKET_PRICE_FLOOR;
+	// set the new price of the company [TODO: use parabola for factor difficulty?]
+	new Float: price_floor = g_stockMarketData[ stockid ] [ E_IPO_PRICE ] / 2.0;
+	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + price_floor;
 
 	if ( new_price > g_stockMarketData[ stockid ] [ E_MAX_PRICE ] ) { // dont want wild market caps
 		new_price = g_stockMarketData[ stockid ] [ E_MAX_PRICE ];
