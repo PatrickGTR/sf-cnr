@@ -135,7 +135,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		return 1;
 	}
-	else if ( dialogid == DIALOG_STOCK_MARKET_HOLDERS && response )
+	else if ( dialogid == DIALOG_STOCK_MARKET_HOLDERS && ! response )
 	{
 		new
 			stockid = GetPVarInt( playerid, "stockmarket_selection" );
@@ -564,7 +564,7 @@ thread StockMarket_ShowShareholders( playerid, stockid )
 	new rows = cache_get_row_count( );
 
 	// format dialog title
-	szLargeString = ""COL_WHITE"User\t"COL_WHITE"Shares\t"COL_WHITE"Percentage (%)\n";
+	szHugeString = ""COL_WHITE"User\t"COL_WHITE"Shares\t"COL_WHITE"Percentage (%)\n";
 
 	// track the shares that are held by players
 	new Float: out_standing_shares = g_stockMarketData[ stockid ] [ E_MAX_SHARES ];
@@ -583,17 +583,17 @@ thread StockMarket_ShowShareholders( playerid, stockid )
 			new Float: shares = cache_get_field_content_float( row, "SHARES" );
 
 			out_standing_shares -= shares;
-			format( szLargeString, sizeof ( szLargeString ), "%s%s%s\t%s\t%s%%\n", szLargeString, is_online ? COL_GREEN : COL_WHITE, player_name, number_format( shares, .decimals = 0 ), number_format( shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
+			format( szHugeString, sizeof ( szHugeString ), "%s%s%s\t%s\t%s%%\n", szHugeString, is_online ? COL_GREEN : COL_WHITE, player_name, number_format( shares, .decimals = 0 ), number_format( shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
 		}
 	}
 
 	// tell players the shares tied up in sell orders
 	if ( out_standing_shares > 0.0 ) {
-		format( szLargeString, sizeof ( szLargeString ), "%s{666666}Held In Sell Orders\t{666666}%s\t{666666}%s%%\n", szLargeString, number_format( out_standing_shares, .decimals = 0 ), number_format( out_standing_shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
+		format( szHugeString, sizeof ( szHugeString ), "%s{666666}Held In Sell Orders\t{666666}%s\t{666666}%s%%\n", szHugeString, number_format( out_standing_shares, .decimals = 0 ), number_format( out_standing_shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
 	}
 
 	// format dialog
-	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_HOLDERS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market - Shareholders", szLargeString, "Back", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_HOLDERS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market - Shareholders", szHugeString, "Close", "Back" );
 	return 1;
 }
 
