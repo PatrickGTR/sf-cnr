@@ -1,4 +1,7 @@
-(+) Restores legacy VIP system. See /vip for the full list of features. Renew for $5!
-(/) You cannot use a bank's terminal once it has been robbed.
-(/) Players get wanted when they plant weed.
-(*) Fixes issue with "/b production" where your associated businesses are not shown.
+(+) Adds a functional stock market system (/stocks & /shares). Each company is associated with a feature.
+(+) Fireworks now available at Supa-Save or your nearest 24/7.
+(+) Explosive rounds can be bought at ammu-nation.
+(*) "/sync" cannot be used while you are in passive mode.
+(/) Random hits will not be placed on passive mode players.
+(/) 10% of the player's carrying money will be dropped when they die.
+(-) Snow ploughs have been removed from the server.
