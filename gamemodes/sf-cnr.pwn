@@ -13255,7 +13255,7 @@ stock PlayerPlaceRandomHits( )
 		for ( new playerid = 0; playerid < sizeof( ignored_players ); playerid ++ )
 		{
 			// remove unconnected / npcs / aod / low score
-			if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerAdminOnDuty( playerid ) || GetPlayerScore( playerid ) < 25 || IsPlayerAFK( playerid ) )
+			if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerAdminOnDuty( playerid ) || GetPlayerScore( playerid ) < 25 || IsPlayerAFK( playerid ) || IsPlayerPassive( playerid ) )
 			{
 				ignored_players[ playerid ] = playerid;
 				continue;
