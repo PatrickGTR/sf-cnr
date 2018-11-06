@@ -2538,11 +2538,11 @@ public OnPlayerDeath( playerid, killerid, reason )
 				    if ( p_WantedLevel[ playerid ] > 5 )
 					{
 						static const killedWords[ ] [ ] = { { "murked" }, { "killed" }, { "ended" }, { "slain" }, { "massacred" }, { "destroyed" }, { "screwed" } };
-				        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 ? 170 : 270 );
+				        new cashEarned = ( p_WantedLevel[ playerid ] < MAX_WANTED_LVL ? p_WantedLevel[ playerid ] : MAX_WANTED_LVL ) * ( reason == 38 || reason == 51 ? 160 : 270 );
 				        GivePlayerCash( killerid, cashEarned );
 				        GivePlayerScore( killerid, 2 );
 						GivePlayerExperience( killerid, E_POLICE, 0.5 );
-						StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, cashEarned, 0.01 );
+						StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, cashEarned, 0.05 );
 				        if ( cashEarned > 20000 ) printf("[police kill] %s -> %s - %s", ReturnPlayerName( killerid ), ReturnPlayerName( playerid ), cash_format( cashEarned ) ); // 8hska7082bmahu
 				       	if ( p_WantedLevel[ playerid ] > 64 ) SendGlobalMessage( -1, ""COL_GOLD"[POLICE KILL]{FFFFFF} %s(%d) has %s %s(%d) who had a wanted level of %d!", ReturnPlayerName( killerid ), killerid, killedWords[ random( sizeof( killedWords ) ) ], ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ] );
 				    	SendClientMessageFormatted( killerid, -1, ""COL_GOLD"[ACHIEVE]{FFFFFF} You have killed %s(%d) with a wanted level of %d; earning you "COL_GOLD"%s{FFFFFF} and 2 score!", ReturnPlayerName( playerid ), playerid, p_WantedLevel[ playerid ], cash_format( cashEarned ) );
@@ -5127,7 +5127,7 @@ CMD:acceptbail( playerid, params[ ] )
 
 	    GivePlayerCash( playerid, -equa );
 		GivePlayerCash( p_BailOfferer[ playerid ], cashEarned );
-		StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, cashEarned, 0.01 );
+		StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, cashEarned, 0.05 );
 		SendClientMessageFormatted( p_BailOfferer[ playerid ], -1, ""COL_GREEN"[BAIL]"COL_WHITE" %s(%d) has paid bail. You have earned "COL_GOLD"%s"COL_WHITE" from his bail.", ReturnPlayerName( playerid ), playerid, cash_format( cashEarned ) );
     	p_BailOfferer[ playerid ] = INVALID_PLAYER_ID;
         SendServerMessage( playerid, "You have paid for your bail. You are now free!" );
@@ -13382,7 +13382,7 @@ stock ArrestPlayer( victimid, playerid )
 		GivePlayerScore( playerid, 2 );
 		GivePlayerExperience( playerid, E_POLICE );
 		GivePlayerCash( playerid, totalCash );
-		StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, totalCash, 0.01 );
+		StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, totalCash, 0.05 );
 		if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", cash_format( totalCash ), ReturnPlayerName( victimid ), victimid );
 		GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );

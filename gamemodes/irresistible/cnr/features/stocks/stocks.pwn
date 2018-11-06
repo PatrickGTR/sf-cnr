@@ -19,6 +19,8 @@
 #define DIALOG_PLAYER_STOCKS 		8924
 #define DIALOG_STOCK_MARKET_BUY 	8925
 #define DIALOG_STOCK_MARKET_SELL 	8926
+#define DIALOG_STOCK_MARKET_OPTIONS 8927
+#define DIALOG_STOCK_MARKET_HOLDERS 8928
 
 #define STOCK_MM_USER_ID			( 0 )
 
@@ -125,11 +127,41 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			if ( x == listitem )
 			{
+				ShowPlayerStockMarketOptions( playerid, s );
 				SetPVarInt( playerid, "stockmarket_selection", s );
-				StockMarket_ShowBuySlip( playerid, s );
 				break;
 			}
 			x ++;
+		}
+		return 1;
+	}
+	else if ( dialogid == DIALOG_STOCK_MARKET_HOLDERS && response )
+	{
+		new
+			stockid = GetPVarInt( playerid, "stockmarket_selection" );
+
+		if ( ! Iter_Contains( stockmarkets, stockid ) ) {
+			return SendError( playerid, "There was an error with the stock you were seeing, please try again." );
+		}
+		return ShowPlayerStockMarketOptions( playerid, stockid );
+	}
+	else if ( dialogid == DIALOG_STOCK_MARKET_OPTIONS )
+	{
+		if ( ! response ) {
+			return ShowPlayerStockMarket( playerid );
+		}
+
+		new
+			stockid = GetPVarInt( playerid, "stockmarket_selection" );
+
+		if ( ! Iter_Contains( stockmarkets, stockid ) ) {
+			return SendError( playerid, "There was an error with the stock you were seeing, please try again." );
+		}
+
+		switch ( listitem )
+		{
+			case 0: StockMarket_ShowBuySlip( playerid, stockid );
+			case 1: mysql_tquery( dbHandle, sprintf( "SELECT s.*, u.`NAME`, u.`ONLINE` FROM `STOCK_OWNERS` s LEFT JOIN `USERS` u ON s.`USER_ID` = u.`ID` WHERE s.`STOCK_ID`=%d ORDER BY s.`SHARES` DESC", stockid ), "StockMarket_ShowShareholders", "dd", playerid, stockid );
 		}
 		return 1;
 	}
@@ -153,7 +185,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	else if ( dialogid == DIALOG_STOCK_MARKET_SELL )
 	{
 		if ( ! response ) {
-			return cmd_shares( playerid, "" ), 1;
+			return ShowPlayerStockMarket( playerid );
 		}
 
 		new
@@ -206,7 +238,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		else
 		{
-			return cmd_stockmarkets( playerid, "" );
+			return ShowPlayerStockMarket( playerid );
 		}
 	}
 	return 1;
@@ -527,33 +559,50 @@ thread StockMarket_OnCancelOrder( playerid )
 	}
 }
 
+thread StockMarket_ShowShareholders( playerid, stockid )
+{
+	new rows = cache_get_row_count( );
+
+	// format dialog title
+	szLargeString = ""COL_WHITE"User\t"COL_WHITE"Shares\t"COL_WHITE"Percentage (%)\n";
+
+	// track the shares that are held by players
+	new Float: out_standing_shares = g_stockMarketData[ stockid ] [ E_MAX_SHARES ];
+
+	// show all the shareholders
+	if ( rows )
+	{
+		new
+			player_name[ 24 ];
+
+		for ( new row = 0; row < rows; row ++ )
+		{
+			cache_get_field_content( row, "NAME", player_name );
+
+			new is_online = cache_get_field_content_int( row, "ONLINE" );
+			new Float: shares = cache_get_field_content_float( row, "SHARES" );
+
+			out_standing_shares -= shares;
+			format( szLargeString, sizeof ( szLargeString ), "%s%s%s\t%s\t%s%%\n", szLargeString, is_online ? COL_GREEN : COL_WHITE, player_name, number_format( shares, .decimals = 0 ), number_format( shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
+		}
+	}
+
+	// tell players the shares tied up in sell orders
+	if ( out_standing_shares > 0.0 ) {
+		format( szLargeString, sizeof ( szLargeString ), "%s{666666}Held In Sell Orders\t{666666}%s\t{666666}%s%%\n", szLargeString, number_format( out_standing_shares, .decimals = 0 ), number_format( out_standing_shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] * 100.0, .decimals = 3 ) );
+	}
+
+	// format dialog
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_HOLDERS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market - Shareholders", szLargeString, "Back", "Close" );
+	return 1;
+}
+
 /* ** Command ** */
 CMD:stocks( playerid, params[ ] ) return cmd_stockmarkets( playerid, params );
 CMD:stockmarkets( playerid, params[ ] )
 {
-	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Max Shares\t"COL_WHITE"Dividend Per Share ($)\t"COL_WHITE"Price ($)\n";
-
-	foreach ( new s : stockmarkets )
-	{
-		new Float: price_change = ( ( g_stockMarketReportData[ s ] [ 1 ] [ E_PRICE ] / g_stockMarketReportData[ s ] [ 2 ] [ E_PRICE ] ) - 1.0 ) * 100.0;
-		new Float: payout = g_stockMarketReportData[ s ] [ 0 ] [ E_POOL ] / g_stockMarketData[ s ] [ E_MAX_SHARES ];
-
-		format(
-			szLargeString, sizeof( szLargeString ),
-			"%s%s (%s)\t%s\t"COL_GREEN"%s\t%s%s (%s%%)\n",
-			szLargeString,
-			g_stockMarketData[ s ] [ E_NAME ],
-			g_stockMarketData[ s ] [ E_SYMBOL ],
-			number_format( g_stockMarketData[ s ] [ E_MAX_SHARES ], .decimals = 0 ),
-			cash_format( payout, .decimals = 2 ),
-			price_change >= 0.0 ? COL_GREEN : COL_RED,
-			cash_format( g_stockMarketReportData[ s ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
-			number_format( price_change, .decimals = 2, .prefix = ( price_change >= 0.0 ? '+' : '\0' ) )
-		);
-	}
-
 	SendServerMessage( playerid, "The stock market will payout dividends in %s.", secondstotime( GetServerVariableInt( "stock_report_time" ) - GetServerTime( ) ) );
-	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Buy", "Close" );
+	return ShowPlayerStockMarket( playerid );
 }
 
 CMD:shares( playerid, params[ ] )
@@ -668,6 +717,38 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 2 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_SELL, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Close" );
+	return 1;
+}
+
+static stock ShowPlayerStockMarket( playerid )
+{
+	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Max Shares\t"COL_WHITE"Dividend Per Share ($)\t"COL_WHITE"Price ($)\n";
+
+	foreach ( new s : stockmarkets )
+	{
+		new Float: price_change = ( ( g_stockMarketReportData[ s ] [ 1 ] [ E_PRICE ] / g_stockMarketReportData[ s ] [ 2 ] [ E_PRICE ] ) - 1.0 ) * 100.0;
+		new Float: payout = g_stockMarketReportData[ s ] [ 0 ] [ E_POOL ] / g_stockMarketData[ s ] [ E_MAX_SHARES ];
+
+		format(
+			szLargeString, sizeof( szLargeString ),
+			"%s%s (%s)\t%s\t"COL_GREEN"%s\t%s%s (%s%%)\n",
+			szLargeString,
+			g_stockMarketData[ s ] [ E_NAME ],
+			g_stockMarketData[ s ] [ E_SYMBOL ],
+			number_format( g_stockMarketData[ s ] [ E_MAX_SHARES ], .decimals = 0 ),
+			cash_format( payout, .decimals = 2 ),
+			price_change >= 0.0 ? COL_GREEN : COL_RED,
+			cash_format( g_stockMarketReportData[ s ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
+			number_format( price_change, .decimals = 2, .prefix = ( price_change >= 0.0 ? '+' : '\0' ) )
+		);
+	}
+	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Buy", "Close" );
+}
+
+static stock ShowPlayerStockMarketOptions( playerid, stockid )
+{
+	format( szBigString, sizeof( szBigString ), "Buy shares\t"COL_GREEN"%s\nView shareholders\t"COL_GREY">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_OPTIONS, DIALOG_STYLE_TABLIST, sprintf( ""COL_WHITE"Stock Market - %s", g_stockMarketData[ stockid ] [ E_NAME ] ), szBigString, "Select", "Back" );
 	return 1;
 }
 
