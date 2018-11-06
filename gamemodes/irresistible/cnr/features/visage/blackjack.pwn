@@ -403,7 +403,7 @@ function BeginBlackJackTurn( tableid )
 
             bet_amount += g_blackjackData[ tableid ] [ E_PAYOUT ];
             GivePlayerCash( gamerid, -g_blackjackData[ tableid ] [ E_PAYOUT ] );
-            StockMarket_UpdateEarnings( E_STOCK_CASINO, g_blackjackData[ tableid ] [ E_PAYOUT ], 0.005 );
+            StockMarket_UpdateEarnings( E_STOCK_CASINO, g_blackjackData[ tableid ] [ E_PAYOUT ], 0.025 );
             DrawPlayerBlackjackCard( tableid, player_index );
             if ( cardid < 1 ) { // distribute first two cards to players
                 g_blackjackData[ tableid ] [ E_DRAW_CARD_TIMER ] = SetTimerEx( "DrawPlayerBlackjackCard", BLACKJACK_DEALER_WAIT, false, "dd", tableid, player_index );
@@ -574,7 +574,7 @@ stock CheckForBlackjack( tableid )
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~y~%s returned!", cash_format( payout ) ), 4000, 3 );
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
-                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.005 );
+                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.025 );
             }
             else if ( player_score == 21 ) {
                 g_blackjackPlayerState[ tableid ] [ player_index ] = BLACKJACK_STATE_WIN;
@@ -587,7 +587,7 @@ stock CheckForBlackjack( tableid )
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", cash_format( payout ) ), 4000, 3 );
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
-                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.005 );
+                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.025 );
             }
             else if ( dealer_score == 21 ) {
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
@@ -607,7 +607,7 @@ stock CheckForBlackjack( tableid )
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", cash_format( payout ) ), 4000, 3 );
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
-                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.005 );
+                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.025 );
             }
             else if ( player_score < dealer_score && dealer_score >= 17 ) {
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
@@ -621,7 +621,7 @@ stock CheckForBlackjack( tableid )
 		 		GameTextForPlayer( playerid, sprintf( "~n~~n~~g~%s won!", cash_format( payout ) ), 4000, 3 );
                 GivePlayerCasinoRewardsPoints( playerid, g_blackjackData[ tableid ] [ E_PAYOUT ], .house_edge = 1.5 );
                 GivePlayerCash( playerid, payout );
-                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.005 );
+                StockMarket_UpdateEarnings( E_STOCK_CASINO, -payout, 0.025 );
             }
 
             // alert world

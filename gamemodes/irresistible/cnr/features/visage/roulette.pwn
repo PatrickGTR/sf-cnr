@@ -238,7 +238,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 
 				// deduct money
 				GivePlayerCash( playerid, -totalBet );
-          		StockMarket_UpdateEarnings( E_STOCK_CASINO, totalBet, 0.005 );
+          		StockMarket_UpdateEarnings( E_STOCK_CASINO, totalBet, 0.025 );
 
 				// lock the player in
 				p_rouletteBetLocked{ playerid } = true;
@@ -679,7 +679,7 @@ public OnRouletteWheelStop( rouletteid, winner )
 
 		// bet unlocked and paid
 		GivePlayerCash( playerid, won );
-      	StockMarket_UpdateEarnings( E_STOCK_CASINO, -won, 0.005 );
+      	StockMarket_UpdateEarnings( E_STOCK_CASINO, -won, 0.025 );
 		p_rouletteBetLocked{ playerid } = false;
 
 		new

@@ -23,8 +23,6 @@
 #define STOCK_MM_USER_ID			( 0 )
 
 /* ** Constants ** */
-static const Float: STOCK_MARKET_POOL_FACTOR = 100000.0; 	// for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
-static const Float: STOCK_MARKET_PRICE_FACTOR = 3.0;		// for every STOCK_MARKET_POOL_FACTOR ... STOCK_MARKET_PRICE_FACTOR added to the price
 //static const Float: STOCK_MARKET_PRICE_FLOOR = 20.0; 		// the price in which the price will always be above or equal to
 
 static const Float: STOCK_MARKET_TRADING_FEE = 0.01;		// trading fee (buy/sell) percentage as decimal
@@ -36,6 +34,7 @@ static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting p
 enum E_STOCK_MARKET_DATA
 {
 	E_NAME[ 64 ],				E_SYMBOL[ 4 ],			Float: E_MAX_SHARES,
+	Float: E_POOL_FACTOR,		Float: E_PRICE_FACTOR,
 
 	// market maker
 	Float: E_IPO_SHARES,		Float: E_IPO_PRICE,		Float: E_MAX_PRICE
@@ -74,16 +73,16 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_report_time", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
-	// create markets
-	CreateStockMarket( E_STOCK_MINING_COMPANY, "The Mining Company", "MC", 100000.0, 25.0, 500.0 ); // 50m mcap max
-	CreateStockMarket( E_STOCK_AMMUNATION, "Ammu-Nation", "A", 100000.0, 25.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, "Vehicle Dealership", "VD", 100000.0, 100.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_SUPA_SAVE, "Supa-Save", "SS", 100000.0, 25.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, "The Trucking Company", "TC", 100000.0, 50.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL, "Cluckin' Bell", "CB", 100000.0, 50.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_PAWN_STORE, "Pawn Store", "PS", 100000.0, 50.0, 250.0 ); // 25m mcap max
-	CreateStockMarket( E_STOCK_CASINO, "Casino", "CAS", 100000.0, 990.0, 5000.0 ); // 500m mcap max
-	CreateStockMarket( E_STOCK_GOVERNMENT, "Government", "GOV", 100000.0, 750.0, 5000.0 ); // 500m mcap max
+	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR
+	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	100.0,		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		3.0 );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		10.0 );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		10.0 );
 	return 1;
 }
 
@@ -250,7 +249,7 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 {
 	// set the new price of the company
 	new // TODO: use parabola for factor difficulty?
-		Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / STOCK_MARKET_POOL_FACTOR) * STOCK_MARKET_PRICE_FACTOR + g_stockMarketData[ stockid ] [ E_IPO_PRICE ]; // STOCK_MARKET_PRICE_FLOOR;
+		Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + g_stockMarketData[ stockid ] [ E_IPO_PRICE ]; // STOCK_MARKET_PRICE_FLOOR;
 
 	if ( new_price > g_stockMarketData[ stockid ] [ E_MAX_PRICE ] ) { // dont want wild market caps
 		new_price = g_stockMarketData[ stockid ] [ E_MAX_PRICE ];
@@ -571,7 +570,7 @@ CMD:shares( playerid, params[ ] )
 }
 
 /* ** Functions ** */
-static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price )
+static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price, Float: pool_factor, Float: price_factor )
 {
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 	{
@@ -581,6 +580,8 @@ static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Fl
 		g_stockMarketData[ stockid ] [ E_IPO_SHARES ] = ipo_shares;
 		g_stockMarketData[ stockid ] [ E_IPO_PRICE ] = ipo_price;
 		g_stockMarketData[ stockid ] [ E_MAX_PRICE ] = max_price;
+		g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] = pool_factor;
+		g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] = price_factor;
 
 		// reset stock price information
 		for ( new r = 0; r < sizeof( g_stockMarketReportData[ ] ); r ++ ) {
