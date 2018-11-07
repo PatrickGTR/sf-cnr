@@ -297,7 +297,7 @@ public OnPlayerUseSlotMachine( playerid, slotid, first_combo, second_combo, thir
 
 		// give the cash
 		GivePlayerCash( playerid, iNetWin );
-      	StockMarket_UpdateEarnings( E_STOCK_CASINO, -iNetWin, 0.025 );
+      	StockMarket_UpdateEarnings( E_STOCK_CASINO, -iNetWin, 0.05 );
 		PlayerPlaySound( playerid, 4201, 0.0, 0.0, 0.0 ); // Coin fall
 		GameTextForPlayer( playerid, "~w~~h~winner!", 5000, 6 );
    		return 1;
@@ -512,7 +512,7 @@ stock TriggerPlayerSlotMachine( playerid, machineid )
 		PlayerPlaySound( playerid, 4202, 0.0, 0.0, 0.0 );
 		ApplyAnimation( playerid, "CASINO", "slot_plyr", 2.0, 0, 1, 1, 0, 0 );
 		GivePlayerCash( playerid, -entryFee );
-      	StockMarket_UpdateEarnings( E_STOCK_CASINO, entryFee, 0.025 );
+      	StockMarket_UpdateEarnings( E_STOCK_CASINO, entryFee, 0.05 );
 		return 1;
 	}
 	return 1;
