@@ -7,8 +7,8 @@
 
 /*
 
-sql structure: 
-	
+sql structure:
+
 	ALTER TABLE `users` ADD `PILOT` INT(11) NULL DEFAULT '0' AFTER `TRUCKED`;
 
 */
@@ -172,9 +172,8 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 
 		else if ( p_PilotRoute[ playerid ] { 1 } != INVALID_PILOT_ROUTE )
 		{
-
-			new
-				cash_earned = floatround( ( p_PilotDistance[ playerid ] + PILOT_BONUS ) * Pilot_GetPlaneModelBonus( p_PilotVehicle[ playerid ] ) );
+			new Float: stock_dividend_allocation = 0.25;
+			new cash_earned = floatround( ( p_PilotDistance[ playerid ] + PILOT_BONUS ) * Pilot_GetPlaneModelBonus( p_PilotVehicle[ playerid ] ) * ( 1.0 - stock_dividend_allocation ) );
 
 			if ( p_PilotDifficulty[ playerid ] != RISK_FACTOR_EASY ) {
 				cash_earned *= 2;
@@ -184,6 +183,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			ach_HandlePilotMissions( playerid );
 
 			GivePlayerScore( playerid, 1 + floatround( p_PilotDistance[ playerid ] / 1000.0 ) );
+			StockMarket_UpdateEarnings( E_STOCK_AVIATION, cash_earned, stock_dividend_allocation );
 			GivePlayerCash( playerid, cash_earned );
 
 			ShowPlayerHelpDialog( playerid, 5000, "You have earned ~y~%s ~w~for exporting %s!", cash_format( cash_earned ), g_CargoName[ p_PilotCargo[ playerid ] ] );
@@ -329,13 +329,13 @@ CMD:pilot( playerid, params[ ] )
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be an ordinary civilian to use this command." );
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You must be a driver of a vehicle to work." );
 	else if ( !iVehicle ) return SendError( playerid, "You are not in any vehicle." );
-	else if ( sscanf( params, "S(normal)[7]", szDifficulty ) ) return SendUsage( playerid, "/pilot [NORMAL/HARDER/STOP]" );
+	else if ( sscanf( params, "s[7]", szDifficulty ) ) return SendUsage( playerid, "/pilot [NORMAL/HARD/STOP]" );
 	else if ( strmatch( szDifficulty, "stop" ))
 	{
 		StopPlayerPilotWork( playerid );
 		return SendServerMessage( playerid, "Your pilot mission has been stopped." );
 	}
-	else if ( strmatch( szDifficulty, "normal" ) || strmatch( szDifficulty, "harder" ))
+	else if ( strmatch( szDifficulty, "normal" ) || strmatch( szDifficulty, "hard" ))
 	{
 		if ( Pilot_IsExportableVehicle( iVehicle ) )
 		{
@@ -350,7 +350,7 @@ CMD:pilot( playerid, params[ ] )
 				p_hasPilotJob 			{ playerid } = true;
 				p_WorkCooldown			[ playerid ] = g_iTime + 60;
 				p_PilotVehicle 			[ playerid ] = GetPlayerVehicleID( playerid );
-				p_PilotDifficulty 		[ playerid ] = ( strmatch( szDifficulty, "harder" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
+				p_PilotDifficulty 		[ playerid ] = ( strmatch( szDifficulty, "hard" ) ? RISK_FACTOR_HARD : RISK_FACTOR_EASY );
 
 				p_PilotCargo 			[ playerid ] = random( sizeof( g_CargoName ) );
 				p_PilotRoute			[ playerid ] { 0 } = random ( sizeof ( g_AirportLocations ) );

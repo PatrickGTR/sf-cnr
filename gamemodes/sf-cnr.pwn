@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -9819,9 +9819,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	if ( dialogid == DIALOG_AIRPORT && response )
 	{
+		static const
+			AIR_TRAVEL_COST = 2000;
+
 		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot travel while you're in jail." );
 		if ( p_WantedLevel[ playerid ] ) return SendError( playerid, "You cannot travel while you are wanted." );
-		if ( GetPlayerCash( playerid ) < 2000 ) return SendError( playerid, "You need $2,000 to travel between cities." );
+		if ( GetPlayerCash( playerid ) < AIR_TRAVEL_COST ) return SendError( playerid, "You need %s to travel between cities.", cash_format( AIR_TRAVEL_COST ) );
 
 		new bool: using_rewards = p_CasinoRewardsPoints[ playerid ] > 5.0;
 
@@ -9830,17 +9833,17 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			case 0: {
 				if ( IsPlayerInDynamicCP( playerid, g_Checkpoints[ CP_AIRPORT_SF ] ) ) return SendError( playerid, "You're already in San Fierro." );
-				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to San Fierro!", using_rewards ? ( "5 casino reward points" ) : ( "$2,000" ) );
+				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to San Fierro!", using_rewards ? ( "5 casino reward points" ) : ( cash_format( AIR_TRAVEL_COST ) ) );
 				SetPlayerPos( playerid, -1422.4063, -286.5081, 14.1484 );
 			}
 			case 1: {
 				if ( IsPlayerInDynamicCP( playerid, g_Checkpoints[ CP_AIRPORT_LV ] ) ) return SendError( playerid, "You're already in Las Venturas." );
-				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to Las Venturas!", using_rewards ? ( "5 casino reward points" ) : ( "$2,000" ) );
+				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to Las Venturas!", using_rewards ? ( "5 casino reward points" ) : ( cash_format( AIR_TRAVEL_COST ) ) );
 				SetPlayerPos( playerid, 1672.5364, 1447.8616, 10.7881 );
 			}
 			case 2: {
 				if ( IsPlayerInDynamicCP( playerid, g_Checkpoints[ CP_AIRPORT_LS ] ) ) return SendError( playerid, "You're already in Los Santos." );
-				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to Los Santos!", using_rewards ? ( "5 casino reward points" ) : ( "$2,000" ) );
+				SendServerMessage( playerid, "It has cost you "COL_GOLD"%s"COL_WHITE" to travel. Welcome to Los Santos!", using_rewards ? ( "5 casino reward points" ) : ( cash_format( AIR_TRAVEL_COST ) ) );
 				SetPlayerPos( playerid, 1642.2274, -2335.4978, 13.5469 );
 			}
 		}
@@ -9850,7 +9853,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			p_CasinoRewardsPoints[ playerid ] -= 5.0;
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASINO_REWARDS`=%f WHERE `ID`=%d", p_CasinoRewardsPoints[ playerid ], p_AccountID[ playerid ] ) );
 		}
-		else GivePlayerCash( playerid, -2000 );
+		else
+		{
+			StockMarket_UpdateEarnings( E_STOCK_AVIATION, AIR_TRAVEL_COST, 0.5 );
+			GivePlayerCash( playerid, -AIR_TRAVEL_COST );
+		}
 
 		// set interior/world
 		SetPlayerVirtualWorld( playerid, 0 );

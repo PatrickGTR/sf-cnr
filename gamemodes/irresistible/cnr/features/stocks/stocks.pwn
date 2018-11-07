@@ -62,7 +62,8 @@ enum
 	E_STOCK_CLUCKIN_BELL,
 	E_STOCK_PAWN_STORE,
 	E_STOCK_CASINO,
-	E_STOCK_GOVERNMENT
+	E_STOCK_GOVERNMENT,
+	E_STOCK_AVIATION
 };
 
 static stock
@@ -86,11 +87,12 @@ hook OnScriptInit( )
 	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
 	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		250.0, 		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
 	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed trucking transits" );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed trucking missions" );
 	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exporting meth bags" );
 	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
 	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		150.0,			"Money lost by players gambling" );
 	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		150.0,			"Fireman and LEO activities" );
+	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed pilot missions" );
 	return 1;
 }
 
@@ -342,12 +344,9 @@ thread Stock_UpdateReportingPeriods( stockid )
 	}
 	else // no historical reporting data, restock the market maker
 	{
-		// set current stock market prices to IPO
-		g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
-
-		// create 2 reports for the company using the IPO price ... this way the price is not $0
+		// create 3 reports for the company using the IPO price ... this way the price is not $0
 		for ( new i = 0; i < 3; i ++ ) {
-			StockMarket_ReleaseDividends( stockid );
+			StockMarket_ReleaseDividends( stockid, .is_ipo = true );
 		}
 
 		// put market maker shares on the market
@@ -356,7 +355,7 @@ thread Stock_UpdateReportingPeriods( stockid )
 	return 1;
 }
 
-thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price, Float: default_donation_pool )
+thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price, Float: default_donation_pool, bool: is_ipo )
 {
 	// set the new price of the company [TODO: use parabola for factor difficulty?]
 	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + STOCK_MARKET_PRICE_FLOOR;
@@ -372,6 +371,11 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	// force a minimum of $1 per share
 	if ( new_price < STOCK_MARKET_PRICE_FLOOR ) {
 		new_price = STOCK_MARKET_PRICE_FLOOR;
+	}
+
+	// check if its an ipo... if it is then set to ipo price
+	if ( is_ipo ) {
+		new_price = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
 	}
 
 	// set the new price of the asset
@@ -562,7 +566,7 @@ thread StockMarket_OnShowShares( playerid )
 	return ShowPlayerDialog( playerid, DIALOG_PLAYER_STOCKS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Select", "Close" ), 1;
 }
 
-thread Stock_OnDividendPayout( stockid )
+thread Stock_OnDividendPayout( stockid, bool: is_ipo )
 {
 	new
 		rows = cache_get_row_count( );
@@ -599,7 +603,7 @@ thread Stock_OnDividendPayout( stockid )
 
 	// insert to database a new report
 	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "INSERT INTO `STOCK_REPORTS` (`STOCK_ID`, `POOL`, `DONATIONS`, `PRICE`) VALUES (%d, %f, %f, %f)", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_DONATIONS, STOCK_DEFAULT_START_PRICE );
-	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "dfff", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_DONATIONS, STOCK_DEFAULT_START_PRICE );
+	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "dfffd", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_DONATIONS, STOCK_DEFAULT_START_PRICE, bool: is_ipo );
 	return 1;
 }
 
@@ -764,10 +768,10 @@ static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Fl
 	return stockid;
 }
 
-static stock StockMarket_ReleaseDividends( stockid )
+static stock StockMarket_ReleaseDividends( stockid, bool: is_ipo = false )
 {
 	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "SELECT * FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d", stockid );
-	mysql_tquery( dbHandle, szBigString, "Stock_OnDividendPayout", "d", stockid );
+	mysql_tquery( dbHandle, szBigString, "Stock_OnDividendPayout", "dd", stockid, is_ipo );
 	return 1;
 }
 
