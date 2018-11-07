@@ -1980,7 +1980,7 @@ stock CheckShowdown(handle)
 			new w_chips = floatround(float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) * (1.0 - T_POT_FEE_RATE));
 			new fee_earned = floatround((float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) / 1000.0) * T_POT_FEE_RATE);
 			UpdateServerVariable( "poker_fees", 0, GetGVarFloat( "poker_fees" ) + fee_earned, "", GLOBAL_VARTYPE_FLOAT );
-          	StockMarket_UpdateEarnings( E_STOCK_CASINO, fee_earned, 0.2 );
+          	StockMarket_UpdateEarnings( E_STOCK_CASINO, fee_earned, 0.25 );
 			GivePlayerCasinoRewardsPoints(high_id, fee_earned, .house_edge = 100.0);
 			SendTableMessage(handle, "{9FCF30}****************************************************************************************");
 			SendTableMessage(handle, "{9FCF30}Player {FF8000}%s {9FCF30}has won with a {377CC8}%s", ReturnPlayerName(high_id), HAND_RANKS[highest_rank >> 12]);
@@ -1996,7 +1996,7 @@ stock CheckShowdown(handle)
 			new w_chips = floatround(float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) * (1.0 - T_POT_FEE_RATE));
 			new fee_earned = floatround((float(TableData[handle][E_TABLE_POT_CHIPS][pot_id]) / 1000.0) * T_POT_FEE_RATE);
 			UpdateServerVariable( "poker_fees", 0, GetGVarFloat( "poker_fees" ) + fee_earned, "", GLOBAL_VARTYPE_FLOAT );
-          	StockMarket_UpdateEarnings( E_STOCK_CASINO, fee_earned, 0.2 );
+          	StockMarket_UpdateEarnings( E_STOCK_CASINO, fee_earned, 0.25 );
 			new amount = w_chips / count;
 			//new excess = TableData[handle][E_TABLE_POT_CHIPS][pot_id] % count
 			foreach(new p: It_SidepotMembers[_IT[handle][pot_id]])

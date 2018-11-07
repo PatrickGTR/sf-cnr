@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_STOCKS					( 16 )
+#define MAX_STOCKS					( 12 )
 
 #define STOCK_REPORTING_PERIOD 		( 86400 ) // 1 day
 
@@ -21,6 +21,8 @@
 #define DIALOG_STOCK_MARKET_SELL 	8926
 #define DIALOG_STOCK_MARKET_OPTIONS 8927
 #define DIALOG_STOCK_MARKET_HOLDERS 8928
+#define DIALOG_STOCK_MARKET_INFO 	8929
+#define DIALOG_STOCK_POPTIONS 		8930
 
 #define STOCK_MM_USER_ID			( 0 )
 
@@ -33,8 +35,9 @@ static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting p
 /* ** Variables ** */
 enum E_STOCK_MARKET_DATA
 {
-	E_NAME[ 64 ],				E_SYMBOL[ 4 ],			Float: E_MAX_SHARES,
-	Float: E_POOL_FACTOR,		Float: E_PRICE_FACTOR,
+	E_NAME[ 64 ],				E_SYMBOL[ 4 ],			E_DESCRIPTION[ 64 ],
+	Float: E_MAX_SHARES,		Float: E_POOL_FACTOR,	Float: E_PRICE_FACTOR,
+	Float: E_AVAILABLE_SHARES,
 
 	// market maker
 	Float: E_IPO_SHARES,		Float: E_IPO_PRICE,		Float: E_MAX_PRICE
@@ -63,7 +66,8 @@ static stock
 	g_stockMarketReportData 		[ MAX_STOCKS ] [ STOCK_REPORTING_PERIODS ] [ E_STOCK_MARKET_PRICE_DATA ],
 	Iterator: stockmarkets 			< MAX_STOCKS >,
 
-	Float: p_PlayerShares 			[ MAX_PLAYERS ] [ MAX_STOCKS ]
+	Float: p_PlayerShares 			[ MAX_PLAYERS ] [ MAX_STOCKS ],
+	bool: p_PlayerHasShare 			[ MAX_PLAYERS ] [ MAX_STOCKS char ]
 ;
 
 /* ** Hooks ** */
@@ -73,16 +77,16 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_report_time", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
-	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR
-	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	100.0,		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		5.0 );
-	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		20.0 );
-	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		20.0 );
+	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
+	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		5.0,			"Exporting mined ores" );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		250.0, 		100000.0,		10.0,			"Car jacker exports, vehicle and component sales" );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0,			"Purchases at Supa-Save and 24/7" );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Completed trucking transits" );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Exporting meth bags" );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Exported stolen furniture and toy sales" );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		75.0,			"Money lost by players gambling" );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		75.0,			"Fireman and LEO activities" );
 	return 1;
 }
 
@@ -110,8 +114,9 @@ hook OnServerUpdate( )
 
 hook OnPlayerDisconnect( playerid, reason )
 {
-	for ( new i = 0; i < sizeof( p_PlayerShares[ ] ); i ++ ) {
+	for ( new i = 0; i < MAX_STOCKS; i ++ ) {
 		p_PlayerShares[ playerid ] [ i ] = 0.0;
+		p_PlayerHasShare[ playerid ] { i } = false;
 	}
 	return 1;
 }
@@ -135,7 +140,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		return 1;
 	}
-	else if ( dialogid == DIALOG_STOCK_MARKET_HOLDERS && ! response )
+	else if ( ( dialogid == DIALOG_STOCK_MARKET_HOLDERS || dialogid == DIALOG_STOCK_MARKET_INFO ) && ! response )
 	{
 		new
 			stockid = GetPVarInt( playerid, "stockmarket_selection" );
@@ -162,6 +167,22 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			case 0: StockMarket_ShowBuySlip( playerid, stockid );
 			case 1: mysql_tquery( dbHandle, sprintf( "SELECT s.*, u.`NAME`, u.`ONLINE` FROM `STOCK_OWNERS` s LEFT JOIN `USERS` u ON s.`USER_ID` = u.`ID` WHERE s.`STOCK_ID`=%d ORDER BY s.`SHARES` DESC", stockid ), "StockMarket_ShowShareholders", "dd", playerid, stockid );
+			case 2:
+			{
+				new
+					Float: market_cap = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] * g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / 100000.0;
+
+				format(
+					szLargeString, sizeof ( szLargeString ),
+					""COL_GREY"Stock Name\t%s\n"COL_GREY"Stock Symbol\t%s\n"COL_GREY"Current Price\t%s\n"COL_GREY"Max Shares\t%s\n"COL_GREY"Market Cap.\t%sM\n"COL_GREY"Affected By\t%s",
+					g_stockMarketData[ stockid ] [ E_NAME ], g_stockMarketData[ stockid ] [ E_SYMBOL ],
+					cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
+					number_format( g_stockMarketData[ stockid ] [ E_MAX_SHARES ], .decimals = 0 ),
+					cash_format( market_cap, .decimals = 2 ),
+					g_stockMarketData[ stockid ] [ E_DESCRIPTION ]
+				);
+				ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_INFO, DIALOG_STYLE_TABLIST, ""COL_WHITE"Stock Market", szLargeString, "Close", "Back" );
+			}
 		}
 		return 1;
 	}
@@ -170,22 +191,22 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			x = 0;
 
-		foreach ( new stockid : stockmarkets ) if ( p_PlayerShares[ playerid ] [ stockid ] )
+		foreach ( new stockid : stockmarkets ) if ( p_PlayerHasShare[ playerid ] { stockid } )
 		{
 			if ( x == listitem )
 			{
+				ShowPlayerShareOptions( playerid, stockid );
 				SetPVarInt( playerid, "stockmarket_selling_stock", stockid );
-				StockMarket_ShowSellSlip( playerid, stockid );
 				break;
 			}
 			x ++;
 		}
 		return 1;
 	}
-	else if ( dialogid == DIALOG_STOCK_MARKET_SELL )
+	else if ( dialogid == DIALOG_STOCK_POPTIONS )
 	{
 		if ( ! response ) {
-			return ShowPlayerStockMarket( playerid );
+			return ShowPlayerShares( playerid );
 		}
 
 		new
@@ -193,6 +214,26 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		if ( ! Iter_Contains( stockmarkets, stockid ) ) {
 			return SendError( playerid, "There was an error processing your sell order, please try again." );
+		}
+
+		switch ( listitem )
+		{
+			case 0: StockMarket_ShowSellSlip( playerid, stockid );
+			case 1: mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_SELL_ORDERS` WHERE `USER_ID` = %d AND `STOCK_ID` = %d", GetPlayerAccountID( playerid ), stockid ), "StockMarket_OnCancelOrder", "d", playerid );
+		}
+		return 1;
+	}
+	else if ( dialogid == DIALOG_STOCK_MARKET_SELL )
+	{
+		new
+			stockid = GetPVarInt( playerid, "stockmarket_selling_stock" );
+
+		if ( ! Iter_Contains( stockmarkets, stockid ) ) {
+			return SendError( playerid, "There was an error processing your sell order, please try again." );
+		}
+
+		if ( ! response ) {
+			return ShowPlayerShareOptions( playerid, stockid );
 		}
 
 		new
@@ -212,7 +253,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				StockMarket_GiveShares( stockid, GetPlayerAccountID( playerid ), -shares );
 			}
 			StockMarket_UpdateSellOrder( stockid, GetPlayerAccountID( playerid ), shares );
-			SendServerMessage( playerid, "You have placed a sell order for %s shares at %s each. "COL_ORANGE"To cancel your sell order, /shares cancel", number_format( shares, .decimals = 2 ), cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+			SendServerMessage( playerid, "You have placed a sell order for %s shares at %s each. "COL_ORANGE"Use /shares to cancel sell orders", number_format( shares, .decimals = 2 ), cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
 			return 1;
 		}
 		return StockMarket_ShowSellSlip( playerid, stockid );
@@ -284,8 +325,8 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	if ( new_price > g_stockMarketData[ stockid ] [ E_MAX_PRICE ] ) { // dont want wild market caps
 		new_price = g_stockMarketData[ stockid ] [ E_MAX_PRICE ];
 	}
-	else if ( new_price < g_stockMarketData[ stockid ] [ E_IPO_PRICE ] ) { // force a minimum of IPO price
-		new_price = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
+	else if ( new_price < price_floor ) { // force a minimum of IPO price
+		new_price = price_floor;
 	}
 
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = new_price;
@@ -385,6 +426,9 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 
 			// deduct the sell order amount from amount remaining
 			amount_remaining -= sell_order_shares;
+
+			// remove number of available shares
+			g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] -= sell_order_shares;
 		}
 		else
 		{
@@ -424,7 +468,7 @@ thread StockMarket_OnShowBuySlip( playerid, stockid )
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
 		number_format( available_quantity, .decimals = 2 )
 	);
-	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_BUY, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szBigString, "Buy", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_BUY, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szBigString, "Buy", "Back" );
 	return 1;
 }
 
@@ -437,7 +481,7 @@ thread StockMarket_OnShowShares( playerid )
 		return SendError( playerid, "You are not holding any shares of any company." );
 	}
 
-	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Total Shares\t"COL_WHITE"Current Price ($)\t"COL_GREEN"Value ($)\n";
+	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Active Shares\t"COL_WHITE"Shares Being Sold\t"COL_GREEN"Value ($)\n";
 
 	for ( new row = 0; row < rows; row ++ )
 	{
@@ -446,26 +490,28 @@ thread StockMarket_OnShowShares( playerid )
 
 		if ( Iter_Contains( stockmarkets, stockid ) )
 		{
-			new Float: current_price = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ];
-			new Float: shares = cache_get_field_content_float( row, "SHARES" );
+			new Float: shares = cache_get_field_content_float( row, "OWNED_SHARES" );
+			new Float: held_shares = cache_get_field_content_float( row, "HELD_SHARES" );
 
 			format(
 				szLargeString, sizeof( szLargeString ),
-				"%s%s (%s)\t%s (%0.2f%%)\t%s\t"COL_GREEN"%s\n",
+				"%s%s (%s)\t%s (%0.2f%%)\t%s (%0.2f%%)\t"COL_GREEN"%s\n",
 				szLargeString,
 				g_stockMarketData[ stockid ] [ E_NAME ],
 				g_stockMarketData[ stockid ] [ E_SYMBOL ],
-				number_format( shares, .decimals = 2 ),
+				number_format( shares, .decimals = 0 ),
 				( shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] ) * 100.0,
-				cash_format( current_price, .decimals = 2 ),
-				cash_format( floatround( shares * current_price ) )
+				number_format( held_shares, .decimals = 0 ),
+				( held_shares / g_stockMarketData[ stockid ] [ E_MAX_SHARES ] ) * 100.0,
+				cash_format( floatround( ( shares + held_shares ) * g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] ) )
 			);
 
 			// store player stocks in a variable for reference
 			p_PlayerShares[ playerid ] [ stockid ] = shares;
+			p_PlayerHasShare[ playerid ] { stockid } = true;
 		}
 	}
-	return ShowPlayerDialog( playerid, DIALOG_PLAYER_STOCKS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Close" ), 1;
+	return ShowPlayerDialog( playerid, DIALOG_PLAYER_STOCKS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Select", "Close" ), 1;
 }
 
 thread Stock_OnDividendPayout( stockid )
@@ -516,16 +562,19 @@ thread Stock_UpdateMaximumShares( stockid )
 
 	if ( rows )
 	{
-		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = cache_get_field_content_float( 0, "SHARES_OWNED" ) + cache_get_field_content_float( 0, "SHARES_HELD" );
+		g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] = cache_get_field_content_float( 0, "SHARES_HELD" );
+		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] + cache_get_field_content_float( 0, "SHARES_OWNED" );
 
 		// rows shown but still showing as 0 maximum shares? set it to the ipo issued amount
 		if ( ! g_stockMarketData[ stockid ] [ E_MAX_SHARES ] )
 		{
+			g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
 			g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
 		}
 	}
 	else
 	{
+		g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
 		g_stockMarketData[ stockid ] [ E_MAX_SHARES ] = g_stockMarketData[ stockid ] [ E_IPO_SHARES ];
 	}
 	return 1;
@@ -546,6 +595,7 @@ thread StockMarket_OnCancelOrder( playerid )
 			new stockid = cache_get_field_content_int( row, "STOCK_ID" );
 			new Float: shares = cache_get_field_content_float( row, "SHARES" );
 
+			g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] -= shares;
 			mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, player_account ) );
 			StockMarket_GiveShares( stockid, player_account, shares );
 
@@ -555,7 +605,7 @@ thread StockMarket_OnCancelOrder( playerid )
 	}
 	else
 	{
-		return SendError( playerid, "You have no stock market sell orders to cancel." ), 1;
+		return ShowPlayerShares( playerid ), SendError( playerid, "You don't have any sell orders for this stock to cancel." ), 1;
 	}
 }
 
@@ -607,22 +657,25 @@ CMD:stockmarkets( playerid, params[ ] )
 
 CMD:shares( playerid, params[ ] )
 {
-	if ( strmatch( params, "cancel" ) ) {
-		// todo: work with dialogs
-		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_SELL_ORDERS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "StockMarket_OnCancelOrder", "d", playerid );
-		return 1;
+	return ShowPlayerShares( playerid );
+}
+
+CMD:newreport( playerid, params[ ] ) {
+	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	foreach ( new s : stockmarkets ) {
+		StockMarket_ReleaseDividends( s );
 	}
-	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_OWNERS` WHERE `USER_ID` = %d", GetPlayerAccountID( playerid ) ), "StockMarket_OnShowShares", "d", playerid );
 	return 1;
 }
 
 /* ** Functions ** */
-static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price, Float: pool_factor, Float: price_factor )
+static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Float: ipo_shares, Float: ipo_price, Float: max_price, Float: pool_factor, Float: price_factor, const description[ 72 ] )
 {
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 	{
 		strcpy( g_stockMarketData[ stockid ] [ E_NAME ], name );
 		strcpy( g_stockMarketData[ stockid ] [ E_SYMBOL ], symbol );
+		strcpy( g_stockMarketData[ stockid ] [ E_DESCRIPTION ], description );
 
 		g_stockMarketData[ stockid ] [ E_IPO_SHARES ] = ipo_shares;
 		g_stockMarketData[ stockid ] [ E_IPO_PRICE ] = ipo_price;
@@ -637,7 +690,6 @@ static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Fl
 		}
 
 		// load price information if there is
-		print( sprintf( "SELECT * FROM `STOCK_REPORTS` WHERE `STOCK_ID`=%d ORDER BY `REPORTING_TIME` DESC LIMIT %d", stockid, sizeof( g_stockMarketReportData[ ] ) ));
  		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_REPORTS` WHERE `STOCK_ID`=%d ORDER BY `REPORTING_TIME` DESC, `ID` DESC LIMIT %d", stockid, sizeof( g_stockMarketReportData[ ] ) ), "Stock_UpdateReportingPeriods", "d", stockid );
 
  		// load the maximum number of shares
@@ -689,6 +741,9 @@ static stock StockMarket_UpdateSellOrder( stockid, accountid, Float: shares )
 		stockid, accountid, shares, shares
 	);
 	mysql_single_query( szBigString );
+
+	// we are just using this variable to loosely track available shares
+	g_stockMarketData[ stockid ] [ E_AVAILABLE_SHARES ] += shares;
 }
 
 static stock StockMarket_CreateTradeLog( stockid, buyer_acc, seller_acc, Float: shares, Float: price )
@@ -716,13 +771,13 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
 		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 2 )
 	);
-	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_SELL, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Close" );
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_SELL, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Back" );
 	return 1;
 }
 
 static stock ShowPlayerStockMarket( playerid )
 {
-	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Max Shares\t"COL_WHITE"Dividend Per Share ($)\t"COL_WHITE"Price ($)\n";
+	szLargeString = ""COL_WHITE"Stock\t"COL_WHITE"Available Shares\t"COL_WHITE"Dividend Per Share ($)\t"COL_WHITE"Price ($)\n";
 
 	foreach ( new s : stockmarkets )
 	{
@@ -735,20 +790,47 @@ static stock ShowPlayerStockMarket( playerid )
 			szLargeString,
 			g_stockMarketData[ s ] [ E_NAME ],
 			g_stockMarketData[ s ] [ E_SYMBOL ],
-			number_format( g_stockMarketData[ s ] [ E_MAX_SHARES ], .decimals = 0 ),
+			number_format( g_stockMarketData[ s ] [ E_AVAILABLE_SHARES ], .decimals = 0 ),
 			cash_format( payout, .decimals = 2 ),
 			price_change >= 0.0 ? COL_GREEN : COL_RED,
 			cash_format( g_stockMarketReportData[ s ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
 			number_format( price_change, .decimals = 2, .prefix = ( price_change >= 0.0 ? '+' : '\0' ) )
 		);
 	}
-	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Buy", "Close" );
+	return ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Select", "Close" );
 }
 
 static stock ShowPlayerStockMarketOptions( playerid, stockid )
 {
-	format( szBigString, sizeof( szBigString ), "Buy shares\t"COL_GREEN"%s\nView shareholders\t"COL_GREY">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+	format( szBigString, sizeof( szBigString ), "Buy shares\t"COL_GREEN"%s\nView shareholders\t"COL_GREY">>>\nView stock information\t"COL_GREY">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_OPTIONS, DIALOG_STYLE_TABLIST, sprintf( ""COL_WHITE"Stock Market - %s", g_stockMarketData[ stockid ] [ E_NAME ] ), szBigString, "Select", "Back" );
+	return 1;
+}
+
+static stock ShowPlayerShareOptions( playerid, stockid )
+{
+	format( szBigString, sizeof( szBigString ), "Sell shares\t"COL_GREEN"%s\n"COL_RED"Cancel Sell Orders\t"COL_RED">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+	ShowPlayerDialog( playerid, DIALOG_STOCK_POPTIONS, DIALOG_STYLE_TABLIST, sprintf( ""COL_WHITE"Stock Market - %s", g_stockMarketData[ stockid ] [ E_NAME ] ), szBigString, "Select", "Back" );
+	return 1;
+}
+
+static stock ShowPlayerShares( playerid )
+{
+	new
+		accountid = GetPlayerAccountID( playerid );
+
+	mysql_format(
+		dbHandle, szLargeString, 512,
+		"SELECT   STOCK_ID, SUM(HELD_SHARES) AS HELD_SHARES, SUM(OWNED_SHARES) AS OWNED_SHARES " \
+		"FROM     ( " \
+		"	(SELECT STOCK_ID, USER_ID, SHARES AS HELD_SHARES, 0 AS OWNED_SHARES FROM STOCK_SELL_ORDERS t1 WHERE USER_ID=%d) " \
+		"	UNION ALL " \
+		"	(SELECT STOCK_ID, USER_ID, 0 AS HELD_SHARES, SHARES AS OWNED_SHARES FROM STOCK_OWNERS t2 WHERE USER_ID=%d) " \
+		") t_union " \
+		"GROUP BY STOCK_ID",
+		accountid, accountid
+	);
+	mysql_tquery( dbHandle, szLargeString, "StockMarket_OnShowShares", "d", playerid );
 	return 1;
 }
 

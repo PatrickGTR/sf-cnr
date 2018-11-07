@@ -121,6 +121,7 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 					GivePlayerWantedLevel( playerid, 6 );
 					GivePlayerCash( playerid, iCash );
+					StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, iCash, 0.25 );
 					GivePlayerScore( playerid, 2 );
 					//GivePlayerExperience( playerid, E_CAR_JACKER );
 					ach_HandleCarJacked( playerid );
