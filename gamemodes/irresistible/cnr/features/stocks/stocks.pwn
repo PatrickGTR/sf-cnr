@@ -35,17 +35,17 @@ static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting p
 /* ** Variables ** */
 enum E_STOCK_MARKET_DATA
 {
-	E_NAME[ 64 ],				E_SYMBOL[ 4 ],			E_DESCRIPTION[ 64 ],
-	Float: E_MAX_SHARES,		Float: E_POOL_FACTOR,	Float: E_PRICE_FACTOR,
+	E_NAME[ 64 ],					E_SYMBOL[ 4 ],				E_DESCRIPTION[ 64 ],
+	Float: E_MAX_SHARES,			Float: E_POOL_FACTOR,		Float: E_PRICE_FACTOR,
 	Float: E_AVAILABLE_SHARES,
 
 	// market maker
-	Float: E_IPO_SHARES,		Float: E_IPO_PRICE,		Float: E_MAX_PRICE
+	Float: E_IPO_SHARES,			Float: E_IPO_PRICE,			Float: E_MAX_PRICE
 };
 
 enum E_STOCK_MARKET_PRICE_DATA
 {
-	E_SQL_ID,					Float: E_PRICE, 		Float: E_POOL
+	E_SQL_ID,						Float: E_PRICE, 			Float: E_POOL
 };
 
 enum
@@ -322,13 +322,20 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	new Float: price_floor = g_stockMarketData[ stockid ] [ E_IPO_PRICE ] / 2.0;
 	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + price_floor;
 
+	// reduce price of shares depending on shares available from the start (200K max shares from IPO 100k means 50% reduction)
+	new_price *= floatpower( 0.5, g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / g_stockMarketData[ stockid ] [ E_IPO_SHARES ] - 1.0 );
+
+	// check if price exceeds maximum price
 	if ( new_price > g_stockMarketData[ stockid ] [ E_MAX_PRICE ] ) { // dont want wild market caps
 		new_price = g_stockMarketData[ stockid ] [ E_MAX_PRICE ];
 	}
-	else if ( new_price < price_floor ) { // force a minimum of IPO price
-		new_price = price_floor;
+
+	// force a minimum of $1 per share
+	if ( new_price < 1.0 ) {
+		new_price = 1.0;
 	}
 
+	// set the new price of the asset
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = new_price;
 	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `PRICE` = %f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 
@@ -660,12 +667,26 @@ CMD:shares( playerid, params[ ] )
 	return ShowPlayerShares( playerid );
 }
 
-CMD:newreport( playerid, params[ ] ) {
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
-	foreach ( new s : stockmarkets ) {
-		StockMarket_ReleaseDividends( s );
+CMD:astock( playerid, params[ ] )
+{
+	if ( ! IsPlayerAdmin( playerid ) || ! IsPlayerLeadMaintainer( playerid ) ) {
+		return 0;
 	}
-	return 1;
+
+	if ( strmatch( params, "update maxshares" ) ) {
+		foreach ( new s : stockmarkets ) {
+			UpdateStockMaxShares( s );
+		}
+		return SendServerMessage( playerid, "Max shares has been updated for all stocks." );
+	}
+	else if ( strmatch( params, "new report" ) ) {
+		foreach ( new s : stockmarkets ) {
+			StockMarket_ReleaseDividends( s );
+		}
+		UpdateServerVariableInt( "stock_report_time", GetServerTime( ) + STOCK_REPORTING_PERIOD );
+		return SendServerMessage( playerid, "All stocks have now had their dividends distributed." );
+	}
+	return SendUsage( playerid, "/astock [UPDATE MAXSHARES/NEW REPORT]" );
 }
 
 /* ** Functions ** */
@@ -693,7 +714,7 @@ static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Fl
  		mysql_tquery( dbHandle, sprintf( "SELECT * FROM `STOCK_REPORTS` WHERE `STOCK_ID`=%d ORDER BY `REPORTING_TIME` DESC, `ID` DESC LIMIT %d", stockid, sizeof( g_stockMarketReportData[ ] ) ), "Stock_UpdateReportingPeriods", "d", stockid );
 
  		// load the maximum number of shares
-		mysql_tquery( dbHandle, sprintf( "SELECT (SELECT SUM(`SHARES`) FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d) AS `SHARES_OWNED`, (SELECT SUM(`SHARES`) FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d) AS `SHARES_HELD`", stockid, stockid ), "Stock_UpdateMaximumShares", "d", stockid );
+		UpdateStockMaxShares( stockid );
 
  		// add to iterator
 		Iter_Add( stockmarkets, stockid );
@@ -832,6 +853,10 @@ static stock ShowPlayerShares( playerid )
 	);
 	mysql_tquery( dbHandle, szLargeString, "StockMarket_OnShowShares", "d", playerid );
 	return 1;
+}
+
+static stock UpdateStockMaxShares( stockid ) {
+	mysql_tquery( dbHandle, sprintf( "SELECT (SELECT SUM(`SHARES`) FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d) AS `SHARES_OWNED`, (SELECT SUM(`SHARES`) FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d) AS `SHARES_HELD`", stockid, stockid ), "Stock_UpdateMaximumShares", "d", stockid );
 }
 
 /*
