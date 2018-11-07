@@ -440,8 +440,9 @@ stock GivePlayerSeasonalXP( playerid, Float: default_xp )
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `RANK` = %f WHERE `ID` = %d", current_season_xp, GetPlayerAccountID( playerid ) ) );
 }
 
-stock GetSeasonalRankName( rankid ) {
-	return g_seasonalRanks[ rankid ] [ E_NAME ];
+/* ** Macros ** */
+stock GetSeasonalRankName( rankid, dest[ ], dest_size = sizeof( dest ) ) {
+	return format( dest, dest_size, "%s", g_seasonalRanks[ rankid ] [ E_NAME ] );
 }
 
 stock GetSeasonalRankColour( rankid ) {

@@ -9385,15 +9385,22 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		{
 			case 0:
 			{
-				new
-					vipSeconds = p_VIPExpiretime[ pID ] - g_iTime;
+				new seasonal_rank[ 16 ];
+				new vipSeconds = p_VIPExpiretime[ pID ] - g_iTime;
+
+				GetSeasonalRankName( GetPlayerRank( pID ), seasonal_rank );
 
 			    format( szLargeString, 750, ""COL_GREY"Name:{FFFFFF} %s(%d)\n"\
 											""COL_GREY"Account ID:{FFFFFF} %d\n"\
 											""COL_GREY"Admin Level:{FFFFFF} %d\n"\
 											""COL_GREY"Time Online:{FFFFFF} %s\n"\
 											""COL_GREY"Irresistible Rank:{FFFFFF} %s\n"\
-											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n", ReturnPlayerName( pID ), pID, p_AccountID[ pID ], p_AdminLevel[ pID ], secondstotime( p_Uptime[ pID ] ), GetSeasonalRankName( GetPlayerRank( pID ) ), p_IrresistibleCoins[ pID ] );
+											""COL_GREY"Irresistible Coins:{FFFFFF} %f\n",
+											ReturnPlayerName( pID ), pID,
+											p_AccountID[ pID ], p_AdminLevel[ pID ],
+											secondstotime( p_Uptime[ pID ] ),
+											seasonal_rank,
+											p_IrresistibleCoins[ pID ] );
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
@@ -10041,7 +10048,10 @@ thread OnHighScoreCheck( playerid, highscore_item )
 				new Float: score_value = cache_get_field_content_float( row, "SCORE_VAL", dbHandle );
 				new rank = GetRankFromXP( score_value );
 
-				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetSeasonalRankColour( rank ) >>> 8, GetSeasonalRankName( rank ) );
+				new seasonal_rank[ 16 ];
+				GetSeasonalRankName( rank, seasonal_rank );
+
+				format( szLargeString, sizeof( szLargeString ), "%s%s%s\t{%06x}%s\n", szLargeString, strmatch( name, ReturnPlayerName( playerid ) ) ? COL_GREEN : COL_WHITE, name, GetSeasonalRankColour( rank ) >>> 8, seasonal_rank );
 			}
 			default:
 			{
