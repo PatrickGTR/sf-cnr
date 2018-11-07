@@ -54,5 +54,5 @@ stock IsPlayerUnderCover( playerid ) // StefiTV852, Shepard23, JamesComey
 	new
 		account_id = GetPlayerAccountID( playerid );
 
-	return ( account_id == 577142 || account_id == 536230 || account_id == 668504 ) && IsPlayerLoggedIn( playerid );
+	return ( account_id == 917827 || account_id == 917829 ) && IsPlayerLoggedIn( playerid );
 }
