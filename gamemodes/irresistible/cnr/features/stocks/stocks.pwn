@@ -23,14 +23,17 @@
 #define DIALOG_STOCK_MARKET_HOLDERS 8928
 #define DIALOG_STOCK_MARKET_INFO 	8929
 #define DIALOG_STOCK_POPTIONS 		8930
+#define DIALOG_STOCK_MARKET_DONATE 	8931
 
 #define STOCK_MM_USER_ID			( 0 )
 
 /* ** Constants ** */
 static const Float: STOCK_MARKET_TRADING_FEE = 0.01;		// trading fee (buy/sell) percentage as decimal
+static const Float: STOCK_MARKET_PRICE_FLOOR = 1.0; 		// the smallest price a stock can ever be
 
 static const Float: STOCK_DEFAULT_START_POOL = 0.0; 		// the default amount that the pool is set to upon a new report
-static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting price for a new report (useless for now)
+static const Float: STOCK_DEFAULT_START_DONATIONS = 0.0;	// the default amount that the donations pool starts at (useless)
+static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting price for a new report (useless)
 
 /* ** Variables ** */
 enum E_STOCK_MARKET_DATA
@@ -45,7 +48,8 @@ enum E_STOCK_MARKET_DATA
 
 enum E_STOCK_MARKET_PRICE_DATA
 {
-	E_SQL_ID,						Float: E_PRICE, 			Float: E_POOL
+	E_SQL_ID,						Float: E_PRICE, 			Float: E_POOL,
+	Float: E_DONATIONS
 };
 
 enum
@@ -78,15 +82,15 @@ hook OnScriptInit( )
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
-	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		5.0,			"Exporting mined ores" );
-	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		250.0, 		100000.0,		10.0,			"Car jacker exports, vehicle and component sales" );
-	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		5.0,			"Purchases at Supa-Save and 24/7" );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Completed trucking transits" );
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Exporting meth bags" );
-	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		10.0,			"Exported stolen furniture and toy sales" );
-	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		75.0,			"Money lost by players gambling" );
-	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		75.0,			"Fireman and LEO activities" );
+	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Exporting mined ores" );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		250.0, 		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed trucking transits" );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exporting meth bags" );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		150.0,			"Money lost by players gambling" );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		150.0,			"Fireman and LEO activities" );
 	return 1;
 }
 
@@ -166,8 +170,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		switch ( listitem )
 		{
 			case 0: StockMarket_ShowBuySlip( playerid, stockid );
-			case 1: mysql_tquery( dbHandle, sprintf( "SELECT s.*, u.`NAME`, u.`ONLINE` FROM `STOCK_OWNERS` s LEFT JOIN `USERS` u ON s.`USER_ID` = u.`ID` WHERE s.`STOCK_ID`=%d ORDER BY s.`SHARES` DESC", stockid ), "StockMarket_ShowShareholders", "dd", playerid, stockid );
-			case 2:
+			case 1: StockMarket_ShowDonationSlip( playerid, stockid );
+			case 2: mysql_tquery( dbHandle, sprintf( "SELECT s.*, u.`NAME`, u.`ONLINE` FROM `STOCK_OWNERS` s LEFT JOIN `USERS` u ON s.`USER_ID` = u.`ID` WHERE s.`STOCK_ID`=%d ORDER BY s.`SHARES` DESC", stockid ), "StockMarket_ShowShareholders", "dd", playerid, stockid );
+			case 3:
 			{
 				new
 					Float: market_cap = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] * g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / 1000000.0;
@@ -185,6 +190,40 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 		}
 		return 1;
+	}
+	else if ( dialogid == DIALOG_STOCK_MARKET_DONATE )
+	{
+		new
+			stockid = GetPVarInt( playerid, "stockmarket_selection" );
+
+		if ( ! Iter_Contains( stockmarkets, stockid ) ) {
+			return SendError( playerid, "There was an error with the stock you were seeing, please try again." );
+		}
+
+		if ( ! response ) {
+			return ShowPlayerStockMarketOptions( playerid, stockid );
+		}
+
+		new
+			donation_amount;
+
+		if ( sscanf( inputtext, "d", donation_amount ) ) SendError( playerid, "You have not specified a valid donation amount." );
+		else if ( ! ( 100 <= donation_amount <= 10000000 ) ) SendError( playerid, "Please specify an amount between $100 and $10,000,000 to donate." );
+		else if ( donation_amount > GetPlayerCash( playerid ) ) SendError( playerid, "You do not have this much money on you." );
+		else
+		{
+			new
+				final_donation_amount = floatround( float( donation_amount ) * 0.75 );
+
+			// contribute to earnings
+			StockMarket_UpdateEarnings( stockid, final_donation_amount, .donation_amount = final_donation_amount );
+
+			// reduce player balance and alert
+			GivePlayerCash( playerid, -donation_amount );
+			SendServerMessage( playerid, "The shareholders of "COL_GREY"%s"COL_WHITE" appreciate your donation of "COL_GOLD"%s"COL_WHITE"!", g_stockMarketData[ stockid ] [ E_NAME ], cash_format( donation_amount ) );
+			return 1;
+		}
+		return StockMarket_ShowDonationSlip( playerid, stockid );
 	}
 	else if ( dialogid == DIALOG_PLAYER_STOCKS && response )
 	{
@@ -297,6 +336,7 @@ thread Stock_UpdateReportingPeriods( stockid )
 		{
 			g_stockMarketReportData[ stockid ] [ row ] [ E_SQL_ID ] = cache_get_field_content_int( row, "ID" );
 			g_stockMarketReportData[ stockid ] [ row ] [ E_POOL ] = cache_get_field_content_float( row, "POOL" );
+			g_stockMarketReportData[ stockid ] [ row ] [ E_DONATIONS ] = cache_get_field_content_float( row, "DONATIONS" );
 			g_stockMarketReportData[ stockid ] [ row ] [ E_PRICE ] = cache_get_field_content_float( row, "PRICE" );
 		}
 	}
@@ -316,11 +356,10 @@ thread Stock_UpdateReportingPeriods( stockid )
 	return 1;
 }
 
-thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price )
+thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price, Float: default_donation_pool )
 {
 	// set the new price of the company [TODO: use parabola for factor difficulty?]
-	new Float: price_floor = g_stockMarketData[ stockid ] [ E_IPO_PRICE ] / 2.0;
-	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + price_floor;
+	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + STOCK_MARKET_PRICE_FLOOR;
 
 	// reduce price of shares depending on shares available from the start (200K max shares from IPO 100k means 50% reduction)
 	new_price *= floatpower( 0.5, g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / g_stockMarketData[ stockid ] [ E_IPO_SHARES ] - 1.0 );
@@ -331,8 +370,8 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	}
 
 	// force a minimum of $1 per share
-	if ( new_price < 1.0 ) {
-		new_price = 1.0;
+	if ( new_price < STOCK_MARKET_PRICE_FLOOR ) {
+		new_price = STOCK_MARKET_PRICE_FLOOR;
 	}
 
 	// set the new price of the asset
@@ -347,12 +386,14 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	for ( new r = 0; r < sizeof( g_stockMarketReportData[ ] ) - 2; r ++ ) {
 		g_stockMarketReportData[ stockid ] [ r + 1 ] [ E_SQL_ID ] = temp_stock_price_data[ stockid ] [ r ] [ E_SQL_ID ];
 		g_stockMarketReportData[ stockid ] [ r + 1 ] [ E_POOL ] = temp_stock_price_data[ stockid ] [ r ] [ E_POOL ];
+		g_stockMarketReportData[ stockid ] [ r + 1 ] [ E_DONATIONS ] = temp_stock_price_data[ stockid ] [ r ] [ E_DONATIONS ];
 		g_stockMarketReportData[ stockid ] [ r + 1 ] [ E_PRICE ] = temp_stock_price_data[ stockid ] [ r ] [ E_PRICE ];
 	}
 
 	// reset earnings
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] = cache_insert_id( );
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] = default_start_pool;
+	g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ] = default_donation_pool;
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = default_start_price;
 	return 1;
 }
@@ -420,7 +461,7 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 
 		if ( 0 <= sellerid < MAX_PLAYERS && Iter_Contains( Player, sellerid ) && IsPlayerLoggedIn( sellerid ) ) {
 			GivePlayerBankMoney( sellerid, sold_amount_minus_fee ), Beep( sellerid );
-			SendServerMessage( sellerid, "You have sold %s %s shares to %s(%d) for "COL_GOLD"%s"COL_WHITE" (plus %0.1f%s fee)!", number_format( sold_shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ], ReturnPlayerName( playerid ), playerid, cash_format( sold_amount_minus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
+			SendServerMessage( sellerid, "You have sold %s %s shares to %s(%d) for "COL_GOLD"%s"COL_WHITE" (plus %0.1f%s fee)!", number_format( sold_shares, .decimals = 0 ), g_stockMarketData[ stockid ] [ E_NAME ], ReturnPlayerName( playerid ), playerid, cash_format( sold_amount_minus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
 		} else {
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = `BANKMONEY` + %d WHERE `ID` = %d", sold_amount_minus_fee, sell_order_user_id ) );
 		}
@@ -452,7 +493,7 @@ thread StockMarket_OnPurchaseOrder( playerid, stockid, Float: shares )
 
 	// reduce player balance and alert
 	GivePlayerCash( playerid, -purchase_cost_plus_fee );
-	SendServerMessage( playerid, "You have purchased %s shares of %s (@ %s/ea) for %s. (inc. %0.1f%s fee)", number_format( shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ], cash_format( ask_price, .decimals = 2 ), cash_format( purchase_cost_plus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
+	SendServerMessage( playerid, "You have purchased %s shares of %s (@ %s/ea) for %s. (inc. %0.1f%s fee)", number_format( shares, .decimals = 0 ), g_stockMarketData[ stockid ] [ E_NAME ], cash_format( ask_price, .decimals = 2 ), cash_format( purchase_cost_plus_fee ), STOCK_MARKET_TRADING_FEE * 100.0, "%%" );
 	return 1;
 }
 
@@ -473,7 +514,7 @@ thread StockMarket_OnShowBuySlip( playerid, stockid )
 		""COL_WHITE"You can buy shares of %s for "COL_GREEN"%s"COL_WHITE" each.\n\nThere are %s available shares to buy.",
 		g_stockMarketData[ stockid ] [ E_NAME ],
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
-		number_format( available_quantity, .decimals = 2 )
+		number_format( available_quantity, .decimals = 0 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_BUY, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szBigString, "Buy", "Back" );
 	return 1;
@@ -557,8 +598,8 @@ thread Stock_OnDividendPayout( stockid )
 	}
 
 	// insert to database a new report
-	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "INSERT INTO `STOCK_REPORTS` (`STOCK_ID`, `POOL`, `PRICE`) VALUES (%d, %f, %f)", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_PRICE );
-	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "dff", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_PRICE );
+	mysql_format( dbHandle, szBigString, sizeof ( szBigString ), "INSERT INTO `STOCK_REPORTS` (`STOCK_ID`, `POOL`, `DONATIONS`, `PRICE`) VALUES (%d, %f, %f, %f)", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_DONATIONS, STOCK_DEFAULT_START_PRICE );
+	mysql_tquery( dbHandle, szBigString, "StockMarket_InsertReport", "dfff", stockid, STOCK_DEFAULT_START_POOL, STOCK_DEFAULT_START_DONATIONS, STOCK_DEFAULT_START_PRICE );
 	return 1;
 }
 
@@ -606,7 +647,7 @@ thread StockMarket_OnCancelOrder( playerid )
 			mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, player_account ) );
 			StockMarket_GiveShares( stockid, player_account, shares );
 
-			SendServerMessage( playerid, "You have cancelled your order of to sell %s shares of %s.", number_format( shares, .decimals = 2 ), g_stockMarketData[ stockid ] [ E_NAME ] );
+			SendServerMessage( playerid, "You have cancelled your order of to sell %s shares of %s.", number_format( shares, .decimals = 0 ), g_stockMarketData[ stockid ] [ E_NAME ] );
 		}
 		return 1;
 	}
@@ -707,6 +748,7 @@ static stock CreateStockMarket( stockid, const name[ 64 ], const symbol[ 4 ], Fl
 		// reset stock price information
 		for ( new r = 0; r < sizeof( g_stockMarketReportData[ ] ); r ++ ) {
 			g_stockMarketReportData[ stockid ] [ r ] [ E_POOL ] = 0.0;
+			g_stockMarketReportData[ stockid ] [ r ] [ E_DONATIONS ] = 0.0;
 			g_stockMarketReportData[ stockid ] [ r ] [ E_PRICE ] = 0.0;
 		}
 
@@ -729,7 +771,7 @@ static stock StockMarket_ReleaseDividends( stockid )
 	return 1;
 }
 
-stock StockMarket_UpdateEarnings( stockid, amount, Float: factor = 1.0 )
+stock StockMarket_UpdateEarnings( stockid, amount, Float: factor = 1.0, Float: donation_amount = 0.0 )
 {
 	if ( ! Iter_Contains( stockmarkets, stockid ) )
 		return 0;
@@ -739,8 +781,11 @@ stock StockMarket_UpdateEarnings( stockid, amount, Float: factor = 1.0 )
 		g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] = 0.0;
 	}
 
+	// update donation amount
+	g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ] += donation_amount;
+
 	// save to database
-	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL`=%f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
+	mysql_single_query( sprintf( "UPDATE `STOCK_REPORTS` SET `POOL`=%f, `DONATIONS`=%f WHERE `ID` = %d", g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ], g_stockMarketReportData[ stockid ] [ 0 ] [ E_SQL_ID ] ) );
 	return 1;
 }
 
@@ -790,9 +835,20 @@ static stock StockMarket_ShowSellSlip( playerid, stockid )
 		""COL_WHITE"You can sell shares of %s for "COL_GREEN"%s"COL_WHITE" each.\n\nThough, you will have to wait until a person buys them.\n\nYou have %s available shares to sell.",
 		g_stockMarketData[ stockid ] [ E_NAME ],
 		cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
-		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 2 )
+		number_format( p_PlayerShares[ playerid ] [ stockid ], .decimals = 0 )
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_SELL, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Sell", "Back" );
+	return 1;
+}
+
+static stock StockMarket_ShowDonationSlip( playerid, stockid )
+{
+	format(
+		szLargeString, sizeof ( szLargeString ),
+		""COL_WHITE"Donations can be used to prop up %s's stock price.\n\n75%% of the money donated is distributed as dividends.\n\n"COL_ORANGE"You do not get any shares for donating to a company!",
+		g_stockMarketData[ stockid ] [ E_NAME ]
+	);
+	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_DONATE, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Donate", "Back" );
 	return 1;
 }
 
@@ -823,7 +879,7 @@ static stock ShowPlayerStockMarket( playerid )
 
 static stock ShowPlayerStockMarketOptions( playerid, stockid )
 {
-	format( szBigString, sizeof( szBigString ), "Buy shares\t"COL_GREEN"%s\nView shareholders\t"COL_GREY">>>\nView stock information\t"COL_GREY">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
+	format( szBigString, sizeof( szBigString ), "Buy shares\t"COL_GREEN"%s\nDonate to company\t>>>\nView shareholders\t"COL_GREY">>>\nView stock information\t"COL_GREY">>>", cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ) );
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_OPTIONS, DIALOG_STYLE_TABLIST, sprintf( ""COL_WHITE"Stock Market - %s", g_stockMarketData[ stockid ] [ E_NAME ] ), szBigString, "Select", "Back" );
 	return 1;
 }
@@ -868,6 +924,7 @@ static stock UpdateStockMaxShares( stockid ) {
 		`PRICE` float,
 		`REPORTING_TIME` TIMESTAMP default CURRENT_TIMESTAMP
 	);
+	ALTER TABLE STOCK_REPORTS ADD DONATIONS float DEFAULT 0.0 AFTER POOL;
 
 	DROP TABLE `STOCK_OWNERS`;
 	CREATE TABLE IF NOT EXISTS `STOCK_OWNERS` (
