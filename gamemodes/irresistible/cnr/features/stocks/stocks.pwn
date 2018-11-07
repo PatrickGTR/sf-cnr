@@ -170,7 +170,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			case 2:
 			{
 				new
-					Float: market_cap = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] * g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / 100000.0;
+					Float: market_cap = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ] * g_stockMarketData[ stockid ] [ E_MAX_SHARES ] / 1000000.0;
 
 				format(
 					szLargeString, sizeof ( szLargeString ),
