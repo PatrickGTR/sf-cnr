@@ -397,7 +397,7 @@ hook OnPlayerEndModelPreview( playerid, handleid )
 }
 
 /* ** Functions ** */
-stock ShowBuyableVehiclesList( playerid )
+stock ShowBuyableVehiclesList( playerid, dialogid = DIALOG_VEHDEALER, secondary_button[ ] = "Cancel" )
 {
 	static
 		szCategory[ 16 * sizeof( g_BVCategories ) ];
@@ -407,7 +407,7 @@ stock ShowBuyableVehiclesList( playerid )
 			format( szCategory, sizeof( szCategory ), "%s%s\n", szCategory, g_BVCategories[ i ] );
 		}
 	}
-	return ShowPlayerDialog( playerid, DIALOG_VEHDEALER, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szCategory, "Select", "Cancel" );
+	return ShowPlayerDialog( playerid, dialogid, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szCategory, "Select", secondary_button );
 }
 
 stock ShowBuyableVehiclesTypeDialog( playerid, type_id )

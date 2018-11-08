@@ -34,7 +34,7 @@ enum E_GANG_FACILITIES
 	Float: E_X, 					Float: E_Y, 					Float: E_Z,
 
 	E_AMMU_CP,						E_SHOP_CP,						E_CANNON_CP,
-	E_TRAVEL_CP,
+	E_TRAVEL_CP,					E_MECHANIC_CP,
 
 	bool: E_WAR,					E_WAR_TIMER,					E_WAR_TICK,
 
@@ -51,8 +51,8 @@ enum E_FACILITY_INTERIOR
 	Float: E_TRAVEL_POS[ 4 ],
 	Float: E_ATM_POS[ 4 ],
 	Float: E_BOMB_POS_1[ 4 ],
-	Float: E_BOMB_POS_2[ 4 ]
-	//Float: E_MECHANIC_POS[ 4 ]
+	Float: E_BOMB_POS_2[ 4 ],
+	Float: E_MECHANIC_POS[ 4 ]
 };
 
 new
@@ -66,8 +66,9 @@ new
 			{ 259.9110, 1850.9300, 1858.7600, 0.000000 },
 			{ 261.0079, 1869.5808, 1858.7600, 90.00000 },
 			{ 262.5575, 1850.0053, 1858.3671, 180.0000 },
-			{ 246.722503, 1816.183593, 1855.371826, 90.000000 },
-			{ 246.722503, 1827.754516, 1855.371826, 90.000000 }
+			{ 246.7225, 1816.1835, 1855.3718, 90.00000 },
+			{ 246.7225, 1827.7545, 1855.3718, 90.00000 },
+			{ 244.6742, 1843.2554, 1858.7576, 0.000000 }
 		}
 	},
 	g_gangFacilities 				[ MAX_FACILITIES ] [ E_GANG_FACILITIES ],
@@ -95,12 +96,12 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 		foreach ( new facility : gangfacilities )
 		{
+			new turfid = g_gangFacilities[ facility ] [ E_TURF_ID ];
+			new facility_gangid = Turf_GetFacility( turfid );
+
 			// entrance
 			if ( checkpointid == g_gangFacilities[ facility ] [ E_CHECKPOINT ] [ 0 ] )
 			{
-				new turfid = g_gangFacilities[ facility ] [ E_TURF_ID ];
-				new facility_gangid = Turf_GetFacility( turfid );
-
 				// not in the gang / not a turf owner
 				if ( ! ( Turf_GetOwner( turfid ) == gangid || facility_gangid == gangid ) )
 				{
@@ -165,6 +166,12 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 					return SendError( playerid, "You cannot travel while you are wanted." );
 
 				return ShowPlayerAirportMenu( playerid );
+			}
+
+			// mechanic
+			else if ( checkpointid == g_gangFacilities[ facility ] [ E_TRAVEL_CP ] )
+			{
+				return ShowPlayerGangVehicleMenu( playerid, facility_gangid );
 			}
 
 			// orbital cannon
@@ -443,11 +450,19 @@ thread OnGangFaciltiesLoad( )
 					g_gangFacilities[ id ] [ E_TRAVEL_CP ] = CreateDynamicCP( infront_x, infront_y, g_gangFacilityInterior[ type ] [ E_TRAVEL_POS ] [ 2 ], 1.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 					CreateDynamic3DTextLabel( "[FAST TRAVEL]", COLOR_GOLD, infront_x, infront_y, g_gangFacilityInterior[ type ] [ E_TRAVEL_POS ] [ 2 ], 20.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 
+					// mechanic actor
+					CreateDynamicActor( 61, g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 0 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 1 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 2 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+
+					infront_x = g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 0 ] + 2.0 * floatsin( -g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], degrees );
+					infront_y = g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 1 ] + 2.0 * floatcos( -g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], degrees );
+
+					g_gangFacilities[ id ] [ E_MECHANIC_CP ] = CreateDynamicCP( infront_x, infront_y, g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 2 ], 1.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+					CreateDynamic3DTextLabel( "[GANG VEHICLES]", COLOR_GOLD, infront_x, infront_y, g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 2 ], 20.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+
 					// create atm
 					CreateATM( g_gangFacilityInterior[ type ] [ E_ATM_POS ] [ 0 ], g_gangFacilityInterior[ type ] [ E_ATM_POS ] [ 1 ], g_gangFacilityInterior[ type ] [ E_ATM_POS ] [ 2 ], g_gangFacilityInterior[ type ] [ E_ATM_POS ] [ 3 ], 0.0, g_gangFacilities[ id ] [ E_WORLD ] );
 
 					// more actors
-					CreateDynamicActor( 268, 244.6742, 1843.2554, 1858.7576, 0.000000, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 					ApplyDynamicActorAnimation( CreateDynamicActor( 70, 212.868576, 1819.894531, 1856.413818, 117.200050, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] ), "COP_AMBIENT", "Coplook_loop", 4.1, 1, 1, 1, 1, 0 );
 					ApplyDynamicActorAnimation( CreateDynamicActor( 70, 213.705627, 1827.192993, 1856.413818, 60.300289, true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] ), "COP_AMBIENT", "Coplook_think", 4.1, 1, 1, 1, 1, 0 );
 
