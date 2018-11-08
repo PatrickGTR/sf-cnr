@@ -764,6 +764,9 @@ stock CreateGang( const gang_name[ 30 ], leader, gang_color, kills = 1, deaths =
 	    g_gangData[ handle ] [ E_RESPECT ] 			= respect;
 		g_gangData[ handle ] [ E_INVITE_ONLY ] 		= invite_only;
 		g_gangData[ handle ] [ E_HAS_FACILITY ] 	= has_facility;
+
+		// callback
+		CallLocalFunction( "OnGangLoad", "d", handle );
 	}
 	return handle;
 }

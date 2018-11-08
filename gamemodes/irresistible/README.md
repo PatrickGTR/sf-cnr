@@ -34,3 +34,5 @@
     - Called when a player accesses an entrance id
 - `OnPlayerEndModelPreview( playerid, handleid )`
 	- Called when a player closes a model preview
+- `OnGangLoad( gangid )`
+    - Called when a gang is loaded
