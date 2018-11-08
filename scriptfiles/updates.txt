@@ -1,4 +1,7 @@
 (+) Adds a functional stock market system (/stocks & /shares). Each company is associated with a feature.
+(+) You can now donate to stocks which can help you to prop the stock price up.
+(+) Pool is now available in every bar of the server. It should work very well.
+(+) "/shares" now shows the shares that are currently held as a sell order.
 (+) Fireworks now available at Supa-Save or your nearest 24/7.
 (+) Explosive rounds can be bought at ammu-nation.
 (*) "/sync" cannot be used while you are in passive mode.
