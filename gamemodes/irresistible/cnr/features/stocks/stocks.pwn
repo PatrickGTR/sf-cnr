@@ -92,7 +92,7 @@ hook OnScriptInit( )
 	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
 	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		150.0,			"Money lost by players gambling" );
 	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		150.0,			"Fireman and LEO activities" );
-	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed pilot missions" );
+	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
 	return 1;
 }
 
