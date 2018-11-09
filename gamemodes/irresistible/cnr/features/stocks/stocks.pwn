@@ -562,6 +562,10 @@ thread StockMarket_OnShowShares( playerid )
 			p_PlayerShares[ playerid ] [ stockid ] = shares;
 			p_PlayerHasShare[ playerid ] { stockid } = true;
 		}
+		else
+		{
+			p_PlayerHasShare[ playerid ] { stockid } = false;
+		}
 	}
 	return ShowPlayerDialog( playerid, DIALOG_PLAYER_STOCKS, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Stock Market", szLargeString, "Select", "Close" ), 1;
 }
