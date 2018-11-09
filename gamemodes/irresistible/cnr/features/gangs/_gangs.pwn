@@ -10,4 +10,7 @@
 #include "irresistible\cnr\features\gangs\facilities.pwn"
 #include "irresistible\cnr\features\gangs\turfs.pwn"
 #include "irresistible\cnr\features\gangs\cannon.pwn"
-// #include "irresistible\features\gangs\gvehicles.pwn"
+
+#if defined DEBUG_MODE
+#include "irresistible\cnr\features\gangs\gvehicles.pwn"
+#endif

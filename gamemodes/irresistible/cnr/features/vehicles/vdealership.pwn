@@ -397,7 +397,7 @@ hook OnPlayerEndModelPreview( playerid, handleid )
 }
 
 /* ** Functions ** */
-stock ShowBuyableVehiclesList( playerid )
+stock ShowBuyableVehiclesList( playerid, dialogid = DIALOG_VEHDEALER, secondary_button[ ] = "Cancel" )
 {
 	static
 		szCategory[ 16 * sizeof( g_BVCategories ) ];
@@ -407,23 +407,59 @@ stock ShowBuyableVehiclesList( playerid )
 			format( szCategory, sizeof( szCategory ), "%s%s\n", szCategory, g_BVCategories[ i ] );
 		}
 	}
-	return ShowPlayerDialog( playerid, DIALOG_VEHDEALER, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szCategory, "Select", "Cancel" );
+	return ShowPlayerDialog( playerid, dialogid, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szCategory, "Select", secondary_button );
 }
 
 stock ShowBuyableVehiclesTypeDialog( playerid, type_id )
 {
 	static
-		szBuyableVehicles[ 1400 ];
+		buyable_vehicles[ 1400 ], i;
 
-	erase( szBuyableVehicles );
-
-	for( new i; i < sizeof( g_BuyableVehicleData ); i++ )
-	{
-		if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id )
-			format( szBuyableVehicles, sizeof( szBuyableVehicles ), "%s"COL_GOLD"%s%s%s\t%s\n", szBuyableVehicles, cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ), g_BuyableVehicleData[ i ] [ E_VIP ] ? ( "" ) : ( #COL_WHITE ), g_BuyableVehicleData[ i ] [ E_PRICE ] < 100000 ? ( "\t" ) : ( "" ), g_BuyableVehicleData[ i ] [ E_NAME ] );
+	for ( i = 0, buyable_vehicles = ""COL_WHITE"Vehicle\t"COL_WHITE"Price ($)\n"; i < sizeof( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id ) {
+		format( buyable_vehicles, sizeof( buyable_vehicles ), "%s%s%s\t"COL_GREEN"%s\n", buyable_vehicles, g_BuyableVehicleData[ i ] [ E_VIP ] ? ( COL_GOLD ) : ( COL_WHITE ), g_BuyableVehicleData[ i ] [ E_NAME ], cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ) );
 	}
 
-	ShowPlayerDialog( playerid, DIALOG_VEHDEALER_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szBuyableVehicles, "Options", "Cancel" );
+	ShowPlayerDialog( playerid, DIALOG_VEHDEALER_BUY, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Vehicle Dealership", buyable_vehicles, "Options", "Cancel" );
 	SetPVarInt( playerid, "vehicle_preview", type_id );
+	return 1;
+}
+
+stock GetBuyableVehiclePrice( modelid ) {
+	for ( new i = 0; i < sizeof ( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_MODEL ] == modelid ) {
+		return g_BuyableVehicleData[ i ] [ E_PRICE ];
+	}
+	return 0;
+}
+
+stock GetClosestBoatPort( Float: current_x, Float: current_y, Float: current_z, &Float: dest_x, &Float: dest_y, &Float: dest_z, &Float: distance = FLOAT_INFINITY )
+{
+	static const
+		Float: g_boatSpawnLocations[ ] [ 3 ] =
+		{
+			{ 2950.59080, -2000.382, -0.4033 }, { 1986.55710, -75.03830, -0.1938 },
+			{ 2238.51780, 498.92970, 0.02490 }, { -626.54060, 832.18100, -0.1432 },
+			{ -1448.5302, 679.33510, -0.2547 }, { -1710.0466, 241.71960, -0.3029 },
+			{ -2181.0417, 2488.8093, -0.3036 }, { -2940.6545, 1238.2001, 0.11180 },
+			{ -2974.5994, 543.54410, 0.44440 }, { -1341.1674, -2989.101, -0.1943 }
+		}
+	;
+
+    new
+    	final_port = 0;
+
+    // get the closest port based off coordinates
+	for ( new i = 0, Float: fTmp = 0.0; i < sizeof ( g_boatSpawnLocations ); i ++ )
+	{
+        if ( 0.0 < ( fTmp = GetDistanceBetweenPoints( current_x, current_y, current_z, g_boatSpawnLocations[ i ] [ 0 ], g_boatSpawnLocations[ i ] [ 1 ], g_boatSpawnLocations[ i ] [ 2 ] ) ) < distance )
+        {
+            distance = fTmp;
+            final_port = i;
+        }
+    }
+
+    // store the destination coordinates
+    dest_x = g_boatSpawnLocations[ final_port ] [ 0 ];
+    dest_y = g_boatSpawnLocations[ final_port ] [ 1 ];
+    dest_z = g_boatSpawnLocations[ final_port ] [ 2 ];
 	return 1;
 }

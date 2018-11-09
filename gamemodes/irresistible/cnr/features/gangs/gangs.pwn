@@ -16,7 +16,10 @@
 
 /* ** Macros ** */
 #define IsGangPrivate(%0)			( g_gangData[ %0 ] [ E_INVITE_ONLY ] )
+#define GetGangSqlID(%0)			( g_gangData[ %0 ] [ E_SQL_ID ] )
 #define GetPlayerGang(%0) 			( p_GangID[ %0 ] )
+
+#define IsValidGangID(%0)			(0 <= %0 < MAX_GANGS && Iter_Contains(gangs, %0))
 
 /* ** Variables ** */
 enum e_gang_data
@@ -764,6 +767,9 @@ stock CreateGang( const gang_name[ 30 ], leader, gang_color, kills = 1, deaths =
 	    g_gangData[ handle ] [ E_RESPECT ] 			= respect;
 		g_gangData[ handle ] [ E_INVITE_ONLY ] 		= invite_only;
 		g_gangData[ handle ] [ E_HAS_FACILITY ] 	= has_facility;
+
+		// callback
+		CallLocalFunction( "OnGangLoad", "d", handle );
 	}
 	return handle;
 }
@@ -785,6 +791,9 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
  	foreach(new i : Player) if ( p_GangID[ i ] == gangid ) {
  		p_GangID[ i ] = INVALID_GANG_ID;
  	}
+
+ 	// Callback
+	CallLocalFunction( "OnGangUnload", "dd", gangid, ! soft_delete );
 
 	// Reset gang data
 	g_gangData[ gangid ] [ E_SQL_ID ] 			= 0;
@@ -979,6 +988,7 @@ stock SetPlayerGang( playerid, joining_gang )
 	return 1;
 }
 
+stock GetGangCash( gangid ) return g_gangData[ gangid ] [ E_BANK ];
 stock GiveGangCash( gangid, cash ) {
 	g_gangData[ gangid ] [ E_BANK ] += cash;
 }
