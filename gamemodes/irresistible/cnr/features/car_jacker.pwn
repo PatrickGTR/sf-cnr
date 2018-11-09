@@ -210,7 +210,7 @@ stock calculateVehicleSellPrice( vehicleid )
 		iModel = GetVehicleModel( vehicleid )
 	;
 
-	if ( !GetVehicleHealth( vehicleid, fHealth ) || !IsCarjackableVehicleModel( iModel ) || g_adminSpawnedCar{ vehicleid } || g_buyableVehicle{ vehicleid } || Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
+	if ( !GetVehicleHealth( vehicleid, fHealth ) || !IsCarjackableVehicleModel( iModel ) || g_adminSpawnedCar{ vehicleid } || g_buyableVehicle{ vehicleid } || g_gangVehicle{ vehicleid } || Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
 		return 0;
 
 	if ( fHealth > 1000.0 )

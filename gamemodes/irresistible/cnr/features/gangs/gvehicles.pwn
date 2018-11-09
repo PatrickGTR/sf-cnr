@@ -26,7 +26,7 @@
 
 /* ** Constants ** */
 static const GANG_VEHICLE_PRICE_FACTOR = 4;
-static const GANG_VEHICLE_SPAWN_COOLDOWN = 180;
+static const GANG_VEHICLE_SPAWN_COOLDOWN = 300;
 
 /* ** Variables ** */
 enum E_GANG_VEHICLE_DATA
@@ -280,6 +280,14 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				if ( g_gangVehicleData[ gangid ] [ slotid ] [ E_ACTIVATION_TIME ] > current_time ) {
 					GangVehicles_ShowSpawnList( playerid, gangid );
 					return SendError( playerid, "This vehicle cannot be spawned for another %s.", secondstotime( g_gangVehicleData[ gangid ] [ slotid ] [ E_ACTIVATION_TIME ] - current_time ) );
+				}
+
+				new
+					occupierid = IsVehicleOccupied( g_gangVehicleData[ gangid ] [ slotid ] [ E_VEHICLE_ID ] );
+
+				if ( occupierid != -1 ) {
+					GangVehicles_ShowSpawnList( playerid, gangid );
+					return SendError( playerid, "This vehicle cannot be spawned right now as it is occupied by %s(%d).", ReturnPlayerName( occupierid ), occupierid );
 				}
 
 				new Float: facility_x, Float: facility_y, Float: facility_z, Float: rotation;
