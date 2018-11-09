@@ -643,12 +643,12 @@ static stock GangVehicles_ShowBuyableList( playerid, type_id )
 	static
 		buyable_vehicles[ 1400 ], i;
 
-	for ( i = 0, buyable_vehicles[ 0 ] = '\0'; i < sizeof( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id ) {
-		format( buyable_vehicles, sizeof( buyable_vehicles ), "%s"COL_GOLD"%s%s%s\t%s\n", buyable_vehicles, cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] * GANG_VEHICLE_PRICE_FACTOR ), g_BuyableVehicleData[ i ] [ E_VIP ] ? ( "" ) : ( #COL_WHITE ), g_BuyableVehicleData[ i ] [ E_PRICE ] < 100000 ? ( "\t" ) : ( "" ), g_BuyableVehicleData[ i ] [ E_NAME ] );
+	for ( i = 0, buyable_vehicles = ""COL_WHITE"Vehicle\t"COL_WHITE"Price ($)\n"; i < sizeof( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id ) {
+		format( buyable_vehicles, sizeof( buyable_vehicles ), "%s%s%s\t"COL_GREEN"%s\n", buyable_vehicles, g_BuyableVehicleData[ i ] [ E_VIP ] ? ( COL_GOLD ) : ( COL_WHITE ), g_BuyableVehicleData[ i ] [ E_NAME ], cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] * GANG_VEHICLE_PRICE_FACTOR ) );
 	}
 
 	SetPVarInt( playerid, "vehicle_preview", type_id );
-	return ShowPlayerDialog( playerid, DIALOG_GANG_VD_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", buyable_vehicles, "Select", "Back" );
+	return ShowPlayerDialog( playerid, DIALOG_GANG_VD_BUY, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Vehicle Dealership", buyable_vehicles, "Select", "Back" );
 }
 
 stock GetGangVehicleData( vehicleid, &gangid, &slotid ) {

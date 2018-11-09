@@ -413,17 +413,13 @@ stock ShowBuyableVehiclesList( playerid, dialogid = DIALOG_VEHDEALER, secondary_
 stock ShowBuyableVehiclesTypeDialog( playerid, type_id )
 {
 	static
-		szBuyableVehicles[ 1400 ];
+		buyable_vehicles[ 1400 ], i;
 
-	erase( szBuyableVehicles );
-
-	for( new i; i < sizeof( g_BuyableVehicleData ); i++ )
-	{
-		if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id )
-			format( szBuyableVehicles, sizeof( szBuyableVehicles ), "%s"COL_GOLD"%s%s%s\t%s\n", szBuyableVehicles, cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ), g_BuyableVehicleData[ i ] [ E_VIP ] ? ( "" ) : ( #COL_WHITE ), g_BuyableVehicleData[ i ] [ E_PRICE ] < 100000 ? ( "\t" ) : ( "" ), g_BuyableVehicleData[ i ] [ E_NAME ] );
+	for ( i = 0, buyable_vehicles = ""COL_WHITE"Vehicle\t"COL_WHITE"Price ($)\n"; i < sizeof( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_TYPE ] == type_id ) {
+		format( buyable_vehicles, sizeof( buyable_vehicles ), "%s%s%s\t"COL_GREEN"%s\n", buyable_vehicles, g_BuyableVehicleData[ i ] [ E_VIP ] ? ( COL_GOLD ) : ( COL_WHITE ), g_BuyableVehicleData[ i ] [ E_NAME ], cash_format( g_BuyableVehicleData[ i ] [ E_PRICE ] ) );
 	}
 
-	ShowPlayerDialog( playerid, DIALOG_VEHDEALER_BUY, DIALOG_STYLE_LIST, "{FFFFFF}Vehicle Dealership", szBuyableVehicles, "Options", "Cancel" );
+	ShowPlayerDialog( playerid, DIALOG_VEHDEALER_BUY, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Vehicle Dealership", buyable_vehicles, "Options", "Cancel" );
 	SetPVarInt( playerid, "vehicle_preview", type_id );
 	return 1;
 }
