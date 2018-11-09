@@ -2348,7 +2348,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	// Reset player variables
     p_Spawned{ playerid } = false;
     p_QuitToAvoidTimestamp[ playerid ] = 0;
-    CutSpectation( playerid );
+    //CutSpectation( playerid );
     StopPlayerNpcRobbery( playerid );
     RemovePlayerFromRace( playerid );
     RemovePlayerStolensFromHands( playerid );
