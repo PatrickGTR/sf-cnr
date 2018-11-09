@@ -299,7 +299,7 @@ public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnDonationRedemptionResponse( index, response_code, data[ ] );
 public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 public OnPlayerUnjailed( playerid, reasonid );
-public OnPlayerAccessEntrance( playerid, entranceid );
+public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 
 main()
 {
@@ -7369,7 +7369,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 			{
 		        if ( checkpointid == g_entranceData[ i ] [ E_ENTER ] )
 				{
-				    if ( ! CallLocalFunction( "OnPlayerAccessEntrance", "dd", playerid, i ) ) break;
+				    if ( ! CallLocalFunction( "OnPlayerAccessEntrance", "dddd", playerid, i, g_entranceData[ i ] [ E_WORLD ], g_entranceData[ i ] [ E_INTERIOR ] ) ) break;
 					p_LastEnteredEntrance[ playerid ] = i;
 				    SetPlayerInterior( playerid, g_entranceData[ i ] [ E_INTERIOR ] );
 				    SetPlayerVirtualWorld( playerid, g_entranceData[ i ] [ E_WORLD ] );
@@ -7408,7 +7408,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 	return 1;
 }
 
-public OnPlayerAccessEntrance( playerid, entranceid )
+public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid )
 {
     if ( g_entranceData[ entranceid ] [ E_VIP ] && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
         return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" ), 0;
@@ -7417,29 +7417,25 @@ public OnPlayerAccessEntrance( playerid, entranceid )
     // robbery helper
 	if ( p_Class[ playerid ] != CLASS_POLICE )
 	{
-		new safe_world = GetRobberySafeWorld( entranceid );
-
 		// check if robbery is a bank
-		if ( safe_world != GetBankVaultWorld( CITY_SF ) && safe_world != GetBankVaultWorld( CITY_LS ) && safe_world != GetBankVaultWorld( CITY_LV ) )
-		{
-			p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, GetEntranceClosestRobberySafe( entranceid ) );
-		}
-		else
+		if ( ( worldid == GetBankVaultWorld( CITY_SF ) || worldid == GetBankVaultWorld( CITY_LS ) || worldid == GetBankVaultWorld( CITY_LV ) ) && interiorid < 3 )
 		{
 			new
 				iCity;
 
-			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity ++ ) {
-				if ( safe_world != 0 && safe_world == g_bankvaultData[ iCity ] [ E_WORLD ] ) {
-					break;
-				}
+			for( iCity = 0; iCity < sizeof( g_bankvaultData ); iCity ++ ) if ( worldid == g_bankvaultData[ iCity ] [ E_WORLD ] ) {
+				break;
 			}
 
-			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && !g_bankvaultData[ iCity ] [ E_DISABLED ] ) {
+			if ( g_bankvaultData[ iCity ] [ E_TIMESTAMP ] < g_iTime && ! g_bankvaultData[ iCity ] [ E_DISABLED ] ) {
 				ShowPlayerHelpDialog( playerid, 5000, "This ~g~~h~bank~w~~h~ is available for a heist." );
 			} else {
 				ShowPlayerHelpDialog( playerid, 5000, "This bank is ~r~~h~unavailable for a heist." );
 			}
+		}
+		else
+		{
+			p_SafeHelperTimer[ playerid ] = SetTimerEx( "OnSafeHelperUpdate", 500, false, "dd", playerid, GetEntranceClosestRobberySafe( entranceid ) );
 		}
 	}
     return 1;

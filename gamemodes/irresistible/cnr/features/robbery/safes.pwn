@@ -892,7 +892,3 @@ function SetPlayerHandleNearestSafe( playerid )
 	}
 	return 1;
 }
-
-stock GetRobberySafeWorld( entranceid ) {
-	return g_robberyData[ entranceid ] [ E_WORLD ];
-}
