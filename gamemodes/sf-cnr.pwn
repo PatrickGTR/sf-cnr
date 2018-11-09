@@ -4469,7 +4469,7 @@ CMD:jaillist( playerid, params[ ] )
 	szBigString[ 0 ] = '\0';
 
     foreach( new i : Player ) if ( IsPlayerJailed( i ) ) {
-        format( szBigString, sizeof( szBigString ), "%s%s%s(%d)\t%d seconds", szBigString, p_AdminJailed{ i } ? ( COL_RED ) : ( COL_WHITE ), ReturnPlayerName( i ), i, p_JailTime[ i ] );
+        format( szBigString, sizeof( szBigString ), "%s%s%s(%d)\t%d seconds\n", szBigString, p_AdminJailed{ i } ? ( COL_RED ) : ( COL_WHITE ), ReturnPlayerName( i ), i, p_JailTime[ i ] );
     }
 
     if ( szBigString[ 0 ] == '\0' )   {
