@@ -554,7 +554,6 @@ stock Pool_RemovePlayer( playerid )
 /* ** Functions ** */
 stock CreatePoolTableEx( Float: X, Float: Y, Float: Z, Float: A = 0.0, E_POOL_SKINS: skin, interior = 0, ... ) {
 	for( new i = 6; i < numargs( ); i++ ) {
-		printf("world id %d", getarg( i ) );
 		CreatePoolTable( X, Y, Z, A, skin, interior, getarg( i ) );
 	}
 }
