@@ -212,7 +212,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			format( g_VisageApartmentData[ handle ] [ E_OWNER_NAME ], MAX_PLAYER_NAME, "%s", ReturnPlayerName( ownerid ) );
 
 			// save to database
-			mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE `VISAGE_APARTMENTS` SET `OWNER_ID`=%d WHERE `ID`=%d", ownerid, g_VisageApartmentData[ handle ] [ E_SQL_ID ] );
+			mysql_format( dbHandle, szNormalString, sizeof( szNormalString ), "UPDATE `VISAGE_APARTMENTS` SET `OWNER_ID`=%d WHERE `ID`=%d", g_VisageApartmentData[ handle ] [ E_OWNER_ID ], g_VisageApartmentData[ handle ] [ E_SQL_ID ] );
             mysql_single_query( szNormalString );
 
             // message
