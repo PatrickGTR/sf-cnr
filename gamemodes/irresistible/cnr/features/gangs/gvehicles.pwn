@@ -163,8 +163,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	else if ( dialogid == DIALOG_GANG_VD_OPTIONS )
 	{
 		new gangid = GetPVarInt( playerid, "gang_vehicle_gang" );
+		new facilityid = GetPVarInt( playerid, "gang_vehicle_facility" );
 
-		if ( ! IsValidGangID ( gangid ) ) {
+		if ( ! IsValidGangID ( gangid ) || ! Facility_IsValid( facilityid ) ) {
 			return SendError( playerid, "There was an error processing gang vehicles, please try again." );
 		}
 
@@ -216,7 +217,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 					return SendError( playerid, "Your gang does not have enough money for this vehicle (%s).", cash_format( final_price ) );
 				}
 
-				// TODO:
 				new
 					slotid = CreateGangVehicle( gangid, g_BuyableVehicleData[ data_id ] [ E_MODEL ] );
 
@@ -228,9 +228,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				GiveGangCash( gangid, -final_price );
 				StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, final_price, 0.05 );
 
+				printf( "[gang vehicle] %s(%d) bought %s for %s", ReturnPlayerName( playerid ), GetPlayerAccountID( playerid ), g_BuyableVehicleData[ data_id ] [ E_NAME ], g_gangData[ gangid ] [ E_NAME ] );
 				SendServerMessage( playerid, "You have bought an "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE"!", g_BuyableVehicleData[ data_id ] [ E_NAME ], cash_format( final_price ) );
 				SendServerMessage( playerid, "You can spawn this vehicle using the mechanic at any gang facility.", g_BuyableVehicleData[ data_id ] [ E_NAME ], cash_format( final_price ) );
-				return 1;
+				return ShowPlayerGangVehicleMenu( playerid, facilityid );
 			}
 
 			// preview
@@ -315,7 +316,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			        SetPlayerInterior( playerid, 0 );
 			        SetPlayerVirtualWorld( playerid, 0 );
 					PutPlayerInVehicle( playerid, vehicleid, 0 );
-		        	SendServerMessage( playerid, "You have spawned the gang's %s.", GetVehicleName( g_gangVehicleData[ gangid ] [ slotid ] [ E_MODEL ] ) );
 		        } else {
 		        	SendError( playerid, "Could not spawn gang vehicle due to an unexpected error." );
 		        }
