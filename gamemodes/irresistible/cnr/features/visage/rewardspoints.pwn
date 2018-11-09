@@ -25,7 +25,6 @@ static stock
 		{ "Highroller Access", 200000.0 }
 	},
 	E_SHOP_ITEMS: g_casinoRewardsShopItems[ ] = {
-		SHOP_ITEM_TIE,
 		SHOP_ITEM_SCISSOR,
 		SHOP_ITEM_ROPES,
 		SHOP_ITEM_FOIL,
@@ -51,12 +50,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	{
 	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
 
-		new
-	    	x = 0;
-
 	    if ( listitem >= sizeof( g_casinoRewardsShopItems ) )
 	    {
-	    	// printf("Listitem %d, sizeof %d\n", listitem, sizeof( g_casinoRewardsShopItems) );
 	    	new rewards_item = listitem - sizeof( g_casinoRewardsShopItems );
 	    	new Float: rewards_points = g_casinoRewardsItems[ rewards_item ] [ E_POINTS ];
 
@@ -87,7 +82,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    }
 	    else
 	    {
-		    for ( new i = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( g_shopItemData[ i ] [ E_ID ] ) )
+		    for ( new i = 0, x = 0; i < sizeof ( g_shopItemData ); i ++ ) if ( IsCasinoRewardsShopItem( g_shopItemData[ i ] [ E_ID ] ) )
 		    {
 		    	if ( x == listitem )
 		    	{
