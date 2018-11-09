@@ -378,9 +378,7 @@ hook OnEnterExitModShop( playerid, enterexit, interiorid )
 
 				GetGangVehicleData( vehicleid, gangid, slotid );
 
-				printf("%d %d", gangid, slotid );
-
-			    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) )
+			    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) && IsPlayerGangLeader( playerid, gangid ) )
 			    {
 		        	new
 			        	szMods[ MAX_CAR_MODS * 10 ];
@@ -433,7 +431,7 @@ hook OnVehiclePaintjob( playerid, vehicleid, paintjobid )
 
 		GetGangVehicleData( vehicleid, gangid, slotid );
 
-	    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) )
+	    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) && IsPlayerGangLeader( playerid, gangid ) )
 	    {
 	        g_gangVehicleData[ gangid ] [ slotid ] [ E_PAINTJOB ] = paintjobid;
 	        mysql_single_query( sprintf( "UPDATE `GANG_VEHICLES` SET `PAINTJOB` = %d WHERE `ID` = %d", paintjobid, g_gangVehicleData[ gangid ] [ slotid ] [ E_SQL_ID ] ) );
@@ -451,7 +449,7 @@ hook OnVehicleRespray( playerid, vehicleid, color1, color2 )
 
 		GetGangVehicleData( vehicleid, gangid, slotid );
 
-	    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) )
+	    if ( IsValidGangID( gangid ) && IsValidGangVehicle( gangid, slotid ) && IsPlayerGangLeader( playerid, gangid ) )
 	    {
 			g_gangVehicleData[ gangid ] [ slotid ] [ E_COLOR ] [ 0 ] = color1;
 	        g_gangVehicleData[ gangid ] [ slotid ] [ E_COLOR ] [ 1 ] = color2;
