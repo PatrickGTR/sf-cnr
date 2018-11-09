@@ -23,6 +23,10 @@
 // #define DIALOG_FACILITY_AMMU 		( 9239 )
 // #define DIALOG_FACILITY_AMMU_BUY 	( 9299 )
 
+/* ** Macros ** */
+#define Facility_IsValid(%0) \
+	(0 <= %0 < MAX_FACILITIES && Iter_Contains(gangfacilities, %0))
+
 /* ** Variables ** */
 enum E_GANG_FACILITIES
 {
@@ -96,12 +100,12 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 		foreach ( new facility : gangfacilities )
 		{
-			new turfid = g_gangFacilities[ facility ] [ E_TURF_ID ];
-			new facility_gangid = Turf_GetFacility( turfid );
-
 			// entrance
 			if ( checkpointid == g_gangFacilities[ facility ] [ E_CHECKPOINT ] [ 0 ] )
 			{
+				new turfid = g_gangFacilities[ facility ] [ E_TURF_ID ];
+				new facility_gangid = Turf_GetFacility( turfid );
+
 				// not in the gang / not a turf owner
 				if ( ! ( Turf_GetOwner( turfid ) == gangid || facility_gangid == gangid ) )
 				{
@@ -169,9 +173,9 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 			}
 
 			// mechanic
-			else if ( checkpointid == g_gangFacilities[ facility ] [ E_TRAVEL_CP ] )
+			else if ( checkpointid == g_gangFacilities[ facility ] [ E_MECHANIC_CP ] )
 			{
-				return ShowPlayerGangVehicleMenu( playerid, facility_gangid );
+				return ShowPlayerGangVehicleMenu( playerid, facility );
 			}
 
 			// orbital cannon
@@ -451,7 +455,7 @@ thread OnGangFaciltiesLoad( )
 					CreateDynamic3DTextLabel( "[FAST TRAVEL]", COLOR_GOLD, infront_x, infront_y, g_gangFacilityInterior[ type ] [ E_TRAVEL_POS ] [ 2 ], 20.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 
 					// mechanic actor
-					CreateDynamicActor( 61, g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 0 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 1 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 2 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
+					CreateDynamicActor( 268, g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 0 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 1 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 2 ], g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], true, 100.0, .worldid = g_gangFacilities[ id ] [ E_WORLD ] );
 
 					infront_x = g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 0 ] + 2.0 * floatsin( -g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], degrees );
 					infront_y = g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 1 ] + 2.0 * floatcos( -g_gangFacilityInterior[ type ] [ E_MECHANIC_POS ] [ 3 ], degrees );
@@ -512,10 +516,16 @@ stock GetFacilityInteriorType( gang_sql_id )
 }
 
 stock GetGangIDFromFacilityID( facilityid ) {
-	foreach ( new f : gangs ) if ( g_gangFacilities[ facilityid ] [ E_GANG_SQL_ID ] == g_gangData[ g ] [ E_SQL_ID ] ) {
+	foreach ( new f : gangs ) if ( g_gangFacilities[ facilityid ] [ E_GANG_SQL_ID ] == g_gangData[ f ] [ E_SQL_ID ] ) {
 		return f;
 	}
 	return ITER_NONE;
+}
+
+stock GetGangFacilityPos( facilityid, &Float: X, &Float: Y, &Float: Z ) {
+	X = g_gangFacilities[ facilityid ] [ E_X ];
+	Y = g_gangFacilities[ facilityid ] [ E_Y ];
+	Z = g_gangFacilities[ facilityid ] [ E_Z ];
 }
 
 #if FACILITY_TAKEOVER_ENABLED == true

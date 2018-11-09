@@ -792,6 +792,9 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
  		p_GangID[ i ] = INVALID_GANG_ID;
  	}
 
+ 	// Callback
+	CallLocalFunction( "OnGangUnload", "dd", gangid, ! soft_delete );
+
 	// Reset gang data
 	g_gangData[ gangid ] [ E_SQL_ID ] 			= 0;
     g_gangData[ gangid ] [ E_LEADER ] 			= 0;
@@ -985,6 +988,7 @@ stock SetPlayerGang( playerid, joining_gang )
 	return 1;
 }
 
+stock GetGangCash( gangid ) return g_gangData[ gangid ] [ E_BANK ];
 stock GiveGangCash( gangid, cash ) {
 	g_gangData[ gangid ] [ E_BANK ] += cash;
 }

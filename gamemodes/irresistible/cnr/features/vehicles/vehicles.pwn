@@ -801,7 +801,6 @@ stock RespawnBuyableVehicle( samp_veh_id, occupantid = INVALID_PLAYER_ID )
 		GetVehicleParamsEx( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ], engine, lights, alarm, doors, bonnet, boot, objective );
 		SetVehicleParamsEx( g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ], VEHICLE_PARAMS_OFF, lights, alarm, doors, bonnet, boot, objective );
 	}
-
 	return g_vehicleData[ playerid ] [ id ] [ E_VEHICLE_ID ];
 }
 

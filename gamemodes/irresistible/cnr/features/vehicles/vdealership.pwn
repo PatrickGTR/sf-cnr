@@ -427,3 +427,43 @@ stock ShowBuyableVehiclesTypeDialog( playerid, type_id )
 	SetPVarInt( playerid, "vehicle_preview", type_id );
 	return 1;
 }
+
+stock GetBuyableVehiclePrice( modelid ) {
+	for ( new i = 0; i < sizeof ( g_BuyableVehicleData ); i ++ ) if ( g_BuyableVehicleData[ i ] [ E_MODEL ] == modelid ) {
+		return g_BuyableVehicleData[ i ] [ E_PRICE ];
+	}
+	return 0;
+}
+
+stock GetClosestBoatPort( Float: current_x, Float: current_y, Float: current_z, &Float: dest_x, &Float: dest_y, &Float: dest_z, &Float: distance = FLOAT_INFINITY )
+{
+	static const
+		Float: g_boatSpawnLocations[ ] [ 3 ] =
+		{
+			{ 2950.59080, -2000.382, -0.4033 }, { 1986.55710, -75.03830, -0.1938 },
+			{ 2238.51780, 498.92970, 0.02490 }, { -626.54060, 832.18100, -0.1432 },
+			{ -1448.5302, 679.33510, -0.2547 }, { -1710.0466, 241.71960, -0.3029 },
+			{ -2181.0417, 2488.8093, -0.3036 }, { -2940.6545, 1238.2001, 0.11180 },
+			{ -2974.5994, 543.54410, 0.44440 }, { -1341.1674, -2989.101, -0.1943 }
+		}
+	;
+
+    new
+    	final_port = 0;
+
+    // get the closest port based off coordinates
+	for ( new i = 0, Float: fTmp = 0.0; i < sizeof ( g_boatSpawnLocations ); i ++ )
+	{
+        if ( 0.0 < ( fTmp = GetDistanceBetweenPoints( current_x, current_y, current_z, g_boatSpawnLocations[ i ] [ 0 ], g_boatSpawnLocations[ i ] [ 1 ], g_boatSpawnLocations[ i ] [ 2 ] ) ) < distance )
+        {
+            distance = fTmp;
+            final_port = i;
+        }
+    }
+
+    // store the destination coordinates
+    dest_x = g_boatSpawnLocations[ final_port ] [ 0 ];
+    dest_y = g_boatSpawnLocations[ final_port ] [ 1 ];
+    dest_z = g_boatSpawnLocations[ final_port ] [ 2 ];
+	return 1;
+}
