@@ -5830,7 +5830,7 @@ CMD:location( playerid, params[ ] )
    	    pID
 	;
 
-	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is not accessible by civilians." );
+	if ( p_Class[ playerid ] == CLASS_CIVILIAN || p_Class[ playerid ] == CLASS_FIREMAN ) return SendError( playerid, "This is restricted to police only." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
 	else if ( ! IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( ! IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
