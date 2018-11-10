@@ -100,6 +100,11 @@ hook OnPlayerDeath( playerid, killerid, reason )
 	new
 		player_money = floatround( float( GetPlayerCash( playerid ) ) * 0.1 );
 
+	// throttle drop amount to 25K
+	if ( player_money > 25000 ) {
+		player_money = 25000;
+	}
+
 	if ( player_money > 0 )
 	{
 		// half the amount lost through secure wallet
