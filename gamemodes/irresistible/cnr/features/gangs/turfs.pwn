@@ -35,18 +35,21 @@ enum e_GANG_ZONE_DATA
 static const
 	g_gangzoneData[ ] [ e_GANG_ZONE_DATA ] =
 	{
-		{ -2012.0, 826.5, -1702.0, 942.5, CITY_SF },
-		{ -2521.0, 575.5, -2399.0, 800.5, CITY_SF },
-		{ -1569.0, 825.5, -1421.0, 1016.5, CITY_SF },
-		{ -2397.0, 59.5, -2260.0, 232.5, CITY_SF },
-		{ -2807.0, 295.5, -2614.0, 457.5, CITY_SF },
-		{ -2536.0, -318.5, -2269.0, -222.5, CITY_SF },
-		{ -2137.0, 115.5, -2012.0, 313.5, CITY_SF },
-		{ -2871.0, 1014.5, -2769.0, 1206.5, CITY_SF },
-		{ -1771.0, -50.5, -1685.0, 226.5, CITY_SF },
-		{ -2160.0, -1006.5, -1922.0, -711.5, CITY_SF },
-		{ -1705.0, 670.5, -1563.0, 724.5, CITY_SF },
-		{ -1573.0, -464.5, -1415.0, -303.5, CITY_SF }
+		{ -1725.0, 1301.5, -1538.0, 1437.5, CITY_SF },
+		{ -2868.0, 1012.5, -2768.0, 1217.5, CITY_SF },
+		{ -2497.0, 932.5, -2392.0, 1069.5, CITY_SF },
+		{ -2054.0, 1084.5, -1892.0, 1171.5, CITY_SF },
+		{ -1569.0, 822.5, -1418.0, 1019.5, CITY_SF },
+		{ -2088.0, 570.5, -2010.0, 728.5, CITY_SF },
+		{ -2526.0, 571.5, -2391.0, 705.5, CITY_SF },
+		{ -2766.0, 324.5, -2651.0, 426.5, CITY_SF },
+		{ -2386.0, 70.5, -2273.0, 227.5, CITY_SF },
+		{ -2139.0, 115.5, -2013.0, 311.5, CITY_SF },
+		{ -2001.0, 69.5, -1911.0, 219.5, CITY_SF },
+		{ -2096.0, -279.5, -2011.0, -111.5, CITY_SF },
+		{ -2523.0, -321.5, -2264.0, -215.5, CITY_SF },
+		{ -2153.0, -515.5, -1960.0, -374.5, CITY_SF },
+		{ -2000.0, 853.5, -1904.0, 913.5, CITY_SF }
 	}
 ;
 
@@ -66,6 +69,7 @@ new
 	Iterator: turfs 				< MAX_TURFS >,
 
 	g_gangHardpointTurf				= INVALID_GANG_TURF,
+	g_gangHardpointPreviousTurf 	= INVALID_GANG_TURF,
 	g_gangHardpointAttacker			= INVALID_GANG_ID,
 	g_gangHardpointCaptureTime 		[ MAX_GANGS ]
 
@@ -112,12 +116,15 @@ hook OnServerTickSecond( )
 			new
 				new_attacker = INVALID_GANG_ID;
 
-			foreach ( new playerid : Player ) if ( IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) && GetPlayerGang( playerid ) != INVALID_GANG_ID ) {
+			foreach ( new playerid : Player ) if ( GetPlayerGang( playerid ) != INVALID_GANG_ID && IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) && Turf_IsAbleToTakeover( playerid ) ) {
 				new_attacker = GetPlayerGang( playerid );
 				break;
 			}
 
-			SendClientMessageToGang( g_gangHardpointAttacker, g_gangData[ g_gangHardpointAttacker ] [ E_COLOR ], "[TURF] "COL_WHITE"The territory hardpoint is now being contested by %s!", ReturnGangName( new_attacker ) );
+			if ( new_attacker != INVALID_GANG_ID ) {
+				SendClientMessageToGang( g_gangHardpointAttacker, g_gangData[ g_gangHardpointAttacker ] [ E_COLOR ], "[TURF] "COL_WHITE"The territory hardpoint is now being contested by %s!", ReturnGangName( new_attacker ) );
+			}
+
 			Turf_SetHardpointAttacker( new_attacker );
 		}
 
@@ -134,7 +141,7 @@ hook OnServerTickSecond( )
 			new total_capture_seconds = Turf_GetTotalCaptureSeconds( );
 
 			// alert gang members
-			foreach ( new playerid : Player ) if ( GetPlayerGang( playerid ) != INVALID_GANG_ID && IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) )
+			foreach ( new playerid : Player ) if ( GetPlayerGang( playerid ) != INVALID_GANG_ID && IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) && Turf_IsAbleToTakeover( playerid ) )
 			{
 				new player_gang = GetPlayerGang( playerid );
 
@@ -166,7 +173,7 @@ hook OnServerTickSecond( )
 		new
 			new_attacker = INVALID_GANG_ID;
 
-		foreach ( new playerid : Player ) if ( IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) && GetPlayerGang( playerid ) != INVALID_GANG_ID ) {
+		foreach ( new playerid : Player ) if ( GetPlayerGang( playerid ) != INVALID_GANG_ID && IsPlayerInDynamicArea( playerid, g_gangTurfData[ hardpoint_turf ] [ E_AREA ] ) && Turf_IsAbleToTakeover( playerid ) ) {
 			new_attacker = GetPlayerGang( playerid );
 			break;
 		}
@@ -195,16 +202,28 @@ stock Turf_CreateHardpoint( )
 	}
 
 	// force a random turf at all times
-	new previous_turf = g_gangHardpointTurf, random_turf;
+	new
+		random_turf = INVALID_GANG_TURF;
 
 	do {
 		random_turf = random( sizeof( g_gangzoneData ) );
 	}
-	while ( random_turf == previous_turf );
+	while ( random_turf == g_gangHardpointPreviousTurf );
 
 	// allocate new hardpoint
 	g_gangHardpointTurf = random_turf;
 	g_gangHardpointAttacker = INVALID_GANG_ID;
+
+	// update hardpoint textdraw
+	foreach ( new playerid : Player )
+	{
+		if ( g_gangHardpointPreviousTurf != INVALID_GANG_TURF && IsPlayerInDynamicArea( playerid, g_gangTurfData[ g_gangHardpointPreviousTurf ] [ E_AREA ] ) ) {
+			CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, g_gangHardpointPreviousTurf );
+		}
+		else if ( g_gangHardpointTurf != INVALID_GANG_TURF && IsPlayerInDynamicArea( playerid, g_gangTurfData[ g_gangHardpointTurf ] [ E_AREA ] ) ) {
+			CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, g_gangHardpointTurf );
+		}
+	}
 
 	// redraw gangzones
 	Turf_RedrawGangZonesForAll( );
@@ -229,18 +248,23 @@ hook OnServerGameDayEnd( )
 		// payout gangs
 		foreach ( new g : gangs )
 		{
-			new
-				earnings = floatround( float( g_gangHardpointCaptureTime[ g ] ) / float( total_capture_seconds ) * Turf_GetHardpointPrizePool( ) );
+			new Float: capture_ratio = float( g_gangHardpointCaptureTime[ g ] ) / float( total_capture_seconds );
+			new earnings = floatround( capture_ratio * Turf_GetHardpointPrizePool( ) );
 
 			if ( earnings > 0 )
 			{
-				GiveGangCash( g, earnings ), SaveGangData( g );
+				g_gangData[ g ] [ E_RESPECT ] += floatround( capture_ratio * 100.0 ); // give the gang a % of respect out of how much they captured
+
+				GiveGangCash( g, earnings );
+				SaveGangData( g );
+
 				SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", cash_format( earnings ) );
 			}
 		}
 	}
 
 	// reset hardpoint
+	g_gangHardpointPreviousTurf = g_gangHardpointTurf;
 	g_gangHardpointTurf = INVALID_GANG_TURF;
 	return 1;
 }
@@ -273,7 +297,14 @@ stock Turf_SetHardpointAttacker( gangid )
   	g_gangHardpointAttacker = gangid;
 
   	// alert gang
- 	SendClientMessageToGang( g_gangHardpointAttacker, g_gangData[ g_gangHardpointAttacker ] [ E_COLOR ], "[TURF] "COL_WHITE"The gang is now contesting the territory hardpoint!" );
+  	if ( gangid != INVALID_GANG_ID ) {
+ 		SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[TURF] "COL_WHITE"The gang is now contesting the territory hardpoint!" );
+  	}
+
+  	// update label
+	foreach ( new playerid : Player ) if ( g_gangHardpointTurf != INVALID_GANG_TURF && IsPlayerInDynamicArea( playerid, g_gangTurfData[ g_gangHardpointTurf ] [ E_AREA ] ) ) {
+		CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, g_gangHardpointTurf );
+	}
 
   	// redraw
   	Turf_RedrawGangZonesForAll( );
@@ -299,6 +330,26 @@ hook OnPlayerLeaveDynArea( playerid, areaid )
 		else CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, INVALID_GANG_TURF );
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
+}
+
+public OnPlayerUpdateGangZone( playerid, zoneid )
+{
+	if ( ! IsPlayerMovieMode( playerid ) )
+	{
+		if ( zoneid == INVALID_GANG_TURF )
+			return PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "_" );
+
+		if ( g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ) {
+			PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~p~(FACILITY)~n~~w~~h~%s", ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
+		} else {
+			if ( g_gangTurfData[ g_gangHardpointTurf ] [ E_ID ] != g_gangTurfData[ zoneid ] [ E_ID ] ) {
+				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "~b~~h~(INACTIVE HARDPOINT)~n~~w~~h~Unchallenged" );
+			} else {
+				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(ACTIVE HARDPOINT)~n~~w~~h~%s", g_gangHardpointAttacker != INVALID_GANG_ID ? ( ReturnGangName( g_gangHardpointAttacker ) ) : ( "Unchallenged" ) ) );
+			}
+		}
+	}
+	return 1;
 }
 
 /* ** Functions ** */
@@ -407,32 +458,26 @@ stock Turf_GetCentrePos( zoneid, &Float: X, &Float: Y ) // should return the cen
 	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_Y, Y );
 }
 
-stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
+stock GetPlayersInGangZone( z, g )
 {
 	if ( g == INVALID_GANG_ID )
 		return 0;
 
-	new count = 0;
-	new Float: Z;
+	new
+		count = 0;
 
-	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) )
-	{
-		if ( ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
-		{
-            if ( IsPlayerAFK( i ) )
-            {
-            	is_afk++;
-            	continue;
-            }
-            if ( GetPlayerPos( i, Z, Z, Z ) && Z >= 300.0 )
-            {
-            	in_air++;
-            	continue;
-            }
-            count++;
-		}
+	foreach ( new i : Player ) if ( p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) && Turf_IsAbleToTakeover( i ) ) {
+		count++;
 	}
 	return count;
+}
+
+stock Turf_IsAbleToTakeover( i ) {
+	new
+		Float: Z;
+
+	GetPlayerPos( i, Z, Z, Z );
+	return p_Class[ i ] == CLASS_CIVILIAN && ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! IsPlayerAFK( i ) && Z <= 250.0;
 }
 
 stock Turf_RedrawPlayerGangZones( playerid )

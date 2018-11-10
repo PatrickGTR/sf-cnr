@@ -1018,10 +1018,12 @@ stock SetGangColorsToGang( gangid )
 
 stock ReturnGangName( i )
 {
-	static
-		szGang[ 30 ];
-	if ( i == INVALID_GANG_ID || !Iter_Contains( gangs, i ) ) szGang = "Unoccupied";
-	else format( szGang, sizeof( szGang ), "%s", g_gangData[ i ] [ E_NAME ] );
+	new
+		szGang[ 30 ] = "Unknown";
+
+	if ( IsValidGangID( i ) ) {
+		format( szGang, sizeof( szGang ), "%s", g_gangData[ i ] [ E_NAME ] );
+	}
 	return szGang;
 }
 

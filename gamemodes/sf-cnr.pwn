@@ -988,19 +988,6 @@ public OnServerSecondTick( )
 	return 1;
 }
 
-public OnPlayerUpdateGangZone( playerid, zoneid )
-{
-	if ( ! p_inMovieMode{ playerid } )
-	{
-		if ( zoneid == INVALID_GANG_TURF )
-			return PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "_" );
-
-		// if ( p_GangID[ playerid ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == INVALID_GANG_ID ) ShowPlayerHelpDialog( playerid, 2000, "You can take over this turf by typing ~g~/takeover" );
-		PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
-	}
-	return 1;
-}
-
 public OnRulesHTTPResponse( index, response_code, data[ ] )
 {
     if ( response_code == 200 )
