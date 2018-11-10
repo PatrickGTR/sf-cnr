@@ -38,3 +38,7 @@
     - Called when a gang is loaded
 - `OnGangUnload( gangid, bool: deleted )`
     - Called when a gang is unloaded (or deleted)
+- `OnPlayerJoinGang( playerid, gangid )`
+    - Called when a player joins a gang
+- `OnPlayerLeaveGang( playerid, gangid, reason )`
+    - Called when a player leaves a gang

@@ -442,7 +442,7 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 					g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ x ] = drop_off_index;
 
 					// map icons, cp, areas
-					g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ], 19, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+					g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ], 53, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
 					g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] = CreateDynamicRaceCP( 1, g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
 					g_businessData[ businessid ] [ E_EXPORT_CIRCLE ] [ x ] = CreateDynamicCircle( g_airBusinessExportData[ city ] [ drop_off_index ] [ 0 ], g_airBusinessExportData[ city ] [ drop_off_index ] [ 1 ], 15.0 );
 
@@ -1787,7 +1787,7 @@ stock SetRandomDropoffLocation( playerid, businessid, bool: heli = false )
 			g_businessData[ businessid ] [ E_EXPORT_INDEX ] [ x ] = drop_off_index;
 
 			// map icons, cp, areas
-			g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 0 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 1 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 2 ], 19, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
+			g_businessData[ businessid ] [ E_EXPORT_ICON ] [ x ] = CreateDynamicMapIcon( g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 0 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 1 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 2 ], 53, -1, -1, -1, 0, 6000.0, MAPICON_GLOBAL );
 			g_businessData[ businessid ] [ E_EXPORT_CP ] [ x ] = CreateDynamicRaceCP( 1, g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 0 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 1 ], g_roadBusinessExportData[ city_id ] [ drop_off_index ] [ 2 ], 0, 0, 0, 5.0, -1, -1, 0 );
 
 		  	// reset players in map icon/cp

@@ -985,6 +985,7 @@ stock SetPlayerGang( playerid, joining_gang )
     if ( GetPlayerWantedLevel( playerid ) < 1 ) SetPlayerColor( playerid, g_gangData[ joining_gang ] [ E_COLOR ] );
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ joining_gang ] [ E_SQL_ID ], GetPlayerAccountID( playerid ) ) );
 	SendClientMessageToGang( joining_gang, g_gangData[ joining_gang ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has joined the gang.", ReturnPlayerName( playerid ), playerid );
+	CallLocalFunction( "OnPlayerJoinGang", "dd", playerid, joining_gang );
 	return 1;
 }
 

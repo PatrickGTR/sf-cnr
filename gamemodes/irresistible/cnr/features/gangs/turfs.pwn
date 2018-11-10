@@ -22,6 +22,13 @@
 #define COLOR_GANGZONE				0x00000080
 #define COLOR_HARDPOINT				0xFF000080
 
+/* ** Macros ** */
+#define ShowHardpointIconForPlayer(%0) \
+	Streamer_AppendArrayData( STREAMER_TYPE_MAP_ICON, g_gangHardpointMapIcon, E_STREAMER_PLAYER_ID, %0 )
+
+#define HideHardpointIconForPlayer(%0) \
+	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_gangHardpointMapIcon, E_STREAMER_PLAYER_ID, %0 )
+
 /* ** Variables ** */
 enum e_GANG_ZONE_DATA
 {
@@ -68,9 +75,14 @@ new
 	g_gangTurfData					[ MAX_TURFS ] [ E_TURF_ZONE_DATA ],
 	Iterator: turfs 				< MAX_TURFS >,
 
+	Float: g_weekAveragePlayers		= 0.0,
+	Float: g_weekSecondsElapsed 	= 0.0,
+
 	g_gangHardpointTurf				= INVALID_GANG_TURF,
 	g_gangHardpointPreviousTurf 	= INVALID_GANG_TURF,
 	g_gangHardpointAttacker			= INVALID_GANG_ID,
+	g_gangHardpointMapIcon 			= -1,
+
 	g_gangHardpointCaptureTime 		[ MAX_GANGS ]
 
 ;
@@ -81,7 +93,7 @@ forward OnPlayerUpdateGangZone( playerid, zoneid );
 stock Float: Turf_GetHardpointPrizePool( Float: max_payout = 500000.0 )
 {
 	new
-		Float: total_payout = float( Iter_Count( Player ) ) * 10000.0;
+		Float: total_payout = ( g_weekAveragePlayers / g_weekSecondsElapsed ) * 10000.0;
 
 	return total_payout < max_payout ? total_payout : max_payout;
 }
@@ -105,6 +117,11 @@ hook OnServerTickSecond( )
 		return Turf_CreateHardpoint( );
 	}
 
+	// accumulate average player count
+	g_weekAveragePlayers += float( Iter_Count( Player ) );
+	g_weekSecondsElapsed ++;
+
+	// begin auto turf takeover etc
 	if ( g_gangHardpointAttacker != INVALID_GANG_ID )
 	{
 		new total_in_turf = Turf_GetPlayersInTurf( hardpoint_turf );
@@ -137,7 +154,7 @@ hook OnServerTickSecond( )
 			// add seconds
 			g_gangHardpointCaptureTime[ current_attacker ] ++;
 
-			// get potential earnings
+			// get capture time
 			new total_capture_seconds = Turf_GetTotalCaptureSeconds( );
 
 			// alert gang members
@@ -155,15 +172,15 @@ hook OnServerTickSecond( )
 	    				rivals_members = total_in_turf - attacking_members;
 
 	    			if ( rivals_members ) {
-	        			ShowPlayerHelpDialog( playerid, 1500, "~b~Defend~w~ from %d enemy gang member%s!~n~~n~Earning potential is ~g~%s", rivals_members, rivals_members == 1 ? ( "" ) : ( "s" ), cash_format( potential_earnings ) );
+	        			ShowPlayerHelpDialog( playerid, 2500, "~b~Defend~w~ from %d enemy gang member%s!~n~~n~Earning potential is ~g~%s", rivals_members, rivals_members == 1 ? ( "" ) : ( "s" ), cash_format( potential_earnings ) );
 	    			} else {
-	    				ShowPlayerHelpDialog( playerid, 1500, "~g~%s~w~ is in control now %d seconds!~n~~n~Earning potential is ~g~%s", ReturnGangName( current_attacker ), g_gangHardpointCaptureTime[ current_attacker ], cash_format( potential_earnings ) );
+	    				ShowPlayerHelpDialog( playerid, 2500, "~g~%s~w~ is in control now %d seconds!~n~~n~Earning potential is ~g~%s", ReturnGangName( current_attacker ), g_gangHardpointCaptureTime[ current_attacker ], cash_format( potential_earnings ) );
 	    			}
 	        	}
 
 	        	// message the defender
 	        	else if ( player_gang != current_attacker ) {
-	        		ShowPlayerHelpDialog( playerid, 1500, "~r~Kill~w~ %d %s member%s!~n~~n~Earning potential is ~r~%s", attacking_members, ReturnGangName( current_attacker ), attacking_members == 1 ? ( "" ) : ( "s" ), cash_format( potential_earnings ) );
+	        		ShowPlayerHelpDialog( playerid, 2500, "~r~Kill~w~ %d %s member%s!~n~~n~Earning potential is ~r~%s", attacking_members, ReturnGangName( current_attacker ), attacking_members == 1 ? ( "" ) : ( "s" ), cash_format( potential_earnings ) );
 	        	}
 	        }
 	   	}
@@ -213,6 +230,7 @@ stock Turf_CreateHardpoint( )
 	// allocate new hardpoint
 	g_gangHardpointTurf = random_turf;
 	g_gangHardpointAttacker = INVALID_GANG_ID;
+	DestroyDynamicMapIcon( g_gangHardpointMapIcon );
 
 	// update hardpoint textdraw
 	foreach ( new playerid : Player )
@@ -225,6 +243,15 @@ stock Turf_CreateHardpoint( )
 		}
 	}
 
+	// create map icon
+	new
+		Float: middle_x, Float: middle_y;
+
+	Turf_GetMiddlePos( g_gangHardpointTurf, middle_x, middle_y );
+
+	g_gangHardpointMapIcon = CreateDynamicMapIcon( middle_x, middle_y, 0.0, 19, -1, -1, -1, 0, 3000.0, MAPICON_GLOBAL );
+	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_gangHardpointMapIcon, E_STREAMER_PLAYER_ID, 0 );
+
 	// redraw gangzones
 	Turf_RedrawGangZonesForAll( );
 	printf("New Hardpoint" );
@@ -234,6 +261,18 @@ stock Turf_CreateHardpoint( )
 hook OnGangUnload( gangid, bool: deleted )
 {
 	g_gangHardpointCaptureTime[ gangid ] = 0;
+	return 1;
+}
+
+hook OnPlayerLeaveGang( playerid, gangid, reason )
+{
+	HideHardpointIconForPlayer( playerid );
+	return 1;
+}
+
+hook OnPlayerJoinGang( playerid, gangid )
+{
+	ShowHardpointIconForPlayer( playerid );
 	return 1;
 }
 
@@ -266,6 +305,8 @@ hook OnServerGameDayEnd( )
 	// reset hardpoint
 	g_gangHardpointPreviousTurf = g_gangHardpointTurf;
 	g_gangHardpointTurf = INVALID_GANG_TURF;
+	g_weekAveragePlayers = 0.0;
+	g_weekSecondsElapsed = 0.0;
 	return 1;
 }
 
@@ -497,6 +538,12 @@ stock Turf_RedrawPlayerGangZones( playerid )
 	        GangZoneShowForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
     	}
     }
+
+	if ( GetPlayerClass( playerid ) == CLASS_CIVILIAN && GetPlayerGang( playerid ) != INVALID_GANG_ID ) {
+		ShowHardpointIconForPlayer( playerid );
+	} else {
+		HideHardpointIconForPlayer( playerid );
+	}
     return 1;
 }
 
@@ -517,6 +564,14 @@ stock Turf_RedrawGangZonesForAll( )
 	        GangZoneShowForAll( g_gangTurfData[ x ] [ E_ID ], g_gangTurfData[ x ] [ E_COLOR ] );
     	}
     }
+
+    foreach ( new playerid : Player ) {
+    	if ( GetPlayerClass( playerid ) == CLASS_CIVILIAN && GetPlayerGang( playerid ) != INVALID_GANG_ID ) {
+			ShowHardpointIconForPlayer( playerid );
+    	} else {
+			HideHardpointIconForPlayer( playerid );
+    	}
+    }
     return 1;
 }
 
@@ -529,4 +584,18 @@ stock Turf_GetTotalCaptureSeconds( ) {
 		accum_seconds += g_gangHardpointCaptureTime[ i ];
 	}
 	return accum_seconds;
+}
+
+stock Turf_GetMiddlePos( zoneid, &Float: middle_x, &Float: middle_y )
+{
+	new
+		Float: min_x, Float: min_y, Float: max_x, Float: max_y;
+
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MAX_X, max_x );
+	Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ zoneid ] [ E_AREA ], E_STREAMER_MAX_Y, max_y );
+
+    middle_x = ( min_x + max_x ) / 2.0;
+    middle_y = ( min_y + max_y ) / 2.0;
 }
