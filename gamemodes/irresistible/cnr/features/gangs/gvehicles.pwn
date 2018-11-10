@@ -22,7 +22,7 @@
 
 /* ** Macros ** */
 #define IsValidGangVehicle(%0,%1) \
-	( 0 <= %1 < MAX_GANG_VEHICLES && Iter_Contains( gangvehicles<%0>, %1 ) )
+	( 0 <= %1 < MAX_GANG_VEHICLES && Iter_Contains( gangvehicles[%0], %1 ) )
 
 /* ** Constants ** */
 static const GANG_VEHICLE_PRICE_FACTOR = 4;
@@ -38,10 +38,16 @@ enum E_GANG_VEHICLE_DATA
 
 new g_gangVehicleData				[ MAX_GANGS ] [ MAX_GANG_VEHICLES ] [ E_GANG_VEHICLE_DATA ];
 new g_gangVehicleModifications		[ MAX_GANGS ] [ MAX_GANG_VEHICLES ] [ MAX_CAR_MODS ];
-new Iterator: gangvehicles 			< MAX_GANGS, MAX_GANG_VEHICLES >;
+new Iterator: gangvehicles 			[ MAX_GANGS ] < MAX_GANG_VEHICLES >;
 new bool: g_gangVehicle 			[ MAX_VEHICLES char ];
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	Iter_Init( gangvehicles ); // reset the gang vehicles iterator
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	new
@@ -61,7 +67,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			// spawn vehicle
 			case 0:
 			{
-				if ( ! Iter_Count( gangvehicles< gangid > ) ) {
+				if ( ! Iter_Count( gangvehicles[ gangid ] ) ) {
 					SendError( playerid, "This gang does not have any vehicles purchased." );
 					return ShowPlayerGangVehicleMenu( playerid, facilityid );
 				}
@@ -75,7 +81,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			// sell vehicle
 			case 2:
 			{
-				if ( ! Iter_Count( gangvehicles< gangid > ) ) {
+				if ( ! Iter_Count( gangvehicles[ gangid ] ) ) {
 					SendError( playerid, "This gang does not have any vehicles purchased." );
 					return ShowPlayerGangVehicleMenu( playerid, facilityid );
 				}
@@ -87,7 +93,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				szBigString = ""COL_WHITE"Vehicle\t"COL_WHITE"Sell Price\n";
 
-				foreach ( new slotid : gangvehicles< gangid > )
+				foreach ( new slotid : gangvehicles[ gangid ] )
 				{
 					new
 						sell_price = ( GetBuyableVehiclePrice( g_gangVehicleData[ gangid ] [ slotid ] [ E_MODEL ] ) * GANG_VEHICLE_PRICE_FACTOR ) / 2;
@@ -115,7 +121,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			x = 0;
 
-		foreach ( new slotid : gangvehicles< gangid > )
+		foreach ( new slotid : gangvehicles[ gangid ] )
 		{
 			if ( x == listitem )
 			{
@@ -184,7 +190,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				}
 
 				new
-					num_vehicles = Iter_Count( gangvehicles< gangid > );
+					num_vehicles = Iter_Count( gangvehicles[ gangid ] );
 
 				if ( num_vehicles >= MAX_GANG_VEHICLES ) {
 					ShowPlayerDialog( playerid, DIALOG_GANG_VD_OPTIONS, DIALOG_STYLE_LIST, "{FFFFFF}Gang Vehicles - Purchase", "Purchase This Vehicle\nPreview Vehicle", "Select", "Back" );
@@ -273,7 +279,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new
 			x = 0;
 
-		foreach ( new slotid : gangvehicles< gangid > )
+		foreach ( new slotid : gangvehicles[ gangid ] )
 		{
 			if ( x == listitem )
 			{
@@ -344,9 +350,9 @@ hook OnGangLoad( gangid )
 
 hook OnGangUnload( gangid, bool: deleted )
 {
-	foreach ( new slotid : gangvehicles< gangid > ) {
+	foreach ( new slotid : gangvehicles[ gangid ] ) {
 		RemoveGangVehicle( gangid, slotid );
-		Iter_SafeRemove( gangvehicles< gangid >, slotid, slotid );
+		Iter_SafeRemove( gangvehicles[ gangid ], slotid, slotid );
 	}
 	return 1;
 }
@@ -529,7 +535,7 @@ thread GangVehicles_InsertVehicle( gangid, slotid ) {
 stock CreateGangVehicle( gangid, modelid, color1 = -1, color2 = -1, paintjob = 3, sql_id = -1 )
 {
 	new
-		slotid = Iter_Free( gangvehicles< gangid > );
+		slotid = Iter_Free( gangvehicles[ gangid ] );
 
 	if ( slotid != ITER_NONE )
 	{
@@ -549,24 +555,24 @@ stock CreateGangVehicle( gangid, modelid, color1 = -1, color2 = -1, paintjob = 3
 		}
 
 		ResetGangVehicleMods( gangid, slotid );
-		Iter_Add( gangvehicles< gangid >, slotid );
+		Iter_Add( gangvehicles[ gangid ], slotid );
 	}
 	return slotid;
 }
 
 stock DestroyGangVehicle( gangid, slotid )
 {
-	if ( Iter_Contains( gangvehicles< gangid >, slotid ) ) {
+	if ( Iter_Contains( gangvehicles[ gangid ], slotid ) ) {
 		RemoveGangVehicle( gangid, slotid );
 		mysql_single_query( sprintf( "DELETE FROM `GANG_VEHICLES` WHERE `ID` = %d", g_gangVehicleData[ gangid ] [ slotid ] [ E_SQL_ID ] ) );
-		Iter_Remove( gangvehicles< gangid >, slotid );
+		Iter_Remove( gangvehicles[ gangid ], slotid );
 	}
 	return 0;
 }
 
 stock RemoveGangVehicle( gangid, slotid )
 {
-	if ( Iter_Contains( gangvehicles< gangid >, slotid ) ) {
+	if ( Iter_Contains( gangvehicles[ gangid ], slotid ) ) {
 		if ( g_gangVehicleData[ gangid ] [ slotid ] [ E_VEHICLE_ID ] != -1 ) {
 			g_gangVehicle{ g_gangVehicleData[ gangid ] [ slotid ] [ E_VEHICLE_ID ] } = false;
 		}
@@ -581,7 +587,7 @@ stock SpawnGangVehicle( gangid, slotid, Float: X, Float: Y, Float: Z, Float: RZ 
 	new
 		vehicleid = 0;
 
-	if ( Iter_Contains( gangvehicles< gangid >, slotid ) )
+	if ( Iter_Contains( gangvehicles[ gangid ], slotid ) )
 	{
 		// reset special data
 	    ResetVehicleMethlabData( g_gangVehicleData[ gangid ] [ slotid ] [ E_VEHICLE_ID ], true );
@@ -659,7 +665,7 @@ static stock GangVehicles_ShowBuyableList( playerid, type_id )
 
 stock GetGangVehicleData( vehicleid, &gangid, &slotid ) {
 	foreach ( new g : gangs ) {
-		foreach ( new v : gangvehicles< g > ) if ( g_gangVehicleData[ g ] [ v ] [ E_VEHICLE_ID ] == vehicleid ) {
+		foreach ( new v : gangvehicles[ g ] ) if ( g_gangVehicleData[ g ] [ v ] [ E_VEHICLE_ID ] == vehicleid ) {
 			gangid = g;
 			slotid = v;
 			break;
@@ -673,7 +679,7 @@ static stock GangVehicles_ShowSpawnList( playerid, gangid ) {
 
 	szBigString = ""COL_WHITE"Vehicle\t"COL_WHITE"Availablity\n";
 
-	foreach ( new slotid : gangvehicles< gangid > )
+	foreach ( new slotid : gangvehicles[ gangid ] )
 	{
 		format( szBigString, sizeof( szBigString ), "%s%s\t%s\n", szBigString,
 			GetVehicleName( g_gangVehicleData[ gangid ] [ slotid ] [ E_MODEL ] ),

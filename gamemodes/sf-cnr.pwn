@@ -258,6 +258,7 @@ new
 /* ** Forwards ** */
 public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdateTimer( );
+public OnServerSecondTick( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
@@ -420,7 +421,7 @@ public OnGameModeInit()
 
 	/* ** Timers ** */
 	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
-	rl_ZoneUpdate = SetTimer( "ZoneTimer", 980, true );
+	rl_ZoneUpdate = SetTimer( "OnServerSecondTick", 980, true );
 
 	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
 
@@ -897,7 +898,7 @@ stock GetGangCapturedTurfs( gangid )
 	return c;
 }
 
-public ZoneTimer( )
+public OnServerSecondTick( )
 {
     new
     	iKeys, iUpDownKeys, iLeftRightKeys;
@@ -923,138 +924,8 @@ public ZoneTimer( )
 		}
 	}
 
-
-	new
-		oCount = 0;
-
-    foreach ( new z : turfs )
-	{
-	    if ( g_gangzoneAttacker[ z ] != INVALID_GANG_ID )
-	    {
-	    	new
-	    		attacker_member_count = GetPlayersInGangZone( z, g_gangzoneAttacker[ z ] );
-
-	        if ( attacker_member_count >= TAKEOVER_NEEDED_PEOPLE )
-	        {
-	          	if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID )
-			      	oCount = GetPlayersInGangZone( z, g_gangTurfData[ z ] [ E_OWNER ] );
-
-				new
-					attacker_time_required = -10 * ( attacker_member_count - TAKEOVER_NEEDED_PEOPLE ) + ( g_gangTurfData[ z ] [ E_FACILITY_GANG ] == INVALID_GANG_ID ? 60 : 120 );
-
-			   	// minimum of 20 seconds
-				if ( attacker_time_required < 20 )
-					attacker_time_required = 20;
-
-	            if ( g_gangzoneAttackCount[ z ] < attacker_time_required && oCount == 0 )
-	            {
-	            	foreach ( new i : Player ) if ( p_Class[ i ] != CLASS_POLICE && p_GangID[ i ] == g_gangzoneAttacker[ z ] && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) ) {
-						if ( p_WantedLevel[ i ] < 2 ) GivePlayerWantedLevel( i, 2 - p_WantedLevel[ i ] );
-	            		ShowPlayerHelpDialog( i, 1500, "~r~Control~w~ the area for %d seconds!", attacker_time_required - g_gangzoneAttackCount[ z ] );
-	            	}
-	            	g_gangzoneAttackCount[ z ] ++;
-                 	g_gangzoneAttackTimeout[ z ] = 0;
-					continue;
-				}
-	            else if ( g_gangzoneAttackCount[ z ] >= attacker_time_required )
-	            {
-	            	static szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
-
-                 	new earned_money = 0;
-                 	new owner_gang = g_gangTurfData[ z ] [ E_OWNER ];
-                 	new attacker_gang = g_gangzoneAttacker[ z ];
-
-					new Float: min_x, Float: min_y;
-					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_X, min_x );
-					Streamer_GetFloatData( STREAMER_TYPE_AREA, g_gangTurfData[ z ] [ E_AREA ], E_STREAMER_MIN_Y, min_y );
-
-				    Get2DCity 				( szCity, min_x, min_y );
-				    GetZoneFromCoordinates 	( szLocation, min_x, min_y );
-
-	                GangZoneStopFlashForAll	( g_gangTurfData[ z ] [ E_ID ] );
-					GangZoneShowForAll 		( g_gangTurfData[ z ] [ E_ID ], setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 ) );
-
-					g_gangTurfData[ z ] [ E_COLOR ] = setAlpha( g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], 0x80 );
-	                g_gangTurfData[ z ] [ E_OWNER ] = g_gangzoneAttacker[ z ];
-
-                 	g_gangzoneAttacker 		[ z ] = INVALID_GANG_ID;
-	                g_gangzoneAttackCount	[ z ] = 0;
-                 	g_gangzoneAttackTimeout	[ z ] = 0;
-
-                 	// Money Grub
-                 	if ( Iter_Contains( gangs, owner_gang ) )
-					{
-						new afk_opmembers, online_opmembers = GetOnlineGangMembers( owner_gang, .afk_members = afk_opmembers );
-						new zone_money = Turf_GetProfitability( z, online_opmembers - afk_opmembers );
-
-						if ( g_gangData[ owner_gang ] [ E_BANK ] > zone_money )
-						{
-							// deduct from gang bank and give to op, take 10% as fee
-				            g_gangData[ owner_gang ] [ E_BANK ] -= zone_money;
-				            SaveGangData( owner_gang );
-
-				           	earned_money = floatround( float( zone_money ) * 0.9 );
-				            g_gangData[ attacker_gang ] [ E_BANK ] += earned_money;
-				       	}
-
-				      	// credit respect
-						g_gangData[ attacker_gang ] [ E_RESPECT ] ++;
-						SaveGangData( attacker_gang );
-					}
-
-					// Alert gang
-					if ( earned_money ) {
-						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s and earned "COL_GOLD"%s"COL_WHITE"!", szLocation, szCity, cash_format( earned_money ) );
-					} else {
-						SendClientMessageToGang	( attacker_gang, g_gangData[ attacker_gang ] [ E_COLOR ], "[GANG]{FFFFFF} We have captured a turf near %s in %s!", szLocation, szCity );
-					}
-
-                 	// Give Gangmembers XP & Wanted
-					foreach(new d : Player)
-					{
-						new in_area = IsPlayerInDynamicArea( d, g_gangTurfData[ z ] [ E_AREA ] );
-
-						if ( in_area )
-							PlayerTextDrawSetString( d, g_ZoneOwnerTD[ d ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ z ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( attacker_gang ) ) );
-
-						if ( IsPlayerSpawned( d ) && ! IsPlayerAFK( d ) && p_Class[ d ] == CLASS_CIVILIAN && p_GangID[ d ] == attacker_gang && ! IsPlayerInPaintBall( d ) ) {
-							if ( in_area ) {
-								GivePlayerScore( d, 2 );
-								GivePlayerWantedLevel( d, 6 );
-							}
-							PlayerPlaySound( d, 36205, 0.0, 0.0, 0.0 );
-						}
-					}
-				}
-				else if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && oCount > 0 ) {
-	            	foreach ( new i : Player ) if ( p_GangID[ i ] != INVALID_GANG_ID && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) ) {
-	            		// message the attacker that they gotta attack
-	            		if ( p_GangID[ i ] == g_gangzoneAttacker[ z ] ) {
-		            		ShowPlayerHelpDialog( i, 1500, "~r~Kill~w~ the %d gang member%s in the area!", oCount, oCount == 1 ? ( "" ) : ( "s" ) );
-		            	}
-		            	// message the defender
-		            	else if ( p_GangID[ i ] == g_gangTurfData[ z ] [ E_OWNER ] ) {
-		            		ShowPlayerHelpDialog( i, 1500, "~b~Defend~w~ the area from the %d enemy gang member%s!", attacker_member_count, attacker_member_count == 1 ? ( "" ) : ( "s" ) );
-		            	}
-		            }
-				}
-	        }
-	        else
-	        {
-	        	if ( ! g_gangzoneAttackTimeout[ z ] ) {
-	        		g_gangzoneAttackTimeout[ z ] = g_iTime + 10;
-                    SendClientMessageToGang( g_gangzoneAttacker[ z ], g_gangData[ g_gangzoneAttacker[ z ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have 10 seconds to get back in the area until the turf war is stopped!" );
-	        	}
-	        	else if ( g_iTime >= g_gangzoneAttackTimeout[ z ] )
-				{
-		         	g_gangzoneAttackCount[ z ] = 0;
-		         	g_gangzoneAttackTimeout[ z ] = 0;
-		     		GangZoneStopFlashForAll( g_gangTurfData[ z ] [ E_ID ] );
-		            g_gangzoneAttacker[ z ] = INVALID_GANG_ID;
-				}
-	        }
-		}
-	}
+	// call local function
+	CallLocalFunction( "OnServerTickSecond", "" );
 
 	// Looping every 1000 MS
 	foreach ( new playerid : Player )
@@ -1113,19 +984,6 @@ public ZoneTimer( )
 		// CIA Visible On Radar after firing a shot
 		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
 			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
-	}
-	return 1;
-}
-
-public OnPlayerUpdateGangZone( playerid, zoneid )
-{
-	if ( ! p_inMovieMode{ playerid } )
-	{
-		if ( zoneid == INVALID_GANG_TURF )
-			return PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "_" );
-
-		// if ( p_GangID[ playerid ] != INVALID_GANG_ID && g_gangTurfData[ zoneid ] [ E_OWNER ] == INVALID_GANG_ID ) ShowPlayerHelpDialog( playerid, 2000, "You can take over this turf by typing ~g~/takeover" );
-		PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(%s)~n~~w~~h~%s", g_gangTurfData[ zoneid ] [ E_FACILITY_GANG ] != INVALID_GANG_ID ? ( "FACILITY" ) : ( "TERRITORY" ), ReturnGangName( g_gangTurfData[ zoneid ] [ E_OWNER ] ) ) );
 	}
 	return 1;
 }
@@ -1679,17 +1537,6 @@ public OnPlayerSpawn( playerid )
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		RemovePlayerAttachedObject( playerid, 1 ), SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
-
-	// Gang Zones
-	foreach( new zoneid : turfs )
-	{
-    	// resume flashing if gang war
-    	if ( g_gangzoneAttacker[ zoneid ] != INVALID_GANG_ID && Iter_Contains( gangs, g_gangzoneAttacker[ zoneid ] ) ) {
-    		GangZoneFlashForPlayer( playerid, g_gangTurfData[ zoneid ] [ E_ID ], setAlpha( g_gangData[ g_gangzoneAttacker[ zoneid ] ] [ E_COLOR ], 0x80 ) );
-    	} else {
-	        GangZoneShowForPlayer( playerid, g_gangTurfData[ zoneid ] [ E_ID ], g_gangTurfData[ zoneid ] [ E_COLOR ] );
-    	}
-	}
 
 	// VIP Skin
 	if ( IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] )
@@ -11088,34 +10935,6 @@ stock IsPlayerInArea3D( playerid, Float: minx, Float: maxx, Float: miny, Float: 
 
 stock IsPointInArea( Float: X, Float: Y, Float: Z, Float: minx, Float: maxx, Float: miny, Float: maxy, Float: minz, Float: maxz )
  	return ( X > minx && X < maxx && Y > miny && Y < maxy && Z > minz && Z < maxz );
-
-stock GetPlayersInGangZone( z, g, &is_afk = 0, &in_air = 0 )
-{
-	if ( g == INVALID_GANG_ID )
-		return 0;
-
-	new count = 0;
-	new Float: Z;
-
-	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_CIVILIAN && p_GangID[ i ] == g && IsPlayerInDynamicArea( i, g_gangTurfData[ z ] [ E_AREA ] ) )
-	{
-		if ( ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING )
-		{
-            if ( IsPlayerAFK( i ) )
-            {
-            	is_afk++;
-            	continue;
-            }
-            if ( GetPlayerPos( i, Z, Z, Z ) && Z >= 300.0 )
-            {
-            	in_air++;
-            	continue;
-            }
-            count++;
-		}
-	}
-	return count;
-}
 
 stock HexToInt(string[]) // By DracoBlue
 {

@@ -799,7 +799,7 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
 	g_gangData[ gangid ] [ E_SQL_ID ] 			= 0;
     g_gangData[ gangid ] [ E_LEADER ] 			= 0;
 	g_gangData[ gangid ] [ E_SOFT_DELETE_TS ] 	= 0;
- 	g_gangData[ gangid ] [ E_COLOR ]       	 	= COLOR_GANGZONE;
+ 	g_gangData[ gangid ] [ E_COLOR ]       	 	= g_gangColors[ random( sizeof( g_gangColors ) ) ];
  	g_gangData[ gangid ] [ E_NAME ] [ 0 ]   	= '\0';
  	g_gangData[ gangid ] [ E_BANK ] 			= 0;
  	g_gangData[ gangid ] [ E_RESPECT ] 			= 0;
@@ -985,6 +985,7 @@ stock SetPlayerGang( playerid, joining_gang )
     if ( GetPlayerWantedLevel( playerid ) < 1 ) SetPlayerColor( playerid, g_gangData[ joining_gang ] [ E_COLOR ] );
 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=%d WHERE `ID`=%d", g_gangData[ joining_gang ] [ E_SQL_ID ], GetPlayerAccountID( playerid ) ) );
 	SendClientMessageToGang( joining_gang, g_gangData[ joining_gang ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has joined the gang.", ReturnPlayerName( playerid ), playerid );
+	CallLocalFunction( "OnPlayerJoinGang", "dd", playerid, joining_gang );
 	return 1;
 }
 
@@ -1007,7 +1008,7 @@ stock SetGangColorsToGang( gangid )
 	foreach ( new i : Player )
 	{
 		// refresh player turfs
-		Turf_RedrawPlayerGangZones( i, gangid );
+		Turf_RedrawPlayerGangZones( i );
 
 		// set new colour of player
 	    if ( p_GangID[ i ] == gangid && p_WantedLevel[ i ] <= 0 && p_Class[ i ] == CLASS_CIVILIAN ) {
@@ -1018,10 +1019,12 @@ stock SetGangColorsToGang( gangid )
 
 stock ReturnGangName( i )
 {
-	static
-		szGang[ 30 ];
-	if ( i == INVALID_GANG_ID || !Iter_Contains( gangs, i ) ) szGang = "Unoccupied";
-	else format( szGang, sizeof( szGang ), "%s", g_gangData[ i ] [ E_NAME ] );
+	new
+		szGang[ 30 ] = "Unknown";
+
+	if ( IsValidGangID( i ) ) {
+		format( szGang, sizeof( szGang ), "%s", g_gangData[ i ] [ E_NAME ] );
+	}
 	return szGang;
 }
 

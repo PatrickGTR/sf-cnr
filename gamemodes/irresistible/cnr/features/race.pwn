@@ -84,7 +84,7 @@ hook OnPlayerEnterDynArea( playerid, areaid )
 
 		// see if ahead
 		AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], vehicleid, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, -OUTRUN_DIST - 5.0 );
+		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, OUTRUN_DIST * 2 );
 	}
 	return 1;
 }
@@ -571,6 +571,7 @@ CMD:race( playerid, params[ ] )
 	  	// stream to players
 		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid ) {
   			Streamer_AppendArrayData( STREAMER_TYPE_RACE_CP, g_raceData[ raceid ] [ E_START_CHECKPOINT ], E_STREAMER_PLAYER_ID, i );
+  			Streamer_Update( i );
 		}
 
 		// see if racers is 2
@@ -689,42 +690,37 @@ function OnRaceCountdown( raceid, time )
 
 	if ( time <= 0 )
 	{
-	    foreach (new playerid : Player) if ( p_raceLobbyId[ playerid ] == raceid )
-	    {
-	    	if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
-	    	{
-		    	// create sphere ahead of leader
-		    	if ( g_raceData[ raceid ] [ E_LOBBY_HOST ] == playerid )
-		    	{
-		    		new
-		    			vehicleid = GetPlayerVehicleID( playerid ), Float: A;
+    	// destroy starting checkpoint
+    	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
+		g_raceData[ raceid ] [ E_CD_TIMER ] = -1;
 
-		    		GetVehicleZAngle( vehicleid, A );
+    	if ( g_raceData[ raceid ] [ E_MODE ] == RACE_OUTRUN )
+    	{
+    		new hostid = g_raceData[ raceid ] [ E_LOBBY_HOST ];
+    		new vehicleid = GetPlayerVehicleID( hostid );
 
-		    		// create sphere obj
-		    		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = playerid;
-		    		g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = CreateDynamicCircle( 0.0, 0.0, 10.0 );
-		    		g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] = CreateDynamicObject( 11752, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, -1, 0 );
-		    		g_raceData[ raceid ] [ E_OUTRUN_TIMER ] = SetTimerEx( "OnRaceOutrun", 250, true, "d", raceid );
+    		// create sphere obj
+    		g_raceData[ raceid ] [ E_OUTRUN_LEAD ] = hostid;
+    		g_raceData[ raceid ] [ E_OUTRUN_SPHERE ] = CreateDynamicCircle( 0.0, 0.0, 10.0 );
+    		g_raceData[ raceid ] [ E_OUTRUN_OBJECT ] = CreateDynamicObject( 11752, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, -1, .playerid = 0 );
+    		g_raceData[ raceid ] [ E_OUTRUN_TIMER ] = SetTimerEx( "OnRaceOutrun", 250, true, "d", raceid );
 
-		    		// attach objects
-					Streamer_RemoveArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, 0 );
-					AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], vehicleid, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-		    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, -OUTRUN_DIST - 4.0 );
-		    	}
+    		// attach objects
+			Streamer_RemoveArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, 0 );
+			AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], vehicleid, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
+    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], vehicleid, 0.0, OUTRUN_DIST * 2 );
 
+		    foreach ( new playerid : Player ) if ( p_raceLobbyId[ playerid ] == raceid )
+	   		{
 		    	// show checkpoint for player
 	  			Streamer_AppendArrayData( STREAMER_TYPE_OBJECT, g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], E_STREAMER_PLAYER_ID, playerid );
-		    }
+	  			Streamer_Update( playerid );
 
-	    	// destroy starting checkpoint
-	    	DestroyDynamicRaceCP( g_raceData[ raceid ] [ E_START_CHECKPOINT ] );
-
-	    	// show gametext
-    		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
-			PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
-		}
-		g_raceData[ raceid ] [ E_CD_TIMER ] = -1;
+		    	// show gametext
+	    		GameTextForPlayer( playerid, "~g~GO!", 2000, 3 );
+				PlayerPlaySound( playerid, 1057, 0.0, 0.0, 0.0 );
+			}
+	    }
 	}
 	else
 	{
@@ -833,7 +829,7 @@ function OnRaceOutrun( raceid )
 
 				// see if ahead
 				AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], iVehicle, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-	    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST - 4.0 );
+	    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, OUTRUN_DIST * 2 );
 			}
 		}
 	}
@@ -959,7 +955,7 @@ stock RemovePlayerFromRace( playerid )
 
 			// see if ahead
 			AttachDynamicObjectToVehicle( g_raceData[ raceid ] [ E_OUTRUN_OBJECT ], iVehicle, 0.0, OUTRUN_DIST, -15.0, 0.0, 0.0, 0.0 );
-    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, -OUTRUN_DIST - 4.0 );
+    		AttachDynamicAreaToVehicle( g_raceData[ raceid ] [ E_OUTRUN_SPHERE ], iVehicle, 0.0, OUTRUN_DIST * 2 );
 		}
 		else
 		{
