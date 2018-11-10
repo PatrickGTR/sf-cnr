@@ -2195,7 +2195,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	// Reset player variables
     p_Spawned{ playerid } = false;
     p_QuitToAvoidTimestamp[ playerid ] = 0;
-    CutSpectation( playerid );
+    //CutSpectation( playerid );
     StopPlayerNpcRobbery( playerid );
     RemovePlayerFromRace( playerid );
     RemovePlayerStolensFromHands( playerid );
@@ -4316,7 +4316,7 @@ CMD:jaillist( playerid, params[ ] )
 	szBigString[ 0 ] = '\0';
 
     foreach( new i : Player ) if ( IsPlayerJailed( i ) ) {
-        format( szBigString, sizeof( szBigString ), "%s%s%s(%d)\t%d seconds", szBigString, p_AdminJailed{ i } ? ( COL_RED ) : ( COL_WHITE ), ReturnPlayerName( i ), i, p_JailTime[ i ] );
+        format( szBigString, sizeof( szBigString ), "%s%s%s(%d)\t%d seconds\n", szBigString, p_AdminJailed{ i } ? ( COL_RED ) : ( COL_WHITE ), ReturnPlayerName( i ), i, p_JailTime[ i ] );
     }
 
     if ( szBigString[ 0 ] == '\0' )   {
@@ -5677,7 +5677,7 @@ CMD:location( playerid, params[ ] )
    	    pID
 	;
 
-	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is not accessible by civilians." );
+	if ( p_Class[ playerid ] == CLASS_CIVILIAN || p_Class[ playerid ] == CLASS_FIREMAN ) return SendError( playerid, "This is restricted to police only." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
 	else if ( ! IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( ! IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );

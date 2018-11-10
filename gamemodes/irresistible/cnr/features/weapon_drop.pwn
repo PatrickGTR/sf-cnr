@@ -138,6 +138,10 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 	if ( p_PlayerPickupDelay[ playerid ] > GetServerTime( ) )
 		return 1;
 
+	// if player is in passive mode cannot pickup weapons, ammo
+	if ( IsPlayerPassive( playerid ) )
+		return 1;
+
 	// Player Drops
 	foreach ( new dropid : weapondrop )
 	{

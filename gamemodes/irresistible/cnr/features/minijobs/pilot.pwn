@@ -361,7 +361,7 @@ CMD:pilot( playerid, params[ ] )
 				p_PilotMapIcon			[ playerid ] = CreateDynamicMapIconEx( g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_X ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Y ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Z ], 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
 				p_PilotCheckPoint		[ playerid ] = CreateDynamicRaceCP( 0, g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_X ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Y ], g_AirportLocations[ p_PilotRoute[ playerid ] { 0 } ] [ E_Z ], 0.0, 0.0, 0.0, 10.0, -1, -1, playerid );
 
-				if( p_PilotDifficulty[ playerid ] ) { // give the player 6 wanted for starting
+				if( p_PilotDifficulty[ playerid ] == RISK_FACTOR_HARD ) { // give the player 6 wanted for starting
 					GivePlayerWantedLevel( playerid, 6 );
 				}
 

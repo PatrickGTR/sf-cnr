@@ -236,6 +236,16 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 
 	    	PlayerPlaySound( issuerid, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
 	    }
+
+	    // play noise for admins
+	    foreach ( new i : Player )
+	    {
+			if ( IsPlayerSpectatingPlayer( i, issuerid ) )
+			{
+				new soundid = p_VIPLevel[ i ] ? p_HitmarkerSound{ i } : 0;
+	    		PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
+			}	
+	    }
 	}
 
 	DamageFeedAddHitTaken( playerid, issuerid, amount, weaponid );
@@ -280,6 +290,11 @@ stock DamageFeedAddHitTaken( playerid, issuerid, Float: amount, weaponid )
 	}
 
 	AddDamageHit( g_damageTaken[ playerid ], playerid, issuerid, amount, weaponid );
+}
+
+stock IsPlayerSpectatingPlayer( playerid, targetid )
+{
+	return ( p_Spectating{ playerid } && p_whomSpectating[ playerid ] == targetid && playerid != targetid );
 }
 
 stock UpdateDamageFeed( playerid, bool: modified = false )

@@ -310,14 +310,15 @@ CMD:business( playerid, params[ ] )
 		new
 			bool: has = false;
 
-		szLargeString = ""COL_WHITE"Name\t"COL_WHITE"Production Time\t"COL_WHITE"Product\n";
+		szLargeString = ""COL_WHITE"Name\t"COL_WHITE"Production Time\t"COL_WHITE"Product\t"COL_WHITE"Bank\n";
 
 		foreach ( new businessid : business ) if ( IsBusinessAssociate( playerid, businessid ) )
 		{
-			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t"COL_GOLD"%s\n",
+			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t"COL_GOLD"%s\t"COL_GREEN"%s\n",
 				szLargeString, g_businessData[ businessid ] [ E_NAME ],
 				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] ? ( secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], ", ", 5 ) ) : ( ""COL_GREEN"Production Finished" ),
-				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) )
+				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) ),
+				cash_format( g_businessData[ businessid ][ E_BANK ] )
 			), has = true;
 		}
 

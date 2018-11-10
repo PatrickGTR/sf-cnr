@@ -71,7 +71,7 @@ stock CNR_SetPlayerWantedLevel( playerid, level )
 /* ** Functions ** */
 stock GivePlayerWantedLevel( playerid, level )
 {
-	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerJailed( playerid ) || level == 0 )
+	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerJailed( playerid ) || IsPlayerDueling( playerid ) || level == 0 )
 	    return 0;
 
 	new
