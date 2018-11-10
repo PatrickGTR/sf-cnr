@@ -1,3 +1,4 @@
+(+) Introduces gang hard points. Capture the hardpoint for the longest time to earn a share in a prize pool!
 (+) Adds a functional stock market system (/stocks & /shares). Each company is associated with a feature.
 (+) Gangs can now buy vehicles which their members can only use through their gang facility.
 (+) You can now donate to stocks which can help you to prop the stock price up.
@@ -7,6 +8,8 @@
 (+) Explosive rounds can be bought at ammu-nation.
 (*) Fixes issue with visage apartment ownership transfers.
 (*) "/sync" cannot be used while you are in passive mode.
+(*) Fixes issue with hiest message appearing in random shops.
+(*) Outrun race now shows the object in which you must pass.
 (/) Random hits will not be placed on passive mode players.
 (/) 10% of the player's carrying money will be dropped when they die.
 (-) Snow ploughs have been removed from the server.
