@@ -234,7 +234,7 @@ function OnPlayerFireOrbitalCannon( playerid, rocketid, Float: X, Float: Y, Floa
 		new
 			player_state = GetPlayerState( i );
 
-		if ( GetPlayerPos( i, player_X, player_Y, player_Z ) && player_Z >= Z && player_state != PLAYER_STATE_WASTED && player_state != PLAYER_STATE_SPECTATING )
+		if ( GetPlayerPos( i, player_X, player_Y, player_Z ) && player_Z >= ( Z - 20.0 ) && player_state != PLAYER_STATE_WASTED && player_state != PLAYER_STATE_SPECTATING )
 		{
 			new
 				Float: distance_squared = VectorSize( player_X - X, player_Y - Y, 0.0 );
