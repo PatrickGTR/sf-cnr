@@ -93,7 +93,7 @@ forward OnPlayerUpdateGangZone( playerid, zoneid );
 stock Float: Turf_GetHardpointPrizePool( Float: max_payout = 500000.0 )
 {
 	new
-		Float: total_payout = ( g_weekAveragePlayers / g_weekSecondsElapsed ) * 10000.0;
+		Float: total_payout = ( g_weekAveragePlayers / g_weekSecondsElapsed ) * 7500.0;
 
 	return total_payout < max_payout ? total_payout : max_payout;
 }
