@@ -93,6 +93,31 @@ hook OnScriptInit( )
 	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		7500.0,		100000.0,		150.0,			"Money lost by players gambling" );
 	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		7500.0,		100000.0,		150.0,			"Fireman and LEO activities" );
 	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
+
+	// force inactive share holders to sell their shares
+	mysql_tquery( dbHandle, sprintf( "SELECT so.* FROM `STOCK_OWNERS` so JOIN `USERS` u ON so.`USER_ID`=u.`ID` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 604800 AND so.`USER_ID` != %d", STOCK_MM_USER_ID ), "StockMarket_ForceShareSale", "" );
+	return 1;
+}
+
+
+thread StockMarket_ForceShareSale( )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( rows )
+	{
+		for ( new row = 0; row < rows; row ++ )
+		{
+			new accountid = cache_get_field_content_int( row, "USER_ID" );
+			new stockid = cache_get_field_content_int( row, "STOCK_ID" );
+			new Float: shares = cache_get_field_content_float( row, "SHARES" );
+
+			mysql_single_query( sprintf( "DELETE FROM `STOCK_OWNERS` WHERE `USER_ID`=%d AND `STOCK_ID`=%d", accountid, stockid ) );
+			StockMarket_UpdateSellOrder( stockid, accountid, shares );
+			printf("Inactive shares (user id: %d, stock id: %s, shares: %f)", accountid, g_stockMarketData[ stockid ] [ E_NAME ], shares);
+		}
+	}
 	return 1;
 }
 
