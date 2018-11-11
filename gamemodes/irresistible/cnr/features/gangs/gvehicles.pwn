@@ -232,7 +232,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				}
 
 				GiveGangCash( gangid, -final_price );
-				StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, final_price, 0.05 );
+				StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, final_price, 0.01 );
 
 				printf( "[gang vehicle] %s(%d) bought %s for %s", ReturnPlayerName( playerid ), GetPlayerAccountID( playerid ), g_BuyableVehicleData[ data_id ] [ E_NAME ], g_gangData[ gangid ] [ E_NAME ] );
 				SendServerMessage( playerid, "You have bought an "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE"!", g_BuyableVehicleData[ data_id ] [ E_NAME ], cash_format( final_price ) );

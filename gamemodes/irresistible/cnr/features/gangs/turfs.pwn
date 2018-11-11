@@ -174,7 +174,7 @@ hook OnServerTickSecond( )
 	    			if ( rivals_members ) {
 	        			ShowPlayerHelpDialog( playerid, 2500, "~b~Defend~w~ from %d enemy gang member%s!~n~~n~Earning potential is ~g~%s", rivals_members, rivals_members == 1 ? ( "" ) : ( "s" ), cash_format( potential_earnings ) );
 	    			} else {
-	    				ShowPlayerHelpDialog( playerid, 2500, "~g~%s~w~ is in control now %d seconds!~n~~n~Earning potential is ~g~%s", ReturnGangName( current_attacker ), g_gangHardpointCaptureTime[ current_attacker ], cash_format( potential_earnings ) );
+	    				ShowPlayerHelpDialog( playerid, 2500, "~g~%s~w~ is in control for %s!~n~~n~Earning potential is ~g~%s", ReturnGangName( current_attacker ), TimeConvert( g_gangHardpointCaptureTime[ current_attacker ] ), cash_format( potential_earnings ) );
 	    			}
 	        	}
 

@@ -84,15 +84,15 @@ hook OnScriptInit( )
 
 	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
 	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Exporting mined ores" );
-	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		750.0, 		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
-	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		250.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed trucking missions" );
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exporting meth bags" );
-	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
-	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		5000.0,		100000.0,		150.0,			"Money lost by players gambling" );
-	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		5000.0,		100000.0,		150.0,			"Fireman and LEO activities" );
-	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		250.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		1000.0,		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed trucking missions" );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exporting meth bags" );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		7500.0,		100000.0,		150.0,			"Money lost by players gambling" );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		7500.0,		100000.0,		150.0,			"Fireman and LEO activities" );
+	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
 	return 1;
 }
 
@@ -181,11 +181,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				format(
 					szLargeString, sizeof ( szLargeString ),
-					""COL_GREY"Stock Name\t%s\n"COL_GREY"Stock Symbol\t%s\n"COL_GREY"Current Price\t%s\n"COL_GREY"Max Shares\t%s\n"COL_GREY"Market Cap.\t%sM\n"COL_GREY"Affected By\t%s",
+					""COL_GREY"Stock Name\t%s\n"COL_GREY"Stock Symbol\t%s\n"COL_GREY"Current Price\t%s\n"COL_GREY"Max Shares\t%s\n"COL_GREY"Market Capitalization\t%sM\n"COL_GREY"Earnings (24H)\t%s\n"COL_GREY"Donations (24H)\t%s\n"COL_GREY"Affected By\t%s",
 					g_stockMarketData[ stockid ] [ E_NAME ], g_stockMarketData[ stockid ] [ E_SYMBOL ],
 					cash_format( g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ], .decimals = 2 ),
 					number_format( g_stockMarketData[ stockid ] [ E_MAX_SHARES ], .decimals = 0 ),
 					cash_format( market_cap, .decimals = 2 ),
+					cash_format( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] - g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ], .decimals = 0 ),
+					cash_format( g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ], .decimals = 0 ),
 					g_stockMarketData[ stockid ] [ E_DESCRIPTION ]
 				);
 				ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_INFO, DIALOG_STYLE_TABLIST, ""COL_WHITE"Stock Market", szLargeString, "Close", "Back" );
