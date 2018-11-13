@@ -844,7 +844,7 @@ stock GetClosestRacer( playerid, raceid, exceptid = INVALID_PLAYER_ID, &Float: d
 
     if ( GetPlayerPos( playerid, fX, fY, fZ ) )
     {
-		foreach (new i : Player) if ( p_raceLobbyId[ i ] == raceid && exceptid != i && GetPlayerVehicleSeat( playerid ) == 0 )
+		foreach ( new i : Player ) if ( p_raceLobbyId[ i ] == raceid && exceptid != i && GetPlayerVehicleSeat( i ) == 0 )
 		{
             if ( 0.0 < ( fTmp = GetPlayerDistanceFromPoint( i, fX, fY, fZ ) ) < distance )
             {
