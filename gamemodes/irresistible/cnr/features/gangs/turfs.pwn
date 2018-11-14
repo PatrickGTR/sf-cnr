@@ -518,7 +518,7 @@ stock Turf_IsAbleToTakeover( i ) {
 		Float: Z;
 
 	GetPlayerPos( i, Z, Z, Z );
-	return p_Class[ i ] == CLASS_CIVILIAN && ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! IsPlayerAFK( i ) && Z <= 250.0;
+	return p_Class[ i ] == CLASS_CIVILIAN && ! p_AntiSpawnKillEnabled{ i } && ! IsPlayerPassive( i ) && ! IsPlayerAdminOnDuty( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! IsPlayerAFK( i ) && Z <= 250.0;
 }
 
 stock Turf_RedrawPlayerGangZones( playerid )
