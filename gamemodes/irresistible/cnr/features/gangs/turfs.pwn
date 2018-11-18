@@ -8,6 +8,11 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Gang Zone Numbers ** */
+#define GANGZONE_DEFAULT_BORDER_SIZE 2.0 // default thickness of borders
+#define GANGZONE_DEFAULT_NUMBER_SIZE 0.6 // default thickness of numbers
+#include 							< gangzones >
+
 /* ** Definitions ** */
 #if defined MAX_FACILITIES
 	#define MAX_TURFS 				( sizeof( g_gangzoneData ) + MAX_FACILITIES )
@@ -48,7 +53,7 @@ static const
 		{ -2054.0, 1084.5, -1892.0, 1171.5, CITY_SF },
 		{ -1569.0, 822.5, -1418.0, 1019.5, CITY_SF },
 		{ -2088.0, 570.5, -2010.0, 728.5, CITY_SF },
-		{ -2526.0, 571.5, -2391.0, 705.5, CITY_SF },
+		{ -2526.0, 568.5, -2387.0, 706.5, CITY_SF },
 		{ -2766.0, 324.5, -2651.0, 426.5, CITY_SF },
 		{ -2386.0, 70.5, -2273.0, 227.5, CITY_SF },
 		{ -2139.0, 115.5, -2013.0, 311.5, CITY_SF },
@@ -56,7 +61,9 @@ static const
 		{ -2096.0, -279.5, -2011.0, -111.5, CITY_SF },
 		{ -2523.0, -321.5, -2264.0, -215.5, CITY_SF },
 		{ -2153.0, -515.5, -1960.0, -374.5, CITY_SF },
-		{ -2000.0, 853.5, -1904.0, 913.5, CITY_SF }
+		{ -2600.0, -68.5, -2504.0, 34.5, CITY_SF },
+		{ -2250.0, 571.5, -2151.0, 727.5, CITY_SF },
+		{ -1755.0, -80.5, -1658.0, 27.5, CITY_SF }
 	}
 ;
 
@@ -78,6 +85,7 @@ new
 	Float: g_weekAveragePlayers		= 0.0,
 	Float: g_weekSecondsElapsed 	= 0.0,
 
+	g_gangHardpointRotation 		= -1, // it will begin at 0 this way
 	g_gangHardpointTurf				= INVALID_GANG_TURF,
 	g_gangHardpointPreviousTurf 	= INVALID_GANG_TURF,
 	g_gangHardpointAttacker			= INVALID_GANG_ID,
@@ -103,7 +111,7 @@ hook OnGameModeInit( )
 {
 	/* ** Gangzone Allocation ** */
 	for ( new i = 0; i < sizeof( g_gangzoneData ); i ++ ) {
-		Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE );
+		Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE, .bordersize = GANGZONE_DEFAULT_BORDER_SIZE, .numbersize = GANGZONE_DEFAULT_NUMBER_SIZE );
 	}
 	return 1;
 }
@@ -218,17 +226,13 @@ stock Turf_CreateHardpoint( )
 		g_gangHardpointCaptureTime[ i ] = 0;
 	}
 
-	// force a random turf at all times
-	new
-		random_turf = INVALID_GANG_TURF;
-
-	do {
-		random_turf = random( sizeof( g_gangzoneData ) );
+	// fixed zone rotation
+	if ( ! ( 0 <= g_gangHardpointRotation ++ < sizeof( g_gangzoneData ) - 1 ) ) {
+		g_gangHardpointRotation = 0;
 	}
-	while ( random_turf == g_gangHardpointPreviousTurf );
 
 	// allocate new hardpoint
-	g_gangHardpointTurf = random_turf;
+	g_gangHardpointTurf = g_gangHardpointRotation;
 	g_gangHardpointAttacker = INVALID_GANG_ID;
 	DestroyDynamicMapIcon( g_gangHardpointMapIcon );
 
@@ -254,7 +258,6 @@ stock Turf_CreateHardpoint( )
 
 	// redraw gangzones
 	Turf_RedrawGangZonesForAll( );
-	printf("New Hardpoint" );
 	return 1;
 }
 
@@ -386,6 +389,7 @@ public OnPlayerUpdateGangZone( playerid, zoneid )
 			if ( g_gangTurfData[ g_gangHardpointTurf ] [ E_ID ] != g_gangTurfData[ zoneid ] [ E_ID ] ) {
 				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "~b~~h~(INACTIVE HARDPOINT)~n~~w~~h~Unchallenged" );
 			} else {
+				DisablePlayerSpawnProtection( playerid );
 				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(ACTIVE HARDPOINT)~n~~w~~h~%s", g_gangHardpointAttacker != INVALID_GANG_ID ? ( ReturnGangName( g_gangHardpointAttacker ) ) : ( "Unchallenged" ) ) );
 			}
 		}
@@ -394,7 +398,7 @@ public OnPlayerUpdateGangZone( playerid, zoneid )
 }
 
 /* ** Functions ** */
-stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner_id = INVALID_GANG_ID, color = COLOR_GANGZONE, facility_gang_id = INVALID_GANG_ID )
+stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner_id = INVALID_GANG_ID, color = COLOR_GANGZONE, facility_gang_id = INVALID_GANG_ID, Float: bordersize = GANGZONE_DEFAULT_BORDER_SIZE, Float: numbersize = 0.0 )
 {
 	new
 		id = Iter_Free( turfs );
@@ -407,7 +411,7 @@ stock Turf_Create( Float: min_x, Float: min_y, Float: max_x, Float: max_y, owner
 		g_gangTurfData[ id ] [ E_FACILITY_GANG ] = facility_gang_id;
 
 		// create area
-		g_gangTurfData[ id ] [ E_ID ] = GangZoneCreate( min_x, min_y, max_x, max_y );
+		g_gangTurfData[ id ] [ E_ID ] = GangZoneCreate( min_x, min_y, max_x, max_y, .bordersize = bordersize, .numbersize = numbersize );
 		g_gangTurfData[ id ] [ E_AREA ] = CreateDynamicRectangle( min_x, min_y, max_x, max_y, 0, 0 );
 
 		// add to iterator
