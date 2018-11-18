@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_GANG_VEHICLES			( 5 )
+#define MAX_GANG_VEHICLES			( 10 )
 
 #define DIALOG_GANG_VEHICLE_MENU 	2399
 #define DIALOG_GANG_VEHICLE_SPAWN 	2400
@@ -26,7 +26,7 @@
 
 /* ** Constants ** */
 static const GANG_VEHICLE_PRICE_FACTOR = 4;
-static const GANG_VEHICLE_SPAWN_COOLDOWN = 300;
+static const GANG_VEHICLE_SPAWN_COOLDOWN = 180;
 
 /* ** Variables ** */
 enum E_GANG_VEHICLE_DATA
