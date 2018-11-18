@@ -73,7 +73,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				Beep( playerid );
 				p_AddedEmail{ playerid } = true;
-				SetPlayerVipLevel( playerid, VIP_REGULAR, .interval = 259560 ); // 3 days of vip
+				SetPlayerVipLevel( playerid, VIP_REGULAR, .interval = 259560, .credit_assets = false ); // 3 days of vip
 				mysql_single_query( sprintf( "UPDATE `USERS` SET `USED_EMAIL`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
 				SendGlobalMessage( COLOR_GOLD, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_GOLD"/email"COL_GREY" and received 3 days of V.I.P!", ReturnPlayerName( playerid ), playerid );
  				return 1;
