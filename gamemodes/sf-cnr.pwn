@@ -13145,10 +13145,12 @@ stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
 
-stock DisablePlayerSpawnProtection( playerid )
+stock DisablePlayerSpawnProtection( playerid, bool: restore_health = false )
 {
+	if ( restore_health )
+		SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } ? float( INVALID_PLAYER_ID ) : 100.0 );
+
 	DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
-	SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } ? float( INVALID_PLAYER_ID ) : 100.0 );
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
 	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	p_AntiSpawnKillEnabled{ playerid } = false;
