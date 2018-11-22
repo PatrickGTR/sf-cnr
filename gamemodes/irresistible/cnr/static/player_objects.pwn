@@ -14487,7 +14487,7 @@ hook OnScriptInit( )
 	CreateDynamicObject( 1225, -1661.128051, 1086.464965, 9.031999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 
 	// [VT] Facility
-	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1702.530761, 883.490783, 26.812227, 0.000000, 0.000000, 180.000000, -1, -1, -1 ), 0, "Virtual Titans", 130, "Impact", 64, 0, -16711681, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1702.530761, 883.490783, 26.812227, 0.000000, 0.000000, 180.000000, -1, -1, -1 ), 0, "Nibble Enterprises", 130, "Impact", 64, 0, 0xff69239e, 0, 1 );
 	CreateDynamicObject( 1557, -1697.100952, 882.125549, 23.880605, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	CreateDynamicObject( 1557, -1697.100952, 885.155639, 23.880605, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
 	CreateDynamicObject( 3525, -1697.265014, 885.652465, 24.960626, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
