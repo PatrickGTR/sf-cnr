@@ -389,7 +389,7 @@ public OnPlayerUpdateGangZone( playerid, zoneid )
 			if ( g_gangTurfData[ g_gangHardpointTurf ] [ E_ID ] != g_gangTurfData[ zoneid ] [ E_ID ] ) {
 				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], "~b~~h~(INACTIVE HARDPOINT)~n~~w~~h~Unchallenged" );
 			} else {
-				DisablePlayerSpawnProtection( playerid, false );
+				DisablePlayerSpawnProtection( playerid );
 				PlayerTextDrawSetString( playerid, g_ZoneOwnerTD[ playerid ], sprintf( "~r~~h~(ACTIVE HARDPOINT)~n~~w~~h~%s", g_gangHardpointAttacker != INVALID_GANG_ID ? ( ReturnGangName( g_gangHardpointAttacker ) ) : ( "Unchallenged" ) ) );
 			}
 		}
