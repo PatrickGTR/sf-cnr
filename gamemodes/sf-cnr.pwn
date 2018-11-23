@@ -1659,17 +1659,8 @@ public OnPlayerSpawn( playerid )
 
 	if ( !bSpectated )
 	{
-		switch( p_Class[ playerid ] )
-		{
-			case CLASS_POLICE: GivePlayerLeoWeapons( playerid );
-
-			case CLASS_FIREMAN:
-			{
-				GivePlayerWeapon( playerid, 22, 250 );
-				GivePlayerWeapon( playerid, 25, 50 );
-				GivePlayerWeapon( playerid, 9, 1 );
-				GivePlayerWeapon( playerid, 42, 0xFFFF );
-			}
+		if ( GetPlayerClass( playerid ) == CLASS_POLICE ) {
+			GivePlayerLeoWeapons( playerid );
 		}
 	}
 
@@ -2558,12 +2549,6 @@ public OnPlayerText( playerid, text[ ] )
 				    return 0;
 				}
 
-				else if ( p_Class[ playerid ] == CLASS_FIREMAN )
-				{
-				    SendClientMessageToFireman( -1, "{A83434}<Fireman Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
-				    return 0;
-				}
-
 				else if ( p_Class[ playerid ] == CLASS_CIVILIAN && p_GangID[ playerid ] != INVALID_GANG_ID )
 				{
 			        SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "<Gang Chat> %s(%d):{FFFFFF} %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
@@ -2947,10 +2932,6 @@ CMD:t( playerid, params[ ] )
 				}
 			}
 			SendClientMessageToCops( -1, ""COL_BLUE"<Police Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, szBigString );
-		}
-		else if ( p_Class[ playerid ] == CLASS_FIREMAN )
-		{
-			SendClientMessageToFireman( -1, "{A83434}<Fireman Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
 		}
 	}
 	return 1;
@@ -4090,7 +4071,7 @@ CMD:idof( playerid, params[ ] )
 CMD:playercolor( playerid, params[ ] ) return cmd_pc( playerid, params );
 CMD:pc( playerid, params[ ] )
 {
-    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Player Colors", "Innocent\n{FFEC41}Low Suspect\n"COL_ORANGE"Wanted\n{F83245}Most Wanted\n{3E7EFF}Police\n{0035FF}F.B.I\n{191970}C.I.A\n{954BFF}Army\n{A83434}Fireman\n"COL_PINK"Admin On Duty\n"COL_GREY"Other Colors Are Gang Colors", "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Player Colors", "Innocent\n{FFEC41}Low Suspect\n"COL_ORANGE"Wanted\n{F83245}Most Wanted\n{3E7EFF}Police\n{0035FF}F.B.I\n{191970}C.I.A\n{954BFF}Army\n"COL_PINK"Admin On Duty\n"COL_GREY"Other Colors Are Gang Colors", "Okay", "" );
 	return 1;
 }
 
@@ -5043,7 +5024,7 @@ CMD:tips( playerid, params[ ] )
 CMD:commands( playerid, params[ ] ) return cmd_cmds( playerid, params );
 CMD:cmds( playerid, params[ ] )
 {
-    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nFireman Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands\n"COL_GOLD"V.I.P Commands", "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands\n"COL_GOLD"V.I.P Commands", "Okay", "" );
 	return 1;
 }
 
@@ -5281,19 +5262,9 @@ CMD:911( playerid, params[ ] )
 		GetZoneFromCoordinates( szLocation, X, Y, Z );
 		Get2DCity( szCity, X, Y, Z );
 
-		if ( strmatch( params, "LEO" ) )
-	    {
-	    	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
-	        SendClientMessageToCops( -1, ""COL_BLUE"[911]"COL_GREY" %s(%d) is asking for a law enforcement officer near %s in %s!", ReturnPlayerName( playerid ), playerid, szLocation, szCity );
-			SendServerMessage( playerid, "You have asked for a leo enforcement officer at your current location." );
-		}
-		else if ( strmatch( params, "EFB" ) )
-	    {
-	    	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
-	        SendClientMessageToFireman( -1, "{A83434}[911]"COL_GREY" %s(%d) is asking for a fire brigade near %s in %s!", ReturnPlayerName( playerid ), playerid, szLocation, szCity );
-			SendServerMessage( playerid, "You have asked for a fire brigade at your current location." );
-		}
-		else SendUsage( playerid, "/911 [LEO/EFB]" );
+    	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
+        SendClientMessageToCops( -1, ""COL_BLUE"[911]"COL_GREY" %s(%d) is asking for a law enforcement officer near %s in %s!", ReturnPlayerName( playerid ), playerid, szLocation, szCity );
+		SendServerMessage( playerid, "You have asked for a leo enforcement officer at your current location." );
 	}
 	return 1;
 }
@@ -5482,7 +5453,7 @@ CMD:location( playerid, params[ ] )
    	    pID
 	;
 
-	if ( p_Class[ playerid ] == CLASS_CIVILIAN || p_Class[ playerid ] == CLASS_FIREMAN ) return SendError( playerid, "This is restricted to police only." );
+	if ( p_Class[ playerid ] == CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to police only." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/loc(ation) [PLAYER_ID]" );
 	else if ( ! IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( ! IsPlayerSpawned( pID ) ) return SendError( playerid, "The player selected isn't spawned." );
@@ -6629,16 +6600,6 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 			    //RemovePlayerFromVehicle( playerid );
 			    SendError( playerid, "The army are only authorized to use this." );
 			    return 1;
-			}
-		}
-		if ( p_Class[ playerid ] != CLASS_FIREMAN )
-		{
-			if ( model == 407 || model == 544 )
-			{
-				SyncObject( playerid, 1 );
-				//RemovePlayerFromVehicle( playerid );
-				SendError( playerid, "Firemen are only authorized to use this." );
-				return 1;
 			}
 		}
 	}
@@ -8779,10 +8740,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/bruteforce{FFFFFF} - Brute forces a houses' password." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Police Commands", szCMDS, "Okay", "Back" );
 	        }
-	        case 5: {
-				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Fireman Commands", ""COL_GREY"/firetracker"COL_WHITE" - Displays a tracker of active fires in a list.\n"COL_GREY"/rfiretracker"COL_WHITE" - Hides the fire tracker.", "Okay", "Back" );
-	        }
-	        case 7:
+	        case 5:
 	        {
 	            szCMDS[ 0 ] = '\0';
 	            strcat( szCMDS, ""COL_GOLD"General Vehicle Commands\n\n"\
@@ -8798,7 +8756,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/v sell{FFFFFF} - Sells the vehicle to 50% of its original price (requires the player to be inside it)." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Vehicle Commands", szCMDS, "Okay", "Back" );
 	        }
-     		case 8:
+     		case 6:
 	        {
 	            szCMDS[ 0 ] = '\0';
 	            strcat( szCMDS, ""COL_GREY"/h{FFFFFF} - Shows the commands for buyable houses.\n"\
@@ -8808,7 +8766,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/h sell{FFFFFF} - Sells the house to 50% of its original price (requires the player to be inside the house)." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}House Commands", szCMDS, "Okay", "Back" );
 	        }
-	        case 9:
+	        case 7:
 	        {
 	            szCMDS[ 0 ] = '\0';
 	            strcat( szCMDS, ""COL_GREY"/perks{FFFFFF} - A menu where you can benefit your gameplay and waste some XP.\n"\
@@ -8822,7 +8780,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/moviemode{FFFFFF} - Toggles movie mode so you can record without all the text on the screen." );
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Miscellaneous Commands", szCMDS, "Okay", "Back" );
 	        }
-	        case 10:
+	        case 8:
 	        {
 				if ( p_VIPLevel[ playerid ] < VIP_REGULAR ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 				cmd_vipcmds( playerid, "" );
@@ -9962,9 +9920,6 @@ function SetPlayerRandomSpawn( playerid )
 	new
 		city = p_SpawningCity{ playerid } >= MAX_CITIES ? random( MAX_CITIES ) : p_SpawningCity{ playerid };
 
-	if ( p_Class[ playerid ] == CLASS_FIREMAN )
-		return SetPlayerPos( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_X ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Y ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 	SetPlayerInterior( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerVirtualWorld( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
-
 	if ( p_inArmy{ playerid } == true )
 		return SetPlayerPos( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Y ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
@@ -10280,7 +10235,6 @@ stock SetPlayerColorToTeam( playerid )
 			if ( p_inCIA{ playerid } ) SetPlayerColor( playerid, COLOR_CIA );
 			if ( p_inArmy{ playerid } ) SetPlayerColor( playerid, COLOR_ARMY );
 	    }
-	    case CLASS_FIREMAN: SetPlayerColor( playerid, COLOR_FIREMAN );
 	    default:
 	    {
 	    	new
@@ -10324,74 +10278,6 @@ stock SetPlayerColorToTeam( playerid )
 	}
 	return 0;
 }*/
-
-stock IsPlayerFBI( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-	    case 286, 71, 285: {
-			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-	}
-	return false;
-}
-
-stock IsPlayerCIA( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-	    case 303 .. 305: {
-			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-	}
-	return false;
-}
-
-stock IsPlayerArmy( playerid ) {
-	return GetPlayerSkin( playerid ) == 287;
-}
-
-stock IsPlayerPolice( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-   	    case 265, 266, 267, 306, 307, 280, 281, 284: {
-			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-   	}
-	return false;
-}
-
-stock IsPlayerFireman( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-	    case 277, 278, 279: {
-			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-	}
-	return false;
-}
 
 stock PutPlayerInEmptyVehicleSeat( vehicleid, playerid )
 {
@@ -12980,18 +12866,6 @@ stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to f
 	return 1;
 }
 
-stock SendClientMessageToFireman( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
-{
-    static
-		out[ 144 ];
-
-    va_format( out, sizeof( out ), format, va_start<2> );
-
-	foreach ( new i : Player ) if ( p_Class[ i ] == CLASS_FIREMAN ) {
-		SendClientMessage( i, colour, out );
-	}
-	return 1;
-}
 
 stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // gets the player position, if interior then the last checkpoint position
 {

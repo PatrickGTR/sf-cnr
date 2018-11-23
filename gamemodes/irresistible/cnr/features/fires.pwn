@@ -55,7 +55,7 @@ hook OnPlayerUpdateEx( playerid )
 	GetPlayerKeys( playerid, iKeys, tmpVariable, tmpVariable );
 
 	// Taking Out Fires
-    if ( p_Class[ playerid ] == CLASS_FIREMAN && ( iKeys & KEY_FIRE ) || ( iKeys & KEY_WALK ) )
+    if ( ( iKeys & KEY_FIRE ) || ( iKeys & KEY_WALK ) )
 	{
 		new
 			using_firetruck = GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 407;
@@ -90,7 +90,7 @@ hook OnPlayerUpdateEx( playerid )
 						    if ( g_fireData[ i ] [ E_HEALTH ] <= 0.0 )
 						    {
 								ach_HandleExtinguishedFires( playerid );
-							    SendClientMessageToFireman( -1, "{A83434}[FIREMAN]"COL_WHITE" %s(%d) has earned "COL_GOLD"%s"COL_WHITE" for extinguishing a house fire.", ReturnPlayerName( playerid ), playerid, cash_format( FIRE_EXTINGUISH_PAYOUT ) );
+							    SendClientMessageToAllFormatted( -1, "{A83434}[FIREMAN]"COL_WHITE" %s(%d) has earned "COL_GOLD"%s"COL_WHITE" for extinguishing a house fire.", ReturnPlayerName( playerid ), playerid, cash_format( FIRE_EXTINGUISH_PAYOUT ) );
 								GivePlayerScore( playerid, 2 );
 								//GivePlayerExperience( playerid, E_FIREMAN );
 								GivePlayerCash( playerid, FIRE_EXTINGUISH_PAYOUT );
@@ -137,9 +137,6 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 CMD:firetracker( playerid, params[ ] ) cmd_fires( playerid, params );
 CMD:fires( playerid, params[ ] )
 {
-	if ( p_Class[ playerid ] != CLASS_FIREMAN )
-		return SendError( playerid, "You are not a fireman." );
-
 	p_FireTracker{ playerid } = ! p_FireTracker{ playerid };
 
 	if ( p_FireTracker{ playerid } )
@@ -184,7 +181,7 @@ stock HouseFire_Create( )
 	}
 
 	// show on radar when it is created
-	foreach ( new playerid : Player ) if ( GetPlayerClass( playerid ) == CLASS_FIREMAN && p_FireTracker{ playerid } ) {
+	foreach ( new playerid : Player ) if ( p_FireTracker{ playerid } ) {
 		UpdatePlayerFireTracker( playerid );
 	}
 	return 1;

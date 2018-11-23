@@ -14,7 +14,6 @@
 /* ** Definitions ** */
 #define CLASS_CIVILIAN              ( 0 )
 #define CLASS_POLICE              	( 1 )
-#define CLASS_FIREMAN               ( 2 )
 
 #define MAX_CLASS_BAN_WARNS			( 3 )
 
@@ -26,8 +25,8 @@ static const
 	Float: default_Angle 			= 0.0
 ;
 
-static const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA", "Fireman" };
-static const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF, 0xA83434FF };
+static const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA" };
+static const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF };
 
 /* ** Variables ** */
 static stock
@@ -35,8 +34,7 @@ static stock
 	CLASS_POLICE_RANGE				[ 2 ],
 	CLASS_FBI_RANGE					[ 2 ],
 	CLASS_CIA_RANGE 				[ 2 ],
-	CLASS_FIRE_RANGE 				[ 2 ],
-	CLASS_ARMY_RANGE
+	CLASS_ARMY_RANGE				[ 2 ]
 ;
 
 /* ** Textdraw Variables ** */
@@ -54,88 +52,96 @@ new p_Class 						[ MAX_PLAYERS ];
 hook OnScriptInit( )
 {
 	/* ** CIVILIAN ** */
-	CLASS_CIVILIAN_RANGE[ 0 ] = AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 0
-	AddPlayerClass( 289, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 1
-	AddPlayerClass( 273, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 2
-	AddPlayerClass( 271, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 3
-	AddPlayerClass( 208, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 4
-	AddPlayerClass( 268, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 5
-	AddPlayerClass( 292, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 6
-	AddPlayerClass( 293, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 7
-	AddPlayerClass(  3, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	8
-	AddPlayerClass(  4, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	9
-	AddPlayerClass(  2, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  10
-	AddPlayerClass(  7, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  11
-	AddPlayerClass( 12, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  12
-	AddPlayerClass( 13, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  13
-	AddPlayerClass( 14, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  14
-	AddPlayerClass( 15, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  15
-	AddPlayerClass( 17, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  16
-	AddPlayerClass( 19, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  17
-	AddPlayerClass( 20, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  18
-	AddPlayerClass( 21, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //  19
-	AddPlayerClass( 22, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	20
-	AddPlayerClass( 23, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	21
-	AddPlayerClass( 24, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	22
-	AddPlayerClass( 26, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	23
-	AddPlayerClass( 28, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	24
-	AddPlayerClass( 29, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	25
-	AddPlayerClass( 30, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	26
-	AddPlayerClass( 31, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	27
-	AddPlayerClass( 32, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	28
-	AddPlayerClass( 33, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	29
-	AddPlayerClass( 34, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	30
-	AddPlayerClass( 35, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	31
-	AddPlayerClass( 36, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	32
-	AddPlayerClass( 37, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	33
-	AddPlayerClass( 38, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	34
-	AddPlayerClass( 46, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	35
-	AddPlayerClass( 47, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	36
-	AddPlayerClass( 48, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	37
-	AddPlayerClass( 59, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	38
-	AddPlayerClass( 60, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	39
-	AddPlayerClass( 63, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	40
-	AddPlayerClass( 64, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	41
-	AddPlayerClass( 152, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	42
-	AddPlayerClass( 237, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	43
-	AddPlayerClass( 78, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); //	44
-	AddPlayerClass( 79, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 	45
-	AddPlayerClass( 134, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 46
-	AddPlayerClass( 100, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 47
-	AddPlayerClass( 101, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 48
-	AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
-	AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
-	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 61
-	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
-	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
+	CLASS_CIVILIAN_RANGE[ 0 ] = AddPlayerClass( 119, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 289, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 273, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 271, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 208, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 268, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 292, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 293, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass(  3, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass(  4, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass(  2, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass(  7, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 12, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 13, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 14, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 15, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 17, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 19, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 20, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 21, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 22, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 23, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 24, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 26, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 28, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 29, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 30, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 31, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 32, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 33, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 34, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 35, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 36, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 37, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 38, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 46, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 47, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 48, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 59, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 60, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 63, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 64, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 152, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 237, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 78, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 79, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 134, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 100, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 101, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 278, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 
 	/* ** FBI ** */
-	CLASS_FBI_RANGE[ 0 ] = AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 50
-	AddPlayerClass( 71, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );  // 51
-	CLASS_FBI_RANGE[ 1 ] = AddPlayerClass( 285, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 52
+	CLASS_FBI_RANGE[ 0 ] = AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 71, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	CLASS_FBI_RANGE[ 1 ] = AddPlayerClass( 285, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 
 	/* ** ARMY ** */
-	CLASS_ARMY_RANGE = AddPlayerClass( 287, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 53
+	CLASS_ARMY_RANGE[ 0 ] = AddPlayerClass( 191, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	CLASS_ARMY_RANGE[ 1 ] = AddPlayerClass( 287, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 
 	/* ** CIA ** */
-	CLASS_CIA_RANGE[ 0 ] = AddPlayerClass( 303, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 54
+	CLASS_CIA_RANGE[ 0 ] = AddPlayerClass( 303, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 	AddPlayerClass( 304, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 55
-	CLASS_CIA_RANGE[ 1 ] = AddPlayerClass( 305, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 56
-
-	/* ** FIRE ** */
-	CLASS_FIRE_RANGE[ 0 ] = AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 57
-	AddPlayerClass( 278, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 58
-	CLASS_FIRE_RANGE[ 1 ] = AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 59
+	CLASS_CIA_RANGE[ 1 ] = AddPlayerClass( 305, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 
 	/* ** POLICE ** */
-	CLASS_POLICE_RANGE[ 0 ] = AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
-	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 67
-	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 68
-	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 69
-	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 70
-	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 71
-	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 72
-	CLASS_POLICE_RANGE[ 1 ] = AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 73
+	CLASS_POLICE_RANGE[ 0 ] = AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 266, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 267, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 280, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 281, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 282, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 283, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 284, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 288, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 300, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 301, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 302, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 306, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 307, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 309, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	AddPlayerClass( 310, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
+	CLASS_POLICE_RANGE[ 1 ] = AddPlayerClass( 311, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 );
 
 	// Textdraws
 	g_classBoxTD = TextDrawCreate(40.000000, 170.000000, "_");
@@ -205,12 +211,6 @@ hook OnScriptInit( )
 										"- Can set spike traps on roads~n~" \
 										"- Hidden from radar~n~" \
 										"~r~~h~- Requires 15,000 XP or more" );
-			}
-			case 5: {
-				strcat( szLargeString,	"- Protect the city from fires~n~" \
-										"- Firetrucks able to extinguish fires~n~"\
-										"- Able to rob stores and players~n~" \
-										"~r~~h~- Requires 1,000 XP or more" );
 			}
 		}
 
@@ -316,7 +316,7 @@ hook OnPlayerRequestClass( playerid, classid )
 		p_inCIA{ playerid } = false;
 		ShowPlayerClassTextdraw( playerid, 2 );
     }
-    else if ( classid == CLASS_ARMY_RANGE )
+    else if ( CLASS_ARMY_RANGE[ 0 ] <= classid <=  CLASS_ARMY_RANGE[ 1 ] )
     {
 		p_Class[ playerid ] = ( CLASS_POLICE );
 		SetPlayerColor( playerid, COLOR_ARMY );
@@ -336,16 +336,6 @@ hook OnPlayerRequestClass( playerid, classid )
 		p_inCIA{ playerid } = true;
 		ShowPlayerClassTextdraw( playerid, 4 );
     }
-    else if ( CLASS_FIRE_RANGE[ 0 ] <= classid <= CLASS_FIRE_RANGE[ 1 ] )
-	{
-		p_Class[ playerid ] = ( CLASS_FIREMAN );
-		SetPlayerColor( playerid, COLOR_FIREMAN );
-		//SetPlayerTeam( playerid, NO_TEAM );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 6 );
-	}
 	return 1;
 }
 
@@ -409,9 +399,6 @@ stock IsPlayerClassApproved( playerid ) {
 	if ( IsPlayerCIA( playerid ) && total_experience < 15000.0 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 15,000 Total XP to use this class." ), 0;
 
-	if ( IsPlayerFireman( playerid ) && total_experience < 1000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 1,000 Total XP to use this class." ), 0;
-
 	// job not set
 	if ( ! p_JobSet{ playerid } ) // || !p_CitySet{ playerid } )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You must ensure your job have been properly set." ), 0; // and city
@@ -438,4 +425,55 @@ stock ShowPlayerClassTextdraw( playerid, classid ) {
 	TextDrawShowForPlayer( playerid, g_classTextdrawBox[ classid ] );
 	TextDrawShowForPlayer( playerid, g_classTextdrawDescrip[ classid ] );
 	TextDrawShowForPlayer( playerid, g_classTextdrawName[ classid ] );
+}
+
+stock IsPlayerFBI( playerid )
+{
+	new
+		skinid = GetPlayerSkin( playerid );
+
+	switch( skinid ) {
+	    case 286, 71, 285: {
+			return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
+	    }
+	}
+	return false;
+}
+
+stock IsPlayerCIA( playerid )
+{
+	new
+		skinid = GetPlayerSkin( playerid );
+
+	switch( skinid ) {
+	    case 303 .. 305: {
+	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
+	    }
+	}
+	return false;
+}
+
+stock IsPlayerArmy( playerid ) {
+	new
+		skinid = GetPlayerSkin( playerid );
+
+	switch( skinid ) {
+	    case 191, 287: {
+	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
+	    }
+	}
+	return false;
+}
+
+stock IsPlayerPolice( playerid )
+{
+	new
+		skinid = GetPlayerSkin( playerid );
+
+	switch( skinid ) {
+   	    case 265 .. 267, 280 .. 288, 300 .. 302, 306, 307, 309 .. 311: {
+   	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
+	    }
+   	}
+	return false;
 }

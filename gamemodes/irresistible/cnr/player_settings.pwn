@@ -186,3 +186,8 @@ CMD:passivelist( playerid, params[ ])
 stock IsPlayerSettingToggled( playerid, settingid ) {
 	return p_PlayerSettings[ playerid ] { settingid };
 }
+
+
+stock IsPlayerVIPSkinToggled( playerid ) {
+	return p_PlayerSettings[ playerid ] { SETTING_VIPSKIN };
+}
