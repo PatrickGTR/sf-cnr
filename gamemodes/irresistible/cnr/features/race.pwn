@@ -89,15 +89,18 @@ hook OnPlayerEnterDynArea( playerid, areaid )
 	return 1;
 }
 
-hook OnPlayerExitVehicle( playerid, vehicleid )
+hook OnPlayerStateChange( playerid, newstate, oldstate )
 {
-	new
-		iRace = p_raceLobbyId[ playerid ];
-
-	if ( Iter_Contains( races, iRace ) )
+	if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER )
 	{
-		SendClientMessageToRace( iRace, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has exited their vehicle and left the race.", ReturnPlayerName( playerid ), playerid );
-		RemovePlayerFromRace( playerid );
+		new
+			iRace = p_raceLobbyId[ playerid ];
+
+		if ( Iter_Contains( races, iRace ) )
+		{
+			SendClientMessageToRace( iRace, COLOR_GREY, "[RACE]"COL_WHITE" %s(%d) has exited their vehicle and left the race.", ReturnPlayerName( playerid ), playerid );
+			RemovePlayerFromRace( playerid );
+		}
 	}
 	return 1;
 }
@@ -426,7 +429,7 @@ CMD:race( playerid, params[ ] )
 			g_raceData[ id ] [ E_POOL ] = prizePool;
 			g_raceData[ id ] [ E_RACE_FINISH_SET ] = 0;
 			g_raceData[ id ] [ E_STARTED ] = false;
-			g_raceData[ id ] [ E_OUTRUN_DISTANCE ] = 50.0;
+			g_raceData[ id ] [ E_OUTRUN_DISTANCE ] = 250.0;
 			g_raceData[ id ] [ E_FINISHED_COUNT ] = 0;
 			g_raceData[ id ] [ E_POSITION_PRIZE ] [ 0 ] = 1.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 1 ] = 0.0, g_raceData[ id ] [ E_POSITION_PRIZE ] [ 2 ] = 0.0;
 			g_raceData[ id ] [ E_FINISH_POS ] [ 0 ] = 1.0, g_raceData[ id ] [ E_FINISH_POS ] [ 1 ] = 0.0, g_raceData[ id ] [ E_FINISH_POS ] [ 2 ] = 0.0;
