@@ -335,7 +335,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			strcat( vip_description, "Coin generation increase\t10%\t25%\n" );
 			strcat( vip_description, "Ability to transfer coins P2P\tY\tY\n" );
 			strcat( vip_description, "Ability to sell coins on the coin market (/ic sell)\tY\tY\n" );
-			strcat( vip_description, "Ability to use two jobs (/vipjob)\tN\tY\n" );
+			strcat( vip_description, "Ability to use two jobs (/vipjob)\tY\tY\n" );
 			strcat( vip_description, "Premium home listing fees waived\tY\tY\n" );
 			strcat( vip_description, "Tax reduction\t0%\t50%\n" );
 			strcat( vip_description, "Inactive asset protection\t14 days\t31 days\n" );

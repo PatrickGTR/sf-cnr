@@ -286,16 +286,10 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 
 	if ( IsValidVehicle( vehicleid ) && IsPlayerConnected( playerid ) && IsPlayerInMethlab( playerid ) )
 	{
-
-		new
-			available_meth[ 3 ] = { -1, -1, -1 },
-			iMethIngredient = -1
-		;
-
 		DestroyDynamicObject( GetGVarInt( "meth_smoke", vehicleid ) );
 		DeleteGVar( "meth_smoke", vehicleid );
 
-		if ( GetGVarInt( "meth_acid", vehicleid ) != 1 && GetGVarInt( "meth_soda", vehicleid ) != 1 && GetGVarInt( "meth_chloride", vehicleid ) != 1 )
+		if ( ! GetGVarInt( "meth_acid", vehicleid ) && ! GetGVarInt( "meth_soda", vehicleid ) && ! GetGVarInt( "meth_chloride", vehicleid ) )
 		{
 			ShowPlayerHelpDialog( playerid, 5000, "The process is done. Bag it up and do another round if you wish." );
 			SendServerMessage( playerid, "Process is done. Bag it up, and do another round if you wish. Export it for money." );
@@ -308,11 +302,15 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 		}
 		else
 		{
-			if ( GetGVarInt( "meth_soda", vehicleid ) == 1 ) 	available_meth[ 0 ] = CHEMICAL_CS;
-			if ( GetGVarInt( "meth_acid", vehicleid ) == 1 ) 	available_meth[ 1 ] = CHEMICAL_MU;
-			if ( GetGVarInt( "meth_chloride", vehicleid ) == 1 ) available_meth[ 2 ] = CHEMICAL_HLC;
+			new
+				available_meth[ 3 ] = { -1, ... };
 
-			iMethIngredient = randomArrayItem( available_meth, -1 );
+			if ( ! GetGVarInt( "meth_soda", vehicleid ) ) available_meth[ CHEMICAL_CS ] = CHEMICAL_CS;
+			if ( ! GetGVarInt( "meth_acid", vehicleid ) ) available_meth[ CHEMICAL_MU ] = CHEMICAL_MU;
+			if ( ! GetGVarInt( "meth_chloride", vehicleid ) ) available_meth[ CHEMICAL_HLC ] = CHEMICAL_HLC;
+
+			new
+				iMethIngredient = randomExcept( available_meth, sizeof( available_meth ) );
 
 			switch( iMethIngredient )
 			{

@@ -1625,7 +1625,7 @@ public OnPlayerSpawn( playerid )
 		if ( !p_JobSet{ playerid } )
 		{
 		    TogglePlayerControllable( playerid, 0 );
-			ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+		    ShowPlayerJobList( playerid );
 		}
 		else
 		{
@@ -1633,10 +1633,11 @@ public OnPlayerSpawn( playerid )
 			{
 			    switch( p_Job{ playerid } )
 				{
-			        case JOB_RAPIST:
+			        case JOB_MUGGER:
 			        {
+			            GivePlayerWeapon( playerid, 10, 1 );
 			            GivePlayerWeapon( playerid, 22, 150 );
-			            GivePlayerWeapon( playerid, 30, 400 );
+			            GivePlayerWeapon( playerid, 25, 30 );
 			        }
 			        case JOB_KIDNAPPER:
 			        {
@@ -1653,12 +1654,6 @@ public OnPlayerSpawn( playerid )
 			            GivePlayerWeapon( playerid, 4, 1 );
 			            GivePlayerWeapon( playerid, 23, 130 );
 			            GivePlayerWeapon( playerid, 34, 30 );
-			        }
-			        case JOB_PROSTITUTE:
-			        {
-			            GivePlayerWeapon( playerid, 10, 1 );
-			            GivePlayerWeapon( playerid, 25, 50 );
-			            GivePlayerWeapon( playerid, 30, 300 );
 			        }
 			        case JOB_WEAPON_DEALER:
 			        {
@@ -2889,20 +2884,6 @@ public OnProgressCompleted( playerid, progressid, params )
 	return 1;
 }
 
-stock randomArrayItem( const array[ ], exclude = 0xFFFF, arraysize = sizeof( array ) )
-{
-	new
-		iRandom;
-
-	random_restart:
-	iRandom = array[ random( arraysize ) ];
-
-	if ( iRandom == exclude ) {
-		goto random_restart;
-	}
-	return iRandom;
-}
-
 public OnPlayerCommandPerformed( playerid, cmdtext[ ], success )
 {
 	if ( !success ) {
@@ -3103,7 +3084,7 @@ CMD:request( playerid, params[ ] )
 	if ( ( iJob = GetJobIDFromName( params ) ) == 0xFE )
 		return SendError( playerid, "You have entered an invalid job." );
 
-	if ( iJob == JOB_RAPIST || iJob == JOB_KIDNAPPER || iJob == JOB_BURGLAR )
+	if ( iJob == JOB_MUGGER || iJob == JOB_KIDNAPPER || iJob == JOB_BURGLAR )
 		return SendServerMessage( playerid, "%s's do not do any services in exchange for money.", GetJobName( iJob ) );
 
 	if ( IsPlayerJob( playerid, iJob ) )
@@ -3317,7 +3298,7 @@ CMD:robitems( playerid, params[ ] )
 
   	new victimid = GetClosestPlayer( playerid );
    	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-   	else if ( !IsPlayerJob( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
+   	else if ( !IsPlayerJob( playerid, JOB_MUGGER ) ) return SendError( playerid, "You must be a mugger to use this command." );
    	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 	else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "It's impossible to rob someone inside a car." );
 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
@@ -3342,21 +3323,20 @@ CMD:robitems( playerid, params[ ] )
 		GivePlayerExperience( playerid, E_ROBBERY );
 
 		new
-			available_items[ 3 ] = { -1, -1, -1 },
-			iRandomItem = -1
-		;
+			available_items[ 3 ] = { -1, ... };
 
-		if ( p_BobbyPins[ victimid ] > 0 && p_BobbyPins[ playerid ] < GetShopItemLimit( SHOP_ITEM_BOBBY_PIN ) ) available_items[ 0 ] = 0;
-		if ( p_Scissors[ victimid ] > 0 && p_Scissors[ playerid ] < GetShopItemLimit( SHOP_ITEM_SCISSOR ) ) available_items[ 1 ] = 1;
-		if ( p_Ropes[ victimid ] > 0 && p_Ropes[ playerid ] < GetShopItemLimit( SHOP_ITEM_ROPES ) ) available_items[ 2 ] = 2;
+		if ( ! p_BobbyPins[ victimid ] || p_BobbyPins[ playerid ] >= GetShopItemLimit( SHOP_ITEM_BOBBY_PIN ) ) available_items[ 0 ] = 0;
+		if ( ! p_Scissors[ victimid ] || p_Scissors[ playerid ] >= GetShopItemLimit( SHOP_ITEM_SCISSOR ) ) available_items[ 1 ] = 1;
+		if ( ! p_Ropes[ victimid ] || p_Ropes[ playerid ] >= GetShopItemLimit( SHOP_ITEM_ROPES ) ) available_items[ 2 ] = 2;
 
-		if ( available_items[ 0 ] == -1 || available_items[ 1 ] == -1 || available_items[ 2 ] == -1 ) {
+		if ( available_items[ 0 ] != -1 && available_items[ 1 ] != -1 && available_items[ 2 ] != -1 ) {
 			SendClientMessageFormatted( victimid, -1, ""COL_GREEN"[ROB FAIL]{FFFFFF} %s(%d) has failed to rob items off you.", ReturnPlayerName( playerid ), playerid );
 		    SendClientMessageFormatted( playerid, -1, ""COL_RED"[ROB FAIL]{FFFFFF} You find nothing in %s(%d)'s pocket and he noticed you after thoroughly checking.", ReturnPlayerName( victimid ), victimid );
 		    return 1;
 		}
 
-		iRandomItem = randomArrayItem( available_items, -1 );
+		new
+			iRandomItem = randomExcept( available_items, sizeof( available_items ) );
 
 		switch( iRandomItem )
 		{
@@ -3565,11 +3545,6 @@ CMD:burglar( playerid, params[ ] )
 	return 1;
 }
 
-CMD:playerjobs( playerid, params[ ] )
-{
-	ShowPlayerDialog( playerid, DIALOG_ONLINE_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Player Jobs", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "Cancel" );
-	return 1;
-}
 
 CMD:gettaxrate( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
@@ -4910,7 +4885,7 @@ CMD:acceptbj( playerid, params[ ] )
 {
 	if ( !IsPlayerConnected( p_BlowjobOfferer[ playerid ] ) ) return p_BlowjobOfferer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "Your blowjob offerer isn't available." );
 	else if ( g_iTime > p_BlowjobDealTick[ playerid ] ) return SendError( playerid, "Your blowjob offer has expired." );
-	else if ( !IsPlayerJob( p_BlowjobOfferer[ playerid ], JOB_PROSTITUTE ) ) return SendError( playerid, "Your blowjob offerer no longer offers blowjobs." );
+	else if ( !IsPlayerJob( p_BlowjobOfferer[ playerid ], JOB_MUGGER ) ) return SendError( playerid, "Your blowjob offerer no longer offers blowjobs." );
 	else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot get a blowjob inside a car." );
 	else if ( IsPlayerInAnyVehicle( p_BlowjobOfferer[ playerid ] ) ) return SendError( playerid, "This player is inside a car." );
 	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot accept blowjobs in jail." );
@@ -4947,7 +4922,10 @@ CMD:acceptbj( playerid, params[ ] )
 		GivePlayerCash( p_BlowjobOfferer[ playerid ], iEarned );
 		p_BlowjobOfferer[ playerid ] = INVALID_PLAYER_ID;
 	}
-	else SendError( playerid, "This prostitute is not nearby." );
+	else
+	{
+		SendError( playerid, "This person is not nearby." );
+	}
 	return 1;
 }
 
@@ -4959,7 +4937,7 @@ CMD:bj( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	else if ( !IsPlayerJob( playerid, JOB_PROSTITUTE ) ) return SendError( playerid, "You must be a prostitute to use this command." );
+	else if ( !IsPlayerJob( playerid, JOB_MUGGER ) ) return SendError( playerid, "You must be a mugger to use this command." );
 	else if ( ( GetTickCount( ) - p_AntiBlowJobSpam[ playerid ] ) < 30000 ) return SendError( playerid, "You must wait 30 seconds before using this command again." );
 	else if ( sscanf( params, "ud", pID, price ) ) return SendUsage( playerid, "/(bj)blowjob [PLAYER_ID] [PRICE]" );
 	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player isn't connected." );
@@ -6017,10 +5995,10 @@ CMD:rape( playerid, params[ ] )
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 
   		new iRandom = random( 101 );
-        if ( IsPlayerJob( playerid, JOB_RAPIST ) ) { iRandom += 10; } // Adds more success to rapists.
+        if ( IsPlayerJob( playerid, JOB_MUGGER ) ) { iRandom += 10; } // Adds more success to muggers
   		if ( iRandom < 75 || IsPlayerTied( victimid ) )
   		{
-			if ( p_InfectedHIV{ playerid } || ( IsPlayerJob( playerid, JOB_RAPIST ) && p_AidsVaccine{ victimid } == false && !IsPlayerJob( victimid, JOB_PROSTITUTE ) ) )
+			if ( p_InfectedHIV{ playerid } || ( IsPlayerJob( playerid, JOB_MUGGER ) && p_AidsVaccine{ victimid } == false && !IsPlayerJob( victimid, JOB_MUGGER ) ) )
 			{
 			    SendClientMessageFormatted( victimid, -1, ""COL_RED"[RAPED]{FFFFFF} You have been raped and infected with "COL_RED"HIV{FFFFFF} by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d) and infected them with "COL_RED"HIV{FFFFFF}!", ReturnPlayerName( victimid ), victimid );
@@ -8164,10 +8142,11 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             	ResetPlayerWeapons( playerid );
 	     		switch( listitem )
 				{
-			        case JOB_RAPIST:
+			        case JOB_MUGGER:
 			        {
+			            GivePlayerWeapon( playerid, 10, 1 );
 			            GivePlayerWeapon( playerid, 22, 150 );
-			            GivePlayerWeapon( playerid, 30, 400 );
+			            GivePlayerWeapon( playerid, 25, 30 );
 			        }
 			        case JOB_KIDNAPPER:
 			        {
@@ -8184,12 +8163,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			            GivePlayerWeapon( playerid, 4, 1 );
 			            GivePlayerWeapon( playerid, 23, 130 );
 			            GivePlayerWeapon( playerid, 34, 30 );
-			        }
-			        case JOB_PROSTITUTE:
-			        {
-			            GivePlayerWeapon( playerid, 10, 1 );
-			            GivePlayerWeapon( playerid, 25, 30 );
-			            GivePlayerWeapon( playerid, 30, 300 );
 			        }
 			        case JOB_WEAPON_DEALER:
 			        {
@@ -8232,7 +8205,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else
         {
          	TogglePlayerControllable( playerid, 0 );
-			ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+         	ShowPlayerJobList( playerid );
         }
     }
 
@@ -8594,8 +8567,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		        if ( GetPlayerCash( playerid ) < 5000 )
 		       		return SendError( playerid, "You need "COL_GOLD"$5,000"COL_WHITE" to change your job." );
 
+         		ShowPlayerJobList( playerid );
 	            TogglePlayerControllable( playerid, 0 );
-				ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
 				GivePlayerCash( playerid, -( 5000 ) );
 				SendServerMessage( playerid, "You have been directed to the job selection, refer to your new job." );
 		    }
@@ -8931,11 +8904,10 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/takeover{FFFFFF} - Take over a gangzone with your gang.\n" );
                 strcat( szCMDS, ""COL_GREY"/gang{FFFFFF} - Displays gang commands.\n\n"\
 								""COL_GOLD"Job Commands\n\n"\
-								""COL_ORANGE"Rapist{FFFFFF} - /rape\n"\
+								""COL_ORANGE"Mugger{FFFFFF} - /rape, /blowjob, /robitems\n"\
 								""COL_ORANGE"Kidnapper{FFFFFF} - /(un)tie, /kidnap, /ransom(pay)\n"\
 								""COL_ORANGE"Terrorist{FFFFFF} - /c4\n" );
 				strcat( szCMDS, ""COL_ORANGE"Hitman{FFFFFF} - /(hide)tracker, /hitlist\n"\
-								""COL_ORANGE"Prostitute{FFFFFF} - /blowjob, /robitems\n"\
 								""COL_ORANGE"Weapon Dealer{FFFFFF} - /sellgun\n"\
 								""COL_ORANGE"Drug Dealer{FFFFFF} - /weed\n" );
 				strcat( szCMDS, ""COL_ORANGE"Dirty Mechanic{FFFFFF} - /mech\n"\
@@ -9154,7 +9126,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	if ( dialogid == DIALOG_ACC_EMAIL ) {
 
 		if ( ! response ) {
-			ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+			ShowPlayerJobList( playerid );
 			SendServerMessage( playerid, "If you ever wish to assign an email to your account in the future, use "COL_GREY"/email"COL_WHITE"." );
 			return 1;
 		}
@@ -9179,7 +9151,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 	    format( szBigString, sizeof( szBigString ), "INSERT INTO `EMAIL_VERIFY`(`USER_ID`, `EMAIL`) VALUES (%d, '%s') ON DUPLICATE KEY UPDATE `EMAIL`='%s',`DATE`=CURRENT_TIMESTAMP", p_AccountID[ playerid ], mysql_escape( email ), mysql_escape( email ) );
 	    mysql_function_query( dbHandle, szBigString, true, "OnQueueEmailVerification", "ds", playerid, email );
-		ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", "Rapist\nKidnapper\nTerrorist\nHitman\nProstitute\nWeapon Dealer\nDrug Dealer\nDirty Mechanic\nBurglar", "Select", "" );
+	   	ShowPlayerJobList( playerid );
 	   	return 1;
 	}
 	if ( dialogid == DIALOG_WEAPON_DEAL )
@@ -9321,26 +9293,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		}
 		else ShowAmmunationMenu( playerid );
 	}
-	if ( ( dialogid == DIALOG_ONLINE_JOB ) && response )
-	{
-	 	new
-		 	count = 0;
-
-		erase( szLargeString );
-		foreach(new pID : Player)
-		{
-		    if ( IsPlayerJob( pID, listitem ) && p_Class[ pID ] == CLASS_CIVILIAN )
-		    {
-		        format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\n", szLargeString, ReturnPlayerName( pID ), pID );
-		        count++;
-		    }
-		}
-		if ( !count ) szLargeString = ""COL_RED"N/A";
-
-		format( szNormalString, 32, "{FFFFFF}Online %ss", GetJobName( listitem ) );
-		ShowPlayerDialog( playerid, DIALOG_ONLINE_JOB_R, DIALOG_STYLE_LIST, szNormalString, szLargeString, "Okay", "Back" );
-	}
-	if ( ( dialogid == DIALOG_ONLINE_JOB_R ) && !response )  { cmd_playerjobs( playerid, "" ); }
 	if ( ( dialogid == DIALOG_HELP ) && response )
 	{
 		SetPVarInt( playerid, "help_category", listitem );

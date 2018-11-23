@@ -11,59 +11,89 @@
 /* ** Definitions ** */
 #define MAX_JOB_NAME 				( 16 )
 
-#define JOB_RAPIST                  ( 0 )
-#define JOB_KIDNAPPER               ( 1 )
-#define JOB_TERRORIST               ( 2 )
-#define JOB_HITMAN                  ( 3 )
-#define JOB_PROSTITUTE          	( 4 )
-#define JOB_WEAPON_DEALER           ( 5 )
-#define JOB_DRUG_DEALER           	( 6 )
-#define JOB_DIRTY_MECHANIC         	( 7 )
-#define JOB_BURGLAR              	( 8 )
-
 /* ** Variables ** */
+enum
+{
+	JOB_MUGGER,
+	JOB_KIDNAPPER,
+	JOB_TERRORIST,
+	JOB_HITMAN,
+	JOB_WEAPON_DEALER,
+	JOB_DRUG_DEALER,
+	JOB_DIRTY_MECHANIC,
+	JOB_BURGLAR
+};
+
+static const
+	g_jobsData[ ] [ MAX_JOB_NAME ] =
+	{
+		{ "Mugger" }, { "Kidnapper" }, { "Terrorist" }, { "Hitman" },
+		{ "Weapon Dealer" }, { "Drug Dealer" }, { "Dirty Mechanic" }, { "Burglar" }
+	}
+;
+
+static stock
+	g_jobList[ 100 ];
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	for ( new i = 0; i < sizeof( g_jobsData ); i ++ ) {
+		format( g_jobList, sizeof( g_jobList ), "%s%s\n", g_jobList, g_jobsData[ i ] );
+	}
+	return 1;
+}
+
+hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
+{
+	if ( dialogid == DIALOG_ONLINE_JOB && response )
+	{
+		szLargeString[ 0 ] = '\0';
+
+		foreach ( new pID : Player ) if ( IsPlayerJob( pID, listitem ) && p_Class[ pID ] == CLASS_CIVILIAN ) {
+	        format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\n", szLargeString, ReturnPlayerName( pID ), pID );
+		}
+
+		// found no users
+		if ( szLargeString[ 0 ] == '\0' ) {
+			szLargeString = ""COL_RED"N/A";
+		}
+
+		ShowPlayerDialog( playerid, DIALOG_ONLINE_JOB_R, DIALOG_STYLE_LIST, sprintf( "{FFFFFF}Online %ss", GetJobName( listitem ) ), szLargeString, "Okay", "Back" );
+	}
+	else if ( dialogid == DIALOG_ONLINE_JOB_R && ! response ) {
+		ShowPlayerDialog( playerid, DIALOG_ONLINE_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Player Jobs", g_jobList, "Select", "Cancel" );
+	}
+	return 1;
+}
+
+/* ** Commands ** */
+CMD:playerjobs( playerid, params[ ] )
+{
+	ShowPlayerDialog( playerid, DIALOG_ONLINE_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Player Jobs", g_jobList, "Select", "Cancel" );
+	return 1;
+}
 
 /* ** Functions ** */
 stock IsPlayerJob( playerid, jobid ) {
-	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } == jobid );
+	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_PLATINUM && p_VIPJob{ playerid } == jobid );
 }
 
-stock GetJobIDFromName( szJob[ ] )
+stock GetJobIDFromName( const job_name[ ] )
 {
-	static const
-		g_jobsData[ ] [ MAX_JOB_NAME char ] =
-		{
-			{ !"Rapist" }, { !"Kidnapper" }, { !"Terrorist" }, { !"Hitman" }, { !"Prostitute" },
-			{ !"Weapon Dealer" }, { !"Drug Dealer" }, { !"Dirty Mechanic" }, { !"Burglar" }
+	for ( new iJob = 0; iJob < sizeof( g_jobsData ); iJob ++ ) {
+		if ( strfind( g_jobsData[ iJob ], job_name, true ) != -1 ) {
+			return iJob;
 		}
-	;
-
-	for( new iJob = 0; iJob < sizeof( g_jobsData ); iJob++ )
-		if ( strunpack( szNormalString, g_jobsData[ iJob ], MAX_JOB_NAME ) )
-			if ( strfind( szNormalString, szJob, true ) != -1 )
-				return iJob;
-
-	return 0xFE;
+	}
+	return -1;
 }
 
-stock GetJobName( iJob )
-{
-	new
-		szJob[ MAX_JOB_NAME ] = "unknown";
+stock GetJobName( iJob ) {
+	return 0 <= iJob < sizeof( g_jobsData ) ? g_jobsData[ iJob ] : ( "Unknown" );
+}
 
-	switch( iJob )
-	{
-		case JOB_RAPIST: 			szJob = "Rapist";
-		case JOB_KIDNAPPER:			szJob = "Kidnapper";
-		case JOB_TERRORIST: 		szJob = "Terrorist";
-		case JOB_HITMAN: 			szJob = "Hitman";
-		case JOB_PROSTITUTE: 		szJob = "Prostitute";
-		case JOB_WEAPON_DEALER: 	szJob = "Weapon Dealer";
-		case JOB_DRUG_DEALER: 		szJob = "Drug Dealer";
-		case JOB_DIRTY_MECHANIC: 	szJob = "Dirty Mechanic";
-		case JOB_BURGLAR: 			szJob = "Burglar";
-	}
-	return szJob;
+stock ShowPlayerJobList( playerid )
+{
+	return ShowPlayerDialog( playerid, DIALOG_JOB, DIALOG_STYLE_LIST, "{FFFFFF}Job Selection", g_jobList, "Select", "" );
 }
