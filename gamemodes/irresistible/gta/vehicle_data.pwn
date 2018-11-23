@@ -115,3 +115,31 @@ stock IsLowriderVehicle(model)
 	}
 	return false;
 }
+
+stock GetVehicleSeatCount(iModel)
+{
+    if (400 <= iModel <= 611)
+    {
+        static
+            s_MaxPassengers[] =
+            {
+                271782163, 288428337, 288559891, -2146225407, 327282960, 271651075, 268443408, 286339857, 319894289, 823136512, 805311233,
+                285414161, 286331697, 268513553, 18026752, 286331152, 286261297, 286458129, 856765201, 286331137, 856690995, 269484528,
+                51589393, -15658689, 322109713, -15527663, 65343
+            }
+        ;
+        return ((s_MaxPassengers[(iModel -= 400) >>> 3] >>> ((iModel & 7) << 2)) & 0xF);
+    }
+    return 0xF;
+}
+
+stock IsPaintJobVehicle(value) {
+    static const valid_values[3] = {
+        1, 3670016, 806680576
+    };
+    if (483 <= value <= 576) {
+        value -= 483;
+        return (valid_values[value >>> 5] & (1 << (value & 31))) || false;
+    }
+    return false;
+}
