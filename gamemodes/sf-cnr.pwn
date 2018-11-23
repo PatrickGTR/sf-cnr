@@ -72,8 +72,6 @@ new bool: False = false;
 /* Beast Functions */
 #define SendClientMessageToVips(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_VIPLevel[fI]>=VIP_REGULAR)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-#define SendClientMessageToAmbulance(%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_Class[fI]==CLASS_MEDIC)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
 #define DCC_SendChannelMessageFormatted(%0,%1,%2) \
 	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
 
@@ -562,7 +560,7 @@ public OnGameModeExit( )
 public OnServerUpdateTimer( )
 {
 	static
-		iState, iVehicle, iWeapon, iAmmo,
+		iState, iWeapon, iAmmo,
 		Float: fLastRate
 	;
 
@@ -611,7 +609,6 @@ public OnServerUpdateTimer( )
 
 		if ( IsPlayerSpawned( playerid ) && p_PlayerLogged{ playerid } )
 		{
-			iVehicle 	= GetPlayerVehicleID( playerid );
 			iWeapon 	= GetPlayerWeapon( playerid );
 			iState 		= GetPlayerState( playerid );
 
@@ -802,30 +799,6 @@ public OnServerUpdateTimer( )
 			if ( GetPlayerCash( playerid ) != GetPlayerMoney( playerid ) ) {
 	            ResetPlayerMoney( playerid );
 	         	GivePlayerMoney( playerid, GetPlayerCash( playerid ) );
-			}
-
-			if ( IsPlayerInAnyVehicle( playerid ) )
-			{
-			    if ( iState == PLAYER_STATE_PASSENGER )
-			    {
-			    	if ( GetVehicleModel( iVehicle ) == 416 )
-			    	{
-			    		new
-			    			iDriver = GetVehicleDriver( iVehicle );
-
-			    		if ( IsPlayerConnected( iDriver ) )
-			    		{
-			    			if ( p_Class[ iDriver ] == CLASS_MEDIC )
-			    			{
-			    				new
-			    					Float: fHealth;
-
-			    				if ( GetPlayerHealth( playerid, fHealth ) && fHealth < 100.0 )
-			    			 		SetPlayerHealth( playerid, fHealth + 2.0 ), GivePlayerCash( iDriver, 10 );
-			    			}
-			    		}
-			    	}
-			    }
 			}
 
 			if ( p_AdminLevel[ playerid ] < 1 )
@@ -1369,7 +1342,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_BailOfferer   [ playerid ] = INVALID_PLAYER_ID;
 	p_PmResponder	[ playerid ] = INVALID_PLAYER_ID;
 	p_ViewingStats  [ playerid ] = INVALID_PLAYER_ID;
-	p_HealDealer    [ playerid ] = INVALID_PLAYER_ID;
 	p_Spectating    { playerid } = false;
 	p_TicketIssuer	[ playerid ] = INVALID_PLAYER_ID;
 	//p_DetainedBy	[ playerid ] = INVALID_PLAYER_ID;
@@ -1698,13 +1670,6 @@ public OnPlayerSpawn( playerid )
 				GivePlayerWeapon( playerid, 9, 1 );
 				GivePlayerWeapon( playerid, 42, 0xFFFF );
 			}
-
-			case CLASS_MEDIC:
-			{
-			    GivePlayerWeapon( playerid, 23, 250 );
-			    GivePlayerWeapon( playerid, 25, 50 );
-				GivePlayerWeapon( playerid, 41, 200 );
-			}
 		}
 	}
 
@@ -1955,18 +1920,6 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	}*/
 	if ( p_Class[ issuerid ] == CLASS_POLICE && p_Class[ playerid ] != CLASS_POLICE && !p_WantedLevel[ playerid ] && GetPlayerState( playerid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( issuerid ) )
 	 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
-
-	// Heal player (paramedic)
-	if ( p_Class[ issuerid ] == CLASS_MEDIC && weaponid == WEAPON_SPRAYCAN )
-	{
-		new
-			Float: fHealth = AC_GetPlayerHealth( playerid );
-
-		if ( fHealth < 100.0 )
-	 		AC_AddPlayerHealth( playerid, amount );
-
-	 	return 0;
-	}
 
 	if ( p_Class[ playerid ] == p_Class[ issuerid ] && p_Class[ playerid ] != CLASS_CIVILIAN  )
 		return 0;
@@ -2611,12 +2564,6 @@ public OnPlayerText( playerid, text[ ] )
 				    return 0;
 				}
 
-				else if ( p_Class[ playerid ] == CLASS_MEDIC )
-				{
-				    SendClientMessageToAmbulance( -1, "{00CC00}<Paramedic Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
-				    return 0;
-				}
-
 				else if ( p_Class[ playerid ] == CLASS_CIVILIAN && p_GangID[ playerid ] != INVALID_GANG_ID )
 				{
 			        SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "<Gang Chat> %s(%d):{FFFFFF} %s", ReturnPlayerName( playerid ), playerid, text[ 1 ] );
@@ -3004,10 +2951,6 @@ CMD:t( playerid, params[ ] )
 		else if ( p_Class[ playerid ] == CLASS_FIREMAN )
 		{
 			SendClientMessageToFireman( -1, "{A83434}<Fireman Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
-		}
-		else if ( p_Class[ playerid ] == CLASS_MEDIC )
-		{
-			SendClientMessageToAmbulance( -1, "{00CC00}<Paramedic Radio> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
 		}
 	}
 	return 1;
@@ -3714,116 +3657,6 @@ CMD:nametags( playerid, params[ ] )
 	return 1;
 }
 
-new p_LastCuredTS[ MAX_PLAYERS ];
-new p_LastHealedTS[ MAX_PLAYERS ];
-
-CMD:cure( playerid, params[ ] )
-{
-  	new
-  		pID,
-  		time = g_iTime
-  	;
-
-   	if ( p_Class[ playerid ] != CLASS_MEDIC ) return SendError( playerid, "This is restricted to medics only." );
-	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/cure [PLAYER_ID]" );
-	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
-	else if ( playerid == pID ) return SendError( playerid, "You cannot offer to cure yourself." );
-	else if ( GetPlayerCash( pID ) < 4875 ) return SendError( playerid, "This player doesn't have enough money to get a cure." );
- 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 4.0 )
- 	{
-		if ( IsPlayerInAnyVehicle( pID ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( p_LastCuredTS[ playerid ] > time ) return SendError( playerid, "You must wait another %d seconds before curing somebody.", p_LastCuredTS[ playerid ] - time );
- 		SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DISEASE CURE]{FFFFFF} %s(%d) wishes to cure you for $4,875. "COL_ORANGE"/acceptcure{FFFFFF} to accept the deal.", ReturnPlayerName( playerid ), playerid );
-		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DISEASE CURE]{FFFFFF} You have offered %s(%d) a cure for $4875.", ReturnPlayerName( pID ), pID );
-   		p_CureDealer[ pID ] = playerid;
-		p_CureTick[ pID ] = time + 120;
-	}
-	else SendError( playerid, "This player is not nearby." );
-	return 1;
-}
-
-CMD:ac( playerid, params[ ] ) return cmd_acceptcure( playerid, params );
-CMD:acceptcure( playerid, params[ ] )
-{
-	new
-		time = g_iTime;
-
-	if ( !IsPlayerConnected( p_CureDealer[ playerid ] ) ) return SendError( playerid, "Your dealer isn't connected anymore." );
-	else if ( time > p_CureTick[ playerid ]  ) return p_CureDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, each deal goes for 2 minutes maximum. You were late." );
-	else if ( GetPlayerCash( playerid ) < 4875 ) return SendError( playerid, "You do not have enough money to get a cure." );
-	else if ( p_Jailed{ playerid } ) return SendError( playerid, "You cannot buy cures while you're in jail." );
-   	else if ( p_Class[ p_CureDealer[ playerid ] ] != CLASS_MEDIC ) return SendError( playerid, "The paramedic that offered you is no longer a paramedic." );
-	else
-	{
-	    Beep( p_CureDealer[ playerid ] );
-		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DISEASE CURE]{FFFFFF} You have been cured from all diseases by %s(%d) for $4,875. ", ReturnPlayerName( p_CureDealer[ playerid ] ), p_CureDealer[ playerid ] );
-		SendClientMessageFormatted( p_CureDealer[ playerid ], -1, ""COL_ORANGE"[DISEASE CURE]{FFFFFF} %s(%d) has paid and got himself cured.", ReturnPlayerName( playerid ), playerid );		p_InfectedHIV{ playerid } = false;
-		GivePlayerCash( playerid, -4875 );
-		GivePlayerCash( p_CureDealer[ playerid ], 4875 );
-		GivePlayerScore( p_CureDealer[ playerid ], 2 );
-		//GivePlayerExperience( p_CureDealer[ playerid ], E_PARAMEDIC );
-		p_LastCuredTS[ p_CureDealer[ playerid ] ] = time + 15;
-		p_CureDealer[ playerid ] = INVALID_PLAYER_ID;
-	}
-	return 1;
-}
-
-CMD:heal( playerid, params[ ] )
-{
-  	new
-  		pID;
-
-   	if ( p_Class[ playerid ] != CLASS_MEDIC ) return SendError( playerid, "This is restricted to medics only." );
-	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/heal [PLAYER_ID]" );
-	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-	else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
-	else if ( playerid == pID ) return SendError( playerid, "You cannot offer to heal yourself." );
-	else if ( GetPlayerCash( pID ) < 750 ) return SendError( playerid, "This player doesn't have enough money to get a health refill." );
- 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 4.0 )
- 	{
-		if ( IsPlayerInAnyVehicle( pID ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( p_LastHealedTS[ playerid ] > g_iTime ) return SendError( playerid, "You must wait another %d seconds before curing somebody.", p_LastHealedTS[ playerid ] - g_iTime );
- 		SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[HEALTH REFILL]{FFFFFF} %s(%d) wishes to heal you for $1,200. "COL_ORANGE"/acceptheal{FFFFFF} to accept the deal.", ReturnPlayerName( playerid ), playerid );
-		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[HEALTH REFILL]{FFFFFF} You have offered %s(%d) a health refill for $1,200.", ReturnPlayerName( pID ), pID );
-   		p_HealDealer[ pID ] = playerid;
-		p_HealTick[ pID ] = g_iTime + 120;
-	}
-	else SendError( playerid, "This player is not nearby." );
-	return 1;
-}
-
-CMD:ah( playerid, params[ ] ) return cmd_acceptheal( playerid, params );
-CMD:acceptheal( playerid, params[ ] )
-{
-	new
-		Float: fHealth;
-
-	if ( !IsPlayerConnected( p_HealDealer[ playerid ] ) ) return SendError( playerid, "Your dealer isn't connected anymore." );
-	else if ( g_iTime > p_HealTick[ playerid ]  ) return p_HealDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, each deal goes for 2 minutes maximum. You were late." );
-	else if ( GetPlayerCash( playerid ) < 750 ) return SendError( playerid, "You do not have enough money to get a health refill." );
-	else if ( p_Jailed{ playerid } ) return SendError( playerid, "You cannot buy heals while you're in jail." );
-   	else if ( p_Class[ p_HealDealer[ playerid ] ] != CLASS_MEDIC ) return SendError( playerid, "The paramedic that offered you is no longer a paramedic." );
-	else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-	else if ( GetPlayerHealth( playerid, fHealth ) && fHealth >= 90.0 ) return SendError( playerid, "You need to have less than 90 percent of your health to be healed." );
-	else
-	{
-	    Beep( p_HealDealer[ playerid ] );
-		SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[HEALTH REFILL]{FFFFFF} You have patched up and healed by %s(%d) for $1,200. ", ReturnPlayerName( p_HealDealer[ playerid ] ), p_HealDealer[ playerid ] );
-		SendClientMessageFormatted( p_HealDealer[ playerid ], -1, ""COL_ORANGE"[HEALTH REFILL]{FFFFFF} %s(%d) has paid and got his health refilled.", ReturnPlayerName( playerid ), playerid );
-		SetPlayerHealth( playerid, 120.0 );
-		GivePlayerCash( playerid, -1200 );
-		GivePlayerCash( p_HealDealer[ playerid ], 1200 );
-		GivePlayerScore( p_HealDealer[ playerid ], 2 );
-		//GivePlayerExperience( p_HealDealer[ playerid ], E_PARAMEDIC );
-		p_LastHealedTS[ p_HealDealer[ playerid ] ] = g_iTime + 15;
-		p_HealDealer[ playerid ] = INVALID_PLAYER_ID;
-	}
-	return 1;
-}
-
 CMD:admins( playerid, params[ ] )
 {
 	if ( GetPlayerScore( playerid ) < 500 && !IsPlayerUnderCover( playerid ) && p_AdminLevel[ playerid ] < 1 )
@@ -4257,7 +4090,7 @@ CMD:idof( playerid, params[ ] )
 CMD:playercolor( playerid, params[ ] ) return cmd_pc( playerid, params );
 CMD:pc( playerid, params[ ] )
 {
-    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Player Colors", "Innocent\n{FFEC41}Low Suspect\n"COL_ORANGE"Wanted\n{F83245}Most Wanted\n{3E7EFF}Police\n{0035FF}F.B.I\n{191970}C.I.A\n{954BFF}Army\n{A83434}Fireman\n{00CC00}Paramedic\n"COL_PINK"Admin On Duty\n"COL_GREY"Other Colors Are Gang Colors", "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_LIST, "{FFFFFF}Player Colors", "Innocent\n{FFEC41}Low Suspect\n"COL_ORANGE"Wanted\n{F83245}Most Wanted\n{3E7EFF}Police\n{0035FF}F.B.I\n{191970}C.I.A\n{954BFF}Army\n{A83434}Fireman\n"COL_PINK"Admin On Duty\n"COL_GREY"Other Colors Are Gang Colors", "Okay", "" );
 	return 1;
 }
 
@@ -5210,7 +5043,7 @@ CMD:tips( playerid, params[ ] )
 CMD:commands( playerid, params[ ] ) return cmd_cmds( playerid, params );
 CMD:cmds( playerid, params[ ] )
 {
-    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nFireman Commands\nParamedic Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands\n"COL_GOLD"V.I.P Commands", "Okay", "" );
+    ShowPlayerDialog( playerid, DIALOG_CMDS, DIALOG_STYLE_LIST, "{FFFFFF}Commands", "Basic Commands\nMain Commands\nCivilian Commands\nShop/Item Commands\nPolice Commands\nFireman Commands\nVehicle Commands\nHouse Commands\nMiscellaneous Commands\n"COL_GOLD"V.I.P Commands", "Okay", "" );
 	return 1;
 }
 
@@ -5460,13 +5293,7 @@ CMD:911( playerid, params[ ] )
 	        SendClientMessageToFireman( -1, "{A83434}[911]"COL_GREY" %s(%d) is asking for a fire brigade near %s in %s!", ReturnPlayerName( playerid ), playerid, szLocation, szCity );
 			SendServerMessage( playerid, "You have asked for a fire brigade at your current location." );
 		}
-		else if ( strmatch( params, "EMS" ) )
-	    {
-	    	p_AntiSpammyTS[ playerid ] = g_iTime + 15;
-	        SendClientMessageToAmbulance( -1, ""COL_GREEN"[911]"COL_GREY" %s(%d) is asking for a paramedic near %s in %s!", ReturnPlayerName( playerid ), playerid, szLocation, szCity );
-			SendServerMessage( playerid, "You have asked for a paramedic at your current location." );
-		}
-		else SendUsage( playerid, "/911 [LEO/EFB/EMS]" );
+		else SendUsage( playerid, "/911 [LEO/EFB]" );
 	}
 	return 1;
 }
@@ -6004,7 +5831,6 @@ CMD:rape( playerid, params[ ] )
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d) and infected them with "COL_RED"HIV{FFFFFF}!", ReturnPlayerName( victimid ), victimid );
 			    GivePlayerScore( playerid, 2 );
 			    GivePlayerWantedLevel( playerid, 5 );
-				//GivePlayerExperience( playerid, E_PARAMEDIC );
 			    GetPlayerHealth( victimid, Health );
 			  	SetPlayerHealth( victimid,  ( Health - 25.0 ) );
 
@@ -6016,7 +5842,6 @@ CMD:rape( playerid, params[ ] )
 			    SendClientMessageFormatted( victimid, -1, ""COL_RED"[RAPED]{FFFFFF} You have been raped by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[RAPED]{FFFFFF} You have raped %s(%d)!", ReturnPlayerName( victimid ), victimid );
 			    GivePlayerScore( playerid, 1 );
-				//GivePlayerExperience( playerid, E_PARAMEDIC, 0.5 );
 			    GivePlayerWantedLevel( playerid, 4 );
 			    GetPlayerHealth( victimid, Health );
 			  	SetPlayerHealth( victimid,  ( Health - 25.0 ) );
@@ -8957,9 +8782,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        case 5: {
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Fireman Commands", ""COL_GREY"/firetracker"COL_WHITE" - Displays a tracker of active fires in a list.\n"COL_GREY"/rfiretracker"COL_WHITE" - Hides the fire tracker.", "Okay", "Back" );
 	        }
-	        case 6: {
-				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Paramedic Commands", ""COL_GREY"/heal"COL_WHITE" - Offers a specified player a health refill for $750.\n"COL_GREY"/cure"COL_WHITE" - Offers a specified player a cure for $4875.", "Okay", "Back" );
-	        }
 	        case 7:
 	        {
 	            szCMDS[ 0 ] = '\0';
@@ -10143,9 +9965,6 @@ function SetPlayerRandomSpawn( playerid )
 	if ( p_Class[ playerid ] == CLASS_FIREMAN )
 		return SetPlayerPos( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_X ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Y ], g_FiremanSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 	SetPlayerInterior( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),	SetPlayerVirtualWorld( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_FiremanSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
-	if ( p_Class[ playerid ] == CLASS_MEDIC )
-		return SetPlayerPos( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_X ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Y ], g_MedicSpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_MedicSpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
-
 	if ( p_inArmy{ playerid } == true )
 		return SetPlayerPos( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_X ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Y ], g_ArmySpawns[ city ] [ RANDOM_SPAWN_Z ] ), 			SetPlayerInterior( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_INTERIOR ] ),		SetPlayerVirtualWorld( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_WORLD ] ), SetPlayerFacingAngle( playerid, g_ArmySpawns[ city ] [ RANDOM_SPAWN_A ] ), 1;
 
@@ -10462,7 +10281,6 @@ stock SetPlayerColorToTeam( playerid )
 			if ( p_inArmy{ playerid } ) SetPlayerColor( playerid, COLOR_ARMY );
 	    }
 	    case CLASS_FIREMAN: SetPlayerColor( playerid, COLOR_FIREMAN );
-	    case CLASS_MEDIC: SetPlayerColor( playerid, COLOR_MEDIC );
 	    default:
 	    {
 	    	new
@@ -10556,22 +10374,6 @@ stock IsPlayerPolice( playerid )
 	    	return true;
 	    }
    	}
-	return false;
-}
-
-stock IsPlayerMedic( playerid )
-{
-	new
-		skinid = GetPlayerSkin( playerid );
-
-	switch( skinid ) {
-	    case 274 .. 276, 308: {
-			if ( IsPlayerSpawned( playerid ) && IsPlayerSettingToggled( playerid, SETTING_VIPSKIN ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
-				return false;
-			}
-	    	return true;
-	    }
-	}
 	return false;
 }
 

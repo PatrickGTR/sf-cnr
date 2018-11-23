@@ -15,7 +15,6 @@
 #define CLASS_CIVILIAN              ( 0 )
 #define CLASS_POLICE              	( 1 )
 #define CLASS_FIREMAN               ( 2 )
-#define CLASS_MEDIC              	( 3 )
 
 #define MAX_CLASS_BAN_WARNS			( 3 )
 
@@ -27,8 +26,8 @@ static const
 	Float: default_Angle 			= 0.0
 ;
 
-static const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA", "Paramedic", "Fireman" };
-static const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF, 0x4DFF4DFF, 0xA83434FF };
+static const CLASS_NAMES 			[ ] [ ] = { "Civilian", "Police", "FBI", "Army", "CIA", "Fireman" };
+static const CLASS_COLORS 			[ ] = { 0xC0C0C0FF, 0x3E7EFFFF, 0x0035FFFF, 0x954BFFFF, 0x191970FF, 0xA83434FF };
 
 /* ** Variables ** */
 static stock
@@ -37,7 +36,6 @@ static stock
 	CLASS_FBI_RANGE					[ 2 ],
 	CLASS_CIA_RANGE 				[ 2 ],
 	CLASS_FIRE_RANGE 				[ 2 ],
-	CLASS_MEDIC_RANGE 				[ 2 ],
 	CLASS_ARMY_RANGE
 ;
 
@@ -105,7 +103,11 @@ hook OnScriptInit( )
 	AddPlayerClass( 134, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 46
 	AddPlayerClass( 100, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 47
 	AddPlayerClass( 101, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 48
-	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
+	AddPlayerClass( 137, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 49
+	AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
+	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 61
+	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
+	CLASS_CIVILIAN_RANGE[ 1 ] = AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
 
 	/* ** FBI ** */
 	CLASS_FBI_RANGE[ 0 ] = AddPlayerClass( 286, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 50
@@ -124,12 +126,6 @@ hook OnScriptInit( )
 	CLASS_FIRE_RANGE[ 0 ] = AddPlayerClass( 277, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 57
 	AddPlayerClass( 278, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 58
 	CLASS_FIRE_RANGE[ 1 ] = AddPlayerClass( 279, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 59
-
-	/* ** MEDIC ** */
-	CLASS_MEDIC_RANGE[ 0 ] = AddPlayerClass( 274, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 60
-	AddPlayerClass( 275, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 61
-	AddPlayerClass( 276, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 62
-	CLASS_MEDIC_RANGE[ 1 ] = AddPlayerClass( 308, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 63
 
 	/* ** POLICE ** */
 	CLASS_POLICE_RANGE[ 0 ] = AddPlayerClass( 265, default_X, default_Y, default_Z, default_Angle, 0, 0, 0, 0, 0, 0 ); // 66
@@ -211,12 +207,6 @@ hook OnScriptInit( )
 										"~r~~h~- Requires 15,000 XP or more" );
 			}
 			case 5: {
-				strcat( szLargeString,	"- Can heal and cure players~n~" \
-										"- Ambulance passengers pay you~n~"\
-										"- Able to rob stores and players~n~" \
-										"~r~~h~- Requires 1,000 XP or more" );
-			}
-			case 6: {
 				strcat( szLargeString,	"- Protect the city from fires~n~" \
 										"- Firetrucks able to extinguish fires~n~"\
 										"- Able to rob stores and players~n~" \
@@ -356,16 +346,6 @@ hook OnPlayerRequestClass( playerid, classid )
 		p_inCIA{ playerid } = false;
 		ShowPlayerClassTextdraw( playerid, 6 );
 	}
-    else if ( CLASS_MEDIC_RANGE[ 0 ] <= classid <= CLASS_MEDIC_RANGE[ 1 ] )
-	{
-		p_Class[ playerid ] = ( CLASS_MEDIC );
-		SetPlayerColor( playerid, COLOR_MEDIC );
-		//SetPlayerTeam( playerid, NO_TEAM );
-		p_inFBI{ playerid } = false;
-		p_inArmy{ playerid } = false;
-		p_inCIA{ playerid } = false;
-		ShowPlayerClassTextdraw( playerid, 5 );
-	}
 	return 1;
 }
 
@@ -431,9 +411,6 @@ stock IsPlayerClassApproved( playerid ) {
 
 	if ( IsPlayerFireman( playerid ) && total_experience < 1000.0 )
 		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 1,000 Total XP to use this class." ), 0;
-
-	if ( IsPlayerMedic( playerid ) && total_experience < 2000.0 )
-		return SendClientMessage( playerid, -1, ""COL_RED"[ERROR]"COL_WHITE" You need 2,000 Total XP to use this class." ), 0;
 
 	// job not set
 	if ( ! p_JobSet{ playerid } ) // || !p_CitySet{ playerid } )
