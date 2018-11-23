@@ -69,6 +69,17 @@ hook OnPlayerUpdateEx( playerid )
 	return 1;
 }
 
+hook OnPlayerDriveVehicle( playerid, vehicleid )
+{
+	new
+		modelid = GetVehicleModel( vehicleid );
+
+	if ( modelid == 416 ) {
+		ShowPlayerHelpDialog( playerid, 2500, "You will make money by ~g~healing~w~ passengers of the vehicle" );
+	}
+	return 1;
+}
+
 /*hook OnPlayerDisconnect( playerid, reason )
 {
 	p_HealDealer[ playerid ] = INVALID_PLAYER_ID;

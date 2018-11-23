@@ -8666,8 +8666,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_GREY"/me{FFFFFF} - Sends a message based action with yourself.\n"\
 								""COL_GREY"/pm{FFFFFF} - Sends a private message to a specified player.\n"\
 								""COL_GREY"/r{FFFFFF} - Responds to the latest person you messaged.\n"\
-								""COL_GREY"/dnd(all){FFFFFF} - Toggles access of receiving PM's from a specified/or all player(s).\n"\
-								""COL_GREY"/ircpm{FFFFFF} - Sends a message to the IRC channel.\n" );
+								""COL_GREY"/dnd(all){FFFFFF} - Toggles access of receiving PM's from a specified/or all player(s).\n" );
                 strcat( szCMDS, ""COL_GREY"/(w)hisper{FFFFFF} - Whisper to nearby players." );
 
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Main Commands", szCMDS, "Okay", "Back" );
