@@ -3813,8 +3813,8 @@ CMD:vipjob( playerid, params[ ] )
 	if ( p_VIPLevel[ playerid ] < VIP_REGULAR )
 		return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
-	if ( p_VIPLevel[ playerid ] < VIP_DIAMOND )
-		return SendError( playerid, "This command requires you to be Diamond V.I.P." );
+	if ( p_VIPLevel[ playerid ] < VIP_PLATINUM )
+		return SendError( playerid, "This command requires you to be Platinum V.I.P." );
 
 	if ( isnull( params ) )
 		return SendUsage( playerid, "/vipjob [PART OF JOB NAME]" );
@@ -4090,10 +4090,10 @@ CMD:myaccid( playerid, params[ ] )
 
 CMD:job( playerid, params[ ] )
 {
-    if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } != p_Job{ playerid } )
+    if ( p_VIPLevel[ playerid ] >= VIP_PLATINUM && p_VIPJob{ playerid } != p_Job{ playerid } )
     	return SendServerMessage( playerid, "Your jobs are "COL_GOLD"%s"COL_WHITE" and "COL_GOLD"%s"COL_WHITE".", GetJobName( p_Job{ playerid } ), GetJobName( p_VIPJob{ playerid } ) );
 
-    if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND && p_VIPJob{ playerid } == p_Job{ playerid } )
+    if ( p_VIPLevel[ playerid ] >= VIP_PLATINUM && p_VIPJob{ playerid } == p_Job{ playerid } )
     	return SendServerMessage( playerid, "Your jobs are "COL_GOLD"%s"COL_WHITE" and your VIP job is disabled.", GetJobName( p_Job{ playerid } ) );
 
    	SendServerMessage( playerid, "Your job is a "COL_GOLD"%s"COL_WHITE".", GetJobName( p_Job{ playerid } ) );
@@ -12735,11 +12735,11 @@ stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
 
-stock DisablePlayerSpawnProtection( playerid, bool: restore_health = false )
+stock DisablePlayerSpawnProtection( playerid, bool: restore_health = true )
 {
-	if ( restore_health )
+	if ( restore_health ) {
 		SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } ? float( INVALID_PLAYER_ID ) : 100.0 );
-
+	}
 	DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
 	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
 	p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
