@@ -433,9 +433,12 @@ stock IsPlayerFBI( playerid )
 		skinid = GetPlayerSkin( playerid );
 
 	switch( skinid ) {
-	    case 286, 71, 285: {
-			return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
-	    }
+		case 286, 71, 285: {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+				return false;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -446,9 +449,12 @@ stock IsPlayerCIA( playerid )
 		skinid = GetPlayerSkin( playerid );
 
 	switch( skinid ) {
-	    case 303 .. 305: {
-	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
-	    }
+		case 303 .. 305: {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+				return false;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -458,9 +464,12 @@ stock IsPlayerArmy( playerid ) {
 		skinid = GetPlayerSkin( playerid );
 
 	switch( skinid ) {
-	    case 191, 287: {
-	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
-	    }
+		case 191, 287: {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+				return false;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -471,9 +480,12 @@ stock IsPlayerPolice( playerid )
 		skinid = GetPlayerSkin( playerid );
 
 	switch( skinid ) {
-   	    case 265 .. 267, 280 .. 288, 300 .. 302, 306, 307, 309 .. 311: {
-   	    	return IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid;
-	    }
-   	}
+		case 265 .. 267, 280 .. 288, 300 .. 302, 306, 307, 309 .. 311: {
+			if ( IsPlayerSpawned( playerid ) && IsPlayerVIPSkinToggled( playerid ) && p_VIPLevel[ playerid ] && p_LastSkin[ playerid ] == skinid ) {
+				return false;
+			}
+			return true;
+		}
+	}
 	return false;
 }

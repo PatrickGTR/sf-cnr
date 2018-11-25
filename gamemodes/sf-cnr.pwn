@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -359,7 +359,7 @@ public OnGameModeInit()
 	/* ** Auto Inactive Deletion ** */
 #if !defined DEBUG_MODE
 
-	// Delete accounts older than 4 months
+	// Delete accounts older than 6 months
 	erase( szLargeString );
 	strcat( szLargeString, "DELETE a1, a2, a3, a4, a5, a6, a7, a8, a9 FROM `USERS` AS a1 " );
 	strcat( szLargeString, "LEFT JOIN `HOUSES` AS a2 ON a2.`OWNER` = a1.`NAME` " );
@@ -401,21 +401,15 @@ public OnGameModeInit()
 									"SET v.`X`=g.`X`, v.`Y`=g.`Y`, v.`Z`=g.`Z`, v.`GARAGE`=-1 "\
 									"WHERE v.`GARAGE` != -1 AND UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 6 );
 
-	// mysql_function_query( dbHandle, "UPDATE `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` SET g.`OWNER`=0, g.`INTERIOR`=0 WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 1209600;", true, "onRemoveInactiveRows", "d", 6 );
+	// remove inactive garages (14d / 31d)
 	mysql_function_query( dbHandle, "DELETE g FROM `GARAGES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 7 );
 
-	// Remove 25% of wealth off 2 weeks inactive players.
-	// mysql_function_query( dbHandle, "UPDATE `USERS` SET `CASH`=`CASH`*0.75,`BANKMONEY`=`BANKMONEY`*0.75 WHERE UNIX_TIMESTAMP()-`LASTLOGGED`>1209600", true, "onRemoveInactiveRows", "d", 8 );
-#endif
+	// remove inactive businesses (14d / 31d)
+	mysql_function_query( dbHandle, "DELETE b FROM `BUSINESSES` b JOIN `USERS` u ON u.`ID` = b.`OWNER_ID` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 8 );
 
-	// mysql_function_query( dbHandle, "SELECT * FROM `HOUSES`", true, "OnHouseLoad", "" );
-	// mysql_function_query( dbHandle, "SELECT * FROM `BRIBES`", true, "OnBribeLoad", "" );
-	//mysql_function_query( dbHandle, "SELECT * FROM `APARTMENTS`", true, "OnApartmentLoad", "" );
-	// mysql_function_query( dbHandle, "SELECT * FROM `FURNITURE`", true, "OnFurnitureLoad", "" );
-	//mysql_function_query( dbHandle, "SELECT * FROM `GATES`", true, "OnGatesLoad", "" );
-	//mysql_function_query( dbHandle, "SELECT * FROM `ENTRANCES`", true, "OnEntrancesLoad", "" );
-	//mysql_function_query( dbHandle, "SELECT * FROM `CASINO_POOLS`", true, "OnCasinoPoolsLoad", "" );
-	//mysql_function_query( dbHandle, "SELECT * FROM `BUSINESSES`", true, "OnBusinessLoad", "" );
+	// remove inactive gates (14d / 31d)
+	mysql_function_query( dbHandle, "DELETE g FROM `GATES` g JOIN `USERS` u ON u.`ID` = g.`OWNER` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > IF(u.`VIP_PACKAGE` >= 5, 2592000, 1209600)", true, "onRemoveInactiveRows", "d", 9 );
+#endif
 
 	/* ** Timers ** */
 	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
@@ -526,7 +520,8 @@ thread onRemoveInactiveRows( type )
 	   		case 5: format( szNormalString, 96, "[%s %s] Flushed around %d banned accounts. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
 	   		case 6: format( szNormalString, 96, "[%s %s] Repositioned approximately %d vehicles from inactive garages. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
 	   		case 7: format( szNormalString, 96, "[%s %s] Flushed around %d garages. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
-	   		// case 8: format( szNormalString, 96, "[%s %s] 25 percent of %d accounts wealth wiped. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
+	   		case 8: format( szNormalString, 96, "[%s %s] Flushed around %d businesses. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
+	   		case 9: format( szNormalString, 96, "[%s %s] Flushed around %d gates. \r\n", getCurrentDate( ), getCurrentTime( ), iRemoved );
 	   	}
 	    AddFileLogLine( "inactive_rows.txt", szNormalString );
 
