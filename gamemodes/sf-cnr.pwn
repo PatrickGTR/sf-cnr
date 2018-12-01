@@ -198,33 +198,6 @@ new
    	p_C4Amount          			[ MAX_PLAYERS ]
 ;
 
-/* ** Admin Ban Codes ** */
-enum E_BAN_CODE
-{
-	E_CODE[ 4 ], 		E_DATA[ 21 ]
-};
-
-new
-	g_banCodes[ ] [ E_BAN_CODE ] =
-	{
-		{ "AH",  "Armor Hacking" },
-		{ "HH",  "Health Hacking" },
-		{ "VHH", "Vehicle Health Hacks" },
-		{ "NR",  "No Reload" },
-		{ "IA",  "Infinite Ammo" },
-		{ "FH",  "Fly Hacks" },
-		{ "BE",  "Ban Evasion" },
-		{ "AB",  "Air Brake" },
-		{ "TP",  "Teleport Hacks" },
-		{ "WH",  "Weapon Hack" },
-		{ "SH",  "Speed Hacks" },
-		{ "UA",  "Unlimited Ammo" },
-		{ "RF",  "Rapid Fire" },
-		{ "AIM", "Aimbot" },
-		{ "ADV", "Advertising" }
-	}
-;
-
 /* ** Jail System ** */
 #define JAIL_SECONDS_MULTIPLIER		( 3 )
 #define ALCATRAZ_REQUIRED_TIME		( 150 )
@@ -11322,15 +11295,6 @@ stock KillEveryoneInShamal( vehicleid )
 			}
 		}
 	}
-}
-
-stock adhereBanCodes( string[ ], maxlength = sizeof( string ) ) {
-    for( new i; i < sizeof( g_banCodes ); i++ ) {
-    	if ( strfind( string, g_banCodes[ i ] [ E_CODE ], false ) != -1 ) {
-			strreplace( string, g_banCodes[ i ] [ E_CODE ], g_banCodes[ i ] [ E_DATA ], false, 0, -1, maxlength );
-		}
-	}
-	return 1;
 }
 
 stock CreateExplosionEx( Float: X, Float: Y, Float: Z, type, Float: radius, world, interior, issuerid = INVALID_PLAYER_ID )
