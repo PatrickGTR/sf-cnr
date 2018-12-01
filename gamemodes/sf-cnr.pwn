@@ -2326,7 +2326,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 		}
 
-		if ( p_Class[ killerid ] != CLASS_POLICE )
+		if ( p_Class[ killerid ] != CLASS_POLICE && ! IsPlayerAdminOnDuty( playerid ) )
 		{
 			GivePlayerWantedLevel( killerid, 12 );
 			GivePlayerScore( killerid, 1 );
