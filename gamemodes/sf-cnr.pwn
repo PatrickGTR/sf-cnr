@@ -78,7 +78,6 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 #define MAX_BURGLARY_SLOTS          8
-#define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
 
