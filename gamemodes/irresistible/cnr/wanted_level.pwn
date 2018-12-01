@@ -77,9 +77,10 @@ stock GivePlayerWantedLevel( playerid, level )
 	new
 		current_wanted = GetPlayerWantedLevel( playerid );
 
-	SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[CRIME]{FFFFFF} Your wanted level has been %s by %d! Wanted level: %d", current_wanted + level > current_wanted ? ( "increased" ) : ( "decreased" ), level < 0 ? level * -1 : level, current_wanted );
+	SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[CRIME]{FFFFFF} Your wanted level has been %s by %d! Wanted level: %d", current_wanted + level > current_wanted ? ( "increased" ) : ( "decreased" ), level, current_wanted + level );
 	return SetPlayerWantedLevel( playerid, current_wanted + level );
 }
+
 
 stock ClearPlayerWantedLevel( playerid )
 {
