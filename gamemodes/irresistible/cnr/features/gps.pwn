@@ -58,7 +58,7 @@ hook OnScriptInit( playerid )
 	CreateNavigation( "Ammu-Nation",			-2626.6299, 208.2514, 4.81250, CITY_SF, "Buy guns" );
 	CreateNavigation( "Pawnshop",				-2490.2256, -16.9206, 25.6172, CITY_SF, "Buy toys/Burglar minivans" );
 	CreateNavigation( "Hospital", 				-2658.3201, 639.5060, 14.4531, CITY_SF, "Buy cure/healing" );
-	CreateNavigation( "Otto's Cars", 			-1657.7573, 1210.2754, 7.2500, CITY_SF, "Modshop" );
+	CreateNavigation( "Wang Cars", 				-1983.6909, 288.7863, 34.8125, CITY_SF, "Modshop" );
 	CreateNavigation( "Train Station", 			-1979.9883, 138.0498, 27.6875, CITY_SF, "Traindriver Minijob" );
 	CreateNavigation( "Mining Field", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Mining Minijob" );
 	CreateNavigation( "Duel Arena", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Waged Duels" );
