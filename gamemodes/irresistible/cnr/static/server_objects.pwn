@@ -86,7 +86,7 @@ hook OnScriptInit( )
 	SetDynamicObjectMaterial( tmpVariable, 14, 10969, "scum_sfse", "ws_apartmentbrown2", 0 );
 	SetDynamicObjectMaterial( tmpVariable, 5, 8399, "vgs_shops", "vegasclubmural_128", 0 );
 	SetDynamicObjectMaterial( tmpVariable, 6, 8399, "vgs_shops", "vegasclubmural_128", 0 );
-	SetDynamicObjectMaterialText( tmpVariable, 7, "The Lost", 120, "Arial", 80, 1, -1, -11980516, 1 );
+	SetDynamicObjectMaterialText( tmpVariable, 7, "Kafic", 120, "Arial", 80, 1, -1, -11980516, 1 );
 	CreateDynamicObject( 1536, -2587.711425, 58.402435, 3.336049, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	CreateDynamicObject( 1536, -2587.741455, 61.402610, 3.336049, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
 	tmpVariable = CreateDynamicObject( 3525, -2588.295654, 58.166000, 4.775937, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
