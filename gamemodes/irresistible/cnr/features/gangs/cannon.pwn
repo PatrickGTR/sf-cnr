@@ -26,7 +26,12 @@ new
 	g_orbitalCannonData 			[ MAX_FACILITIES ] [ E_ORBITAL_CANNON_DATA ],
 	p_usingOrbitalCannon 			[ MAX_PLAYERS ] = { -1, ... },
 	Text: g_orbitalAimTD 			= Text: INVALID_TEXT_DRAW,
-	Text3D: g_orbitalPlayerLabels 	[ MAX_FACILITIES ] [ MAX_PLAYERS ]
+	Text3D: g_orbitalPlayerLabels 	[ MAX_FACILITIES ] [ MAX_PLAYERS ],
+
+	p_Weapons 						[ MAX_PLAYERS ][ 13 ],
+	p_Ammo 							[ MAX_PLAYERS ][ 13 ],
+	Float: p_Health 				[ MAX_PLAYERS ],
+	Float: p_Armour 				[ MAX_PLAYERS ]
 ;
 
 /* ** Hooks ** */
@@ -65,6 +70,12 @@ hook SetPlayerRandomSpawn( playerid )
 		SetPlayerPos( playerid, g_gangFacilityInterior[ int_type ] [ E_CANNON_POS ] [ 0 ], g_gangFacilityInterior[ int_type ] [ E_CANNON_POS ] [ 1 ], g_gangFacilityInterior[ int_type ] [ E_CANNON_POS ] [ 2 ] );
 	  	SetPlayerVirtualWorld( playerid, g_gangFacilities[ facilityid ] [ E_WORLD ] );
 		SetPlayerInterior( playerid, 0 );
+		SetPlayerHealth( playerid, p_Health[ playerid ] );
+		SetPlayerArmour( playerid, p_Armour[ playerid ] );
+
+		for ( new iWeapon; iWeapon < 13; iWeapon ++ ) {
+			GivePlayerWeapon( playerid, p_Weapons[ playerid ][ iWeapon ], p_Ammo[ playerid ][ iWeapon ] );
+		}
 
 		// set camera
 		DeletePVar( playerid, "left_cannon" );
@@ -268,6 +279,12 @@ stock StartPlayerOrbitalCannon( playerid, facilityid )
 		return 0;
 
 	// player
+	for ( new iWeapon; iWeapon < 13; iWeapon ++ )
+		GetPlayerWeaponData( playerid, iWeapon, p_Weapons[ playerid ][ iWeapon ], p_Ammo[ playerid ][ iWeapon ] );
+
+	GetPlayerHealth( playerid, p_Health[ playerid ] );
+	GetPlayerArmour( playerid, p_Armour[ playerid ] );
+
 	SetPlayerInterior( playerid, 0 );
 	SetPlayerVirtualWorld( playerid, 0 );
 	TogglePlayerSpectating( playerid, 1 );
