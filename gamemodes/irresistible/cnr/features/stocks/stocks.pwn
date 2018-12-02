@@ -762,7 +762,12 @@ CMD:astock( playerid, params[ ] )
 		UpdateServerVariableInt( "stock_report_time", GetServerTime( ) + STOCK_REPORTING_PERIOD );
 		return SendServerMessage( playerid, "All stocks have now had their dividends distributed." );
 	}
-	return SendUsage( playerid, "/astock [UPDATE MAXSHARES/NEW REPORT]" );
+	else if ( strmatch( params, "purge inactive" ) )
+	{
+		mysql_tquery( dbHandle, sprintf( "SELECT so.* FROM `STOCK_OWNERS` so JOIN `USERS` u ON so.`USER_ID`=u.`ID` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 604800 AND so.`USER_ID` != %d", STOCK_MM_USER_ID ), "StockMarket_ForceShareSale", "" );
+		return SendServerMessage( playerid, "All inactive share holders now have their stocks on sale." );
+	}
+	return SendUsage( playerid, "/astock [UPDATE MAXSHARES/NEW REPORT/PURGE INACTIVE]" );
 }
 
 /* ** Functions ** */
