@@ -78,6 +78,7 @@ new bool: False = false;
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 #define MAX_BURGLARY_SLOTS          8
+#define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
 
@@ -195,6 +196,33 @@ enum E_C4_DATA
 new
 	g_C4Data						[ MAX_PLAYERS ] [ MAX_C4 ] [ E_C4_DATA ],
    	p_C4Amount          			[ MAX_PLAYERS ]
+;
+
+/* ** Admin Ban Codes ** */
+enum E_BAN_CODE
+{
+	E_CODE[ 4 ], 		E_DATA[ 21 ]
+};
+
+new
+	g_banCodes[ ] [ E_BAN_CODE ] =
+	{
+		{ "AH",  "Armor Hacking" },
+		{ "HH",  "Health Hacking" },
+		{ "VHH", "Vehicle Health Hacks" },
+		{ "NR",  "No Reload" },
+		{ "IA",  "Infinite Ammo" },
+		{ "FH",  "Fly Hacks" },
+		{ "BE",  "Ban Evasion" },
+		{ "AB",  "Air Brake" },
+		{ "TP",  "Teleport Hacks" },
+		{ "WH",  "Weapon Hack" },
+		{ "SH",  "Speed Hacks" },
+		{ "UA",  "Unlimited Ammo" },
+		{ "RF",  "Rapid Fire" },
+		{ "AIM", "Aimbot" },
+		{ "ADV", "Advertising" }
+	}
 ;
 
 /* ** Jail System ** */
@@ -1473,6 +1501,10 @@ public OnPlayerSpawn( playerid )
 	CancelEdit( playerid );
 	HidePlayerHelpDialog( playerid );
 
+	// Name Tags
+	foreach( new pID : Player )
+		ShowPlayerNameTagForPlayer( playerid, pID, p_NameTags{ playerid } ? 1 : 0 );
+
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		RemovePlayerAttachedObject( playerid, 1 ), SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
@@ -2298,7 +2330,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 			}
 		}
 
-		if ( p_Class[ killerid ] != CLASS_POLICE && ! IsPlayerAdminOnDuty( playerid ) )
+		if ( p_Class[ killerid ] != CLASS_POLICE )
 		{
 			GivePlayerWantedLevel( killerid, 12 );
 			GivePlayerScore( killerid, 1 );
@@ -3595,10 +3627,12 @@ CMD:whisper( playerid, params[ ] )
 CMD:nametags( playerid, params[ ] )
 {
 	if ( strmatch( params, "off" ) ) {
-		foreach(new i : Player) { ShowPlayerNameTagForPlayer( playerid, i, 0 ); }
+		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 0 ); }
+		p_NameTags{ playerid } = false;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags disabled" );
 	} else if ( strmatch( params, "on" ) ) {
-		foreach(new i : Player) { ShowPlayerNameTagForPlayer( playerid, i, 1 ); }
+		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 1 ); }
+		p_NameTags{ playerid } = true;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags enabled" );
 	}
 	else SendClientMessage( playerid, 0xa9c4e4ff, "-> /nametags [ON/OFF]" );
@@ -11294,6 +11328,15 @@ stock KillEveryoneInShamal( vehicleid )
 			}
 		}
 	}
+}
+
+stock adhereBanCodes( string[ ], maxlength = sizeof( string ) ) {
+    for( new i; i < sizeof( g_banCodes ); i++ ) {
+    	if ( strfind( string, g_banCodes[ i ] [ E_CODE ], false ) != -1 ) {
+			strreplace( string, g_banCodes[ i ] [ E_CODE ], g_banCodes[ i ] [ E_DATA ], false, 0, -1, maxlength );
+		}
+	}
+	return 1;
 }
 
 stock CreateExplosionEx( Float: X, Float: Y, Float: Z, type, Float: radius, world, interior, issuerid = INVALID_PLAYER_ID )
