@@ -1501,6 +1501,10 @@ public OnPlayerSpawn( playerid )
 	CancelEdit( playerid );
 	HidePlayerHelpDialog( playerid );
 
+	// Name Tags
+	foreach( new pID : Player )
+		ShowPlayerNameTagForPlayer( playerid, pID, p_NameTags{ playerid } ? 1 : 0 );
+
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		RemovePlayerAttachedObject( playerid, 1 ), SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
@@ -3623,10 +3627,12 @@ CMD:whisper( playerid, params[ ] )
 CMD:nametags( playerid, params[ ] )
 {
 	if ( strmatch( params, "off" ) ) {
-		foreach(new i : Player) { ShowPlayerNameTagForPlayer( playerid, i, 0 ); }
+		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 0 ); }
+		p_NameTags{ playerid } = false;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags disabled" );
 	} else if ( strmatch( params, "on" ) ) {
-		foreach(new i : Player) { ShowPlayerNameTagForPlayer( playerid, i, 1 ); }
+		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 1 ); }
+		p_NameTags{ playerid } = true;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags enabled" );
 	}
 	else SendClientMessage( playerid, 0xa9c4e4ff, "-> /nametags [ON/OFF]" );
