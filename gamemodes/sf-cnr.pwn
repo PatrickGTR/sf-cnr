@@ -2708,56 +2708,11 @@ function emp_deactivate( vehicleid )
 
 public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 {
-	if ( progressid == PROGRESS_CRACKING_BIZ )
-	{
-		new
-			businessid = GetPVarInt( playerid, "crackpw_biz" );
-
-		if ( ! IsPlayerSpawned( playerid ) || ! IsPlayerInDynamicCP( playerid, g_businessData[ businessid ] [ E_ENTER_CP ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled ) {
-			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
-			return StopProgressBar( playerid ), 1;
-		}
-	}
 	return 1;
 }
 
 public OnProgressCompleted( playerid, progressid, params )
 {
-	switch( progressid )
-	{
-		case PROGRESS_CRACKING_BIZ:
-		{
-			new szLocation[ MAX_ZONE_NAME ];
-			new businessid = GetPVarInt( playerid, "crackpw_biz" );
-			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
-			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 120; // g_businessSecurityData[ g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ] [ E_BREAKIN_COOLDOWN ];
-
-			if ( random( 100 ) < 75 )
-			{
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
-				}
-				g_businessData[ businessid ] [ E_CRACKED ] = true;
-			   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 180;
-				SendServerMessage( playerid, "You have successfully cracked this business' password. It will not be accessible in 3 minutes." );
-				GivePlayerWantedLevel( playerid, 12 );
-				GivePlayerScore( playerid, 2 );
-				//GivePlayerExperience( playerid, E_BURGLAR );
-				Achievement::HandleBurglaries( playerid );
-			}
-			else
-			{
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) failed to break in business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
-				}
-				GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
-				SendClientMessageToCops( -1, ""COL_BLUE"[BURGLARY]"COL_WHITE" %s has failed to crack a business' password near %s.", ReturnPlayerName( playerid ), szLocation );
-				SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have failed to crack this business' password." );
-				GivePlayerWantedLevel( playerid, 6 );
-				CreateCrimeReport( playerid );
-			}
-		}
-	}
 	return 1;
 }
 
@@ -6563,8 +6518,10 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 					if ( g_iTime > g_businessData[ b ] [ E_CRACKED_TS ] && g_businessData[ b ] [ E_CRACKED ] )
 						g_businessData[ b ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
-					if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) )
+					if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) ) {
+						CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, -1, b ); // attempting a break in as a burglar/cop
 						return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+					}
 
 					new
 						bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
@@ -6609,11 +6566,8 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 			        if ( ! g_houseData[ i ] [ E_CRACKED ] && ! strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
 					{
-						if ( IsPlayerJob( playerid, JOB_BURGLAR ) || GetPlayerClass( playerid ) == CLASS_POLICE ) {
-							CallLocalFunction( "OnPlayerAttemptBurglary", "ddd", playerid, houseid, -1 ); // attempting a break in as a burglar/cop
-						}
-
 					    p_PasswordedHouse[ playerid ] = i;
+						CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, i, -1 ); // attempting a break in as a burglar/cop
 					    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
 						return 1;
 					}

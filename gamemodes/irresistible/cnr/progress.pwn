@@ -13,7 +13,6 @@
 #define PROGRESS_MINING				3
 #define PROGRESS_ROBBING			4
 #define PROGRESS_SAFEPICK 			5
-#define PROGRESS_CRACKING_BIZ 		8
 
 /* ** Variables ** */
 static stock

@@ -44,5 +44,5 @@
     - Called when a player leaves a gang
 - `OnPlayerEnterHouse( playerid, houseid )`
     - Called when a player enters a house
-- `OnPlayerAttemptBurglary( playerid, houseid, businessid )`
+- `OnPlayerAttemptBreakIn( playerid, houseid, businessid )`
     - Called when a player attempts to break into a business/house

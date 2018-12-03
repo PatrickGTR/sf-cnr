@@ -194,7 +194,7 @@ hook OnPlayerEnterHouse( playerid, houseid )
 	// alert burglar of any furniture
 	if ( ! IsPlayerHomeOwner( playerid, houseid ) && IsPlayerJob( playerid, JOB_BURGLAR ) && GetPlayerClass( playerid ) == CLASS_CIVILIAN ) {
 		if ( Iter_Count( housefurniture[ houseid ] ) ) {
-			ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
+			ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Press ~g~~h~~k~~VEHICLE_ENTER_EXIT~~w~ near the furniture you want to steal." );
 		} else {
 			ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
 		}
@@ -202,37 +202,46 @@ hook OnPlayerEnterHouse( playerid, houseid )
 	return 1;
 }
 
-hook OnPlayerAttemptBurglary( playerid, houseid, businessid )
+hook OnPlayerAttemptBreakIn( playerid, houseid, businessid )
 {
-	new current_time = GetServerTime( );
-	new crackpw_cooldown = GetPVarInt( playerid, "crack_housepw_cool" );
+	new is_fbi = GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } && ! p_inArmy{ playerid } && ! p_inCIA{ playerid };
+	new is_burglar = GetPlayerClass( playerid ) == CLASS_CIVILIAN && IsPlayerJob( playerid, JOB_BURGLAR );
 
-	if ( crackpw_cooldown > current_time ) {
-		return SendError( playerid, "You are unable to attempt a house break-in for %d seconds.", crackpw_cooldown - current_time ), 0;
-	}
-
-	print("Attempt Breakin");
+	// prohibit non-cop,
+	if ( ! ( ! is_fbi && is_burglar || ! is_burglar && is_fbi ) )
+		return 0;
 
 	if ( IsValidHouse( houseid ) )
 	{
+		new current_time = GetServerTime( );
+		new crackpw_cooldown = GetPVarInt( playerid, "crack_housepw_cool" );
+
+		if ( crackpw_cooldown > current_time ) {
+			return SendError( playerid, "You are unable to attempt a house break-in for %d seconds.", crackpw_cooldown - current_time ), 0;
+		}
+
 		if ( current_time > g_houseData[ houseid ] [ E_CRACKED_TS ] && g_houseData[ houseid ] [ E_CRACKED ] )
 			g_houseData[ houseid ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
 		if ( g_houseData[ houseid ] [ E_CRACKED_WAIT ] > current_time )
-		    return print("1"), SendError( playerid, "This house had its password recently had a cracker run through. Come back later." ), 0;
+		    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." ), 0;
 
 		if ( g_houseData[ houseid ] [ E_CRACKED ] || g_houseData[ houseid ] [ E_BEING_CRACKED ] )
-			return print("2"), SendError( playerid, "This house is currently being cracked or is already cracked." ), 0;
+			return SendError( playerid, "This house is currently being cracked or is already cracked." ), 0;
 
         if ( IsHouseOnFire( houseid ) )
-	       	return print("3"), SendError( playerid, "This house is on fire, you cannot crack it!" ), 0;
+	       	return SendError( playerid, "This house is on fire, you cannot crack it!" ), 0;
 
-		print("Attempt Breakin2");
         g_houseData[ houseid ] [ E_BEING_CRACKED ] = true;
         p_HouseCrackingPW[ playerid ] = houseid;
         SetPVarInt( playerid, "crack_housepw_cool", current_time + 40 );
-		ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING, 7500, COLOR_WHITE );
-        return 1;
+
+		if ( is_fbi ) {
+			ShowProgressBar( playerid, "Brute Forcing Password", PROGRESS_BRUTEFORCE, 5000, COLOR_BLUE );
+		} else {
+			ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING, 7500, COLOR_WHITE );
+		}
+		return 1;
 	}
 	return 1;
 }
@@ -281,8 +290,8 @@ hook OnPlayerEnterDynArea( playerid, areaid )
 
 		if ( attached_model == 498 )
 		{
-			if ( ! IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) {
-				return SendError( playerid, "You aren't holding anything!" );
+			if ( GetPVarType( playerid, "stolen_fid" ) == PLAYER_VARTYPE_NONE ) {
+				return 1; // return SendError( playerid, "You aren't holding anything!" );
 			}
 
 			new stolen_furniture_count = GetGVarInt( sprintf( "vburg_%d_items", attached_vehicle ) );
@@ -367,88 +376,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	return 1;
 }
 
-/* ** Commands ** */
-CMD:burglar( playerid, params[ ] )
-{
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
-	if ( !IsPlayerJob( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You are not a burglar." );
-
-	if ( isnull( params ) ) return SendUsage( playerid, "/burglar [CRACKPW/STEAL/STORE]" );
-	else if ( strmatch( params, "crackpw" ) )
-	{
-
-		// businesses
-		/*foreach ( new handle : business )
-		{
-			if ( IsPlayerInDynamicCP( playerid, g_businessData[ handle ] [ E_ENTER_CP ] ) )
-			{
-				if ( g_iTime > g_businessData[ handle ] [ E_CRACKED_TS ] && g_businessData[ handle ] [ E_CRACKED ] ) g_businessData[ handle ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-				if ( IsBusinessAssociate( playerid, handle ) )
-					return SendError( playerid, "You are an associate of this business, you cannot crack it." );
-
-				if ( g_businessData[ handle ] [ E_CRACKED_WAIT ] > g_iTime )
-				    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
-
-				if ( g_businessData[ handle ] [ E_CRACKED ] || g_businessData[ handle ] [ E_BEING_CRACKED ] )
-				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
-
-				// alert
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, handle ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) is attempting to break into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ handle ] [ E_NAME ] );
-				}
-
-				// crack pw
-                g_businessData[ handle ] [ E_BEING_CRACKED ] = true;
-                SetPVarInt( playerid, "crackpw_biz", handle );
-                SetPVarInt( playerid, "crackpw_cool", g_iTime + 40 );
-				ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING_BIZ, 7500, COLOR_WHITE );
-	            return 1;
-			}
-		}*/
-	}
-	else SendUsage( playerid, "/burglar [CRACKPW/STEAL]" );
-	return 1;
-}
-
-CMD:bruteforce( playerid, params[ ] )
-{
-	/* ** ANTI SPAM ** */
-    if ( GetPVarInt( playerid, "last_bruteforce" ) > g_iTime ) return SendError( playerid, "You must wait 30 seconds before using this command again." );
-    /* ** END OF ANTI SPAM ** */
-
-	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This command is restricted for F.B.I agents." );
-	if ( !( p_inFBI{ playerid } == true && p_inArmy{ playerid } == false && p_inCIA{ playerid } == false ) ) return SendError( playerid, "This command is restricted for F.B.I agents." );
-
-	foreach ( new i : houses )
-	{
-		if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-		{
-			if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-			if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
-			    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
-
-			if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
-			    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
-
-			if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
-			    return SendError( playerid, "This house is currently being cracked or is already cracked." );
-
-	        if ( IsHouseOnFire( i ) )
-		       	return SendError( playerid, "This house is on fire, you cannot bruteforce it!" ), 1;
-
-            g_houseData[ i ] [ E_BEING_CRACKED ] = true;
-            p_HouseCrackingPW[ playerid ] = i;
-            SetPVarInt( playerid, "last_bruteforce", g_iTime + 30 );
-			ShowProgressBar( playerid, "Brute Forcing Password", PROGRESS_BRUTEFORCE, 5000, COLOR_BLUE );
-            return 1;
-		}
-	}
-	SendError( playerid, "You are not standing in any house checkpoint." );
-	return 1;
-}
-
+/* ** Functions ** */
 stock ResetVehicleBurglaryData( vehicleid )
 {
     DeleteGVar( sprintf( "vburg_%d_cash", vehicleid ) );
