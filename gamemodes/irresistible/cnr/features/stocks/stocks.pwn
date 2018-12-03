@@ -242,7 +242,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		else
 		{
 			new
-				final_donation_amount = floatround( float( donation_amount ) * 0.75 );
+				final_donation_amount = floatround( float( donation_amount ) * 0.5 );
 
 			// contribute to earnings
 			StockMarket_UpdateEarnings( stockid, final_donation_amount, .donation_amount = final_donation_amount );
@@ -885,7 +885,7 @@ static stock StockMarket_ShowDonationSlip( playerid, stockid )
 {
 	format(
 		szLargeString, sizeof ( szLargeString ),
-		""COL_WHITE"Donations can be used to prop up %s's stock price.\n\n75%% of the money donated is distributed as dividends.\n\n"COL_ORANGE"You do not get any shares for donating to a company!",
+		""COL_WHITE"Donations can be used to prop up %s's stock price.\n\n50%% of the money donated is distributed as dividends.\n\n"COL_ORANGE"You do not get any shares for donating to a company!",
 		g_stockMarketData[ stockid ] [ E_NAME ]
 	);
 	ShowPlayerDialog( playerid, DIALOG_STOCK_MARKET_DONATE, DIALOG_STYLE_INPUT, ""COL_WHITE"Stock Market", szLargeString, "Donate", "Back" );
