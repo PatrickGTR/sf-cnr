@@ -25,9 +25,14 @@
 #define MAX_COKE_AMOUNT 			( 10 )
 #define MAX_WEAPON_AMOUNT 			( 10 )
 
+#define PROGRESS_CRACKING_BIZ 		( 8 )
+
 /* ** Macros ** */
 #define UpdateBusinessTitle(%0) \
 	 mysql_function_query(dbHandle,sprintf("SELECT f.`NAME` FROM `USERS` f LEFT JOIN `BUSINESSES` m ON m.`OWNER_ID`=f.`ID` WHERE m.`ID`=%d",%0),true,"OnUpdateBusinessTitle","i",%0)
+
+#define IsValidBusiness(%0) \
+	 ( 0 <= %0 < MAX_BUSINESSES && Iter_Contains( business, %0 ) )
 
 /* ** Variables ** */
 enum E_BUSINESS_DATA
@@ -294,6 +299,102 @@ hook OnVehicleDeath( vehicleid, killerid )
 	}
 	return 1;
 }
+
+hook OnPlayerAttemptBreakIn( playerid, houseid, businessid )
+{
+	new is_fbi = GetPlayerClass( playerid ) == CLASS_POLICE && p_inFBI{ playerid } && ! p_inArmy{ playerid } && ! p_inCIA{ playerid };
+	new is_burglar = GetPlayerClass( playerid ) == CLASS_CIVILIAN && IsPlayerJob( playerid, JOB_BURGLAR );
+
+	// prohibit non-cop,
+	if ( ! ( ! is_fbi && is_burglar || ! is_burglar && is_fbi ) )
+		return 0;
+
+	if ( IsValidBusiness( businessid ) )
+	{
+		new current_time = GetServerTime( );
+		new crackpw_cooldown = GetPVarInt( playerid, "crack_biz_cool" );
+
+		if ( crackpw_cooldown > current_time ) {
+			return SendError( playerid, "You are unable to attempt a house break-in for %d seconds.", crackpw_cooldown - current_time ), 0;
+		}
+
+		if ( g_iTime > g_businessData[ businessid ] [ E_CRACKED_TS ] && g_businessData[ businessid ] [ E_CRACKED ] ) g_businessData[ businessid ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+
+		if ( IsBusinessAssociate( playerid, businessid ) )
+			return SendError( playerid, "You are an associate of this business, you cannot crack it." );
+
+		if ( g_businessData[ businessid ] [ E_CRACKED_WAIT ] > g_iTime )
+		    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
+
+		if ( g_businessData[ businessid ] [ E_CRACKED ] || g_businessData[ businessid ] [ E_BEING_CRACKED ] )
+		    return SendError( playerid, "This house is currently being cracked or is already cracked." );
+
+		// alert
+		foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
+			SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) is attempting to break into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
+		}
+
+		// crack pw
+        g_businessData[ businessid ] [ E_BEING_CRACKED ] = true;
+        SetPVarInt( playerid, "crackpw_biz", businessid );
+        SetPVarInt( playerid, "crack_biz_cool", current_time + 40 );
+		ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING_BIZ, 7500, COLOR_WHITE );
+	}
+	return 1;
+}
+
+hook OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
+{
+	if ( progressid == PROGRESS_CRACKING_BIZ )
+	{
+		new
+			businessid = GetPVarInt( playerid, "crackpw_biz" );
+
+		if ( ! IsPlayerSpawned( playerid ) || ! IsPlayerInDynamicCP( playerid, g_businessData[ businessid ] [ E_ENTER_CP ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled ) {
+			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
+			return StopProgressBar( playerid ), 1;
+		}
+	}
+	return 1;
+}
+
+hook OnProgressCompleted( playerid, progressid, params )
+{
+	if ( progressid == PROGRESS_CRACKING_BIZ )
+	{
+		new szLocation[ MAX_ZONE_NAME ];
+		new businessid = GetPVarInt( playerid, "crackpw_biz" );
+		g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
+		g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 120; // g_businessSecurityData[ g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ] [ E_BREAKIN_COOLDOWN ];
+
+		if ( random( 100 ) < 75 )
+		{
+			foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
+				SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
+			}
+			g_businessData[ businessid ] [ E_CRACKED ] = true;
+		   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 180;
+			SendServerMessage( playerid, "You have successfully cracked this business' password. It will not be accessible in 3 minutes." );
+			GivePlayerWantedLevel( playerid, 12 );
+			GivePlayerScore( playerid, 2 );
+			//GivePlayerExperience( playerid, E_BURGLAR );
+			ach_HandleBurglaries( playerid );
+		}
+		else
+		{
+			foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
+				SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) failed to break in business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
+			}
+			GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
+			SendClientMessageToCops( -1, ""COL_BLUE"[BURGLARY]"COL_WHITE" %s has failed to crack a business' password near %s.", ReturnPlayerName( playerid ), szLocation );
+			SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have failed to crack this business' password." );
+			GivePlayerWantedLevel( playerid, 6 );
+			CreateCrimeReport( playerid );
+		}
+	}
+	return 1;
+}
+
 
 /* ** Command ** */
 CMD:b( playerid, params[ ] ) return cmd_business( playerid, params );

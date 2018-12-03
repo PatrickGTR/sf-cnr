@@ -116,9 +116,9 @@ new
 	    { FC_ELECTRONIC,	"Stereo System", 		2100, 2175 },
 	    { FC_ELECTRONIC,	"Wide-screen TV", 		1786, 2500 },
 		{ FC_ELECTRONIC, 	"Huge LCD", 			19786, 3000 },
+	    { FC_ELECTRONIC,    "PC with Desk",     	2181, 3400 },
 	    { FC_ELECTRONIC,	"Small TV Unit", 		2297, 3700 },
 	    { FC_ELECTRONIC,    "TV Unit",              2296, 4000 },
-	    { FC_ELECTRONIC,    "PC with Desk",     	2181, 4200 },
 		// Bedroom
 	    { FC_BEDROOM,		"Wooden Stance", 		1743, 650 },
 	    { FC_BEDROOM,		"Wooden Counter", 		1416, 750 },

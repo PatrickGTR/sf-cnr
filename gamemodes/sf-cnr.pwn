@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -77,7 +77,6 @@ new bool: False = false;
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
-#define MAX_BURGLARY_SLOTS          8
 #define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
@@ -1392,7 +1391,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_TrainMissions[ playerid ] = 0;
 	p_HydrogenChloride{ playerid } = 0;
 	p_Methamphetamine{ playerid } = 0;
-	p_PawnStoreExport[ playerid ] = 0xFFFF;
 	p_LastEnteredEntrance[ playerid ] = -1;
 	p_ViewingGangTalk[ playerid ] = -1;
 	p_forcedAnticheat[ playerid ] = 0;
@@ -1427,8 +1425,7 @@ public OnPlayerDisconnect( playerid, reason )
 	KillTimer( p_CuffAbuseTimer[ playerid ] );
 	ResetPlayerCash( playerid );
 	if ( !GetPVarInt( playerid, "banned_connection" ) ) SendDeathMessage( INVALID_PLAYER_ID, playerid, 201 );
-	DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-	p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
+
 	jailDoors( playerid, .remove = true, .set_closed = false );
 
 	switch( reason )
@@ -2367,7 +2364,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 public OnVehicleSpawn( vehicleid )
 {
 	KillEveryoneInShamal( vehicleid );
-    ResetVehicleBurglaryData( vehicleid );
 
 	if ( g_buyableVehicle{ vehicleid } == true ) {
 		RespawnBuyableVehicle( vehicleid );
@@ -2377,7 +2373,6 @@ public OnVehicleSpawn( vehicleid )
 
 public OnVehicleDeath( vehicleid, killerid )
 {
-    ResetVehicleBurglaryData( vehicleid );
     KillEveryoneInShamal( vehicleid );
 	return 1;
 }
@@ -2713,101 +2708,11 @@ function emp_deactivate( vehicleid )
 
 public OnPlayerProgressUpdate( playerid, progressid, bool: canceled, params )
 {
-	if ( progressid == PROGRESS_CRACKING || progressid == PROGRESS_BRUTEFORCE ) {
-        if ( !IsPlayerSpawned( playerid ) || !IsPlayerInDynamicCP( playerid, g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CHECKPOINT ] [ 0 ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled )
-        	return g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_BEING_CRACKED ] = false, StopProgressBar( playerid ), 1;
-	}
-	else if ( progressid == PROGRESS_CRACKING_BIZ )
-	{
-		new
-			businessid = GetPVarInt( playerid, "crackpw_biz" );
-
-		if ( ! IsPlayerSpawned( playerid ) || ! IsPlayerInDynamicCP( playerid, g_businessData[ businessid ] [ E_ENTER_CP ] ) || !IsPlayerConnected( playerid ) || IsPlayerInAnyVehicle( playerid ) || canceled ) {
-			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
-			return StopProgressBar( playerid ), 1;
-		}
-	}
 	return 1;
 }
 
 public OnProgressCompleted( playerid, progressid, params )
 {
-	static
-	    iRandom;
-
-	switch( progressid )
-	{
-		case PROGRESS_BRUTEFORCE:
-		{
-		   	g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_BEING_CRACKED ] = false;
-			g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED_WAIT ] = g_iTime + 30;
-	        iRandom = random( 101 );
-	        if ( iRandom < 75  )
-	        {
-				g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED ] = true;
-			   	g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED_TS ] = g_iTime + 60;
-				SendServerMessage( playerid, "You have successfully brute forced this houses' password. This lasts for one minute." );
-	        }
-	        else SendServerMessage( playerid, "You have failed to brute force this houses' password." );
-		}
-		case PROGRESS_CRACKING_BIZ:
-		{
-			new szLocation[ MAX_ZONE_NAME ];
-			new businessid = GetPVarInt( playerid, "crackpw_biz" );
-			g_businessData[ businessid ] [ E_BEING_CRACKED ] = false;
-			g_businessData[ businessid ] [ E_CRACKED_WAIT ] = g_iTime + 120; // g_businessSecurityData[ g_businessData[ businessid ] [ E_SECURITY_LEVEL ] ] [ E_BREAKIN_COOLDOWN ];
-
-			if ( random( 100 ) < 75 )
-			{
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) has broken into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
-				}
-				g_businessData[ businessid ] [ E_CRACKED ] = true;
-			   	g_businessData[ businessid ] [ E_CRACKED_TS ] = g_iTime + 180;
-				SendServerMessage( playerid, "You have successfully cracked this business' password. It will not be accessible in 3 minutes." );
-				GivePlayerWantedLevel( playerid, 12 );
-				GivePlayerScore( playerid, 2 );
-				//GivePlayerExperience( playerid, E_BURGLAR );
-				Achievement::HandleBurglaries( playerid );
-			}
-			else
-			{
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, businessid ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) failed to break in business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ businessid ] [ E_NAME ] );
-				}
-				GetZoneFromCoordinates( szLocation, g_businessData[ businessid ] [ E_X ], g_businessData[ businessid ] [ E_Y ], g_businessData[ businessid ] [ E_Z ] );
-				SendClientMessageToCops( -1, ""COL_BLUE"[BURGLARY]"COL_WHITE" %s has failed to crack a business' password near %s.", ReturnPlayerName( playerid ), szLocation );
-				SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have failed to crack this business' password." );
-				GivePlayerWantedLevel( playerid, 6 );
-				CreateCrimeReport( playerid );
-			}
-		}
-		case PROGRESS_CRACKING:
-		{
-		   	g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_BEING_CRACKED ] = false;
-			g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED_WAIT ] = g_iTime + 300;
-	        iRandom = random( 101 );
-			if ( iRandom < 75 )
-			{
-				g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED ] = true;
-			   	g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_CRACKED_TS ] = g_iTime + 120;
-				SendServerMessage( playerid, "You have successfully cracked this houses' password. You have two minutes to do your thing." );
-				GivePlayerWantedLevel( playerid, 12 );
-				GivePlayerScore( playerid, 2 );
-				//GivePlayerExperience( playerid, E_BURGLAR );
-				Achievement::HandleBurglaries( playerid );
-			}
-			else
-			{
-				new szLocation[ MAX_ZONE_NAME ];
-				GetZoneFromCoordinates( szLocation, g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_EX ], g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_EY ], g_houseData[ p_HouseCrackingPW[ playerid ] ] [ E_EZ ] );
-				SendClientMessageToCops( -1, ""COL_BLUE"[BURGLARY]"COL_WHITE" %s has failed to crack a houses' password near %s.", ReturnPlayerName( playerid ), szLocation );
-				SendClientMessage( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have failed to crack this houses' password." );
-				GivePlayerWantedLevel( playerid, 6 );
-				CreateCrimeReport( playerid );
-			}
-		}
-	}
 	return 1;
 }
 
@@ -3318,149 +3223,6 @@ CMD:banks( playerid, params[ ] )
 			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t%s\n", szBigString, g_bankvaultData[ i ] [ E_NAME ], secondstotime( g_bankvaultData[ i ] [ E_TIMESTAMP ] - time ) );
 	}
 	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}Banks", szBigString, "Okay", "" );
-	return 1;
-}
-
-CMD:burglar( playerid, params[ ] )
-{
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
-	if ( !IsPlayerJob( playerid, JOB_BURGLAR ) ) return SendError( playerid, "You are not a burglar." );
-
-	if ( isnull( params ) ) return SendUsage( playerid, "/burglar [CRACKPW/STEAL/STORE]" );
-	else if ( strmatch( params, "crackpw" ) )
-	{
-		if ( GetPVarInt( playerid, "crackpw_cool" ) > g_iTime ) return SendError( playerid, "You must wait 40 seconds before using this command again." );
-
-		// businesses
-		foreach ( new handle : business )
-		{
-			if ( IsPlayerInDynamicCP( playerid, g_businessData[ handle ] [ E_ENTER_CP ] ) )
-			{
-				if ( g_iTime > g_businessData[ handle ] [ E_CRACKED_TS ] && g_businessData[ handle ] [ E_CRACKED ] ) g_businessData[ handle ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-				if ( IsBusinessAssociate( playerid, handle ) )
-					return SendError( playerid, "You are an associate of this business, you cannot crack it." );
-
-				if ( g_businessData[ handle ] [ E_CRACKED_WAIT ] > g_iTime )
-				    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
-
-				if ( g_businessData[ handle ] [ E_CRACKED ] || g_businessData[ handle ] [ E_BEING_CRACKED ] )
-				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
-
-				// alert
-				foreach ( new ownerid : Player ) if ( IsBusinessAssociate( ownerid, handle ) ) {
-					SendClientMessageFormatted( ownerid, -1, ""COL_RED"[BURGLARY]"COL_WHITE" %s(%d) is attempting to break into your business %s"COL_WHITE"!", ReturnPlayerName( playerid ), playerid, g_businessData[ handle ] [ E_NAME ] );
-				}
-
-				// crack pw
-                g_businessData[ handle ] [ E_BEING_CRACKED ] = true;
-                SetPVarInt( playerid, "crackpw_biz", handle );
-                SetPVarInt( playerid, "crackpw_cool", g_iTime + 40 );
-				ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING_BIZ, 7500, COLOR_WHITE );
-	            return 1;
-			}
-		}
-
-		// houses
-		foreach ( new i : houses )
-		{
-			if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-			{
-				if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-				if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
-				    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
-
-				if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
-				    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
-
-				if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
-				    return SendError( playerid, "This house is currently being cracked or is already cracked." );
-
-		        if ( IsHouseOnFire( i ) )
-			       	return SendError( playerid, "This house is on fire, you cannot crack it!" ), 1;
-
-                g_houseData[ i ] [ E_BEING_CRACKED ] = true;
-                p_HouseCrackingPW[ playerid ] = i;
-                SetPVarInt( playerid, "crackpw_cool", g_iTime + 40 );
-				ShowProgressBar( playerid, "Cracking Password", PROGRESS_CRACKING, 7500, COLOR_WHITE );
-	            return 1;
-			}
-		}
-
-		// businesses
-		SendError( playerid, "You are not standing in any house or business checkpoint." );
-	}
-	else if ( strmatch( params, "steal" ) )
-	{
-		new houseid = p_InHouse[ playerid ];
-
-	    if ( houseid == -1 )
-	    	return SendError( playerid, "You're not inside any house." );
-
-    	if ( IsPlayerHomeOwner( playerid, houseid ) )
-    		return SendError( playerid, "You can't steal a piece of furniture from your house!" );
-
-	    new Float: distance = 99999.99, furniture_slot = ITER_NONE;
-		new objectid = GetClosestFurniture( houseid, playerid, distance, furniture_slot );
-		new modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
-		new furniture_id = getFurnitureID( modelid );
-
-    	if ( objectid == INVALID_OBJECT_ID || furniture_slot == ITER_NONE )
-    		return SendError( playerid, "No furniture is in this house." );
-
-		if ( distance > 3.0 )
-			return SendError( playerid, "You are not close to any furniture." );
-
-		if ( g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_ELECTRONIC && g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_WEAPONS )
-			return SendError( playerid, "The furniture you're near is not an electronic." );
-
-		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
-			return SendError( playerid, "Your hands are busy at the moment." );
-
-		if ( IsPointToPoint( 150.0, g_houseData[ houseid ] [ E_EX ], g_houseData[ houseid ] [ E_EY ], g_houseData[ houseid ] [ E_EZ ], -2480.1426, 5.5302, 25.6172 ) )
-			return SendError( playerid, "This house is prohibited from burglarly features as it is too close to the Pawn Store." );
-
-		new Float: playerZ, Float: furnitureZ;
-		GetPlayerPos( playerid, playerZ, playerZ, playerZ );
-		GetDynamicObjectPos( objectid, furnitureZ, furnitureZ, furnitureZ );
-
-		// apply animation
-    	if ( playerZ - furnitureZ <= 0.0 ) ApplyAnimation( playerid, "CARRY", "liftup105", 4.0, 0, 0, 0, 0, 0 );
-    	else if ( playerZ - furnitureZ <= 0.45 ) ApplyAnimation( playerid, "CARRY", "liftup05", 4.0, 0, 0, 0, 0, 0 );
-    	else ApplyAnimation( playerid, "CARRY", "liftup", 4.0, 0, 0, 0, 0, 0 );
-
-		// Alert
-		SendServerMessage( playerid, "You have stolen a "COL_GREY"%s"COL_WHITE". Store it in a Boxville to transport the item.", g_houseFurniture[ furniture_id ] [ E_NAME ] );
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_CARRY );
-		SetPVarInt( playerid, "stolen_fid", furniture_id );
-		SetPlayerAttachedObject( playerid, 3, 1220, 5, 0.043999, 0.222999, 0.207000, 14.400002, 15.799994, 0.000000, 0.572999, 0.662000, 0.665000 );
-	}
-	else if ( strmatch( params, "store" ) )
-	{
-		new vehicleid = GetClosestVehicle( playerid ), Float: X, Float: Y, Float: Z, Float: Angle, szID[ 18 ];
-		if ( !IsValidVehicle( vehicleid ) ) return SendError( playerid, "You're not near any vehicles." );
-		if ( GetVehicleModel( vehicleid ) != 498 ) return SendError( playerid, "The vehicle you're near is not a Boxville." );
-		if ( !IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return SendError( playerid, "You aren't holding anything!" );
-	    GetVehiclePos( vehicleid, X, Y, Z );
-	    GetVehicleZAngle( vehicleid, Angle );
-	    X += ( 4.5 * floatsin( -Angle + 180, degrees ) );
-	    Y += ( 4.5 * floatcos( -Angle + 180, degrees ) );
-	    if ( !IsPlayerInRangeOfPoint( playerid, 1.0, X, Y, Z ) ) return SendError( playerid, "Make sure you're behind the vehicle!" );
-		format( szSmallString, sizeof( szSmallString ), "vburg_%d_items", vehicleid );
-		if ( GetGVarInt( szSmallString ) >= MAX_BURGLARY_SLOTS ) return SendError( playerid, "You can only carry "#MAX_BURGLARY_SLOTS" items in this vehicle." );
-		SetGVarInt( szSmallString, GetGVarInt( szSmallString ) + 1 );
-		format( szID, sizeof( szID ), "vburg_%d_%d", vehicleid, GetGVarInt( szSmallString ) );
-		SetGVarInt( szID, GetPVarInt( playerid, "stolen_fid" ) );
-		RemovePlayerAttachedObject( playerid, 3 );
-		ClearAnimations( playerid );
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
-		SetPlayerFacingAngle( playerid, Angle );
-		SendServerMessage( playerid, "You have placed a "COL_GREY"%s"COL_WHITE" in this Boxville. "COL_ORANGE"[%d/"#MAX_BURGLARY_SLOTS"]", g_houseFurniture[ GetPVarInt( playerid, "stolen_fid" ) ] [ E_NAME ], GetGVarInt( szSmallString ) );
-		DeletePVar( playerid, "stolen_fid" );
-		ApplyAnimation( playerid, "CARRY", "putdwn105", 4.0, 0, 0, 0, 0, 0 );
-	}
-	else SendUsage( playerid, "/burglar [CRACKPW/STEAL/STORE]" );
 	return 1;
 }
 
@@ -6530,54 +6292,6 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		GivePlayerWantedLevel( playerid, 2 );
 	}
 
-	if ( model == 498 && p_Class[ playerid ] != CLASS_POLICE )
-	{
-		format( szSmallString, sizeof( szSmallString ), "vburg_%d_items", vehicleid );
-		if ( GetGVarInt( szSmallString ) > 0 )
-		{
-			new
-				Float: X, Float: Y, Float: Z,
-				Float: pX, Float: pY, Float: pZ;
-
-			GetPlayerPos( playerid, pX, pY, pZ );
-
-			Beep( playerid );
-			GameTextForPlayer( playerid, "Go to the truck blip on your radar for money!", 3000, 1 );
-			SendServerMessage( playerid, "Note! You have %d stolen goods that you can export for money!", GetGVarInt( szSmallString ) );
-
-			static
-				szCity[ MAX_ZONE_NAME ],
-				aPlayer[ 1 ];
-
-			aPlayer[ 0 ] = playerid;
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-
-			Get2DCity( szCity, pX, pY, pZ );
-
-			if ( strmatch( szCity, "Los Santos" ) )
-			{
-				X = 2522.1677;
-				Y = -1717.4137;
-				Z = 13.6086;
-			}
-			else if ( strmatch( szCity, "Las Venturas" ) )
-			{
-				X = 2481.6812;
-				Y = 1315.8477;
-				Z = 10.6797;
-			}
-			else // default SF if not LV and LS
-			{
-				X = -2480.2461;
-				Y = 6.0720;
-				Z = 25.6172;
-			}
-
-			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( X, Y, Z, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
-			p_PawnStoreExport[ playerid ] = CreateDynamicRaceCP( 1, X, Y, Z, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
-		}
-	}
-
 	if ( model == 525 ) {
 		ShowPlayerHelpDialog( playerid, 2500, "You can tow vehicles by pressing ~k~~VEHICLE_FIREWEAPON_ALT~!" );
 	}
@@ -6619,17 +6333,6 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
         	GivePlayerWeapon( playerid, p_SpectateWeapons[ playerid ] [ i ] [ 0 ], p_SpectateWeapons[ playerid ] [ i ] [ 1 ] );
         	p_SpectateWeapons[ playerid ] [ i ] [ 0 ] = 0, p_SpectateWeapons[ playerid ] [ i ] [ 1 ] = 0;
         }
-    }
-
-    if ( newstate != PLAYER_STATE_DRIVER && oldstate == PLAYER_STATE_DRIVER ) // Driver has a new state?
-    {
-		if ( p_PawnStoreExport[ playerid ] != 0xFFFF )
-		{
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
-			DestroyDynamicRaceCP( p_PawnStoreExport[ playerid ] );
-			p_PawnStoreExport[ playerid ] = 0xFFFF;
-		}
     }
 
 	if ( newstate == PLAYER_STATE_DRIVER ) {
@@ -6815,8 +6518,10 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 					if ( g_iTime > g_businessData[ b ] [ E_CRACKED_TS ] && g_businessData[ b ] [ E_CRACKED ] )
 						g_businessData[ b ] [ E_CRACKED ] = false; // The Virus Is Disabled.
 
-					if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) )
+					if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) ) {
+						CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, -1, b ); // attempting a break in as a burglar/cop
 						return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+					}
 
 					new
 						bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
@@ -6859,20 +6564,12 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 					new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
 
-			        if ( !g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
+			        if ( ! g_houseData[ i ] [ E_CRACKED ] && ! strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
 					{
 					    p_PasswordedHouse[ playerid ] = i;
+						CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, i, -1 ); // attempting a break in as a burglar/cop
 					    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
 						return 1;
-					}
-
-					// alert burglar of any furniture
-					if ( ! is_owner && p_Job{ playerid } == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
-						if ( Iter_Count( housefurniture[ i ] ) ) {
-							ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
-						} else {
-							ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
-						}
 					}
 
 					p_InHouse[ playerid ] = i;
@@ -6880,6 +6577,7 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 				  	SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
 					SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
 					SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
+					CallLocalFunction( "OnPlayerEnterHouse", "dd", playerid, i );
 					return 1;
 				}
 				else if ( checkpointid == g_houseData[ i ] [ E_CHECKPOINT ] [ 1 ] )
@@ -6977,44 +6675,6 @@ public OnPlayerEnterDynamicArea( playerid, areaid )
 
 public OnPlayerEnterDynamicRaceCP( playerid, checkpointid )
 {
-	static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-
-	if ( checkpointid == p_PawnStoreExport[ playerid ] )
-	{
-	    new vehicleid = GetPlayerVehicleID( playerid );
-	    if ( GetVehicleModel( vehicleid ) == 498 )
-	    {
-		    new
-				szItems[ 18 ],
-				cashEarned,
-				items, score
-			;
-			format( szItems, sizeof( szItems ), "vburg_%d_items", vehicleid );
-			for( new i; i < GetGVarInt( szItems ) + 1; i++ )
-			{
-				format( szSmallString, sizeof( szSmallString ), "vburg_%d_%d", vehicleid, i );
-				if ( GetGVarInt( szSmallString ) != 0 )
-				{
-				    cashEarned += floatround( float( g_houseFurniture[ GetGVarInt( szSmallString ) ] [ E_COST ] ) * 0.5 );
-				    DeleteGVar( szSmallString );
-				}
-			}
-			items = GetGVarInt( szItems );
-			score = floatround( items / 2 );
-			GivePlayerScore( playerid, score == 0 ? 1 : score );
-			//GivePlayerExperience( playerid, E_BURGLAR, float( items ) * 0.2 );
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
-			DestroyDynamicRaceCP( p_PawnStoreExport[ playerid ] );
-			p_PawnStoreExport[ playerid ] = 0xFFFF;
-			GivePlayerCash( playerid, cashEarned );
-			StockMarket_UpdateEarnings( E_STOCK_PAWN_STORE, cashEarned, 1.0 );
-			GivePlayerWantedLevel( playerid, items * 2 );
-			SendServerMessage( playerid, "You have sold %d furniture item(s) to the Pawn Store, earning you "COL_GOLD"%s"COL_WHITE".", GetGVarInt( szItems ), cash_format( cashEarned ) );
-			DeleteGVar( szItems );
-		}
-		return 1;
-	}
 	return 1;
 }
 
@@ -10948,27 +10608,6 @@ stock IsVehicleUpsideDown(vehicleid)
     return (120.0 < atan2(2.0 * ((q_Y * q_Z) + (q_X * q_W)), (-(q_X * q_X) - (q_Y * q_Y) + (q_Z * q_Z) + (q_W * q_W))) > -120.0);
 }
 
-stock ResetVehicleBurglaryData( vehicleid )
-{
-    if ( GetVehicleModel( vehicleid ) != 498 )
-        return 0;
-
-	new szString[ 18 ];
-	for( new i; i < MAX_BURGLARY_SLOTS; i++ )
-		format( szString, sizeof( szString ), "vburg_%d_%d", vehicleid, i ), DeleteGVar( szString );
-
-    format( szString, sizeof( szString ), "vburg_%d_items", vehicleid );
-    DeleteGVar( szString );
-	return 1;
-}
-
-stock RemovePlayerStolensFromHands( playerid )
-{
-	DeletePVar( playerid, "stolen_fid" );
-	RemovePlayerAttachedObject( playerid, 3 );
-	SetPlayerSpecialAction( playerid, 0 );
-	return 1;
-}
 
 
 stock IsPlayerInWater(playerid) // SuperViper
