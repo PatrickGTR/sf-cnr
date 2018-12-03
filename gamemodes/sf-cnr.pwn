@@ -6607,22 +6607,15 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 					new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
 
-					new is_locked = ! g_houseData[ i ] [ E_CRACKED ] && !strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner;
-
-			        if ( ! CallLocalFunction( "OnPlayerTryEnterHouse", "ddd", playerid, i, is_locked ) )
+			        if ( ! g_houseData[ i ] [ E_CRACKED ] && ! strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
 					{
+						if ( IsPlayerJob( playerid, JOB_BURGLAR ) || GetPlayerClass( playerid ) == CLASS_POLICE ) {
+							CallLocalFunction( "OnPlayerAttemptBurglary", "ddd", playerid, houseid, -1 ); // attempting a break in as a burglar/cop
+						}
+
 					    p_PasswordedHouse[ playerid ] = i;
 					    ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
 						return 1;
-					}
-
-					// alert burglar of any furniture
-					if ( ! is_owner && p_Job{ playerid } == JOB_BURGLAR && p_Class[ playerid ] == CLASS_CIVILIAN ) {
-						if ( Iter_Count( housefurniture[ i ] ) ) {
-							ShowPlayerHelpDialog( playerid, 4000, "This house has furniture to rob.~n~~n~Type ~g~~h~/burglar steal~w~ near the furniture you want to steal." );
-						} else {
-							ShowPlayerHelpDialog( playerid, 4000, "~r~This house has no furniture to rob." );
-						}
 					}
 
 					p_InHouse[ playerid ] = i;

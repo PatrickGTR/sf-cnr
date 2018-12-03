@@ -24,6 +24,8 @@
 
 /* ** Macros ** */
 #define IsPlayerHomeOwner(%0,%1)	( strmatch( g_houseData[ %1 ] [ E_OWNER ], ReturnPlayerName( %0 ) ) )
+#define IsValidHouse(%0)			( 0 <= %0 < MAX_HOUSES && Iter_Contains( houses, %0 ) )
+#define GetPlayerEnteredHouse(%0)	( p_InHouse[ %0 ] )
 
 /* ** Variables ** */
 enum E_HOUSE_DATA
