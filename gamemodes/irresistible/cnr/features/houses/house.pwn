@@ -22,8 +22,6 @@
 #define H_DEFAULT_Y					304.9577
 #define H_DEFAULT_Z					999.1484
 
-#define PROGRESS_BRUTEFORCE 		1
-
 /* ** Macros ** */
 #define IsPlayerHomeOwner(%0,%1)	( strmatch( g_houseData[ %1 ] [ E_OWNER ], ReturnPlayerName( %0 ) ) )
 
@@ -369,44 +367,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Commands ** */
-CMD:bruteforce( playerid, params[ ] )
-{
-	/* ** ANTI SPAM ** */
-    if ( GetPVarInt( playerid, "last_bruteforce" ) > g_iTime ) return SendError( playerid, "You must wait 30 seconds before using this command again." );
-    /* ** END OF ANTI SPAM ** */
-
-	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This command is restricted for F.B.I agents." );
-	if ( !( p_inFBI{ playerid } == true && p_inArmy{ playerid } == false && p_inCIA{ playerid } == false ) ) return SendError( playerid, "This command is restricted for F.B.I agents." );
-
-	foreach ( new i : houses )
-	{
-		if ( IsPlayerInDynamicCP( playerid, g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] ) && !strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) )
-		{
-			if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] ) g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
-
-			if ( g_houseData[ i ] [ E_CRACKED_WAIT ] > g_iTime )
-			    return SendError( playerid, "This house had its password recently had a cracker run through. Come back later." );
-
-			if ( strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) )
-			    return SendError( playerid, "This house does not require cracking as it doesn't have a password." );
-
-			if ( g_houseData[ i ] [ E_CRACKED ] || g_houseData[ i ] [ E_BEING_CRACKED ] )
-			    return SendError( playerid, "This house is currently being cracked or is already cracked." );
-
-	        if ( IsHouseOnFire( i ) )
-		       	return SendError( playerid, "This house is on fire, you cannot bruteforce it!" ), 1;
-
-            g_houseData[ i ] [ E_BEING_CRACKED ] = true;
-            p_HouseCrackingPW[ playerid ] = i;
-            SetPVarInt( playerid, "last_bruteforce", g_iTime + 30 );
-			ShowProgressBar( playerid, "Brute Forcing Password", PROGRESS_BRUTEFORCE, 5000, COLOR_BLUE );
-            return 1;
-		}
-	}
-	SendError( playerid, "You are not standing in any house checkpoint." );
-	return 1;
-}
-
 CMD:house( playerid, params[ ] ) return cmd_h( playerid, params );
 CMD:h( playerid, params[ ] )
 {

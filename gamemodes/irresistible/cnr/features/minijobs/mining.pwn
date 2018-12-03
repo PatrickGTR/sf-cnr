@@ -36,8 +36,10 @@ enum E_ROCK_DATA
 
 static stock
 	g_miningData					[ MAX_ROCKS ] [ E_ROCK_DATA ],
+
 	p_MiningOre						[ MAX_PLAYERS char ],
 	bool: p_isMining				[ MAX_PLAYERS char ],
+	p_MiningExportMapIcon 			[ MAX_PLAYERS ] = { -1, ... },
 
 	g_orePrices                		[ ] = { 675, 900, 600, 2750, 3000, 3500, 4000, 2200, 2300, 1200 },
 	g_oreMiningTime					[ ] = { 2000, 2800, 1600, 6800, 7200, 7600, 8000, 6400, 6560, 4000 },
@@ -333,8 +335,8 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 			SendServerMessage( playerid, "You have %d ores that you can export for "COL_GOLD"%s"COL_WHITE"!", num_ores, cash_format( cash_value ) );
 
 			static aPlayer[ 1 ]; aPlayer[ 0 ] = playerid;
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( -1945.6794, -1086.8906, 31.4261, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
+			DestroyDynamicMapIcon( p_MiningExportMapIcon[ playerid ] );
+			p_MiningExportMapIcon[ playerid ] = CreateDynamicMapIconEx( -1945.6794, -1086.8906, 31.4261, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
 
 			p_MiningExport[ playerid ] = CreateDynamicRaceCP( 1, -1945.6794, -1086.8906, 31.4261, 0.0, 0.0, 0.0, 4.0, -1, -1, playerid );
 		}
@@ -348,8 +350,8 @@ hook OnPlayerStateChange(playerid, newstate, oldstate)
     {
 		if ( p_MiningExport[ playerid ] != 0xFFFF )
 		{
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
+			DestroyDynamicMapIcon( p_MiningExportMapIcon[ playerid ] );
+			p_MiningExportMapIcon[ playerid ] = -1;
 			DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 			p_MiningExport[ playerid ] = 0xFFFF;
 		}
@@ -374,8 +376,8 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			format( szContent, sizeof( szContent ), "mine_%d_cash", vehicleid );
 			cashEarned = GetGVarInt( szContent ), DeleteGVar( szContent );
 
-			DestroyDynamicMapIcon( p_PawnStoreMapIcon[ playerid ] );
-			p_PawnStoreMapIcon[ playerid ] = 0xFFFF;
+			DestroyDynamicMapIcon( p_MiningExportMapIcon[ playerid ] );
+			p_MiningExportMapIcon[ playerid ] = -1;
 			DestroyDynamicRaceCP( p_MiningExport[ playerid ] );
 			p_MiningExport[ playerid ] = 0xFFFF;
 			GivePlayerCash( playerid, cashEarned );

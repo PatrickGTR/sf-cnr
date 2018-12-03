@@ -10,7 +10,6 @@
 #include                            < progress2 >
 
 /* ** Definitions ** */
-#define PROGRESS_CRACKING 			0
 #define PROGRESS_MINING				3
 #define PROGRESS_ROBBING			4
 #define PROGRESS_SAFEPICK 			5

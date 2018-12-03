@@ -42,3 +42,5 @@
     - Called when a player joins a gang
 - `OnPlayerLeaveGang( playerid, gangid, reason )`
     - Called when a player leaves a gang
+- `OnPlayerEnterHouse( playerid, houseid )`
+    - Called when a player enters a house

@@ -8,4 +8,5 @@
 /* ** Includes ** */
 #include "irresistible\cnr\features\houses\house.pwn"
 #include "irresistible\cnr\features\houses\furniture.pwn"
+#include "irresistible\cnr\features\houses\burglar.pwn"
 #include "irresistible\cnr\features\houses\realestate.pwn"
