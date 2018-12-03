@@ -1,10 +1,3 @@
-(+) Adds more police skins for public use.
-(+) Platinum V.I.P players can now select a second VIP job.
-(/) Fireman and paramedic are now treated as civilian classes and are now a minijob.
-(/) The rapist and prositute jobs have been replaced by mugger as they were useless.
-(/) Gang vehicle limit has been increased to a limit of 5 with a spawn cooldown of 3 minutes.
-(/) If you are inactive for 7 days, the stock market will automatically place a sell order for you.
-(/) More hardpoint turfs have been introduced and rotate in order by number (shown on the map).
-(/) Passive mode players cannot pick up dropped items.
-(*) Orbital cannon is now capable of killing players on a hill.
-(*) Fixed an issue with the race system not being able to select a new leader.
+(+) Burglar is commandless. Enter a house checkpoint to break in. Press F to steal.
+(+) Stolen furniture can be stored in a Boxville by walking behind it.
+(+) A cheer noise is played at the end of the day if your gang earns money from turfing.
