@@ -14,10 +14,10 @@
 #endif
 
 /* ** Definitions ** */
-#define MAX_BURGLARY_SLOTS          8
+#define MAX_BURGLARY_SLOTS          ( 8 )
 
-#define PROGRESS_CRACKING 			0
-#define PROGRESS_BRUTEFORCE 		1
+#define PROGRESS_CRACKING 			( 0 )
+#define PROGRESS_BRUTEFORCE 		( 1 )
 
 /* ** Variables ** */
 static stock
@@ -66,23 +66,14 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 
 			Get2DCity( szCity, pX, pY, pZ );
 
-			if ( strmatch( szCity, "Los Santos" ) )
-			{
-				X = 2522.1677;
-				Y = -1717.4137;
-				Z = 13.6086;
+			if ( strmatch( szCity, "Los Santos" ) ) {
+				X = 2522.1677, Y = -1717.4137, Z = 13.6086;
 			}
-			else if ( strmatch( szCity, "Las Venturas" ) )
-			{
-				X = 2481.6812;
-				Y = 1315.8477;
-				Z = 10.6797;
+			else if ( strmatch( szCity, "Las Venturas" ) ) {
+				X = 2481.6812, Y = 1315.8477, Z = 10.6797;
 			}
-			else // default SF if not LV and LS
-			{
-				X = -2480.2461;
-				Y = 6.0720;
-				Z = 25.6172;
+			else { // default SF if not LV and LS
+				X = -2480.2461, Y = 6.0720, Z = 25.6172;
 			}
 
 			p_PawnStoreMapIcon[ playerid ] = CreateDynamicMapIconEx( X, Y, Z, 51, 0, MAPICON_GLOBAL, 6000.0, { -1 }, { -1 }, aPlayer );
@@ -348,7 +339,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				return SendError( playerid, "You are not close to any furniture." );
 
 			if ( g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_ELECTRONIC && g_houseFurniture[ furniture_id ] [ E_CATEGORY ] != FC_WEAPONS )
-				return ShowPlayerHelpDialog( playerid, 3000, "The furniture you're near is not an electronic." );
+				return ShowPlayerHelpDialog( playerid, 3000, "The furniture you're near is not an electronic or weapon." );
 
 			if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) )
 				return ShowPlayerHelpDialog( playerid, 3000, "Your hands are busy at the moment." );
