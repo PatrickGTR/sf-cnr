@@ -12,19 +12,20 @@
 #define ADMIN_COMMAND_REJECT        "You don't have an appropriate administration level to use this command."
 #define ADMIN_COMMAND_TIME          4
 
-// #define DIALOG_ADMIN_CMDS 			1167
-// #define DIALOG_ADMIN_CMDS_BACK 		1168
-
 /* ** Variables ** */
 enum E_COMMAND_DATA
 {
-    E_LEVEL,
-    E_COMMAND[ 64 ],
-    E_DESCRIPTION[ 144 ],
-}
+    E_LEVEL,		E_COMMAND[ 64 ],		E_DESCRIPTION[ 144 ]
+};
+
+/* ** Admin Ban Codes ** */
+enum E_BAN_CODE
+{
+	E_CODE[ 4 ], 		E_DATA[ 21 ]
+};
 
 static stock
-    g_CommandData                   [ ] [ E_COMMAND_DATA ] =
+    g_commandData                   [ ] [ E_COMMAND_DATA ] =
     {
     	/* ** Level 1 Commands ** */
         { 1, "/viewdeathmsg",		"Viewing a player death message" },
@@ -172,7 +173,25 @@ static stock
 		{ 6, "/playanimation",		"Playing an animation" },
 		{ 6, "/updaterules",		"Updating the server rules" },
 		{ 6, "/truncate",			"Truncating a account" }
-    }
+    },
+    g_banCodes 						[ ] [ E_BAN_CODE ] =
+	{
+		{ "AH",  "Armor Hacking" },
+		{ "HH",  "Health Hacking" },
+		{ "VHH", "Vehicle Health Hacks" },
+		{ "NR",  "No Reload" },
+		{ "IA",  "Infinite Ammo" },
+		{ "FH",  "Fly Hacks" },
+		{ "BE",  "Ban Evasion" },
+		{ "AB",  "Air Brake" },
+		{ "TP",  "Teleport Hacks" },
+		{ "WH",  "Weapon Hack" },
+		{ "SH",  "Speed Hacks" },
+		{ "UA",  "Unlimited Ammo" },
+		{ "RF",  "Rapid Fire" },
+		{ "AIM", "Aimbot" },
+		{ "ADV", "Advertising" }
+	}
 ;
 
 /* ** Commands ** */
@@ -193,8 +212,21 @@ CMD:acmds( playerid, params[ ] )
     return 1;
 }
 
-/* ** Hooks ** */
+/* ** Functions ** */
+stock adhereBanCodes( string[ ], maxlength = sizeof( string ) )
+{
+    for( new i; i < sizeof( g_banCodes ); i++ )
+    {
+    	if ( strfind( string, g_banCodes[ i ] [ E_CODE ], false ) != -1 )
+    	{
+			strreplace( string, g_banCodes[ i ] [ E_CODE ], g_banCodes[ i ] [ E_DATA ], false, 0, -1, maxlength );
+		}
+	}
+	return 1;
+}
 
+
+/* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_ADMIN_CMDS && response )
@@ -207,12 +239,12 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( p_AdminLevel[ playerid ] < level )
 			return SendError( playerid, "You don't have permission to view these admin commands." ), cmd_acmds( playerid, "" );
 
-		for (new iLine = 0; iLine < sizeof( g_CommandData ); iLine ++ ) if ( g_CommandData[ iLine ][ E_LEVEL ] == level )
+		for ( new iLine = 0; iLine < sizeof( g_commandData ); iLine ++ ) if ( g_commandData[ iLine ][ E_LEVEL ] == level )
 		{
 			format( szHugeString, sizeof( szHugeString ), "%s"COL_GREY"%s\t"COL_WHITE"%s\n",
 			szHugeString,
-			g_CommandData[ iLine ][ E_COMMAND ],
-			g_CommandData[ iLine ][ E_DESCRIPTION ]);
+			g_commandData[ iLine ][ E_COMMAND ],
+			g_commandData[ iLine ][ E_DESCRIPTION ]);
 		}
 
 		ShowPlayerDialog( playerid, DIALOG_ADMIN_CMDS_BACK, DIALOG_STYLE_TABLIST, sprintf( ""COL_PINK"Admin Level %d Commands", level ), szHugeString, "Back", "" );

@@ -1,12 +1,15 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc Pekaj, Steven Howard
  * Module: cnr\wanted_level.pwn
  * Purpose: server-sided wanted level system (hooks the natives)
  */
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
+
+/* ** Definitions ** */
+#define MAX_WANTED_LVL 				2048
 
 /* ** Variables ** */
 new stock
@@ -77,9 +80,10 @@ stock GivePlayerWantedLevel( playerid, level )
 	new
 		current_wanted = GetPlayerWantedLevel( playerid );
 
-	SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[CRIME]{FFFFFF} Your wanted level has been %s by %d! Wanted level: %d", current_wanted + level > current_wanted ? ( "increased" ) : ( "decreased" ), level < 0 ? level * -1 : level, current_wanted );
+	SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[CRIME]{FFFFFF} Your wanted level has been %s by %d! Wanted level: %d", current_wanted + level > current_wanted ? ( "increased" ) : ( "decreased" ), level, current_wanted + level );
 	return SetPlayerWantedLevel( playerid, current_wanted + level );
 }
+
 
 stock ClearPlayerWantedLevel( playerid )
 {

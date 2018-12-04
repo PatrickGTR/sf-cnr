@@ -58,7 +58,7 @@ hook OnScriptInit( playerid )
 	CreateNavigation( "Ammu-Nation",			-2626.6299, 208.2514, 4.81250, CITY_SF, "Buy guns" );
 	CreateNavigation( "Pawnshop",				-2490.2256, -16.9206, 25.6172, CITY_SF, "Buy toys/Burglar minivans" );
 	CreateNavigation( "Hospital", 				-2658.3201, 639.5060, 14.4531, CITY_SF, "Buy cure/healing" );
-	CreateNavigation( "Otto's Cars", 			-1657.7573, 1210.2754, 7.2500, CITY_SF, "Modshop" );
+	CreateNavigation( "Wang Cars", 				-1983.6909, 288.7863, 34.8125, CITY_SF, "Modshop" );
 	CreateNavigation( "Train Station", 			-1979.9883, 138.0498, 27.6875, CITY_SF, "Traindriver Minijob" );
 	CreateNavigation( "Mining Field", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Mining Minijob" );
 	CreateNavigation( "Duel Arena", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Waged Duels" );
@@ -94,6 +94,7 @@ hook OnScriptInit( playerid )
 	CreateNavigation( "City Hall", 				1480.1451, -1737.7921, 13.5469, CITY_LS, "Change your job/city" );
 	CreateNavigation( "Police Station", 		1539.8739, -1675.8989, 13.5469, CITY_LS, "Blow up jail cells" );
 	CreateNavigation( "Ammu-Nation", 			1362.1816, -1282.4746, 13.5469, CITY_LS, "Buy guns" );
+	CreateNavigation( "Ammu-Nation", 			2400.6345, -1975.4139, 13.3828, CITY_LS, "Buy guns"	);
 	CreateNavigation( "V.I.P Lounge", 			1805.5667, -1582.5602, 13.4951, CITY_LS, ""COL_GOLD"V.I.P weapon locker" );
 	CreateNavigation( "Bombshop", 				1911.2462, -1775.8755, 13.3828, CITY_LS, "Buy C4" );
 	CreateNavigation( "Trainstation", 			1750.6547, -1945.8823, 13.5613, CITY_LS, "Traindriver Minijob" );
