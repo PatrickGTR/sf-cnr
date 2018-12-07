@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.gitignore": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/npcmodes": true,
+			"**/plugins": true,
+			"**/archive": true,
+			"**/old_pawn": true,
+			"**/*.exe": true,
+			"**/*.dll": true,
+			"**/*.so": true,
+			"**/*.pdb": true,
+			"**/*.amx": true,
+			"**/*.rar": true,
+			"**/*.zip": true,
+			"**/*.*.old": true,
+			"include": true,
+		}
+	}
+}
