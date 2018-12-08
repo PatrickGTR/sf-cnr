@@ -34,6 +34,7 @@ static stock
 
 	bool: p_hasTrainJob 					[ MAX_PLAYERS char ],
 
+	p_TrainMissions 						[ MAX_PLAYERS ],
 	p_TrainMapIcon							[ MAX_PLAYERS ] = { -1, ... },
 	p_TrainCheckPoint						[ MAX_PLAYERS ] = { -1, ... },
 	p_TrainPositionTimer					[ MAX_PLAYERS ] = { -1, ... },
