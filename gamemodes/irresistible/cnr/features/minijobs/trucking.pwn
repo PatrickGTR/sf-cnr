@@ -173,7 +173,7 @@ hook OnPlayerEnterDynRaceCP( playerid, checkpointid )
 			}
 
 			new
-				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 3.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
+				iCashEarned = floatround( p_TruckingDistance[ playerid ] * 5.0 + g_aTrailerData[ p_TruckingTrailerModel{ playerid } ] [ p_TruckingTrailer{ playerid } ] [ E_BONUS ] );
 
 			ach_HandleTruckingCouriers( playerid );
 			PlayerTextDrawHide( playerid, p_TruckingTD[ playerid ] );
