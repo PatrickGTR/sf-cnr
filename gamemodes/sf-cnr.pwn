@@ -5451,18 +5451,30 @@ CMD:rob( playerid, params[ ] )
 		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
 		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
-		new iRandom = random( 101 );
-		if ( p_SecureWallet{ victimid } == true ) iRandom -= 90;
+
+		new
+			iRandom = random( 101 );
+
+		// secure wallet means robberies are prevented
+		if ( p_SecureWallet{ victimid } ) {
+			iRandom = 100;
+		}
+
 		if ( iRandom < 75 || IsPlayerTied( victimid ) || IsPlayerKidnapped( victimid ) )
 		{
 		    new
 				iMoney,
 				cashRobbed,
-		    	iLimit = 2500
+		    	iLimit = 3000
 			;
 
-			if ( IsPlayerKidnapped( victimid ) )
-				iLimit += 3500;
+			if ( IsPlayerJob( playerid, JOB_MUGGER ) ) {
+				iLimit *= 2; // double the mugging capacity if a mugger
+			}
+
+			if ( IsPlayerKidnapped( victimid ) ) {
+				iLimit *= 2; // double the robbing capacity if kidnapped
+			}
 
 			iMoney = GetPlayerCash( victimid ) > iLimit ? iLimit : GetPlayerCash( victimid );
 
