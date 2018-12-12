@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\gps.pwn
  * Purpose: basic GPS navigation system
  */

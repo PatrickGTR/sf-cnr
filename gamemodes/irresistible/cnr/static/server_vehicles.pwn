@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: static_cnr\vehicles.inc
  * Purpose: static vehicle placement data
  */

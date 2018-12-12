@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: fps.inc
  * Purpose: fps counter in-game
  */

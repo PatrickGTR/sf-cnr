@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj, Steven Howard
+ * Developed by Lorenc, Stev
  * Module: cnr\wanted_level.pwn
  * Purpose: server-sided wanted level system (hooks the natives)
  */

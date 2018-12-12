@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr/commands/admin/_admin.pwn
  * Purpose: encloses all commands
  */

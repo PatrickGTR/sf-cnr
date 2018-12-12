@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\robbery\vaults.pwn
  * Purpose: vault opening system (corrolated to robberies)
  */

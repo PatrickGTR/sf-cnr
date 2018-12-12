@@ -1,6 +1,6 @@
  /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\houses\burglar.pwn
  * Purpose: burglarly system (to steal house furniture)
  */

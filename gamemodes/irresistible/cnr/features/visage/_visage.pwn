@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: visage/visage.pwn
  * Purpose: encloses all visage/casino related modules (warning: order of includes is very important)
  */

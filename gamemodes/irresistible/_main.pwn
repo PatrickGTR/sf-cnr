@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: _main.inc
  * Purpose: centralize includes
  */
@@ -27,4 +27,3 @@
 
 // cnr configuration
 #include "irresistible\cnr\_cnr.pwn"
-

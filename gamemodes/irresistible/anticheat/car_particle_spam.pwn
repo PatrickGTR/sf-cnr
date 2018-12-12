@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: anticheat\carparticlespam.pwn
  * Purpose: detection for car particle spamming (where doors particles spam)
  */

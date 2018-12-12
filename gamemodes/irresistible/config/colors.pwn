@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Simon Campbell, edited by Lorenc Pekaj
+ * Developed by Simon, edited by Lorenc
  * Module: colours.inc
  * Purpose: colors and its functions
  */

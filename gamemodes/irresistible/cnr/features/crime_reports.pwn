@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\crime_reports.pwn
  * Purpose: whenever a criminal starts a crime, a report is created
  */

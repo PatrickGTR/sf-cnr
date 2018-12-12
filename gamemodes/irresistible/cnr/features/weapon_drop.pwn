@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc_
+ * Developed by Lorenc
  * Module: weapon_drop.inc
  * Purpose: weapon drop system for players
  */

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr/commands/admin/admin_three.pwn
  * Purpose: level three administrator commands (cnr)
  */

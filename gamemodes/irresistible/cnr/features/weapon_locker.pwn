@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\weapon_locker.pwn
  * Purpose: basically ammunations in police stations called weapon lockers
  */

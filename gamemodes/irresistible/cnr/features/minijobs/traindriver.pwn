@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard
+ * Developed by Stev
  * Module: cnr/features/minijobs/traindriver.pwn
  * Purpose: traindriver minijob
  */

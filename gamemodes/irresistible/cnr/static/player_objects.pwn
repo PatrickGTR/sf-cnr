@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\static\player_objects.inc
  * Purpose: player associated objects, including but not limited to interiors
  */

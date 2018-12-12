@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\entrances.pwn
  * Purpose: entrance system (entering/exiting shops or interiors)
  */

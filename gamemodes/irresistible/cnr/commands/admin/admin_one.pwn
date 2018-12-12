@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr/commands/admin/admin_one.pwn
  * Purpose: level one administrator commands (cnr)
  */

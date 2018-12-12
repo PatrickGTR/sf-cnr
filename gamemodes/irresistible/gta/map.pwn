@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Kar, edited by Lorenc Pekaj
+ * Developed by Kar, edited by Lorenc
  * Module: gta\map.inc
  * Purpose: gta map related data
  */

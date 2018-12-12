@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: \cnr\features\minijobs\_minijobs.pwn
  * Purpose: encloses all minijobs modules (cnr)
  */

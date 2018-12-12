@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\random_messages.pwn
  * Purpose: make bot (Stephanie) randomly send global messages about the server
  */

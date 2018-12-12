@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\eastereggs.pwn
  * Purpose: treasure (easter eggs) hunting system
  */

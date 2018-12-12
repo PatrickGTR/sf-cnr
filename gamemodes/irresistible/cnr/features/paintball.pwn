@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj, Steven Howard
+ * Developed by Lorenc, Stev
  * Module: cnr/features/paintball.pwn
  * Purpose: paintball related features
  */

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\player_settings.pwn
  * Purpose: player settings that can be easily configured via /controlpanel (/cp)
  */

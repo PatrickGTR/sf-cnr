@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\vip\_vip.pwn
  * Purpose: encloses all vip modules & components (cnr)
  */

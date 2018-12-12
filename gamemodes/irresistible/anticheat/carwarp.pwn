@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Developed by Lorenc
+ * Module: anticheat/carwarp.pwn
+ * Purpose: car warp cheat detection system
  */
 
 /* ** Includes ** */

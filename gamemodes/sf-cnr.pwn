@@ -2,8 +2,8 @@
  *
  *      	San Fierro: Cops and Robbers
  *
- *      		Created all by Lorenc_
- *
+ * 		Original Creator: Lorenc_
+ *		Contributors: Stev
  *
  *      Thanks to: y_less/zeex/Frosha/Incognito/SA-MP team
  *

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: security.inc
  * Purpose: security related functions for ig servers
  */

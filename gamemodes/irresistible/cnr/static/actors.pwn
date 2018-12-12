@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\static\actors.inc
  * Purpose: hosts all static actor related data
  */

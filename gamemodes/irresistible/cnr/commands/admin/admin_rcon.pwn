@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr/commands/admin/admin_rcon.pwn
  * Purpose: level rcon administrator commands (cnr)
  */

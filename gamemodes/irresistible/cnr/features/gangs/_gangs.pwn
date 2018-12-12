@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\gangs\_gangs.pwn
  * Purpose: encloses all gang and facility related modules (cnr)
  */

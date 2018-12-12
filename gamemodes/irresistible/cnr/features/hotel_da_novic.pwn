@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\hotel_da_novic.pwn
  * Purpose: hotel da novic with operational apartments (very dated)
  */

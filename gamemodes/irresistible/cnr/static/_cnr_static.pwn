@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\static\_cnr_static.pwn
  * Purpose: encloses all static objects/vehicles/actors/entities (cnr)
  */

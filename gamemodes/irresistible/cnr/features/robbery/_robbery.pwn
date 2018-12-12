@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\robbery\_robbery.pwn
  * Purpose: encloses all robbery modules & components (cnr)
  */

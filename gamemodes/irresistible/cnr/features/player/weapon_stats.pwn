@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\player\weapon_stats.pwn
  * Purpose: kill counting system for player weapon kills
  */

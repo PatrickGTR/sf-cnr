@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: checkpoints.pwn
  * Purpose: encloses all server related checkpoints, particularly static ones
  */

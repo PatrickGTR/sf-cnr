@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Developed by Lorenc
+ * Module: cnr\features\houses\house.pwn
+ * Purpose: player house system
  */
 
 /* ** Error checking ** */

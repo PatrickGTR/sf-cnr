@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: sampac.inc
  * Purpose: 3rd party anticheat implementation (sampcac.xyz)
  */

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\static\map_icons.inc
  * Purpose: static map icons in the server
  */

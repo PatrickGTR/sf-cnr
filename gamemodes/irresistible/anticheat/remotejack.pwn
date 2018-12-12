@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by JernejL, Lorenc Pekaj
+ * Developed by JernejL, Lorenc
  * Module: anticheat/hitpoints.inc
  * Purpose: detects abnormal vehicle entering
  */

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\car_jacker.pwn
  * Purpose: sell vehicles in select containers as a car jacker
  */

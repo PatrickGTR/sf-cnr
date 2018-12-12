@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj, Steven Howard
+ * Developed by Lorenc, Stev
  * Module: cnr/commands/admin/_admin.pwn
  * Purpose: encloses all admin related commands
  */
@@ -290,4 +290,3 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Modules ** */
 #include "irresistible\cnr\commands\admin\admin_one.pwn"
 #include "irresistible\cnr\commands\admin\admin_two.pwn"
-

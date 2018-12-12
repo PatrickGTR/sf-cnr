@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\gangs\gvehicles.pwn
  * Purpose: gang vehicles (requires a gang facility to spawn the vehicles) for gangs
  */

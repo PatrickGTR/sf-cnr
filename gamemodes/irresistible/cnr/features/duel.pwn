@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard
+ * Developed by Steven
  * Module: cnr/features/duel.pwn
  * Purpose: player duling system
  */
@@ -64,7 +64,7 @@ hook OnScriptInit( )
 	CreateDynamicMapIcon( g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 23, 0, -1, -1, -1, 750.0 );
 	g_DuelCheckpoint = CreateDynamicCP( g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 1.5, 0, 0, -1 );
 	CreateDynamic3DTextLabel( ""COL_GOLD"[DUEL PLAYER]", -1, g_DuelCoordinates[ 0 ], g_DuelCoordinates[ 1 ], g_DuelCoordinates[ 2 ], 25.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 0, 0, -1 );
-	
+
 	return 1;
 }
 
@@ -540,7 +540,7 @@ static stock forfeitPlayerDuel(playerid)
 		{
 			new
 				winning_prize = floatround( float( amount_waged ) * 1.95 ); // We take 2.5% of the total pot
-			
+
 			GivePlayerCash( winnerid, winning_prize );
 			SendClientMessageToAllFormatted( -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s(%d) has won the duel against %s(%d) for %s!", ReturnPlayerName( winnerid ), winnerid, ReturnPlayerName( playerid ), playerid, cash_format( winning_prize ) );
 		}

@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj, Steven Howard
+ * Developed by Lorenc, Stev
  * Module: cnr/features/animation.pwn
  * Purpose: all animation and/or action commands
  */

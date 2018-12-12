@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: anticheat/pickup_spam.pwn
  * Purpose: checks if a player enters a bunch of pickups really fast
  */

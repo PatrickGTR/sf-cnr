@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\bribes.pwn
  * Purpose: pickupable bribes that reduce a player's wanted level
  */

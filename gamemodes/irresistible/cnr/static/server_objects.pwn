@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\static\server_objects.inc
  * Purpose: server associated objects, including but not limited to interiors
  */

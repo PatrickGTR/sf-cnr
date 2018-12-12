@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: static_cnr\removed_buildings.inc
  * Purpose: removed buildings data
  */

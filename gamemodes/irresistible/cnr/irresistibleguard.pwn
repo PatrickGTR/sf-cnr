@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\irresistibleguard.pwn
  * Purpose: provides account protection in the form of email securing
  */

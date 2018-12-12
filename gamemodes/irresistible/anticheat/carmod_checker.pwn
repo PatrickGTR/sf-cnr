@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj, JerenjL
+ * Developed by Lorenc, JerenjL
  * Module: anticheat\carmod_checker.pwn
  * Purpose: checks for valid car modification componenets
  */

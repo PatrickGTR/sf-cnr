@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: anticheat\vending_machines.pwn
  * Purpose: server-sided vending machines placed around san andreas
  */

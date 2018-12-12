@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Developed by Lorenc
+ * Module: cnr/features/minijobs/lumberjack.pwn
+ * Purpose: lumberjack minijob in-game, chop trees earn money
  */
 
 /* ** Includes ** */

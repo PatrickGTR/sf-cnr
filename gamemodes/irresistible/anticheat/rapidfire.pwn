@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: anticheat\rapidfire.pwn
  * Purpose: rapid fire detection as well as invalid bullet filtering
  */

@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
- * Module:
- * Purpose:
+ * Developed by Lorenc
+ * Module: cnr\features\roadblocks.pwn
+ * Purpose: roadblocks system for police
  */
 
 /* ** Includes ** */

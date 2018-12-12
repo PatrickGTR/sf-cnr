@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Basssiiie edited by Lorenc Pekaj
+ * Developed by Basssiiie, edited by Lorenc
  * Module: fireworks.inc
  * Purpose: implements fireworks into sa-mp
  */

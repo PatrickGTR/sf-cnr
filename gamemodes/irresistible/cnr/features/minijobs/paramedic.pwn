@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\minijobs\paramedic.pwn
  * Purpose: a paramedic minijob where people can heal with spraycans or ambulance trucks
  */

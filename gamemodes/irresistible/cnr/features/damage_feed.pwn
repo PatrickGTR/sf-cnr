@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Steven Howard, Oscar "Slice" Broman
+ * Developed by Stev, Slice
  * Module: cnr/features/damage_feed.pwn
  * Purpose: damage feed for dmers
  */
@@ -244,7 +244,7 @@ public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypar
 			{
 				new soundid = p_VIPLevel[ i ] ? p_HitmarkerSound{ i } : 0;
 	    		PlayerPlaySound( i, g_HitmarkerSounds[ soundid ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );
-			}	
+			}
 	    }
 	}
 

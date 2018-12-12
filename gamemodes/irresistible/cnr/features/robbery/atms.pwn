@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr\features\robbery\atms.pwn
  * Purpose: robbable ATM system which can also be used for banking
  */

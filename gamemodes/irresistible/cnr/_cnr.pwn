@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: cnr/_cnr.pwn
  * Purpose: encloses all cnr related components (cnr)
  */

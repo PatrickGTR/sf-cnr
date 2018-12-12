@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: blackjack.inc
  * Purpose: a sa-mp blackjack minigame implementation
  */

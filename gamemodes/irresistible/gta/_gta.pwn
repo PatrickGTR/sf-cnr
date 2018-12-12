@@ -1,6 +1,6 @@
 /*
  * Irresistible Gaming (c) 2018
- * Developed by Lorenc Pekaj
+ * Developed by Lorenc
  * Module: gta/_gta.pwn
  * Purpose: encloses all gta related data/components
  */
