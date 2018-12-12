@@ -20,6 +20,7 @@
 #include "irresistible\lookup.pwn"
 #include "irresistible\servervars.pwn"
 #include "irresistible\sampac.pwn"
+#include "irresistible\physics_dynamic.pwn" // required for cnr\features\pool.pwn
 // #include "irresistible\analytics.pwn"
 
 // gta related variables
