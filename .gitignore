@@ -1,9 +1,11 @@
 samp.ban
+server.cfg
 *.exe
 *.amx
 *.dll
 *.txt
 *.rec
+!server.cfg.sample
 
 # include
 include/*
