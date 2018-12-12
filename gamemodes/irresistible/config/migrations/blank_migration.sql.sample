@@ -1,0 +1,4 @@
+-- CREATE A MIGRATION ENTRY
+INSERT INTO `DB_MIGRATIONS` (`MIGRATION`) VALUES (/*'yyyymmdd_server_description'*/); -- put the migration's filename as the value
+
+-- BEGIN

@@ -36,7 +36,6 @@ scriptfiles/**/*
 !scriptfiles/COD/
 !scriptfiles/COD/**
 !scriptfiles/updates.txt
-!scriptfiles/cnr_schema.sql
 
 # npc
 npcmodes/**/*
