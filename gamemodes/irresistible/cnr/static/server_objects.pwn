@@ -5360,6 +5360,10 @@ hook OnScriptInit( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2080.099121, 1794.564941, 48.458999, 0.000000, 0.000000, -2.599999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -2075.977050, 1709.745971, 47.631000, 0.000000, 0.000000, 96.599998, -1, -1, -1 ), 0, 5775, "sunset01_lawn", "Metalox64", 1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19377, -1986.031005, 1716.095947, 46.917999, 0.000000, 0.000000, 7.599999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "husdr", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1983.628051, 1717.641967, 51.129001, 0.000000, 90.000000, 21.799999, -1, -1, -1 ), 0, 18202, "w_towncs_t", "hatwall256hi", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -1981.855957, 1721.433959, 50.409000, 0.000000, 90.000000, -107.300003, -1, -1, -1 ), 0, 18202, "w_towncs_t", "hatwall256hi", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2134.839111, 1835.225952, 49.269001, 0.000000, 0.000000, -115.000000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "hatwall256hi", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 18766, -2075.675048, 1709.775024, 53.430999, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "hatwall256hi", 1 );
 
 	// Duel Arena
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19861, -2232.130126, 263.019104, 36.146163, 0.000000, 0.000000, 0.099999, -1, -1, -1 ), 0, "Thanks Stev!", 130, "Impact", 32, 0, -16777216, 0, 1 );
