@@ -5034,7 +5034,7 @@ public OnPlayerDriveVehicle( playerid, vehicleid )
 		SetPlayerArmedWeapon( playerid, 0 );
 	}
 
-	if ( IsPlayerInPoliceCar( playerid ) && p_Class[ playerid ] != CLASS_POLICE && p_LastDrovenPoliceVeh[ playerid ] != vehicleid && GetPVarInt( playerid, "entercopcar_ts" ) < time && !g_buyableVehicle{ vehicleid } ) {
+	if ( IsPlayerInPoliceCar( playerid ) && p_Class[ playerid ] != CLASS_POLICE && p_LastDrovenPoliceVeh[ playerid ] != vehicleid && GetPVarInt( playerid, "entercopcar_ts" ) < time && !g_buyableVehicle{ vehicleid } && ! g_gangVehicle{ vehicleid } ) {
 		if ( ! IsWeaponInAnySlot( playerid, 26 ) && ! IsWeaponInAnySlot( playerid, 27 ) ) GivePlayerWeapon( playerid, 25, 25 ); // free shotgun
 		SetPVarInt( playerid, "entercopcar_ts", time + 30 );
 		GivePlayerWantedLevel( playerid, 2 );
