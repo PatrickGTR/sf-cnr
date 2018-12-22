@@ -28,6 +28,9 @@
 #include "irresistible\cnr\player_settings.pwn"
 #include "irresistible\cnr\model_preview.pwn"
 
+// discord feature
+#include "irresistible\cnr\discord\_discord.pwn"
+
 // static cnr features
 #include "irresistible\cnr\static\_cnr_static.pwn"
 
