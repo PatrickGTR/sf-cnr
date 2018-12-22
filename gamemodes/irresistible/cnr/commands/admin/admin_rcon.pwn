@@ -89,27 +89,6 @@ CMD:updatepool( playerid, params[ ] )
 	return 1;
 }
 
-CMD:updatedonortd( playerid, params[ ] )
-{
-	new
-		targetid, Float: amount, reset;
-
-	if ( !IsPlayerAdmin( playerid ) ) return 0;
-	else if ( sscanf( params, "D(0)D(65535)F(0.0)", reset, targetid, amount ) ) return SendUsage( playerid, "/updatedonortd [RESET] [PLAYER_ID] [AMOUNT]" );
-	else
-	{
-		// Reset the top donor
-		if ( reset ) {
-			TextDrawSetString( g_TopDonorTD, "Nobody Donated :(" );
-		}
-
-		// Update it incase
-		UpdateGlobalDonated( targetid, amount );
-		SendServerMessage( playerid, "Updating latest donor now (player id %d, amount %f)", targetid, amount );
-	}
-	return 1;
-}
-
 CMD:destroygang( playerid, params[ ] )
 {
 	new

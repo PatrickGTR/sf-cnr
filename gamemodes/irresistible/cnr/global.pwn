@@ -7,7 +7,6 @@
 
 /* ** Variables ** */
 new
-	g_redeemVipWait 				= 0,
 	g_TrolleyVehicles               [ 5 ],
 	engine, lights, doors, bonnet, boot, objective, alarm, panels, tires,
 	g_RestoreRobberiesBribes  		= 0,
@@ -39,7 +38,6 @@ new
  	g_iTime 						= 0,
  	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
  	g_VehicleLastAttacked 			[ MAX_VEHICLES ],
-	g_TopDonorWall 					= INVALID_OBJECT_ID,
 	g_AlcatrazArea 					= -1
 ;
 

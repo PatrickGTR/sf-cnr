@@ -23,7 +23,6 @@ new
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentCoinsTD 		= Text: INVALID_TEXT_DRAW,
-	Text:  g_TopDonorTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
 
 	// Player Textdraws
@@ -55,15 +54,6 @@ hook OnScriptInit( )
 	TextDrawColor(g_NotManyPlayersTD, -16776961);
 	TextDrawSetOutline(g_NotManyPlayersTD, 1);
 	TextDrawSetProportional(g_NotManyPlayersTD, 1);
-
-	g_TopDonorTD = TextDrawCreate(320.000000, 2.000000, "Top Donor Lorenc - $0.00, ~w~~h~~h~Latest Donor Lorenc - $0.00");
-	TextDrawAlignment(g_TopDonorTD, 2);
-	TextDrawBackgroundColor(g_TopDonorTD, 0);
-	TextDrawFont(g_TopDonorTD, 1);
-	TextDrawLetterSize(g_TopDonorTD, 0.139999, 0.799999);
-	TextDrawColor(g_TopDonorTD, -2347265);
-	TextDrawSetOutline(g_TopDonorTD, 1);
-	TextDrawSetProportional(g_TopDonorTD, 1);
 
 	g_currentXPTD = TextDrawCreate(529.000000, 405.000000, "Current XP");
 	TextDrawBackgroundColor(g_currentXPTD, 255);
