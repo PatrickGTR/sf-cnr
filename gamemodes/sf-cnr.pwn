@@ -1467,6 +1467,10 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( p_Class[ playerid ] == CLASS_POLICE && IsPlayerInAnyVehicle( playerid ) && GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 432 )
 		return 0;
 
+	// Passive players cannot damage with vehicles
+	if ( IsPlayerPassive( issuerid ) && IsPlayerInAnyVehicle( issuerid ) )
+		return 0;
+
 	// Anti RDM and gang member damage
 	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
 	{
