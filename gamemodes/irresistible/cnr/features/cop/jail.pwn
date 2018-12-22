@@ -37,6 +37,10 @@ static stock
 	g_alcatrazTimestamp 			= 0
 ;
 
+/* ** Forwards ** */
+forward OnPlayerJailed( playerid );
+forward OnPlayerUnjailed( playerid, reasonid );
+
 /* ** Hooks ** */
 hook OnPlayerEnterDynamicCP( playerid, checkpointid ) {
 	if ( IsPlayerJailed( playerid ) ) {
@@ -192,6 +196,96 @@ CMD:pdjail( playerid, params[ ] )
 }
 
 /* ** Functions ** */
+stock JailPlayer( playerid, seconds, admin = 0 )
+{
+	if ( playerid == INVALID_PLAYER_ID )
+		return 0;
+
+	static
+	    Query[ 72 ], Float: armour;
+
+	// Neccessary Checks
+	if ( IsPlayerInMethlab( playerid ) ) {
+		haltMethamphetamine( playerid, GetPlayerMethLabVehicle( playerid ) );
+	}
+
+	// Callback
+	CallLocalFunction( "OnPlayerJailed", "d", playerid );
+
+	// Neccessary Functions
+	KillTimer 				( p_JailTimer[ playerid ] );
+	KillTimer 				( p_CuffAbuseTimer[ playerid ] );
+   	PlayerTextDrawSetString	( playerid, p_JailTimeTD[ playerid ], "_" );
+	PlayerTextDrawShow		( playerid, p_JailTimeTD[ playerid ] );
+
+	// External Variables to Jail (resetting)
+	p_TicketIssuer		[ playerid ] = INVALID_PLAYER_ID; // Reset Tickets
+	p_TicketTimestamp	[ playerid ] = 0; // Reset Tickets
+	p_Cuffed			{ playerid } = false;
+	p_InfectedHIV 		{ playerid } = false;
+	//p_Detained 		{ playerid } = false;
+	//Delete3DTextLabel	( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel	[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//p_DetainedBy		[ playerid ] = INVALID_PLAYER_ID;
+
+	// Primary Jail Variables
+	p_Jailed			{ playerid } = true;
+	p_JailTime			[ playerid ] = seconds;
+	p_AdminJailed		{ playerid } = admin;
+	p_JailTimer			[ playerid ] = SetTimerEx( "Unjail", 950, true, "d", playerid );
+
+	CancelEdit 					( playerid );
+	RemovePlayerStolensFromHands( playerid );
+	StopPlayerUsingSlotMachine 	( playerid );
+	RemoveEquippedOre			( playerid );
+	ClearPlayerWantedLevel 		( playerid );
+    ResetPlayerWeapons			( playerid );
+	UntiePlayer					( playerid );
+	jailDoors 					( playerid, false, true );
+	SetPlayerPosToPrison 		( playerid );
+	Player_CheckPokerGame 		( playerid, "Jailed" );
+
+	// External Functions
+	SetPlayerSpecialAction		( playerid, SPECIAL_ACTION_NONE );
+	ClearAnimations 			( playerid );
+	RemovePlayerAttachedObject	( playerid, 2 );
+    SetPlayerHealth				( playerid, INVALID_PLAYER_ID );
+
+    if ( ! IsPlayerAdminJailed( playerid ) ) {
+		if ( p_MetalMelter[ playerid ] ) {
+			ShowPlayerHelpDialog( playerid, 4000, "You can break yourself out of prison with ~p~/breakout." );
+		} else {
+			ShowPlayerHelpDialog( playerid, 4000, "You can buy metal melters at Supa Save or a 24/7 store." );
+		}
+    }
+
+	format( Query, sizeof( Query ), "UPDATE `USERS` SET JAIL_TIME=%d,JAIL_ADMIN=%d WHERE `ID`=%d", seconds, admin, p_AccountID[ playerid ] );
+	mysql_single_query( Query );
+
+    if ( GetPlayerArmour( playerid, armour ) && armour ) {
+    	SetPlayerArmour( playerid, 0.0 );
+	}
+	return 1;
+}
+
+function Unjail( playerid )
+{
+    static
+	    Query[ 64 ];
+
+	if ( !IsPlayerConnected( playerid ) ) return KillTimer( p_JailTimer[ playerid ] ), 0;
+
+    p_JailTime[ playerid ] --;
+
+    format( Query, sizeof( Query ), "Time Remaining:~n~%d seconds", p_JailTime[ playerid ] );
+	PlayerTextDrawSetString( playerid, p_JailTimeTD[ playerid ], Query );
+
+    if ( p_JailTime[ playerid ] < 1 )
+	   	CallLocalFunction( "OnPlayerUnjailed", "dd", playerid, 0 );
+
+    return 1;
+}
+
 stock SetPlayerPosToPrison( playerid )
 {
 	static const

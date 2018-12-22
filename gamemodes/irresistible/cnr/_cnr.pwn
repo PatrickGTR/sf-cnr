@@ -20,6 +20,7 @@
 #include "irresistible\cnr\wanted_level.pwn"
 
 // reliant on core definitions
+#include "irresistible\cnr\auth\_auth.pwn"
 #include "irresistible\cnr\vip\_vip.pwn"
 #include "irresistible\cnr\jobs.pwn"
 #include "irresistible\cnr\experience.pwn"

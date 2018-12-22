@@ -52,7 +52,9 @@
     - Called when a player is unloading textdraws (on death, request class...)
 - `OnPlayerC4Blown( playerid, Float: X, Float: Y, Float: Z, worldid )`
     - Called when a player C4 is blown
+- `OnPlayerJailed( playerid )`
+    - Called when a player is jailed
 - `OnPlayerUnjailed( playerid, reasonid )`
     - Called when a player is unjailed for a reason id
-- ` OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )`
+- `OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )`
     - Called when a player is arrested
