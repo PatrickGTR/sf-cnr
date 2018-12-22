@@ -363,8 +363,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				StockMarket_UpdateEarnings( E_STOCK_VEHICLE_DEALERSHIP, g_BuyableVehicleData[ data_id ] [ E_PRICE ], 0.01 );
 
 				SendServerMessage( playerid, "You have bought an "COL_GREY"%s"COL_WHITE" for "COL_GOLD"%s"COL_WHITE"!", g_BuyableVehicleData[ data_id ] [ E_NAME ], cash_format( g_BuyableVehicleData[ data_id ] [ E_PRICE ] )  );
-				ShowPlayerDialog( playerid, DIALOG_BOUGHT_VEH, DIALOG_STYLE_MSGBOX, "{FFFFFF}You've purchased a vehicle!", "{FFFFFF}Glad to see you've purchased a vehicle. Please ensure you read:\n\n* Vehicles are kept until you sell them or go two months inactive. This is not refundable.\n* Do not mispark your vehicle or it can be removed/impounded.\n* Check out /v for vehicle commands.\n* Find an acceptable place to park your new vehicle such as your house or a parking lot.", "Okay", "" );
-				SetPVarInt( playerid, "bought_veh_ts", g_iTime + 30 );
+
+				if ( p_OwnedVehicles[ playerid ] < 3 ) {
+					ShowPlayerDialog( playerid, DIALOG_BOUGHT_VEH, DIALOG_STYLE_MSGBOX, "{FFFFFF}You've purchased a vehicle!", "{FFFFFF}Glad to see you've purchased a vehicle. Please ensure you read:\n\n* Vehicles are kept until you sell them or go two months inactive. This is not refundable.\n* Do not mispark your vehicle or it can be removed/impounded.\n* Check out /v for vehicle commands.\n* Find an acceptable place to park your new vehicle such as your house or a parking lot.", "Okay", "" );
+					SetPVarInt( playerid, "bought_veh_ts", g_iTime + 30 );
+				}
 			}
 			case 1:
 			{
