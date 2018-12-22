@@ -249,7 +249,6 @@ public OnGameModeInit()
 	AddServerVariable( "eventhost", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "vip_discount", "1.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
-	AddServerVariable( "hitman_budget", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "connectsong", "http://files.sfcnr.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 	AddServerVariable( "discordurl", "http://sfcnr.com/discord", GLOBAL_VARTYPE_STRING );
 
@@ -748,8 +747,6 @@ public OnServerSecondTick( )
  	    g_WorldClockSeconds = 0;
         g_WorldDayCount = ( g_WorldDayCount == 6 ? 0 : g_WorldDayCount + 1 );
 		TextDrawSetString( g_WorldDayTD, GetDayToString( g_WorldDayCount ) );
-
-		PlayerPlaceRandomHits( );
 
 		foreach(new p : Player) {
 			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
@@ -1964,7 +1961,7 @@ thread OnTaxEconomy( starting )
 
 		// hitman budget
 		new hitman_budget = floatround( profit * 100000.0 ); // 10%
-		UpdateServerVariable( "hitman_budget", GetGVarInt( "hitman_budget" ) + hitman_budget, 0.0, "", GLOBAL_VARTYPE_INT );
+		RandomHits_IncreaseHitPool( hitman_budget );
 
 		// add to server vars
 		UpdateServerVariable( "taxprofit_prev", 0, GetGVarFloat( "taxprofit" ), "", GLOBAL_VARTYPE_FLOAT );
@@ -11768,69 +11765,6 @@ stock GivePlayerFireworks( playerid, fireworks ) {
 
 stock ShowPlayerSpawnMenu( playerid ) {
 	return ShowPlayerDialog( playerid, DIALOG_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Location", ""COL_GREY"Reset Back To Default\nHouse\nBusiness\nGang Facility\nVisage Casino", "Select", "Cancel" );
-}
-
-stock PlayerPlaceRandomHits( )
-{
-	new hitman_budget = GetGVarInt( "hitman_budget" );
-
-	if ( hitman_budget > 0 )
-	{
-		new hourly_budget = floatround( float( hitman_budget ) / 60.0 );
-		new ignored_players[ MAX_PLAYERS ] = { -1, ... };
-
-		new available_count = 0;
-
-		for ( new playerid = 0; playerid < sizeof( ignored_players ); playerid ++ )
-		{
-			// remove unconnected / npcs / aod / low score
-			if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerAdminOnDuty( playerid ) || GetPlayerScore( playerid ) < 25 || IsPlayerAFK( playerid ) || IsPlayerPassive( playerid ) )
-			{
-				ignored_players[ playerid ] = playerid;
-				continue;
-			}
-
-			// count available
-			available_count ++;
-		}
-
-		new random_hit[ 5 ]; // change 5 to number of hits to place per 24 mins
-
-		new hits_placed_amount = 0;
-		new hits_to_iterate = available_count > sizeof( random_hit ) ? sizeof( random_hit ) : available_count;
-
-		for ( new hitid = 0; hitid < hits_to_iterate; hitid ++ )
-		{
-			random_hit[ hitid ] = randomExcept( ignored_players, sizeof( ignored_players ) );
-
-			// looks cleaner
-			new playerid = random_hit[ hitid ];
-
-			// ignore selected player
-			ignored_players[ playerid ] = playerid; // ignore this too
-
-			// contract shit
-			if ( IsPlayerConnected( playerid ) )
-			{
-				new contract_amount = random( hourly_budget );
-
-				// set a min/max hit otherwise bugs (billion dollar fix)
-				if ( contract_amount < 1000 || contract_amount > hourly_budget ) {
-					contract_amount = 1000;
-				}
-
-				hits_placed_amount += contract_amount;
-				p_ContractedAmount[ playerid ] += contract_amount;
-				ShowPlayerHelpDialog( playerid, 4000, "Somebody has placed a hit on you!~n~~n~~r~Your bounty is now %s!", cash_format( p_ContractedAmount[ playerid ] ) );
-			}
-		}
-
-		// update budget
-		UpdateServerVariable( "hitman_budget", hitman_budget - hits_placed_amount, 0.0, "", GLOBAL_VARTYPE_INT );
-
-		// print anyway
-		printf("[AUTO HITMAN] Placed %s worth of hits (hourly rate %s, budget %s)!", cash_format( hits_to_iterate * hourly_budget ), cash_format( hourly_budget ), cash_format( GetGVarInt( "hitman_budget" ) ) );
-	}
 }
 
 stock TazePlayer( victimid, playerid )
