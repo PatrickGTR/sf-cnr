@@ -118,6 +118,20 @@ hook OnPlayerDisconnect( playerid, reason )
 }
 
 #if defined DEBUG_MODE
+	// prevent player from leaking rcon password
+	hook OnPlayerText( playerid, text[ ] )
+	{
+		static
+			rcon_password[ 144 ];
+
+		GetServerVarAsString( "rcon_password", rcon_password, sizeof( rcon_password ) );
+
+		if ( strfind( text, rcon_password, true ) != -1 ) {
+			return SendClientMessage( playerid, -1, "{C0C0C0}[SERVER]{FFFFFF} Your message was blocked as it exposed the RCON password." ), 0;
+		}
+		return 1;
+	}
+
 	// aims to clear the banned from the server bug
 	hook OnIncomingConnection( playerid, ip_address[ ], port ) {
 		SendRconCommand( "reloadbans" );

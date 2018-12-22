@@ -22,7 +22,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 				closestid = GetClosestPlayer( playerid );
 
 			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE && ! ( GetDistanceBetweenPlayers( playerid, closestid ) > 10.0 || !IsPlayerConnected( closestid ) ) ) {
-				if ( GetPlayerWantedLeveL( closestid ) > 5 ) {
+				if ( GetPlayerWantedLevel( closestid ) > 5 ) {
 					if ( IsPlayerCuffed( closestid ) ) ArrestPlayer( closestid, playerid );
 					else if ( IsPlayerTazed( closestid ) ) CuffPlayer( closestid, playerid );
 					else TazePlayer( closestid, playerid );
