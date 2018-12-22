@@ -19,8 +19,11 @@
 #define SERVER_WEBSITE				"www.sfcnr.com"
 #define SERVER_IP					"54.36.127.43:7777"
 
+#define SERVER_TWITTER 				"IrresistibleDev"
+
 /* ** Comment line to disable feature ** */
 #define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"
+#define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"
 #define SERVER_CHANGES_FILE 		"updates.txt"
 
 /* ** Hooks ** */

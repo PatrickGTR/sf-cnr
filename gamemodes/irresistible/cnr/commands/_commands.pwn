@@ -10,3 +10,4 @@
 
 /* ** Files ** */
 #include "irresistible\cnr\commands\cmd_changes.pwn"
+#include "irresistible\cnr\commands\cmd_twitter.pwn"

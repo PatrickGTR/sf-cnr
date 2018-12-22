@@ -87,7 +87,6 @@ public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdateTimer( );
 public OnServerSecondTick( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
-public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 
 main()
@@ -547,15 +546,6 @@ public OnServerSecondTick( )
 		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
 			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
 	}
-	return 1;
-}
-
-public OnTwitterHTTPResponse( index, response_code, data[ ] )
-{
-    if ( response_code == 200 ) //Did the request succeed?
- 		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}@IrresistibleDev"COL_WHITE" - Twitter", data, "Okay", "" );
-	else
-		ShowPlayerDialog( index, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{00CCFF}@IrresistibleDev"COL_WHITE" - Twitter", ""COL_WHITE"An error has occurred, try again later.", "Okay", "" );
 	return 1;
 }
 
@@ -2974,14 +2964,6 @@ CMD:vipjob( playerid, params[ ] )
 	else SendClientMessage( playerid, -1, ""COL_GOLD"[VIP]"COL_WHITE" You have disabled your VIP job." );
 
     p_VIPJob{ playerid } = iJob;
-	return 1;
-}
-
-CMD:tweets( playerid, params[ ] ) return cmd_twitter( playerid, params );
-CMD:twitter( playerid, params[ ] )
-{
-    SendServerMessage( playerid, "Reading latest tweets from {00CCFF}www.twitter.com/IrresistibleDev{FFFFFF}, please wait!" );
-	HTTP( playerid, HTTP_GET, "files.sfcnr.com/cnr_twitter.php", "", "OnTwitterHTTPResponse" );
 	return 1;
 }
 
