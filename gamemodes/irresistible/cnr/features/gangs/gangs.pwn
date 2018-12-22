@@ -301,7 +301,24 @@ CMD:gang( playerid, params[ ] )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 
-	if ( !strcmp( params, "turfs", false, 5 ) )
+	if ( !strcmp( params, "offlinekick", false, 11 ) )
+	{
+		new
+			p_Name[ 24 ];
+
+		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) )
+			return SendError( playerid, "You are not the gang leader." );
+
+		if ( sscanf( params[ 12 ], "s[24]", p_Name ) )
+			return SendUsage( playerid, "/gang offlinekick [PLAYER_NAME]" );
+
+		trimString( p_Name );
+
+		mysql_format( dbHandle, szNormalString, 128, "SELECT `ID`, `NAME`, `GANG_ID` FROM `USERS` WHERE `NAME`='%e' AND `GANG_ID`=%d", p_Name, p_GangID[ playerid ] );
+		mysql_tquery( dbHandle, szNormalString, "OnGangKickOffline", "dd", playerid, p_GangID[ playerid ] );
+		return 1;
+	}
+	else if ( !strcmp( params, "turfs", false, 5 ) )
 	{
 		return Turf_ShowGangOwners( playerid );
 	}
@@ -714,6 +731,49 @@ thread OnListClans( playerid )
 		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "Clan List", szLargeString, "Close", "" ), 1;
 	}
 	SendError( playerid, "There are no clans to show." );
+	return 1;
+}
+
+thread OnGangKickOffline( playerid, gangid )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( rows )
+	{
+		new player_name[ MAX_PLAYER_NAME ];
+		new scan_name[ MAX_PLAYER_NAME ];
+
+		cache_get_field_content( 0, "NAME", player_name );
+
+		// scan if player is online
+		new player_accid = cache_get_field_content_int( 0, "ID", dbHandle );
+
+		foreach ( new scanid : Player ) {
+			GetPlayerName( scanid, scan_name, sizeof( scan_name ) );
+
+			if ( strmatch( player_name, scan_name ) ) {
+				return SendError( playerid, "You cannot use this command on a online player." ), 1;
+			}
+		}
+
+		// verify player is in gang
+		new player_gangid = cache_get_field_content_int( 0, "GANG_ID", dbHandle );
+
+		if ( player_gangid != gangid ) {
+			return SendError( playerid, "This player is not in your gang." );
+		}
+
+		// remove as coleader
+		mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `USER_ID`=%d", player_accid ) );
+ 		mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `ID`=%d", player_accid ) );
+
+		SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s has left the gang (KICKED)", player_name );
+	}
+	else
+	{
+		SendError( playerid, "It seems like this player isn't in your gang!" );
+	}
 	return 1;
 }
 
