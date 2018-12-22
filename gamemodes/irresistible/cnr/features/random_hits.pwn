@@ -83,5 +83,5 @@ hook OnServerGameDayEnd( )
 /* ** Functions ** */
 stock RandomHits_IncreaseHitPool( amount ) {
 	UpdateServerVariable( "hitman_budget", GetGVarInt( "hitman_budget" ) + amount, 0.0, "", GLOBAL_VARTYPE_INT );
-    return 1l
+    return 1;
 }

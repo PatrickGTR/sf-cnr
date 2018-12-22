@@ -9,7 +9,6 @@
 new
 	g_TrolleyVehicles               [ 5 ],
 	engine, lights, doors, bonnet, boot, objective, alarm, panels, tires,
-	g_RestoreRobberiesBribes  		= 0,
 	g_ServerUptime 					= 0,
 	rl_ServerUpdate					= 0xFF,
 	rl_ZoneUpdate                   = 0xFF,

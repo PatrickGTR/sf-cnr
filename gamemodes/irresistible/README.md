@@ -50,3 +50,5 @@
     - Called when a player is loading textdraws
 - `OnPlayerUnloadTextdraws( playerid )`
     - Called when a player is unloading textdraws (on death, request class...)
+- `OnPlayerC4Blown( playerid, Float: X, Float: Y, Float: Z, worldid )`
+    - Called when a player C4 is blown

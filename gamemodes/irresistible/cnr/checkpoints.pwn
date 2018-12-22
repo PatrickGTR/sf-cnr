@@ -11,7 +11,6 @@
 /* ** Definitions ** */
 #define ALL_CHECKPOINTS             ( 37 )
 
-#define CP_BOMB_SHOP                ( 0 )
 #define CP_BANK_MENU                ( 1 )
 #define CP_247_MENU                	( 2 )
 #define CP_CHANGE_JOB               ( 3 )
@@ -24,10 +23,8 @@
 #define CP_AMMUNATION_1       		( 10 )
 #define CP_AMMUNATION_2       		( 11 )
 #define CP_COUNTRY_BANK_MENU 		( 12 )
-#define CP_BOMB_SHOP_LV	 			( 13 )
 #define CP_HOSPITAL_LV 				( 14 )
 #define CP_FIGHTSTYLE_LV 			( 15 )
-#define CP_BOMB_SHOP_LS 			( 16 )
 #define CP_HOSPITAL1_LS 			( 17 )
 #define CP_HOSPITAL2_LS 			( 18 )
 #define CP_FIGHTSTYLE_LS 			( 19 )
@@ -65,7 +62,6 @@ new g_Checkpoints           		[ ALL_CHECKPOINTS ] = { -1, ... };
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-	g_Checkpoints[ CP_BOMB_SHOP ] = CreateDynamicCP( -1923.7546, 303.3475, 41.0469, 2.0, 0, -1, -1, 100.0 );
 	//g_Checkpoints[ CP_DROP_OFF_COP ] = CreateDynamicCP( -1577.0952, 683.9492, 7.2440, 3.0, 0, -1, -1, 100.0 );
 	g_Checkpoints[ CP_BANK_MENU ] = CreateDynamicCP( -1405.0657, 831.0966, 984.7126, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_COUNTRY_BANK_MENU ] = CreateDynamicCP( 2156.1299, 1640.2460, 1041.6124, 1.0, -1, -1, -1, 100.0 );
@@ -106,7 +102,6 @@ hook OnScriptInit( )
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1400.0497, 2647.2358, 55.6875, 50.0);
 
 	#if ENABLE_CITY_LV == true
-	g_Checkpoints[ CP_BOMB_SHOP_LV ] = CreateDynamicCP( 1998.7263, 2298.5562, 10.8203, 2.0, 0, -1, -1, 100.0 );
 	//g_Checkpoints[ CP_DROP_OFF_COP_LV ] = CreateDynamicCP( 2225.6753, 2457.2388, -7.4531, 3.0, 0, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL_LV ] = CreateDynamicCP( 1607.2659, 1815.2485, 10.8203, 2.0, -1, -1, -1, 100.0 );
 	//g_Checkpoints[ CP_DROP_OFF_FBI_LV ] = CreateDynamicCP( 948.6036, 1811.2720, 8.6484, 3.0, -1, -1, -1, 100.0 );
@@ -115,13 +110,11 @@ hook OnScriptInit( )
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 2225.6753, 2457.2388, -7.4531, 20.0);
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 948.6036, 1811.2720, 8.6484, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 766.8416, -62.1872, 1000.6563, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 9);
-	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, 1998.7263, 2298.5562, 10.8203, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD, 1607.2659, 1815.2485, 10.8203, 20.0);
 	CreateDynamic3DTextLabel("[REFILL AMMO]", COLOR_GOLD, 2251.9438, 2488.7981, 10.9908, 20.0);
 	#endif
 
 	#if ENABLE_CITY_LS
-	g_Checkpoints[ CP_BOMB_SHOP_LS ] = CreateDynamicCP( 1911.2462, -1775.8755, 13.3828, 2.0, 0, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL1_LS ] = CreateDynamicCP( 1172.0767, -1323.3257, 15.4029, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL2_LS ] = CreateDynamicCP( 2034.0677, -1401.6699, 17.2938, 1.0, -1, -1, -1, 100.0 );
 	g_Checkpoints[ CP_HOSPITAL_FC ] = CreateDynamicCP( -320.2127, 1048.2339, 20.3403, 1.0, -1, -1, -1, 100.0 );
@@ -134,7 +127,6 @@ hook OnScriptInit( )
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1569.0277, -1694.1566, 5.8906, 20.0);
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, 1516.6716, -1458.9398, 9.5000, 20.0);
 	CreateDynamic3DTextLabel("[LEARN FIGHT STYLES]", COLOR_GOLD, 772.0868, 12.6397, 1000.6996, 15.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 10);
-	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, 1911.2462, -1775.8755, 13.3828, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD, 1172.0767, -1323.3257, 15.4029, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD, 2034.0677, -1401.6699, 17.2938, 20.0);
 	CreateDynamic3DTextLabel("[HOSPITAL]", COLOR_GOLD,  -320.2127, 1048.2339, 20.3403, 20.0);
@@ -154,7 +146,6 @@ hook OnScriptInit( )
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -1577.0952, 683.9492, 7.2440, 20.0);
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD, -2446.6785, 522.9684, 30.2548, 20.0);
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -1651.6956, 700.8394, 38.2422, 50.0);
-	CreateDynamic3DTextLabel("[BOMB SHOP]", COLOR_GOLD, -1923.7546, 303.3475, 41.0469, 20.0);
 	CreateDynamic3DTextLabel("[GUN STORE]", COLOR_GOLD, 296.3782, -38.4512, 1001.5156, 20.0);
 	CreateDynamic3DTextLabel("[GUN STORE]", COLOR_GOLD, 295.4524, -80.7487, 1001.5156, 20.0);
 	CreateDynamic3DTextLabel("[GUN STORE]", COLOR_GOLD, 312.8432, -166.1419, 999.6010, 20.0);

@@ -173,47 +173,6 @@ new
 	}
 ;
 
-/* ** C4 Data ** */
-#define MAX_C4                      ( 10 )
-enum E_C4_DATA
-{
-	bool: E_SET,		E_OBJECT, 		E_VEHICLE,
-	Text3D: E_LABEL, 	E_WORLD, 		E_INTERIOR
-};
-
-new
-	g_C4Data						[ MAX_PLAYERS ] [ MAX_C4 ] [ E_C4_DATA ],
-   	p_C4Amount          			[ MAX_PLAYERS ]
-;
-
-/* ** Jail System ** */
-#define JAIL_SECONDS_MULTIPLIER		( 3 )
-#define ALCATRAZ_REQUIRED_TIME		( 150 )
-
-#define ALCATRAZ_TIME_PAUSE 		( 5 )
-#define ALCATRAZ_TIME_WANTED 		( 600 )
-
-enum E_JAIL_DATA
-{
-	E_CITY,				Float: E_EXPLODE1_POS[ 3 ],	Float: E_EXPLODE2_POS[ 3 ],
-	Float: E_RADIUS,	E_TIMESTAMP,				bool: E_BOMBED
-};
-
-new
-	g_jailData						[ MAX_CITIES ] [ E_JAIL_DATA ] =
-	{
-		{ CITY_SF, { 217.4585, 113.6866, 999.0156 }, { 225.4888, 113.1873, 999.0156 }, 5.0,  0, false },
-		{ CITY_LV, { 194.3351, 179.008, 1003.0234 }, { 193.8611, 158.0657, 1003.024 }, 10.0, 0, false },
-		{ CITY_LS, { 268.5573, 86.1785, 1001.0391 }, { 268.1720, 78.5381, 1001.0391 }, 5.0,	 0, false }
-	},
-	p_JailObjectLV					[ MAX_PLAYERS ] [ 3 ],
-	p_JailObjectSF					[ MAX_PLAYERS ] [ 4 ],
-	p_JailObjectLS					[ MAX_PLAYERS ] [ 3 ],
-	p_AlcatrazObject 				[ MAX_PLAYERS ] = { INVALID_OBJECT_ID, ... },
-	p_AlcatrazEscapeTS 				[ MAX_PLAYERS ],
-	g_alcatrazTimestamp 			= 0
-;
-
 /* ** Forwards ** */
 public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdateTimer( );
@@ -291,10 +250,6 @@ public OnGameModeInit()
 	// Signs - User friendly addition
 	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-
-	// Boat Hiest
-	g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ] = CreateDynamicObject( 19435, -2371.416992, 1552.027709, 1.907187, 0.000000, 0.000000, 28.0000, g_bankvaultData[ VAULT_BOAT ] [ E_WORLD ] );
-	SetDynamicObjectMaterial( g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ], 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
 
 	// Alcatraz
 	g_AlcatrazArea = CreateDynamicRectangle( -1921.6816, 1661.7448, -2172.4653, 1876.0469 );
@@ -423,7 +378,7 @@ public OnGameModeExit( )
 public OnServerUpdateTimer( )
 {
 	static
-		iState, iWeapon, iAmmo,
+		iWeapon, iAmmo,
 		Float: fLastRate
 	;
 
@@ -473,7 +428,6 @@ public OnServerUpdateTimer( )
 		if ( IsPlayerSpawned( playerid ) && p_PlayerLogged{ playerid } )
 		{
 			iWeapon 	= GetPlayerWeapon( playerid );
-			iState 		= GetPlayerState( playerid );
 
 		    // Generally Updated textdraws
 			PlayerTextDrawSetString( playerid, p_LocationTD[ playerid ], GetPlayerArea( playerid ) );
@@ -551,28 +505,6 @@ public OnServerUpdateTimer( )
 					cmd_aod( playerid, "" );
 			}
 
-			// Anti Camping In Vault
-			if ( IsPlayerInBank( playerid ) )
-			{
-			 	if ( IsPlayerInArea( playerid, -1412.215209, -1400.443237, 853.086669, 865.716735 ) && !g_bankvaultData[ CITY_SF ] [ E_DISABLED ] )
-				{
-					SendServerMessage( playerid, "You've been moved as you've entered the vault whilst it's closed." );
-					SetPlayerPos( playerid, -1416.3499, 859.2744, 984.7126 );
-				}
-
-				if ( IsPlayerInArea( playerid, 2102.2590, 2113.5295, 1229.8595, 1246.2588 ) )
-				{
-					new
-						world = GetPlayerVirtualWorld( playerid );
-
-					if ( ( world == g_bankvaultData[ CITY_LV ] [ E_WORLD ] && !g_bankvaultData[ CITY_LV ] [ E_DISABLED ] ) || ( world == g_bankvaultData[ CITY_LS ] [ E_WORLD ] && !g_bankvaultData[ CITY_LS ] [ E_DISABLED ] ) )
-					{
-						SendServerMessage( playerid, "You've been moved as you've entered the vault whilst it's closed." );
-						SetPlayerPos( playerid, 2121.7827, 1233.3225, 1017.1369 );
-					}
-				}
-			}
-
 			// Decrementing Wanted Level
 			/*if ( p_WantedLevel[ playerid ] > 2 && !IsPlayerAdminOnDuty( playerid ) )
 			{
@@ -604,55 +536,6 @@ public OnServerUpdateTimer( )
 				p_TimeTiedAt[ playerid ] = 0;
 				p_Kidnapped{ playerid } = false;
 				ShowPlayerHelpDialog( playerid, 1200, "You have been tied for %s.~n~~n~Your tie is loose.", secondstotime( g_iTime - p_TimeTiedAt[ playerid ] ) );
-			}
-
-			// Alcatraz Escape Mechanism
-			if ( g_iTime > p_AlcatrazEscapeTS[ playerid ] && iState != PLAYER_STATE_SPECTATING )
-			{
-				if ( IsPlayerAFK( playerid ) )
-					p_AlcatrazEscapeTS[ playerid ] = g_iTime + ALCATRAZ_TIME_PAUSE; // Money farmers?
-
-				if ( IsPlayerInDynamicArea( playerid, g_AlcatrazArea ) )
-				{
-					if ( !IsPlayerJailed( playerid ) && p_Class[ playerid ] != CLASS_POLICE ) // && !IsPlayerDetained( playerid )
-					{
-						if ( GetPVarInt( playerid, "AlcatrazWantedCD" ) < g_iTime )
-						{
-							SetPVarInt( playerid, "AlcatrazWantedCD", g_iTime + ALCATRAZ_TIME_WANTED );
-							GivePlayerWantedLevel( playerid, 24 );
-							ShowPlayerHelpDialog( playerid, 6000, "Warning! You are now wanted for accessing a ~r~~h~prohibited area!" );
-						}
-					}
-				}
-				else
-				{
-					if ( IsPlayerJailed( playerid ) && IsPlayerSpawned( playerid ) && !IsPlayerAdminOnDuty( playerid ) )
-					{
-						if ( p_inAlcatraz{ playerid } )
-						{
-							if ( p_Class[ playerid ] != CLASS_POLICE && !IsPlayerAdminJailed( playerid ) && !IsPlayerAFK( playerid ) )
-							{
-								SetPVarInt( playerid, "AlcatrazWantedCD", g_iTime + ALCATRAZ_TIME_WANTED );
-							    PlainUnjailPlayer 		( playerid );
-								SetPlayerColorToTeam	( playerid );
-								SetPlayerHealth 		( playerid, 100.0 );
-								p_inAlcatraz 			{ playerid } = false;
-
-							    if ( GetPVarInt( playerid, "AlcatrazGiveWantedCD" ) < g_iTime ) {
-							    	GivePlayerWantedLevel( playerid, 64 );
-									SendGlobalMessage( -1, ""COL_GOLD"[JAIL ESCAPE]{FFFFFF} %s(%d) has escaped from Alcatraz, 64 wanted goes to him!", ReturnPlayerName( playerid ), playerid );
-									SetPVarInt( playerid, "AlcatrazGiveWantedCD", g_iTime + 60 );
-							    }
-							    else SendGlobalMessage( -1, ""COL_GOLD"[JAIL ESCAPE]{FFFFFF} %s(%d) has escaped from Alcatraz!", ReturnPlayerName( playerid ), playerid );
-							}
-							else
-							{
-								SendError( playerid, "You cannot leave the prison. It's prohibited." );
-								SetPlayerPosToPrison( playerid );
-							}
-						}
-					}
-				}
 			}
 
 			// Anti Money Hack
@@ -692,43 +575,7 @@ public OnServerUpdateTimer( )
 			}
 		}
 	}
-
-	// Restore and Replenish Stuff
-    if ( g_iTime > g_RestoreRobberiesBribes )
-    {
-    	// Replenish Vaults
-		for( new i = 0; i < sizeof( g_bankvaultData ); i++ ) if ( g_bankvaultData[ i ] [ E_DISABLED ] && g_iTime > g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] )
-		{
-			StopDynamicObject	( g_bankvaultData[ i ] [ E_OBJECT ] );
-			DestroyDynamicObject( g_bankvaultData[ i ] [ E_OBJECT ] );
-
-			g_bankvaultData[ i ] [ E_TIMESTAMP_CLOSE ] = 0;
-			g_bankvaultData[ i ] [ E_DISABLED ] = false;
-
-			switch( i )
-			{
-				case CITY_SF: SetDynamicObjectMaterial( ( g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 18766, -1412.565063, 859.274536, 983.132873, 0.000000, 90.000000, 90.000000 ) ), 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
-				case CITY_LV: g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ i ] [ E_WORLD ] );
-				case CITY_LS: g_bankvaultData[ i ] [ E_OBJECT ] = CreateDynamicObject( 2634, 2114.742431, 1233.155273, 1017.616821, 0.000000, 0.000000, -90.000000, g_bankvaultData[ i ] [ E_WORLD ] );
-				case VAULT_BOAT: SetDynamicObjectMaterial( ( g_bankvaultData[ VAULT_BOAT ] [ E_OBJECT ] = CreateDynamicObject( 19435, -2371.416992, 1552.027709, 1.907187, 0.000000, 0.000000, 28.0000, g_bankvaultData[ VAULT_BOAT ] [ E_WORLD ] ) ), 0, 18268, "mtbtrackcs_t", "mp_carter_cage", -1 );
-			}
-		}
-
-		g_RestoreRobberiesBribes = g_iTime + 10;
-	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
-}
-
-stock GetGangCapturedTurfs( gangid )
-{
-	new
-		z,
-		c;
-
-	foreach ( z : turfs ) if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ z ] [ E_OWNER ] == gangid ) {
-		c++;
-	}
-	return c;
 }
 
 public OnServerSecondTick( )
@@ -1687,30 +1534,6 @@ stock CreateExplosiveBullet( playerid, hittype = BULLET_HIT_TYPE_OBJECT, hitid =
 
 public OnPlayerShootDynamicObject( playerid, weaponid, objectid, Float:x, Float:y, Float:z )
 {
-	new
-		modelid = Streamer_GetIntData( STREAMER_TYPE_OBJECT, objectid, E_STREAMER_MODEL_ID );
-
-	// Explosive Bullets
-	CreateExplosiveBullet( playerid );
-
-	switch( modelid )
-	{
-		// C4
-		case 19602:
-		{
-			foreach(new p : Player)
-			{
-				for( new i = 0; i < MAX_C4; i++ )
-				{
-					if ( objectid == g_C4Data[ p ] [ i ] [ E_OBJECT ] )
-					{
-						ExplodePlayerC4s( p, i, i + 1 );
-						break;
-					}
-				}
-			}
-		}
-	}
 	return 1;
 }
 
@@ -3050,45 +2873,6 @@ CMD:robitems( playerid, params[ ] )
  	else SendError( playerid, "There are no players around to rob." );
 	return 1;
 }
-
-
-CMD:pdjail( playerid, params[ ] )
-{
-	erase( szBigString );
-
-	new
-		time = g_iTime;
-
-	for( new i = 0; i < sizeof( g_jailData ); i++ ) {
-		if ( g_jailData[ i ] [ E_TIMESTAMP ] < time )
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t"COL_GREEN"Available To Raid!\n", szBigString, returnCityName( g_jailData[ i ] [ E_CITY ] ) );
-		else
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t%s\n", szBigString, returnCityName( g_jailData[ i ] [ E_CITY ] ), secondstotime( g_jailData[ i ] [ E_TIMESTAMP ] - time ) );
-	}
-
-	if ( g_alcatrazTimestamp < time )
-		strcat( szBigString, ""COL_GREY"Alcatraz"COL_WHITE"\t"COL_GREEN"Available To Raid!" );
-	else
-		format( szBigString, sizeof( szBigString ), "%s"COL_GREY"Alcatraz"COL_WHITE"\t%s\n", szBigString, secondstotime( g_alcatrazTimestamp - time ) );
-
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Police Jails", szBigString, "Okay", "" );
-	return 1;
-}
-
-CMD:banks( playerid, params[ ] )
-{
-	erase( szBigString );
-
-	for( new i = 0, time = g_iTime; i < sizeof( g_bankvaultData ); i++ ) {
-		if ( g_bankvaultData[ i ] [ E_TIMESTAMP ] < time )
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t"COL_GREEN"Available To Rob!\n", szBigString, g_bankvaultData[ i ] [ E_NAME ] );
-		else
-			format( szBigString, sizeof( szBigString ), "%s"COL_GREY"%s"COL_WHITE"\t%s\n", szBigString, g_bankvaultData[ i ] [ E_NAME ], secondstotime( g_bankvaultData[ i ] [ E_TIMESTAMP ] - time ) );
-	}
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}Banks", szBigString, "Okay", "" );
-	return 1;
-}
-
 
 CMD:gettaxrate( playerid, params[ ] ) return cmd_tax( playerid, params );
 CMD:getmytax( playerid, params[ ] ) return cmd_tax( playerid, params );
@@ -5466,132 +5250,6 @@ CMD:rape( playerid, params[ ] )
 	return 1;
 }
 
-CMD:c4( playerid, params[ ] )
-{
-	if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-
-	if ( !strcmp( params, "plant", true, 5 ) )
-	{
-		new
-		    ID = -1
-		;
-
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
-		if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-		if ( !IsPlayerJob( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInCasino( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a casino." );
-		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an arena." );
-		if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as an innocent player in passive mode." );
-		if ( p_C4Amount[ playerid ] < 1 ) return SendError( playerid, "You don't have any C4's" );
-
-		#if defined __cnr__chuffsec
-			if ( IsPlayerInVehicle( playerid, g_secureTruckVehicle ) ) return SendError( playerid, "You cannot be in this vehicle while planting C4." );
-		#endif
-
-		for( new i; i < MAX_C4; i++ ) {
-		    if ( !g_C4Data[ playerid ] [ i ] [ E_SET ] ) {
-		        ID = i;
-		        break;
-			}
-		}
-
-		if ( ID != -1 )
-		{
-			new
-		        Float: distance = 99999.99,
-				robberyid = getClosestRobberySafe( playerid, distance )
-			;
-
-			if ( robberyid != INVALID_OBJECT_ID && distance < 1.50 && !g_robberyData[ robberyid ] [ E_STATE ] && AttachToRobberySafe( robberyid, playerid, ROBBERY_TYPE_C4 ) )
-			{
-				SendServerMessage( playerid, "You have planted a C4 on this "COL_ORANGE"safe"COL_WHITE", detonation is automatic." );
-
-				if ( g_Debugging )
-				{
-					printf("[DEBUG] [ROBBERY] [%d] Planted C4 { open : %d, robbed : %d, c4: %d, drill : %d, dplacer : %d, deffect : %d, replenish : %d, raw ts : %d, current ts : %d, name : %s, state : %d }",
-								robberyid,
-								g_robberyData[ robberyid ] [ E_OPEN ], g_robberyData[ robberyid ] [ E_ROBBED ], g_robberyData[ robberyid ] [ E_C4 ],
-								g_robberyData[ robberyid ] [ E_DRILL ], g_robberyData[ robberyid ] [ E_DRILL_PLACER ], g_robberyData[ robberyid ] [ E_DRILL_EFFECT ], g_robberyData[ robberyid ] [ E_ROB_TIME ] - g_iTime,
-								g_robberyData[ robberyid ] [ E_ROB_TIME ], g_iTime, g_robberyData[ robberyid ] [ E_NAME ], g_robberyData[ robberyid ] [ E_STATE ] );
-				}
-			}
-			else
-			{
-				new
-				    Float: X, Float: Y, Float: Z,
-					iVehicle = GetPlayerVehicleID( playerid )
-				;
-
-				GetPlayerPos( playerid, X, Y, Z );
-
-				format( szNormalString, 64, "C4 %d\nPlanted By %s!", ID, ReturnPlayerName( playerid ) );
-				g_C4Data[ playerid ] [ ID ] [ E_LABEL ] = Create3DTextLabel( szNormalString, setAlpha( COLOR_GREY, 0x50 ), X, Y, Z - 1.0, 15.0, GetPlayerVirtualWorld( playerid ) );
-				g_C4Data[ playerid ] [ ID ] [ E_OBJECT ] = CreateDynamicObject( 19602, X, Y, Z - 0.92, 0, 0, 0, GetPlayerVirtualWorld( playerid ), GetPlayerInterior( playerid ), -1, 50.0 ); // 363 prev, Rx -90.0
-				g_C4Data[ playerid ] [ ID ] [ E_WORLD ] = GetPlayerVirtualWorld( playerid );
-				g_C4Data[ playerid ] [ ID ] [ E_INTERIOR ] = GetPlayerInterior( playerid );
-				g_C4Data[ playerid ] [ ID ] [ E_SET ] = true;
-
-				if ( ! iVehicle ) {
-					iVehicle = GetPlayerSurfingVehicleID( playerid );
-				}
-
-			#if defined __cnr__chuffsec
-				if ( iVehicle == g_secureTruckVehicle ) {
-					iVehicle = INVALID_VEHICLE_ID;
-				}
-			#endif
-
-				if ( IsValidVehicle( iVehicle ) )
-				{
-					GetVehiclePos( iVehicle, X, Y, Z );
-
-		            g_C4Data[ playerid ] [ ID ] [ E_VEHICLE ] = iVehicle + 100; // Plus 100 just for verification
-
-					//if ( GetOffsetFromPosition( iVehicle, X, Y, Z, vX, vY, vZ ) )
-			   		//	g_C4Data[ playerid ] [ ID ] [ E_X ] = X + vX, g_C4Data[ playerid ] [ ID ] [ E_Y ] = Y + vY, g_C4Data[ playerid ] [ ID ] [ E_Z ] = Z + vY - vOffset;
-
-					SendServerMessage( playerid, "You have planted a C4 on a "COL_GREY"vehicle"COL_WHITE", you can detonate it by pressing your "COL_GREY"Y key"COL_WHITE"." );
-				    AttachDynamicObjectToVehicle( g_C4Data[ playerid ] [ ID ] [ E_OBJECT ], iVehicle, 0.0, 0.0, 6000.0, 0.0, 0.0, 0.0 );
-				    Attach3DTextLabelToVehicle( g_C4Data[ playerid ] [ ID ] [ E_LABEL ], iVehicle, 0.0, 0.0, 0.0 );
-				}
-				else SendServerMessage( playerid, "You have planted a C4, you can detonate it by pressing your "COL_GREY"Y key"COL_WHITE"." );
-			}
-		}
-		else return SendError( playerid, "You have planted the maximum C4 limit." );
-
-		p_C4Amount[ playerid ] --;
-    	PlayerPlaySound( playerid, 25800, 0.0, 0.0, 0.0 );
-		return 1;
-	}
-	else if ( !strcmp( params, "detonate", true, 8 ) )
-	{
-		new cID;
-
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		else if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-		else if ( !IsPlayerJob( playerid, JOB_TERRORIST ) ) return SendError( playerid, "This is restricted to terrorists." );
-		else if ( sscanf( params[ 9 ], "d", cID ) ) return SendUsage( playerid, "/c4 detonate [C4_ID] "COL_GREY"- Use detonator to blow all." );
-		else if ( cID < 0 || cID >= MAX_C4 ) return SendError( playerid, "Invalid C4 ID specified." );
-		else if ( g_C4Data[ playerid ] [ cID ] [ E_SET ] == false ) return SendError( playerid, "This C4 ID is not planted." );
-		else
-		{
-			if ( ExplodePlayerC4s( playerid, cID, cID + 1 ) )
-				SendServerMessage( playerid, "You have successfully detonated C4 ID %d.", cID );
-			else
-				SendError( playerid, "You cannot plant C4 at the moment, please try again later." );
-		}
-		return 1;
-	}
-	return SendUsage( playerid, "/c4 [PLANT/DETONATE]" );
-}
-
 /*                                 ________    ___      ___   ________      ___________
 	/--------------\             /         \  |   \    /   | |   ___  \    /           |
 	|    ______    |             |   ______/  |    \  /    | |  |   |  \   |    _______|
@@ -6241,19 +5899,8 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 	aPlayer[ 0 ] = playerid;
 
-
 	if ( IsPlayerJailed( playerid ) ) // || && !bDropoff
 	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), 1;
-
-	/* ** Continue ** */
-	if ( checkpointid == g_Checkpoints[ CP_BOMB_SHOP ] || checkpointid == g_Checkpoints[ CP_BOMB_SHOP_LV ] || checkpointid == g_Checkpoints[ CP_BOMB_SHOP_LS ] )
-	{
-		if ( !IsPlayerJob( playerid, JOB_TERRORIST ) )
-			ShowPlayerHelpDialog( playerid, 4000, "You are not a ~r~terrorist~w~~h~ so you won't be able to use the C4 bought!" );
-			//return ShowPlayerHelpDialog( playerid, 4000, "You need to be a ~r~terrorist~w~~h~ to buy C4!" );
-
-		return ShowPlayerDialog( playerid, DIALOG_BOMB_SHOP, DIALOG_STYLE_TABLIST, "{FFFFFF}C4 Shop", "1 C4\t"COL_GOLD"$500\n5 C4\t"COL_GOLD"$2450\nSell C4\t"COL_GREEN"$250", "Select", "Cancel" ), 1;
-	}
 
 	// Refill ammunition
 	if ( checkpointid == g_Checkpoints[ CP_REFILL_AMMO ] || checkpointid == g_Checkpoints[ CP_REFILL_AMMO_LS ] || checkpointid == g_Checkpoints[ CP_REFILL_AMMO_LV ] ) {
@@ -6825,12 +6472,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 		if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return RemovePlayerStolensFromHands( playerid ), SendServerMessage( playerid, "You dropped your stolen good and broke it." ), 1;
    	}
 
-   	else if ( PRESSED( KEY_YES ) )
-   	{
-	    if ( p_Class[ playerid ] == CLASS_CIVILIAN && IsPlayerJob( playerid, JOB_TERRORIST ) && !IsPlayerJailed( playerid ) )
-	   		ExplodePlayerC4s( playerid );
-   	}
-
  	else if ( PRESSED( KEY_NO ) )
  	{
  		// Press N to deatach trailer from vehicle
@@ -7206,7 +6847,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_AdminJailed{ playerid } 		= cache_get_field_content_int( 0, "JAIL_ADMIN", dbHandle );
 			p_JailTime[ playerid ] 			= cache_get_field_content_int( 0, "JAIL_TIME", dbHandle );
 			p_Ropes[ playerid ] 			= cache_get_field_content_int( 0, "ROPES", dbHandle );
-			p_C4Amount[ playerid ] 			= cache_get_field_content_int( 0, "C4", dbHandle );
 			p_MetalMelter[ playerid ] 		= cache_get_field_content_int( 0, "MELTERS", dbHandle );
 			p_Scissors[ playerid ] 			= cache_get_field_content_int( 0, "SCISSORS", dbHandle );
 			p_AntiEMP[ playerid ] 			= cache_get_field_content_int( 0, "FOILS", dbHandle );
@@ -7234,7 +6874,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
 			// p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
 
-			// seasonal xp
+			SetPlayerC4Amount( playerid, cache_get_field_content_int( 0, "C4", dbHandle ) );
 			SetPlayerSeasonalXP( playerid, cache_get_field_content_float( 0, "RANK", dbHandle ) );
 
 			// spawn location
@@ -7538,59 +7178,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		} else if ( listitem == 2 ) {
 			CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
 			SendServerMessage( playerid, "Since you like deathmatch, passive mode has been automatically enabled for you!" );
-		}
-	}
-	if ( dialogid == DIALOG_BOMB_SHOP )
-	{
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-		if ( response )
-		{
-			if ( listitem == ( 0 ) )
-			{
-			    if ( GetPlayerCash( playerid ) < 500 )
-			        return SendError( playerid, "You don't have enough money for this item" );
-
-				if ( p_C4Amount[ playerid ] >= MAX_C4 )
-					return SendError( playerid, "You've reached the maximum C4 limit" );
-
-			    GivePlayerCash( playerid, -500 );
-				p_C4Amount[ playerid ] ++;
-				SendServerMessage( playerid, "You have purchased 1 C4 for "COL_GOLD"$500"COL_WHITE"." );
-			}
-			else if ( listitem == ( 1 ) )
-			{
-			    if ( GetPlayerCash( playerid ) < 2450 )
-			        return SendError( playerid, "You don't have enough money for this item" );
-
-				if ( p_C4Amount[ playerid ] >= MAX_C4 )
-					return SendError( playerid, "You've reached the maximum C4 limit" );
-
-				if ( p_C4Amount[ playerid ] + 5 > MAX_C4 )
-				{
-				    new amount = MAX_C4 - p_C4Amount[ playerid ];
-					SendServerMessage( playerid, "You have bought %d C4(s) for "COL_GOLD"%s"COL_WHITE" as adding five would exceed the C4 limit.", MAX_C4 - p_C4Amount[ playerid ], cash_format( amount * 495 ) );
-					p_C4Amount[ playerid ] += amount;
-				    GivePlayerCash( playerid, -( amount * 495 ) );
-				    return 1;
-				}
-				else
-				{
-				    SendServerMessage( playerid, "You have purchased 5 C4 for "COL_GOLD"$2450"COL_WHITE"." );
-				    p_C4Amount[ playerid ] += 5;
-				    GivePlayerCash( playerid, -2450 );
-				}
-			}
-			else if ( listitem == ( 2 ) )
-			{
-			    if ( p_C4Amount[ playerid ] < 1 )
-			        return SendError( playerid, "You don't have any C4's" );
-
-                GivePlayerCash( playerid, 250 );
-                p_C4Amount[ playerid ] --;
-
-				SendServerMessage( playerid, "You have sold 1 C4 for "COL_GOLD"$250"COL_WHITE"." );
-			}
-			return ShowPlayerDialog( playerid, DIALOG_BOMB_SHOP, DIALOG_STYLE_TABLIST, "{FFFFFF}C4 Shop", "1 C4\t"COL_GOLD"$500\n5 C4\t"COL_GOLD"$2450\nSell C4\t"COL_GREEN"$250", "Select", "Cancel" ), 1;
 		}
 	}
     if ( ( dialogid == DIALOG_BANK_MENU ) && response )
@@ -8414,7 +8001,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Caustic Soda:{FFFFFF} %d\n"\
 											""COL_GREY"Muriatic Acid:{FFFFFF} %d\n"\
 											""COL_GREY"Hydrogen Chloride:{FFFFFF} %d\n",
-											szLargeString, p_AntiEMP[ pID ], p_SecureWallet{ pID } == true ? ( "Yes" ) : ( "No" ), p_BobbyPins[ pID ], p_C4Amount[ pID ], p_AidsVaccine{ pID } == true ? ("Yes") : ("No"),
+											szLargeString, p_AntiEMP[ pID ], p_SecureWallet{ pID } == true ? ( "Yes" ) : ( "No" ), p_BobbyPins[ pID ], GetPlayerC4Amount( pID ), p_AidsVaccine{ pID } == true ? ("Yes") : ("No"),
 											p_CausticSoda{ pID }, p_MuriaticAcid{ pID }, p_HydrogenChloride{ pID } );
 
 				format( szLargeString, 750, "%s"COL_GREY"Weed Seeds:"COL_WHITE" %d\n"\
@@ -9061,86 +8648,6 @@ stock SetServerRule( const rule[ ], const value[ ] )
 	return SendRconCommand( sprintf( "%s %s", rule, value ) );
 }
 
-stock SetPlayerPosToPrison( playerid )
-{
-	static const
-		Float: sf_JailSpawnPoints[ ][ 3 ] =
-		{
-			{ 215.5644, 110.7332, 999.0156 },
-			{ 219.4913, 110.9124, 999.0156 },
-			{ 223.4386, 111.0879, 999.0156 },
-			{ 227.4427, 111.2414, 999.0156 }
-		},
-
-		Float: lv_JailSpawnPoints[ ] [ 3 ] =
-		{
-			{ 198.6733, 162.2922, 1003.0300 },
-			{ 197.4023, 174.4845, 1003.0234 },
-			{ 193.2059, 174.6152, 1003.0234 }
-		},
-
-		Float: ls_JailSpawnPoints[ ] [ 3 ] =
-		{
-			{ 264.3201, 86.4325, 1001.0391 },
-			{ 264.3130, 81.8108, 1001.0391 },
-			{ 264.5371, 77.7982, 1001.0391 }
-		},
-
-		Float: alctrazSpawnPoints[ ] [ 3 ] =
-		{
-			{ -2005.1923, 1748.1976, 43.7386 },
-			{ -2013.7557, 1783.2218, 43.7386 },
-			{ -2049.5774, 1734.1851, 43.7386 }
-		},
-
-		Float: loadingHeight = 0.50
-	;
-
-	new
-		iRandom;
-
-	jailDoors				( playerid, false, true );
-    SetPlayerFacingAngle 	( playerid, 0.0 );
-	TogglePlayerControllable( playerid, 0 );
- 	SetPlayerVirtualWorld 	( playerid, 30 );
-	SetTimerEx 				( "ope_Unfreeze", 5000, false, "d", playerid );
-	p_inAlcatraz 			{ playerid } = false;
-
-	if ( p_JailTime[ playerid ] >= ALCATRAZ_REQUIRED_TIME )
-	{
-	    iRandom = random( sizeof( alctrazSpawnPoints ) );
-	    SetPlayerPos 			( playerid, alctrazSpawnPoints[ iRandom ][ 0 ], alctrazSpawnPoints[ iRandom ][ 1 ], alctrazSpawnPoints[ iRandom ][ 2 ] + loadingHeight );
-	 	SetPlayerInterior		( playerid, 0 );
-	 	SetPlayerVirtualWorld 	( playerid, 0 );
-		p_AlcatrazEscapeTS 		[ playerid ] = g_iTime + ALCATRAZ_TIME_PAUSE;
-		p_inAlcatraz 			{ playerid } = true;
-		return 1;
-	}
-
-	switch( getClosestPoliceStation( playerid ) )
-	{
-		case CITY_LV:
-		{
-		    iRandom = random( sizeof( lv_JailSpawnPoints ) );
-		    SetPlayerPos( playerid, lv_JailSpawnPoints[ iRandom ][ 0 ], lv_JailSpawnPoints[ iRandom ][ 1 ], lv_JailSpawnPoints[ iRandom ][ 2 ] + loadingHeight );
-		 	SetPlayerInterior( playerid, 3 );
-		}
-		case CITY_LS:
-		{
-		    iRandom = random( sizeof( ls_JailSpawnPoints ) );
-		    SetPlayerPos( playerid, ls_JailSpawnPoints[ iRandom ][ 0 ], ls_JailSpawnPoints[ iRandom ][ 1 ], ls_JailSpawnPoints[ iRandom ][ 2 ] + loadingHeight );
-		 	SetPlayerInterior( playerid, 6 );
-		}
-		default:
-		{
-		    iRandom = random( sizeof( sf_JailSpawnPoints ) );
-		    SetPlayerPos( playerid, sf_JailSpawnPoints[ iRandom ][ 0 ], sf_JailSpawnPoints[ iRandom ][ 1 ], sf_JailSpawnPoints[ iRandom ][ 2 ] + loadingHeight );
-		 	SetPlayerInterior( playerid, 10 );
-		}
-	}
-    return 1;
-}
-
 stock JailPlayer( playerid, seconds, admin = 0 )
 {
 	if ( playerid == INVALID_PLAYER_ID )
@@ -9252,12 +8759,12 @@ stock SavePlayerData( playerid, bool: logout = false )
 									 	p_Arrests[ playerid ],			p_SpawningCity{ playerid },		p_Methamphetamine{ playerid },
 									 	p_CausticSoda{ playerid },		p_MuriaticAcid{ playerid }, 	p_HydrogenChloride{ playerid } );
 
-		format( Query, sizeof( Query ), "%s`VIPWEP1`=%d,`VIPWEP2`=%d,`VIPWEP3`=%d,`MUTE_TIME`=%d,`WANTEDLVL`=%d,`ROBBERIES`=%d,`PING_IMMUNE`=%d,`FIRES`=%d,`CONTRACTS`=%d,`JOB`=%d,`JAIL_TIME`=%d,`ROPES`=%d,`C4`=%d,`MELTERS`=%d,`SCISSORS`=%d,`FOILS`=%d,`PINS`=%d,`BOUNTY`=%d,`WEED`=%d,`IS_CUFFED`=%d,`DRILL`=%d,",
+		format( Query, sizeof( Query ), "%s`VIPWEP1`=%d,`VIPWEP2`=%d,`VIPWEP3`=%d,`MUTE_TIME`=%d,`WANTEDLVL`=%d,`ROBBERIES`=%d,`PING_IMMUNE`=%d,`FIRES`=%d,`CONTRACTS`=%d,`JOB`=%d,`JAIL_TIME`=%d,`ROPES`=%d,`MELTERS`=%d,`SCISSORS`=%d,`FOILS`=%d,`PINS`=%d,`BOUNTY`=%d,`WEED`=%d,`IS_CUFFED`=%d,`DRILL`=%d,",
 										Query,                          p_VIPWep1{ playerid },          p_VIPWep2{ playerid },
 										p_VIPWep3{ playerid },          p_MutedTime[ playerid ],        p_WantedLevel[ playerid ],
 										p_Robberies[ playerid ],        p_PingImmunity{ playerid },     p_Fires[ playerid ],
 										p_HitsComplete[ playerid ],     p_Job{ playerid },              p_JailTime[ playerid ],
-										p_Ropes[ playerid ],			p_C4Amount[ playerid ], 		p_MetalMelter[ playerid ],
+										p_Ropes[ playerid ],			p_MetalMelter[ playerid ],
 										p_Scissors[ playerid ], 		p_AntiEMP[ playerid ], 			p_BobbyPins[ playerid ],
 										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
 										p_drillStrength[ playerid ] );
@@ -9446,144 +8953,6 @@ function SetPlayerRandomSpawn( playerid )
 		}
 	}
 	return Y_HOOKS_CONTINUE_RETURN_1;
-}
-
-stock DestroyAllPlayerC4s( playerid, bool: resetc4 = false )
-{
-	for( new i; i < MAX_C4; i++ )
-	{
-	    if ( g_C4Data[ playerid ] [ i ] [ E_SET ] == true )
-	    {
-	    	Delete3DTextLabel( g_C4Data[ playerid ] [ i ] [ E_LABEL ] );
-	        DestroyDynamicObject( g_C4Data[ playerid ] [ i ] [ E_OBJECT ] );
-	        g_C4Data[ playerid ] [ i ] [ E_VEHICLE ] = -100;
-	  		g_C4Data[ playerid ] [ i ] [ E_WORLD ] = 0;
-			g_C4Data[ playerid ] [ i ] [ E_INTERIOR ] = 0;
-			g_C4Data[ playerid ] [ i ] [ E_SET ] = false;
-	    }
-	}
-	if ( resetc4 ) p_C4Amount[ playerid ] = 0;
-}
-
-stock ExplodePlayerC4s( playerid, start=0, end=MAX_C4 )
-{
-	if ( IsPlayerInEvent( playerid ) || IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || p_Class[ playerid ] == CLASS_POLICE )
-		return 0;
-
-	new
-		Float: X, Float: Y, Float: Z, Float: Angle;
-
-	for( new i = start; i < end; i++ )
-	{
-	    if ( g_C4Data[ playerid ] [ i ] [ E_SET ] == false ) continue;
-		g_C4Data[ playerid ] [ i ] [ E_SET ] = false;
-
-		new
-			vehicleid = g_C4Data[ playerid ] [ i ] [ E_VEHICLE ] - 100;
-
-		if ( IsValidVehicle( vehicleid ) )
-		{
-			// Physics
-            SetVehicleAngularVelocity( vehicleid, ( random( 20 ) - 10 ) * 0.05, ( random( 20 ) - 10 ) * 0.05, ( random( 20 ) - 10 ) * 0.008 );
-            GetVehicleVelocity( vehicleid, X, Y, Z );
-            SetVehicleVelocity( vehicleid, X, Y, Z + ( random( 15 ) * 0.0008 ) );
-        	SetVehicleHealth( vehicleid, 0.0 );
-        	GetVehiclePos( vehicleid, X, Y, Z );
-        	GetVehicleZAngle( vehicleid, Angle );
-		    X += ( 2.0 * floatsin( -Angle, degrees ) );
-		    Y += ( 2.0 * floatcos( -Angle, degrees ) );
-		}
-		else GetDynamicObjectPos( g_C4Data[ playerid ] [ i ] [ E_OBJECT ], X, Y, Z );
-
-		// blow up alcatraz rock
-		if ( IsPointToPoint( 10.0, X, Y, Z, -2016.7365, 1826.2612, 43.1458 ) )
-		{
-			if ( g_iTime > g_alcatrazTimestamp )
-			{
-				g_alcatrazTimestamp = g_iTime + 300;
-
-				//GivePlayerExperience( playerid, E_TERRORIST );
-				GivePlayerScore( playerid, 3 );
-				GivePlayerWantedLevel( playerid, 24 );
-				Achievement::HandleJailBlown( playerid );
-
-				SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"Alcatraz Rock{FFFFFF}!", ReturnPlayerName( playerid ), playerid );
-				massUnjailPlayers( CITY_SF, .alcatraz = true );
-			}
-		}
-
-		// blow up various vaults
-		for( new j = 0; j < sizeof( g_bankvaultData ); j++ )
-		{
-			// Blow Bank Vault
-			if ( IsPointToPoint( 5.0, X, Y, Z, g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 0 ], g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 1 ], g_bankvaultData[ j ] [ E_EXPLODE_POS ] [ 2 ] ) && !g_bankvaultData[ j ] [ E_DISABLED ] && g_C4Data[ playerid ] [ i ] [ E_WORLD ] == g_bankvaultData[ j ] [ E_WORLD ] )
-			{
-				if ( g_iTime > g_bankvaultData[ j ] [ E_TIMESTAMP ] )
-				{
-					g_bankvaultData[ j ] [ E_TIMESTAMP_CLOSE ]	= g_iTime + 240; // time to close
-			    	g_bankvaultData[ j ] [ E_TIMESTAMP ] 		= g_iTime + 600; // time to restore
-			    	g_bankvaultData[ j ] [ E_DISABLED ] 		= true;
-
-					MoveDynamicObject( g_bankvaultData[ j ] [ E_OBJECT ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_POS ] [ 2 ], 2.0, g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 0 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 1 ], g_bankvaultData[ j ] [ E_OPEN_ROT ] [ 2 ] );
-
-					//GivePlayerExperience( playerid, E_TERRORIST );
-					GivePlayerScore( playerid, 3 );
-					GivePlayerWantedLevel( playerid, 24 );
-					Achievement::HandleBankBlown( playerid );
-
-					if ( j == VAULT_BOAT ) {
-						TriggerClosestCivilians( playerid, GetClosestRobberyNPC( getClosestRobberySafe( playerid ) ) );
-					}
-
-					SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has destroyed the "COL_GREY"%s Vault{FFFFFF}!", ReturnPlayerName( playerid ), playerid, g_bankvaultData[ j ] [ E_NAME ] );
-					break;
-				}
-			}
-
-			// Blow Jails
-			if ( j < sizeof( g_jailData ) )
-			{
-				if ( IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE1_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE1_POS ] [ 2 ] ) || IsPointToPoint( g_jailData[ j ] [ E_RADIUS ], X, Y, Z, g_jailData[ j ] [ E_EXPLODE2_POS ] [ 0 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 1 ], g_jailData[ j ] [ E_EXPLODE2_POS ] [ 2 ] ) && !g_jailData[ j ] [ E_BOMBED ] )
-				{
-					if ( g_iTime > g_jailData[ j ] [ E_TIMESTAMP ] )
-					{
-				    	g_jailData[ j ] [ E_BOMBED ] = true;
-				    	g_jailData[ j ] [ E_TIMESTAMP ] = g_iTime + 300;
-
-						//GivePlayerExperience( playerid, E_TERRORIST );
-						GivePlayerScore( playerid, 3 );
-					    GivePlayerWantedLevel( playerid, 24 );
-					    Achievement::HandleJailBlown( playerid );
-
-						SendGlobalMessage( -1, ""COL_GREY"[SERVER]"COL_WHITE" %s(%d) has exploded the "COL_GREY"%s Jail{FFFFFF} and has freed its prisoners.", ReturnPlayerName( playerid ), playerid, returnCityName( g_jailData[ j ] [ E_CITY ] ) );
-					    massUnjailPlayers( g_jailData[ j ] [ E_CITY ] );
-					    break;
-					}
-				}
-			}
-		}
-
-		// prevent spamming wanted for farming
-		if ( GetPVarInt( playerid, "C4WantedCD" ) < g_iTime && p_Class[ playerid ] != CLASS_POLICE ) {
-			GivePlayerWantedLevel( playerid, 6 );
-			SetPVarInt( playerid, "C4WantedCD", g_iTime + 30 );
-		}
-
-		CreateExplosionEx( X, Y, Z, 0, 10.0, g_C4Data[ playerid ] [ i ] [ E_WORLD ], g_C4Data[ playerid ] [ i ] [ E_INTERIOR ], playerid );
-	    g_C4Data[ playerid ] [ i ] [ E_VEHICLE ] = -100;
-	  	Delete3DTextLabel( g_C4Data[ playerid ] [ i ] [ E_LABEL ] );
-		DestroyDynamicObject( g_C4Data[ playerid ] [ i ] [ E_OBJECT ] );
-	}
-	return 1;
-}
-
-stock hasC4Planted( playerid )
-{
-	for( new iC4 = 0; iC4 < MAX_C4; iC4++ )
-	    if ( g_C4Data[ playerid ] [ iC4 ] [ E_SET ] )
-		    return true;
-
-	return false;
 }
 
 function RestoreHealthAfterBrokenOut( playerid ) return SetPlayerHealth( playerid, 100.0 );
@@ -10490,153 +9859,6 @@ stock returnCityName( city )
 		default: string = "Random City";
 	}
 	return string;
-}
-
-stock jailMoveGate( playerid, city, bool: close = false, bool: alcatraz = false )
-{
-	static const
-		Float: speed = 2.0;
-
-	if ( !close && IsPlayerAdminJailed( playerid ) )
-		return;
-
-	if ( alcatraz )
-	{
-		if ( close ) MoveDynamicObject( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713, speed );
-		else MoveDynamicObject( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713 - 10.0, speed );
-	 	return;
-	}
-
-	switch( city )
-	{
-		case CITY_LV:
-		{
-			if ( close )
-			{
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 0 ], 198.94980, 160.26476, 1003.26135, speed );
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 1 ], 192.95604, 177.08791, 1003.26215, speed );
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 2 ], 197.19141, 177.08476, 1003.26215, speed );
-			}
-			else
-			{
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 0 ], 197.18980, 160.26480, 1003.26141, speed );
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 1 ], 194.69600, 177.08791, 1003.26208, speed );
-				MoveDynamicObject( p_JailObjectLV[ playerid ] [ 2 ], 198.95140, 177.08479, 1003.26208, speed );
-			}
-		}
-		case CITY_SF:
-		{
-			if ( close )
-			{
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 0 ], 214.68274, 112.62182, 999.29553, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 1 ], 218.61810, 112.62180, 999.29547, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 2 ], 222.62241, 112.62180, 999.29547, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 3 ], 226.51570, 112.62180, 999.29547, speed );
-			}
-			else
-			{
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 0 ], 216.44754, 112.61965, 999.29547, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 1 ], 220.40450, 112.62180, 999.29547, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 2 ], 224.40781, 112.62180, 999.29547, speed );
-				MoveDynamicObject( p_JailObjectSF[ playerid ] [ 3 ], 228.27820, 112.62180, 999.29547, speed );
-			}
-		}
-		case CITY_LS:
-		{
-			if ( close )
-			{
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 0 ], 266.36481, 85.710700, 1001.27979, speed );
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 1 ], 266.36481, 81.211600, 1001.27979, speed );
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 2 ], 266.36481, 76.709470, 1001.27985, speed );
-			}
-			else
-			{
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 0 ], 266.36481, 87.45710, 1001.27979, speed );
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 1 ], 266.36481, 82.95660, 1001.27979, speed );
-				MoveDynamicObject( p_JailObjectLS[ playerid ] [ 2 ], 266.36481, 78.44830, 1001.27979, speed );
-			}
-		}
-	}
-}
-
-stock jailDoors( playerid, remove = false, set_closed = true )
-{
-	if ( set_closed )
-	{
-		if ( IsValidDynamicObject( p_JailObjectLV[ playerid ] [ 0 ] ) || IsValidDynamicObject( p_JailObjectSF[ playerid ] [ 0 ] ) || IsValidDynamicObject( p_JailObjectLS[ playerid ] [ 0 ] ) )
-		{
-			SetDynamicObjectPos( p_JailObjectLV[ playerid ] [ 0 ], 198.94980, 160.26476, 1003.26135 );
-			SetDynamicObjectPos( p_JailObjectLV[ playerid ] [ 1 ], 192.95604, 177.08791, 1003.26215 );
-			SetDynamicObjectPos( p_JailObjectLV[ playerid ] [ 2 ], 197.19141, 177.08476, 1003.26215 );
-
-			SetDynamicObjectPos( p_JailObjectSF[ playerid ] [ 0 ], 214.68274, 112.62182, 999.29553 );
-			SetDynamicObjectPos( p_JailObjectSF[ playerid ] [ 1 ], 218.61810, 112.62180, 999.29547 );
-			SetDynamicObjectPos( p_JailObjectSF[ playerid ] [ 2 ], 222.62241, 112.62180, 999.29547 );
-			SetDynamicObjectPos( p_JailObjectSF[ playerid ] [ 3 ], 226.51570, 112.62180, 999.29547 );
-
-			SetDynamicObjectPos( p_JailObjectLS[ playerid ] [ 0 ], 266.36481, 85.710700, 1001.27979 );
-			SetDynamicObjectPos( p_JailObjectLS[ playerid ] [ 1 ], 266.36481, 81.211600, 1001.27979 );
-			SetDynamicObjectPos( p_JailObjectLS[ playerid ] [ 2 ], 266.36481, 76.709470, 1001.27985 );
-
-			SetDynamicObjectPos( p_AlcatrazObject[ playerid ], -2013.164184, 1827.123168, 41.506713 );
-			return;
-		}
-	}
-
-	if ( !remove )
-	{
-		if ( IsValidDynamicObject( p_JailObjectLV[ playerid ] [ 0 ] ) || IsValidDynamicObject( p_JailObjectSF[ playerid ] [ 0 ] ) || IsValidDynamicObject( p_JailObjectLS[ playerid ] [ 0 ] ) )
-		{
-			DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 0 ] ), p_JailObjectLV[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 1 ] ), p_JailObjectLV[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 2 ] ), p_JailObjectLV[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-
-			DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 0 ] ), p_JailObjectSF[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 1 ] ), p_JailObjectSF[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 2 ] ), p_JailObjectSF[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 3 ] ), p_JailObjectSF[ playerid ] [ 3 ] = INVALID_OBJECT_ID;
-
-			DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 0 ] ), p_JailObjectLS[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 1 ] ), p_JailObjectLS[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-			DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 2 ] ), p_JailObjectLS[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-
-			DestroyDynamicObject( p_AlcatrazObject[ playerid ] ), p_AlcatrazObject[ playerid ] = INVALID_OBJECT_ID;
-		}
-
-		p_JailObjectLV[ playerid ] [ 0 ] = CreateDynamicObject( 19303, 198.94980, 160.26476, 1003.26135, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-		p_JailObjectLV[ playerid ] [ 1 ] = CreateDynamicObject( 19302, 192.95604, 177.08791, 1003.26215, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-		p_JailObjectLV[ playerid ] [ 2 ] = CreateDynamicObject( 19302, 197.19141, 177.08476, 1003.26215, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-
-		p_JailObjectSF[ playerid ] [ 0 ] = CreateDynamicObject( 19302, 214.68274, 112.62182, 999.295530, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-		p_JailObjectSF[ playerid ] [ 1 ] = CreateDynamicObject( 19302, 218.61810, 112.62180, 999.295470, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-		p_JailObjectSF[ playerid ] [ 2 ] = CreateDynamicObject( 19302, 222.62241, 112.62180, 999.295470, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-		p_JailObjectSF[ playerid ] [ 3 ] = CreateDynamicObject( 19302, 226.51570, 112.62180, 999.295470, 0.00000, 0.00000, 0.00000, -1, -1, playerid );
-
-		p_JailObjectLS[ playerid ] [ 0 ] = CreateDynamicObject( 19302, 266.36481, 85.710700, 1001.27979, 0.00000, 0.00000, 90.0000, -1, -1, playerid );
-		p_JailObjectLS[ playerid ] [ 1 ] = CreateDynamicObject( 19302, 266.36481, 81.211600, 1001.27979, 0.00000, 0.00000, 90.0000, -1, -1, playerid );
-		p_JailObjectLS[ playerid ] [ 2 ] = CreateDynamicObject( 19302, 266.36481, 76.709470, 1001.27985, 0.00000, 0.00000, 90.0000, -1, -1, playerid );
-
-		p_AlcatrazObject[ playerid ] = CreateDynamicObject( 749, -2013.164184, 1827.123168, 41.506713, 11.800004, 0.000000, 0.000000, -1, -1, playerid );
-		SetDynamicObjectMaterial( p_AlcatrazObject[ playerid ], 2, 9135, "vgseseabed", "vgs_rockmid1a", -47 );
-		SetDynamicObjectMaterial( p_AlcatrazObject[ playerid ], 1, 0, "none", "none", 0 );
-	}
-	else
-	{
-		DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 0 ] ), p_JailObjectLV[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 1 ] ), p_JailObjectLV[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectLV[ playerid ] [ 2 ] ), p_JailObjectLV[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-
-		DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 0 ] ), p_JailObjectSF[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 1 ] ), p_JailObjectSF[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 2 ] ), p_JailObjectSF[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectSF[ playerid ] [ 3 ] ), p_JailObjectSF[ playerid ] [ 3 ] = INVALID_OBJECT_ID;
-
-		DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 0 ] ), p_JailObjectLS[ playerid ] [ 0 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 1 ] ), p_JailObjectLS[ playerid ] [ 1 ] = INVALID_OBJECT_ID;
-		DestroyDynamicObject( p_JailObjectLS[ playerid ] [ 2 ] ), p_JailObjectLS[ playerid ] [ 2 ] = INVALID_OBJECT_ID;
-
-		DestroyDynamicObject( p_AlcatrazObject[ playerid ] ), p_AlcatrazObject[ playerid ] = INVALID_OBJECT_ID;
-	}
 }
 
 stock autosaveStart( playerid, bool: force_save = false )

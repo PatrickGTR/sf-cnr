@@ -50,6 +50,8 @@
 #include "irresistible\cnr\features\gates.pwn"
 #include "irresistible\cnr\features\hotel_da_novic.pwn"
 #include "irresistible\cnr\features\random_hits.pwn"
+#include "irresistible\cnr\features\jail.pwn"
+#include "irresistible\cnr\features\c4.pwn"
 
 // pool
 #include "irresistible\cnr\features\pool.pwn"
