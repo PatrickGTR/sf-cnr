@@ -607,3 +607,15 @@ stock Turf_GetMiddlePos( zoneid, &Float: middle_x, &Float: middle_y )
     middle_x = ( min_x + max_x ) / 2.0;
     middle_y = ( min_y + max_y ) / 2.0;
 }
+
+stock GetGangCapturedTurfs( gangid )
+{
+	new
+		z,
+		c;
+
+	foreach ( z : turfs ) if ( g_gangTurfData[ z ] [ E_OWNER ] != INVALID_GANG_ID && g_gangTurfData[ z ] [ E_OWNER ] == gangid ) {
+		c++;
+	}
+	return c;
+}

@@ -11299,7 +11299,6 @@ stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to f
 	return 1;
 }
 
-
 stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // gets the player position, if interior then the last checkpoint position
 {
 	new
