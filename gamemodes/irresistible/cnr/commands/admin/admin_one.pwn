@@ -205,7 +205,7 @@ CMD:frules( playerid, params[ ] )
 	else if ( !IsPlayerSpawned( pID ) ) return SendError( playerid, "This player isn't spawned." );
 	else
 	{
-		cmd_rules( pID, "" );
+		ShowPlayerRules( pID );
 		SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have shown %s(%d) the /rules", ReturnPlayerName( pID ), pID );
 		AddAdminLogLineFormatted( "%s(%d) has shown the rules to %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
 	}
@@ -570,7 +570,7 @@ CMD:jail( playerid, params [ ] )
 		p_AdminCommandPause[ pID ] = g_iTime + ADMIN_COMMAND_TIME;
 	    AddAdminLogLineFormatted( "%s(%d) has jailed %s(%d) for %d seconds", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID, Seconds );
         JailPlayer( pID, Seconds, 1 );
-	    if ( Seconds > 60 ) cmd_rules( pID, "" ); // Force rules
+	    if ( Seconds > 60 ) ShowPlayerRules( pID ); // force rules
 	    SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by %s "COL_GREEN"[REASON: %s]", ReturnPlayerName( pID ), pID, Seconds, ReturnPlayerName( playerid ), reason );
 	}
 	return 1;

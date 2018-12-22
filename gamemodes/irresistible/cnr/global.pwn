@@ -24,7 +24,6 @@ new
 	szQuestionsLog 					[ 8 ][ 128 ],
 	bool: g_CommandLogging			= false,
 	bool: g_DialogLogging			= false,
-	szRules							[ 3300 ],
  	g_BannedDrivebyWeapons 			[ ] =
  	{
  		24, 26, 27, 34, 33

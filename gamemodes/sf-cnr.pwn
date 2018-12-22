@@ -87,7 +87,6 @@ public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdateTimer( );
 public OnServerSecondTick( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
-public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
 public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 
@@ -211,8 +210,6 @@ public OnGameModeInit()
 	/* ** Timers ** */
 	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
 	rl_ZoneUpdate = SetTimer( "OnServerSecondTick", 980, true );
-
-	HTTP( 0, HTTP_GET, "files.sfcnr.com/en_rules.txt", "", "OnRulesHTTPResponse" );
 
 	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: "#FILE_BUILD" | Time: %d | Tickcount: %d)", ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
 	return 1;
@@ -550,16 +547,6 @@ public OnServerSecondTick( )
 		if ( p_VisibleOnRadar[ playerid ] != 0 && p_VisibleOnRadar[ playerid ] < g_iTime )
 			SetPlayerColorToTeam( playerid ), p_VisibleOnRadar[ playerid ] = 0;
 	}
-	return 1;
-}
-
-public OnRulesHTTPResponse( index, response_code, data[ ] )
-{
-    if ( response_code == 200 )
-    {
-    	printf( "[RULES] Rules have been updated! Character Size: %d", strlen( data ) );
-    	strcpy( szRules, data );
-    }
 	return 1;
 }
 
@@ -1787,7 +1774,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 				GivePlayerCash( killerid, -10000 );
 				GivePlayerScore( killerid, -2 );
 				JailPlayer( killerid, 200, 1 );
-				cmd_rules( killerid, "" );
+				ShowPlayerRules( killerid );
 				WarnPlayerClass( killerid, p_inArmy{ killerid } );
 				SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 200 seconds by the server "COL_GREEN"[REASON: Killing Teammate(s)]", ReturnPlayerName( killerid ), killerid );
 				return 1;
@@ -1815,7 +1802,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 							GivePlayerCash( killerid, -10000 );
 							GivePlayerScore( killerid, -2 );
 							JailPlayer( killerid, 200, 1 );
-							cmd_rules( killerid, "" );
+							ShowPlayerRules( killerid );
 							WarnPlayerClass( killerid, p_inArmy{ killerid } );
 							SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 200 seconds by the server "COL_GREEN"[REASON: Killing Innocent(s)]", ReturnPlayerName( killerid ), killerid );
 						}
@@ -3692,12 +3679,6 @@ CMD:hitlist( playerid, params[ ] )
 	} else {
 		return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Contracted Players Online", szLargeString, "Close", "" ), 1;
 	}
-}
-
-CMD:rules( playerid, params[ ] )
-{
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Rules", szRules, "Okay", "" );
-	return 1;
 }
 
 CMD:viewguns( playerid, params[ ] )
