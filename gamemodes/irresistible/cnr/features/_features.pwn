@@ -18,6 +18,10 @@
 #include "irresistible\cnr\features\player_items\_player_items.pwn"
 #include "irresistible\cnr\features\visage\_visage.pwn"
 
+// special (xmas/easter/nye)
+#include "irresistible\cnr\features\christmas.pwn"
+// #include "irresistible\cnr\features\eastereggs.pwn"
+
 // other
 #include "irresistible\cnr\features\toys.pwn"
 #include "irresistible\cnr\features\fps.pwn"
@@ -45,9 +49,6 @@
 #include "irresistible\cnr\features\race.pwn"
 #include "irresistible\cnr\features\gates.pwn"
 #include "irresistible\cnr\features\hotel_da_novic.pwn"
-
-// disabled
-// #include "irresistible\cnr\features\eastereggs.pwn"
 
 // pool
 #include "irresistible\cnr\features\pool.pwn"

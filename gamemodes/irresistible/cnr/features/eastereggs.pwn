@@ -5,6 +5,13 @@
  * Purpose: treasure (easter eggs) hunting system
  */
 
+/* ** Error checking ** */
+#if !defined __cnr__eastereggs
+	#define __cnr__eastereggs
+#else
+	#endinput
+#endif
+
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 

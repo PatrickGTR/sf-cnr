@@ -46,3 +46,7 @@
     - Called when a player enters a house
 - `OnPlayerAttemptBreakIn( playerid, houseid, businessid )`
     - Called when a player attempts to break into a business/house
+- `OnPlayerLoadTextdraws( playerid )`
+    - Called when a player is loading textdraws
+- `OnPlayerUnloadTextdraws( playerid )`
+    - Called when a player is unloading textdraws (on death, request class...)

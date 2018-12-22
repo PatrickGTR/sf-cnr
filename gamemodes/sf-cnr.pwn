@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -972,6 +972,7 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	p_MoneyBag{ playerid } = false;
+	CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
 	return 1;
 }
 
@@ -1456,6 +1457,7 @@ public OnPlayerSpawn( playerid )
 		if ( p_AdminLog{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminLogTD );
 		if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 		if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
+		CallLocalFunction( "OnPlayerLoadTextdraws", "d", playerid );
 	}
 
 	p_Spawned{ playerid } = true;
@@ -2149,6 +2151,7 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	HidePlayerTogglableTextdraws( playerid );
+	CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
 
 	/* ** Tax And Medical Fees **
 	if ( GetPlayerTotalCash( playerid ) > 0 && ! ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerInEvent( playerid ) ) )  {
@@ -4027,6 +4030,7 @@ CMD:moviemode( playerid, params[ ] )
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = false;
 		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
+			CallLocalFunction( "OnPlayerLoadTextdraws", "d", playerid );
 		}
 		case false:
 		{
@@ -4044,6 +4048,7 @@ CMD:moviemode( playerid, params[ ] )
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawShowForPlayer( playerid, g_MovieModeTD[ i ] );
 		    p_inMovieMode{ playerid } = true;
 		    SendServerMessage( playerid, "Movie mode has been toggled." );
+			CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
 		}
 	}
 	CallLocalFunction( "OnPlayerMovieMode", "dd", playerid, p_inMovieMode{ playerid } );
