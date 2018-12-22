@@ -72,8 +72,7 @@ new bool: False = false;
 /* Beast Functions */
 #define SendClientMessageToVips(%1,%2,%3) \
 	do{foreach(new fI : Player){if (p_VIPLevel[fI]>=VIP_REGULAR)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-#define DCC_SendChannelMessageFormatted(%0,%1,%2) \
-	do{format(szNormalString,sizeof(szNormalString),(%1),%2),DCC_SendChannelMessage(%0,szNormalString);}while(False)
+
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
@@ -4927,23 +4926,6 @@ CMD:rape( playerid, params[ ] )
  	else return SendError( playerid, "There are no players around to rape." );
 	return 1;
 }
-
-/*                                 ________    ___      ___   ________      ___________
-	/--------------\             /         \  |   \    /   | |   ___  \    /           |
-	|    ______    |             |   ______/  |    \  /    | |  |   |  \   |    _______|
-	|   |      |   |             |   |        |     \/     | |  |   |  |   |    \_______
-	|   |______|   |   ________  |   |        |            | |  |   |  |   \_______     |
-	|    ______    |  |________| |   |        |   |\__/|   | |  |   |  |           /    |
-	|   |      |   |             |   |______  |   |    |   | |  |   |  |   _______/    /
-	|   |      |   |             |          \     |    |   | |  |___|  /  |           /
-	\___/      \___/             \__________/ |___|    |___| |________/   |__________/
-*/
-
-#include "irresistible\cnr\commands\admin\admin_three.pwn" // move to irresistible\cnr\commands\admin\_admin.pwn
-#include "irresistible\cnr\commands\admin\admin_four.pwn" // move to irresistible\cnr\commands\admin\_admin.pwn
-#include "irresistible\cnr\commands\admin\admin_five.pwn" // move to irresistible\cnr\commands\admin\_admin.pwn
-#include "irresistible\cnr\commands\admin\admin_six.pwn" // move to irresistible\cnr\commands\admin\_admin.pwn
-#include "irresistible\cnr\commands\admin\admin_rcon.pwn" // move to irresistible\cnr\commands\admin\_admin.pwn
 
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
 {

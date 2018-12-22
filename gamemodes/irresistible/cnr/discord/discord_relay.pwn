@@ -36,6 +36,10 @@ new stock
 	DCC_Role: discordRoleVoice
 ;
 
+stock DCC_SendChannelMessageFormatted( DCC_Channel: channel, const format[ ], va_args< > ) {
+	return DCC_SendChannelMessage( channel, va_return( format, va_start< 2 > ) );
+}
+
 /* ** Error Checking ** */
 #if defined DISCORD_DISABLED
 	stock DCC_SendChannelMessage( DCC_Channel: channel, const message[ ] ) {

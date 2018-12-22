@@ -290,3 +290,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Modules ** */
 #include "irresistible\cnr\commands\admin\admin_one.pwn"
 #include "irresistible\cnr\commands\admin\admin_two.pwn"
+#include "irresistible\cnr\commands\admin\admin_three.pwn"
+#include "irresistible\cnr\commands\admin\admin_four.pwn"
+#include "irresistible\cnr\commands\admin\admin_five.pwn"
+#include "irresistible\cnr\commands\admin\admin_six.pwn"
+#include "irresistible\cnr\commands\admin\admin_rcon.pwn"
