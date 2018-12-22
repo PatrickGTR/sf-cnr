@@ -8,6 +8,11 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Error Checking ** */
+#if !defined __cnr__irresistiblecoins
+	#endinput
+#endif
+
 /* ** Definitions ** */
 // #define DIALOG_IC_SELLORDERS		( 5921 )
 // #define DIALOG_IC_BUY				( 5922 )

@@ -1,12 +1,22 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc
- * Module: vip.inc
- * Purpose: vip associated information
+ * Module: cnr\vip\coin_market.pwn
+ * Purpose: coin market associated information
  */
 
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
+
+/* ** Error Checking ** */
+#if !defined __cnr__irresistiblecoins
+	#define __cnr__irresistiblecoins
+#endif
+
+/* ** Settings ** */
+#define VIP_ALLOW_OVER_LIMIT 		( true ) // allow player from using house/vehicle/garage cmds if over the limit
+
+#define VIP_MAX_EXTRA_SLOTS 		( 5 ) // max extra slots a person can buy
 
 /* ** Macros ** */
 #define GetPlayerIrresistibleCoins(%0) \
@@ -15,20 +25,20 @@
 #define GivePlayerIrresistibleCoins(%0,%1) \
 	(p_IrresistibleCoins[%0] += %1)
 
-/* ** Definitions ** */
-#define VIP_MAX_EXTRA_SLOTS 		5
-
-#define ICM_PAGE_DEFAULT 			( 0 )
-#define ICM_PAGE_CASHCARD 			( 1 )
-#define ICM_PAGE_ASSETS 			( 2 )
-//#define ICM_PAGE_UPGRADE 			( 3 )
-
+/* ** Coin Market VIP Levels ** */
 #define VIP_REGULAR 				( 1 )
 #define VIP_BRONZE 					( 2 )
 #define VIP_GOLD 					( 3 )
 #define VIP_PLATINUM 				( 4 )
 #define VIP_DIAMOND 				( 5 )
 
+/* ** Coin Market Pages ** */
+#define ICM_PAGE_DEFAULT 			( 0 )
+#define ICM_PAGE_CASHCARD 			( 1 )
+#define ICM_PAGE_ASSETS 			( 2 )
+//#define ICM_PAGE_UPGRADE 			( 3 )
+
+/* ** Coin Market Items ** */
 #define ICM_COKE_BIZ 				( 0 )
 #define ICM_METH_BIZ 				( 1 )
 #define ICM_WEED_BIZ 				( 2 )
@@ -39,8 +49,6 @@
 #define ICM_NAME					( 7 )
 #define ICM_VEH_SLOT 				( 8 )
 
-#define VIP_ALLOW_OVER_LIMIT 		( true )
-
 /* ** Variables ** */
 enum E_IC_MARKET_DATA
 {
@@ -48,7 +56,7 @@ enum E_IC_MARKET_DATA
 	bool: E_MULTI_BUY,
 };
 
-new
+static stock
 	g_irresistibleVipItems			[ ] [ E_IC_MARKET_DATA ] =
 	{
 		{ VIP_DIAMOND,	"Diamond V.I.P",	10000.0 },
@@ -57,6 +65,7 @@ new
 		{ VIP_BRONZE,	"Bronze V.I.P", 	1500.0 },
 		{ VIP_REGULAR, 	"Regular V.I.P",	500.0 }
 	},
+
 	g_irresistibleCashCards 		[ ] [ E_IC_MARKET_DATA ] =
 	{
 		{ 1250000,		"Tiger Shark",			225.0 },
@@ -65,6 +74,7 @@ new
 		{ 10000000,		"Whale Shark",			1350.0 },
 		{ 20000000,		"Megalodon Shark",		2250.0 }
 	},
+
 	g_irresistibleMarketItems		[ ] [ E_IC_MARKET_DATA ] =
 	{
 		{ ICM_COKE_BIZ,	"Gang Facility",		4500.0 },
@@ -79,12 +89,15 @@ new
 		{ ICM_GARAGE,	"Select Garage", 		250.0 },
 		{ ICM_NAME,		"Change Your Name", 	50.0 }
 	},
+
 	p_CoinMarketPage 				[ MAX_PLAYERS char ],
-	p_CoinMarketSelectedItem 		[ MAX_PLAYERS char ],
+	p_CoinMarketSelectedItem 		[ MAX_PLAYERS char ]
+;
 
-	Float: p_IrresistibleCoins 		[ MAX_PLAYERS ],
-	p_ExtraAssetSlots 				[ MAX_PLAYERS char ]
-
+/* ** Global Variables ** */
+new
+	p_ExtraAssetSlots 				[ MAX_PLAYERS char ],
+	Float: p_IrresistibleCoins 		[ MAX_PLAYERS ]
 ;
 
 /* ** Hooks ** */
@@ -226,7 +239,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 			else if ( selectedItemID == ICM_VEH_SLOT ) {
 				if ( p_ExtraAssetSlots{ playerid } >= VIP_MAX_EXTRA_SLOTS ) {
-					SendError( playerid, "You have reached the limit of additional slots (limit " #VIP_MAX_EXTRA_SLOTS ")." );
+					SendError( playerid, "You have reached the limit of additional slots (limit %d).", VIP_MAX_EXTRA_SLOTS );
 					return ShowPlayerCoinMarketDialog( playerid, ICM_PAGE_ASSETS );
 				}
 
@@ -438,6 +451,52 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Commands ** */
+CMD:ic( playerid, params[ ] ) return cmd_irresistiblecoins( playerid, params );
+CMD:irresistiblecoins( playerid, params[ ] )
+{
+	if ( ! IsPlayerSecurityVerified( playerid ) )
+		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
+
+	if ( strmatch( params, "balance" ) )
+	{
+		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ] ) );
+	}
+	else if ( strmatch( params, "market" ) )
+	{
+		return ShowPlayerCoinMarketDialog( playerid );
+	}
+	else if ( !strcmp( params, "send", false, 4 ) )
+	{
+		new
+			senttoid, Float: coins;
+
+	    if ( sscanf( params[ 5 ],"uf", senttoid, coins ) ) return SendUsage( playerid, "/irresistiblecoins send [PLAYER_ID] [COINS]" );
+	    else if ( !IsPlayerConnected( senttoid ) || IsPlayerNPC( senttoid ) ) return SendError( playerid, "Invalid Player ID." );
+		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+	    else if ( coins < 0.1 || coins > 5000.0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." );
+		else if ( coins > 99999999 || coins < 0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." ); // Making cash go over billions...
+	    else if ( p_IrresistibleCoins[ playerid ] < coins ) return SendError( playerid, "You do not have this number of coins to send." );
+	    else if ( GetPlayerScore( playerid ) < 1000 ) return SendError( playerid, "You need at least 1,000 score to send coins to other players." );
+		else if ( senttoid == playerid ) return SendError( playerid, "You cannot send yourself coins." );
+	    else
+	    {
+	    	if ( GetDistanceBetweenPlayers( playerid, senttoid ) > 8.0 )
+				return SendError( playerid, "Please make sure you are close to the player before sending coins to them." );
+
+	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS_IC` (`TO_ID`, `FROM_ID`, `IC`) VALUES (%d, %d, %f)", p_AccountID[ senttoid ], p_AccountID[ playerid ], coins );
+	     	mysql_single_query( szNormalString );
+
+	    	p_IrresistibleCoins[ senttoid ] += coins;
+	    	p_IrresistibleCoins[ playerid ] -= coins;
+
+	    	SendServerMessage( playerid, "You have sent "COL_GOLD"%s"COL_WHITE" Irresistible Coins to %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( senttoid ), senttoid );
+	    	SendServerMessage( senttoid, "You have received "COL_GOLD"%s"COL_WHITE" Irresistible Coins from %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
+		}
+		return 1;
+	}
+	return SendUsage( playerid, "/irresistiblecoins [BALANCE/BUY/SELL/MARKET/SEND/CANCEL]" );
+}
+
 CMD:donate( playerid, params[ ] ) return cmd_vip( playerid, params );
 CMD:vip( playerid, params[ ] )
 {

@@ -31,8 +31,6 @@ new
  	bool: g_Debugging 				= false,
  	bool: g_Driveby 				= false,
  	bool: g_VipPrivateMsging 		= false,
- 	bool: g_HappyHour				= false,
- 	Float: g_HappyHourRate			= 0.0,
  	g_iTime 						= 0,
  	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
  	g_VehicleLastAttacked 			[ MAX_VEHICLES ],

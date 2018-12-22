@@ -13,9 +13,6 @@
 #define MAX_SLOT_POOLS				( 3 )
 #define POOL_ENTITIES				( 5 )
 
-/* ** Macros ** */
-#define IsPlayerOnSlotMachine(%0)	( p_usingSlotMachine[ %0 ] != -1 )
-
 /* ** Constants ** */
 enum E_SLOT_ODD_DATA
 {
@@ -755,4 +752,8 @@ stock StopPlayerUsingSlotMachine( playerid )
 	HidePlayerHelpDialog( playerid );
 	TogglePlayerControllable( playerid, 1 );
 	return 1;
+}
+
+stock IsPlayerOnSlotMachine( playerid ) {
+	return p_usingSlotMachine[ playerid ] != -1;
 }

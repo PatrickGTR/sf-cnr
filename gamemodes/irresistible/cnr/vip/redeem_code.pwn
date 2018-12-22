@@ -8,6 +8,11 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Error Checking ** */
+#if !defined __cnr__irresistiblecoins
+	#endinput
+#endif
+
 /* ** Definitions ** */
 #define szRedemptionSalt 			"7resta#ecacakumedeM=yespawr!d@et"
 

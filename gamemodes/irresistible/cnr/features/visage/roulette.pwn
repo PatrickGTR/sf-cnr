@@ -21,7 +21,6 @@
 #define MAX_ROULETTE_TABLES 		30
 
 /* ** Macros ** */
-#define IsPlayerOnRoulette(%0)		(p_RouletteTable[%0]!=-1)
 #define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)
 
 /* ** Constants ** */
@@ -920,4 +919,8 @@ stock ConvertRouletteChipValue( value ) {
 		format( string, sizeof( string ), "$%0.0f", float_value );
 	}
 	return string;
+}
+
+stock IsPlayerOnRoulette( playerid ) {
+	return p_RouletteTable[ playerid ] != -1;
 }

@@ -6,6 +6,7 @@
  */
 
 /* ** Includes ** */
-#include "irresistible\cnr\vip\vip.pwn"
+#include "irresistible\cnr\vip\coin_market.pwn"
+#include "irresistible\cnr\vip\coin_generation.pwn"
 #include "irresistible\cnr\vip\redeem_code.pwn"
 #include "irresistible\cnr\vip\player_market.pwn"

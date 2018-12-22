@@ -266,8 +266,7 @@ public OnGameModeExit( )
 public OnServerUpdateTimer( )
 {
 	static
-		iWeapon, iAmmo,
-		Float: fLastRate
+		iWeapon, iAmmo
 	;
 
 	// for hooks
@@ -280,31 +279,6 @@ public OnServerUpdateTimer( )
 	if ( g_iTime >= GetGVarInt( "taxtime" ) ) {
 		UpdateServerVariable( "taxtime", g_iTime + 86400, 0.0, "", GLOBAL_VARTYPE_INT );
 		BeginEconomyTax( );
-	}
-
- 	// Happy Hour
- 	new
- 		playersOnline = Iter_Count(Player);
-
-	if ( ( g_HappyHour = playersOnline <= 20 ) == true ) {
-		// Maximum of 25% decrease
-		g_HappyHourRate = 0.25 - ( playersOnline / 80.0 );
-
-		// Only update colors if neccessary
-		if ( fLastRate != g_HappyHourRate )
-		{
-			TextDrawSetString( g_NotManyPlayersTD, sprintf( "Coin generation increased by %0.1f%% as there aren't many players online!", g_HappyHourRate * 100.0 ) );
-			TextDrawColor( g_NotManyPlayersTD, setAlpha( COLOR_RED, floatround( 200.0 - 10.0 * float( playersOnline ) ) ) );
-			TextDrawShowForAllSpawned( g_NotManyPlayersTD );
-		}
-
-		// Update last rate
-		fLastRate = g_HappyHourRate;
-	} else {
-		 // Disable Color
-		g_HappyHourRate = 0.0;
-		TextDrawColor( g_NotManyPlayersTD, 0 );
-		TextDrawHideForAll( g_NotManyPlayersTD );
 	}
 
 	// Begin iterating all players
@@ -468,9 +442,6 @@ public OnServerUpdateTimer( )
 
 public OnServerSecondTick( )
 {
-    new
-    	iKeys, iUpDownKeys, iLeftRightKeys;
-
 	SendRconCommand( sprintf( "worldtime %s, %s", GetDayToString( g_WorldDayCount ), TimeConvert( g_WorldClockSeconds++ ) ) );
 
  	if ( g_WorldClockSeconds >= 1440 )
@@ -502,6 +473,9 @@ public OnServerSecondTick( )
 		SetPlayerWeather( playerid, ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) ) ? 1 : g_WorldWeather );
 		UpdatePlayerTime( playerid );
 
+		// Callback
+		CallLocalFunction( "OnPlayerTickSecond", "d", playerid );
+
 		// Increment Variables Whilst Not AFK
 		if ( !IsPlayerAFK( playerid ) ) // New addition
 		{
@@ -518,28 +492,6 @@ public OnServerSecondTick( )
 			    case 86400: ShowAchievement( playerid, "You have been online for ~r~1~w~~h~ day!", 15 );
 			}
 
-			// Increase Irresistible Coins (1/20 = cred/min)
-			if ( GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 )
-			{
-				if ( iKeys != 0 || iUpDownKeys != 0 || iLeftRightKeys != 0 ) { // GetPlayerScore( playerid ) > 10 &&
-
-					new
-						Float: iCoinGenRate = 35.0;
-
-					// VIP check
-					if ( p_VIPLevel[ playerid ] >= VIP_DIAMOND )
-						iCoinGenRate *= 0.75; // Reduce by 25% if Diamond
-
-					else if ( p_VIPLevel[ playerid ] == VIP_PLATINUM )
-						iCoinGenRate *= 0.90; // Reduce by 10% if Diamond
-
-					// Happy Hour
-					if ( g_HappyHour && ( 0.0 <= g_HappyHourRate <= 0.25 ) )
-						iCoinGenRate *= 1.0 - g_HappyHourRate;
-
-					p_IrresistibleCoins[ playerid ] += ( 1.0 / iCoinGenRate ) / 60.0; // Prev 25.92
-				}
-			}
 		}
 
 		// CIA Visible On Radar after firing a shot
@@ -558,7 +510,6 @@ public OnPlayerRequestClass( playerid, classid )
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
@@ -1050,7 +1001,6 @@ public OnPlayerSpawn( playerid )
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
 		PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
-		if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 		if ( p_AdminLog{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminLogTD );
@@ -1685,7 +1635,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
@@ -2254,52 +2203,6 @@ thread readplayervipnotes( playerid )
 		return ShowPlayerDialog( playerid, DIALOG_VIP_NOTE, DIALOG_STYLE_TABLIST, ""COL_GOLD"My V.I.P Notes", szLargeString, "Call Admin", "Close" );
 	}
 	return SendError( playerid, "You do not have any V.I.P notes." );
-}
-
-CMD:ic( playerid, params[ ] ) return cmd_irresistiblecoins( playerid, params );
-CMD:irresistiblecoins( playerid, params[ ] )
-{
-	if ( ! IsPlayerSecurityVerified( playerid ) )
-		return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
-
-	if ( strmatch( params, "balance" ) )
-	{
-		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ] ) );
-	}
-	else if ( strmatch( params, "market" ) )
-	{
-		return ShowPlayerCoinMarketDialog( playerid );
-	}
-	else if ( !strcmp( params, "send", false, 4 ) )
-	{
-		new
-			senttoid, Float: coins;
-
-	    if ( sscanf( params[ 5 ],"uf", senttoid, coins ) ) return SendUsage( playerid, "/irresistiblecoins send [PLAYER_ID] [COINS]" );
-	    else if ( !IsPlayerConnected( senttoid ) || IsPlayerNPC( senttoid ) ) return SendError( playerid, "Invalid Player ID." );
-		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-	    else if ( coins < 0.1 || coins > 5000.0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." );
-		else if ( coins > 99999999 || coins < 0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." ); // Making cash go over billions...
-	    else if ( p_IrresistibleCoins[ playerid ] < coins ) return SendError( playerid, "You do not have this number of coins to send." );
-	    else if ( GetPlayerScore( playerid ) < 1000 ) return SendError( playerid, "You need at least 1,000 score to send coins to other players." );
-		else if ( senttoid == playerid ) return SendError( playerid, "You cannot send yourself coins." );
-	    else
-	    {
-	    	if ( GetDistanceBetweenPlayers( playerid, senttoid ) > 8.0 )
-				return SendError( playerid, "Please make sure you are close to the player before sending coins to them." );
-
-	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS_IC` (`TO_ID`, `FROM_ID`, `IC`) VALUES (%d, %d, %f)", p_AccountID[ senttoid ], p_AccountID[ playerid ], coins );
-	     	mysql_single_query( szNormalString );
-
-	    	p_IrresistibleCoins[ senttoid ] += coins;
-	    	p_IrresistibleCoins[ playerid ] -= coins;
-
-	    	SendServerMessage( playerid, "You have sent "COL_GOLD"%s"COL_WHITE" Irresistible Coins to %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( senttoid ), senttoid );
-	    	SendServerMessage( senttoid, "You have received "COL_GOLD"%s"COL_WHITE" Irresistible Coins from %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
-		}
-		return 1;
-	}
-	return SendUsage( playerid, "/irresistiblecoins [BALANCE/BUY/SELL/MARKET/SEND/CANCEL]" );
 }
 
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
@@ -3350,7 +3253,6 @@ CMD:moviemode( playerid, params[ ] )
 			TextDrawShowForPlayer( playerid, g_WebsiteTD );
 			if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
 			TextDrawShowForPlayer( playerid, g_MotdTD );
-			if ( g_HappyHour ) TextDrawShowForPlayer( playerid, g_NotManyPlayersTD );
 			if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawShowForPlayer( playerid, g_WorldDayTD );
@@ -3370,7 +3272,6 @@ CMD:moviemode( playerid, params[ ] )
 			TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 			TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 			TextDrawHideForPlayer( playerid, g_MotdTD );
-			TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
 			TextDrawHideForPlayer( playerid, g_WorldDayTD );
 			TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawShowForPlayer( playerid, g_MovieModeTD[ i ] );
