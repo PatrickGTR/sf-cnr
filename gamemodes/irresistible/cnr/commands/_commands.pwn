@@ -5,5 +5,8 @@
  * Purpose: encloses all commands
  */
 
-/* ** Includes ** */
+/* ** Directories ** */
 #include "irresistible\cnr\commands\admin\_admin.pwn"
+
+/* ** Files ** */
+#include "irresistible\cnr\commands\cmd_changes.pwn"

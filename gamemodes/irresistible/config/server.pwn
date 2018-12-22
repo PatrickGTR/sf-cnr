@@ -19,7 +19,9 @@
 #define SERVER_WEBSITE				"www.sfcnr.com"
 #define SERVER_IP					"54.36.127.43:7777"
 
-//#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt" // comment to disable feature
+/* ** Comment line to disable feature ** */
+#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"
+#define SERVER_CHANGES_FILE 		"updates.txt"
 
 /* ** Hooks ** */
 hook OnScriptInit( )

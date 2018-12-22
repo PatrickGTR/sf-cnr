@@ -2069,46 +2069,6 @@ public OnPlayerText( playerid, text[ ] )
 	return 1;
 }
 
-function Untaze( playerid, taze_immunity_seconds )
-{
-	if ( !IsPlayerConnected( playerid ) || !p_Tazed{ playerid } ) // || p_Detained{ playerid } == true
-	    return 0;
-
-	if ( ! IsPlayerTied( playerid ) )
-		TogglePlayerControllable( playerid, 1 );
-
-	if ( GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_CUFFED )
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
-
-	ClearAnimations( playerid );
-	p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
-	p_TazingImmunity[ playerid ] = g_iTime + taze_immunity_seconds;
-	p_Tazed{ playerid } = false;
-	return 1;
-}
-
-function Uncuff( playerid )
-{
-	if ( !IsPlayerConnected( playerid ) || !IsPlayerCuffed( playerid ) || !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
-	    return 0;
-
-	TogglePlayerControllable( playerid, 1 );
- 	RemovePlayerAttachedObject( playerid, 2 );
-	SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
-	if ( !IsPlayerInAnyVehicle( playerid ) ) {
-		ClearAnimations( playerid );
-	}
-	p_Cuffed{ playerid } = false;
-	//p_Detained{ playerid } = false;
-	//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-	//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
-	p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
-
-   	SendGlobalMessage( -1, ""COL_GREY"[SERVER]{FFFFFF} %s(%d) has been uncuffed and undetained by the anti-abuse system.", ReturnPlayerName( playerid ), playerid );
-	return 1;
-}
-
 function RapeDamage( playerid )
 {
 	if ( !IsPlayerConnected( playerid ) || !IsPlayerSpawned( playerid ) || p_InfectedHIV{ playerid } == false || p_Jailed{ playerid } == true )
@@ -3014,64 +2974,6 @@ CMD:vipjob( playerid, params[ ] )
 	else SendClientMessage( playerid, -1, ""COL_GOLD"[VIP]"COL_WHITE" You have disabled your VIP job." );
 
     p_VIPJob{ playerid } = iJob;
-	return 1;
-}
-
-CMD:changes( playerid, params[ ] ) return cmd_updates( playerid, params ); // Command by Cloudy & Sponyy
-CMD:updates( playerid, params[ ] )
-{
-    new
-    	File: handle = fopen( "updates.txt", io_read );
-
-    if ( ! handle )
-    	return SendError( playerid, "There are no updates to show." );
-
-    erase( szNormalString );
-    erase( szHugeString );
-
-    while ( fread( handle, szNormalString ) )
-    {
-        new
-        	find = strfind( szNormalString, "(+)" );
-
-        // additions
-        if( find != -1 )
-        {
-            strins( szNormalString, "{23D96F}added{FFFFFF}\t\t", find + 3 );
-            strdel( szNormalString, find, find + 3);
-        }
-
-        // removals
-        find = strfind( szNormalString, "(-)" );
-        if( find != -1 )
-        {
-            strins( szNormalString, "{D92323}removed{FFFFFF}\t", find + 3 );
-            strdel( szNormalString, find, find + 3 );
-        }
-
-        // fixes
-        find = strfind( szNormalString, "(*)" );
-        if ( find != -1 )
-        {
-            strins( szNormalString, "{D9A823}fixed{FFFFFF}\t\t", find + 3 );
-            strdel( szNormalString, find, find + 3 );
-        }
-
-        // fixes
-        find = strfind( szNormalString, "(/)" );
-        if ( find != -1 )
-        {
-            strins( szNormalString, "{c0c0c0}changed{FFFFFF}\t", find + 3 );
-            strdel( szNormalString, find, find + 3 );
-        }
-
-        // append
-        strcat( szHugeString, szNormalString );
-    }
-
-    fclose( handle );
-    ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Recent Updates - " #FILE_BUILD, szHugeString, "Okay", "" );
-    SendServerMessage( playerid, "You're now viewing the latest changes to the gamemode (version "#FILE_BUILD")." );
 	return 1;
 }
 
