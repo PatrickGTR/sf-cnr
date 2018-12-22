@@ -23,6 +23,7 @@
 // #include "irresistible\cnr\features\eastereggs.pwn"
 
 // other
+#include "irresistible\cnr\features\passive_mode.pwn"
 #include "irresistible\cnr\features\toys.pwn"
 #include "irresistible\cnr\features\fps.pwn"
 #include "irresistible\cnr\features\radio.pwn"

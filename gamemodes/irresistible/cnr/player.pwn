@@ -128,9 +128,6 @@ new
 	p_RansomPlacer                  [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_RansomAmount                  [ MAX_PLAYERS ],
 	p_LastDrovenPoliceVeh			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... },
-	Text3D: p_SpawnKillLabel		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
-	p_AntiSpawnKill                 [ MAX_PLAYERS ],
-    bool: p_AntiSpawnKillEnabled	[ MAX_PLAYERS char ],
     p_HitsComplete                  [ MAX_PLAYERS ],
     /*p_CopTutorial                   [ MAX_PLAYERS char ],
     p_CopTutorialProgress			[ MAX_PLAYERS char ],
@@ -240,8 +237,6 @@ stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 
 stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
-
-stock IsPlayerSpawnProtected( playerid ) return p_AntiSpawnKillEnabled{ playerid };
 
 stock IsPlayerLoggedIn( playerid ) return p_PlayerLogged{ playerid };
 

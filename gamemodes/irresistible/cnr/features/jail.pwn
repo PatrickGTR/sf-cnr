@@ -90,6 +90,33 @@ hook OnPlayerUpdateEx( playerid )
     }
     return 1;
 }
+
+hook OnPlayerFirstSpawn( playerid )
+{
+    // Jail people that left jailed
+    if ( p_JailTime[ playerid ] ) // We load this when the player logs in.
+    {
+        JailPlayer( playerid, p_JailTime[ playerid ], p_AdminJailed{ playerid } );
+        SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail "COL_LRED"[Left as a jailed person]", ReturnPlayerName( playerid ), playerid );
+        return 0;
+    }
+
+    // Jail quit to avoiders
+    if ( p_LeftCuffed{ playerid } )
+    {
+        new
+            szServing = 100 + GetPlayerScore( playerid );
+
+        if ( szServing > 1000 ) szServing = 1000;
+
+        p_LeftCuffed{ playerid } = false;
+        JailPlayer( playerid, szServing, 1 );
+        SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for %d seconds by the server "COL_LRED"[Quit To Avoid]", ReturnPlayerName( playerid ), playerid, szServing );
+        return 0;
+    }
+    return 1;
+}
+
 hook OnPlayerC4Blown( playerid, Float: X, Float: Y, Float: Z, worldid )
 {
     // check if blown up alcatraz rock
