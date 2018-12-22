@@ -22,9 +22,9 @@
 #define SERVER_TWITTER 				"IrresistibleDev"
 
 /* ** Comment line to disable feature ** */
-#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"
-#define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"
-#define SERVER_CHANGES_FILE 		"updates.txt"
+#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"				// used for /rules (cnr\features\server_rules.pwn)
+#define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"			// used for /twitter (cnr\commands\cmd_twitter.pwn)
+#define SERVER_CHANGES_FILE 		"updates.txt"								// used for /changes (cnr\commands\cmd_changes.pwn)
 
 /* ** Hooks ** */
 hook OnScriptInit( )
