@@ -351,3 +351,43 @@ stock CuffPlayer( victimid, playerid )
  	}
  	else return SendError( playerid, "There are no players around to cuff." );
 }
+
+function Untaze( playerid, taze_immunity_seconds )
+{
+	if ( !IsPlayerConnected( playerid ) || !p_Tazed{ playerid } ) // || p_Detained{ playerid } == true
+	    return 0;
+
+	if ( ! IsPlayerTied( playerid ) )
+		TogglePlayerControllable( playerid, 1 );
+
+	if ( GetPlayerSpecialAction( playerid ) != SPECIAL_ACTION_CUFFED )
+		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+
+	ClearAnimations( playerid );
+	p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
+	p_TazingImmunity[ playerid ] = g_iTime + taze_immunity_seconds;
+	p_Tazed{ playerid } = false;
+	return 1;
+}
+
+function Uncuff( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) || !IsPlayerCuffed( playerid ) || !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
+	    return 0;
+
+	TogglePlayerControllable( playerid, 1 );
+ 	RemovePlayerAttachedObject( playerid, 2 );
+	SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+	if ( !IsPlayerInAnyVehicle( playerid ) ) {
+		ClearAnimations( playerid );
+	}
+	p_Cuffed{ playerid } = false;
+	//p_Detained{ playerid } = false;
+	//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
+	//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
+	//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;
+	p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
+
+   	SendGlobalMessage( -1, ""COL_GREY"[SERVER]{FFFFFF} %s(%d) has been uncuffed and undetained by the anti-abuse system.", ReturnPlayerName( playerid ), playerid );
+	return 1;
+}
