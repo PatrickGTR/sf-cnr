@@ -88,6 +88,18 @@ new
 ;
 
 /* ** Hooks ** */
+hook OnPlayerUpdateEx( playerid )
+{
+	CheckPlayerVipExpiry( playerid );
+	return 1;
+}
+
+hook OnPlayerLogin( playerid )
+{
+	CheckPlayerVipExpiry( playerid );
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_IC_MARKET && response )
@@ -667,5 +679,19 @@ stock SetPlayerVipLevel( playerid, level, interval = 2592000, bool: credit_asset
 				SendClientMessageToAdmins( -1, ""COL_PINK"[VIP NOTE]"COL_GREY" %s(%d) needs a House, Vehicle, Garage, Gate and Weed Biz. (/viewnotes)", ReturnPlayerName( playerid ), playerid );
 			}
 		}
+	}
+}
+
+static stock CheckPlayerVipExpiry( playerid )
+{
+    if ( p_VIPLevel[ playerid ] > 0 && g_iTime > p_VIPExpiretime[ playerid ] )
+    {
+		SetPlayerArmour( playerid, 0.0 );
+        p_VIPExpiretime[ playerid ] = 0;
+        SendClientMessage( playerid, -1, ""COL_GREY"[NOTIFICATION]"COL_WHITE" Your V.I.P has expired, consider another donation to have your V.I.P restored again for another period." );
+        p_VIPLevel[ playerid ] = 0;
+        p_VIPWep1{ playerid } = 0;
+        p_VIPWep2{ playerid } = 0;
+        p_VIPWep3{ playerid } = 0;
 	}
 }

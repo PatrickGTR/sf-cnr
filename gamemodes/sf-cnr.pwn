@@ -656,9 +656,6 @@ public OnServerUpdateTimer( )
 				}
 			}
 
-			// Check if the player's VIP has expired
-			CheckPlayerVipExpiry( playerid );
-
 			// Anti Money Hack
 			if ( GetPlayerCash( playerid ) != GetPlayerMoney( playerid ) ) {
 	            ResetPlayerMoney( playerid );
@@ -7269,9 +7266,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			// p_CitySet 	{ playerid } = true;
 			p_Muted 		{ playerid } = p_MutedTime[ playerid ] > 0 ? true : false; // Save muting :X
 
-			// Check if vip expired
-			CheckPlayerVipExpiry( playerid );
-
 			// Load other player related variables
 			CallLocalFunction( "OnPlayerLogin", "d", playerid );
 
@@ -11496,20 +11490,6 @@ stock HidePlayerTogglableTextdraws( playerid, bool: force = true )
 	// Top donor
 	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
 		TextDrawHideForPlayer( playerid, g_TopDonorTD );
-	}
-}
-
-stock CheckPlayerVipExpiry( playerid )
-{
-    if ( p_VIPLevel[ playerid ] > 0 && g_iTime > p_VIPExpiretime[ playerid ] )
-    {
-		SetPlayerArmour( playerid, 0.0 );
-        p_VIPExpiretime[ playerid ] = 0;
-        SendClientMessage( playerid, -1, ""COL_GREY"[NOTIFICATION]"COL_WHITE" Your V.I.P has expired, consider another donation to have your V.I.P restored again for another period." );
-        p_VIPLevel[ playerid ] = 0;
-        p_VIPWep1{ playerid } = 0;
-        p_VIPWep2{ playerid } = 0;
-        p_VIPWep3{ playerid } = 0;
 	}
 }
 
