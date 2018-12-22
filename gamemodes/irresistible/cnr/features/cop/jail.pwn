@@ -1,8 +1,8 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc
- * Module:
- * Purpose:
+ * Module: cnr\features\cop\jail.pwn
+ * Purpose: jail system for players
  */
 
 /* ** Includes ** */
@@ -38,6 +38,13 @@ static stock
 ;
 
 /* ** Hooks ** */
+hook OnPlayerEnterDynamicCP( playerid, checkpointid ) {
+	if ( IsPlayerJailed( playerid ) ) {
+	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), Y_HOOKS_BREAK_RETURN_1;
+	}
+	return 1;
+}
+
 hook OnPlayerUpdateEx( playerid )
 {
     // Alcatraz Escape Mechanism

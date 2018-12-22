@@ -13,6 +13,7 @@
 #include "irresistible\cnr\features\vehicles\_vehicles.pwn"
 #include "irresistible\cnr\features\business\_business.pwn"
 #include "irresistible\cnr\features\gangs\_gangs.pwn"
+#include "irresistible\cnr\features\cop\_cop.pwn"
 #include "irresistible\cnr\features\robbery\_robbery.pwn"
 #include "irresistible\cnr\features\minijobs\_minijobs.pwn"
 #include "irresistible\cnr\features\player_items\_player_items.pwn"
@@ -51,7 +52,6 @@
 #include "irresistible\cnr\features\gates.pwn"
 #include "irresistible\cnr\features\hotel_da_novic.pwn"
 #include "irresistible\cnr\features\random_hits.pwn"
-#include "irresistible\cnr\features\jail.pwn"
 #include "irresistible\cnr\features\c4.pwn"
 
 // pool

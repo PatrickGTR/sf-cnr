@@ -180,7 +180,6 @@ public OnServerSecondTick( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnRulesHTTPResponse( index, response_code, data[ ] );
 public OnTwitterHTTPResponse( index, response_code, data[ ] );
-public OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 public OnPlayerUnjailed( playerid, reasonid );
 public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 
@@ -4915,14 +4914,6 @@ stock TicketPlayer( pID, playerid )
 	return 1;
 }
 
-CMD:taze( playerid, params[ ] )
-{
-   	new
-   		pID = GetClosestPlayer( playerid );
-
- 	return TazePlayer( pID, playerid );
-}
-
 CMD:payticket( playerid, params[] )
 {
 	if ( !p_WantedLevel[ playerid ] )
@@ -4959,92 +4950,6 @@ CMD:payticket( playerid, params[] )
 	}
 	return 1;
 }
-
-CMD:ar( playerid, params[ ] ) return cmd_arrest(playerid, params);
-CMD:arrest( playerid, params[ ] )
-{
-   	new
-   		victimid = GetClosestPlayer( playerid );
-
-	return ArrestPlayer( victimid, playerid );
-}
-
-CMD:cuff( playerid, params[ ] )
-{
-	new
-		victimid = GetClosestPlayer( playerid );
-
-	return CuffPlayer( victimid, playerid );
-}
-
-CMD:uncuff( playerid, params[ ] )
-{
-   	new victimid = GetClosestPlayer( playerid );
-   	//if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-   	if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
- 	{
- 	    //if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player you're close to is in your team." );
-		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
-		if ( !IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is not cuffed." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
-		SendClientMessageFormatted( victimid, -1, ""COL_RED"[UNCUFFED]{FFFFFF} You have been uncuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
-	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[UNCUFFED]{FFFFFF} You have uncuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
-        ClearAnimations( victimid );
-		TogglePlayerControllable( victimid, 1 );
-		p_Cuffed{ victimid } = false;
-		//p_Detained{ victimid } = false;
-		//Delete3DTextLabel( p_DetainedLabel[ victimid ] );
-		//p_DetainedLabel[ victimid ] = Text3D: INVALID_3DTEXT_ID;
-		//p_DetainedBy[ victimid ] = INVALID_PLAYER_ID;
-		KillTimer( p_CuffAbuseTimer[ victimid ] );
-        SetPlayerSpecialAction( victimid, SPECIAL_ACTION_NONE );
-        RemovePlayerAttachedObject( victimid, 2 );
- 	}
- 	else return SendError( playerid, "There are no players around to uncuff." );
-	return 1;
-}
-
-/*CMD:detain( playerid, params[ ] )
-{
-   	new victimid = GetClosestPlayer( playerid );
-  	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
-	else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-   	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
- 	{
-	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player you're close to is in your team." );
-		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
-		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
-		if ( !IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is not cuffed." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( !IsValidVehicle( p_LastVehicle[ playerid ] ) ) return SendError( playerid, "Your last vehicle is either destroyed or not spawned." );
-		if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
-		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
-		SendClientMessageFormatted( victimid, -1, ""COL_RED"[DETAIN]{FFFFFF} You have been detained by %s(%d)!", ReturnPlayerName( playerid ), playerid );
-	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[DETAIN]{FFFFFF} You have detained %s(%d), he's been put in your last vehicle!", ReturnPlayerName( victimid ), victimid );
-		KillTimer( p_CuffAbuseTimer[ victimid ] );
-		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 300 * 1000 ), false, "d", victimid );
-		p_Detained{ victimid } = true;
-		p_Tazed{ victimid } = false;
-		p_DetainedBy[ victimid ] = playerid;
-		p_TiedAtTimestamp[ victimid ] = g_iTime;
-	    Delete3DTextLabel( p_DetainedLabel[ victimid ] );
-	    p_DetainedLabel[ victimid ] = Create3DTextLabel( "Detained Criminal", COLOR_BLUE, 0.0, 0.0, 0.0, 15.0, 0 );
-	    Attach3DTextLabelToPlayer( p_DetainedLabel[ victimid ], victimid, 0.0, 0.0, 0.6 );
-		TogglePlayerControllable( victimid, 0 );
- 	}
- 	else return SendError( playerid, "There are no players around to detain." );
-	return 1;
-}*/
 
 CMD:rob( playerid, params[ ] )
 {
@@ -5855,9 +5760,6 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 
 	aPlayer[ 0 ] = playerid;
 
-	if ( IsPlayerJailed( playerid ) ) // || && !bDropoff
-	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), 1;
-
 	// Refill ammunition
 	if ( checkpointid == g_Checkpoints[ CP_REFILL_AMMO ] || checkpointid == g_Checkpoints[ CP_REFILL_AMMO_LS ] || checkpointid == g_Checkpoints[ CP_REFILL_AMMO_LV ] ) {
 		if ( p_Class[ playerid ] == CLASS_POLICE ) {
@@ -5916,62 +5818,6 @@ public OnPlayerEnterDynamicCP( playerid, checkpointid )
 	if ( houseid != -1 && GetPlayerInterior( playerid ) == g_houseData[ houseid ] [ E_INTERIOR_ID ] && checkpointid != g_houseData[ houseid ] [ E_CHECKPOINT ] [ 1 ] ) {
 		return SetPlayerPos( playerid, g_houseData[ houseid ] [ E_TX ], g_houseData[ houseid ] [ E_TY ], g_houseData[ houseid ] [ E_TZ ] );
 	}
-
-	// Detain Mechanism
-	/*if ( bDropoff )
-	{
-	    if ( p_Class[ playerid ] != CLASS_POLICE )
-	    	return 1;
-
-	    new
-	    	iState = GetPlayerState( playerid ),
-	    	iVehicle = GetPlayerVehicleID( playerid )
-	    ;
-
-	    if ( iState == PLAYER_STATE_DRIVER && iVehicle != 0 )
-	    {
-	    	new
-	    		iDetained = 0, iCashEarned = 0;
-
-	    	foreach(new victimid : Player)
-	    	{
-	    		if ( victimid != playerid && p_WantedLevel[ victimid ] && p_Class[ victimid ] != CLASS_POLICE )
-	    		{
-	    			if ( IsPlayerInVehicle( victimid, iVehicle ) && IsPlayerDetained( victimid ) )
-	    			{
-						new
-							totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
-
-						iDetained++;
-						iCashEarned += ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 350 );
-						KillTimer( p_CuffAbuseTimer[ victimid ] );
-						SetPlayerSpecialAction( victimid, SPECIAL_ACTION_NONE );
-			        	RemovePlayerAttachedObject( victimid, 2 );
-						TogglePlayerControllable( victimid, 1 );
-						p_Cuffed{ victimid } = false;
-						GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
-						ClearAnimations( victimid );
-						JailPlayer( victimid, totalSeconds );
-						GivePlayerSeasonalXP( victimid, -2 );
-						SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
-	    			}
-	    		}
-	    	}
-
-	    	if ( iDetained )
-	    	{
-				if ( iCashEarned > 30000 )
-					printf("[police dropoff] %s -> %d people - %s", ReturnPlayerName( playerid ), iDetained, cash_format( iCashEarned ) ); // 8hska7082bmahu
-
-				GivePlayerCash( playerid, iCashEarned );
-				GivePlayerScore( playerid, iDetained * 2 );
-				CallLocalFunction( "OnPlayerArrested", "dddd", playerid, INVALID_PLAYER_ID, p_Arrests[ playerid ], iDetained );
-	    		return SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} and %d score for dropping off %d criminal(s) to prison.", cash_format( iCashEarned ), iDetained * 2, iDetained );
-	    	}
-	    	else return SendError( playerid, "There are no detained criminals in your vehicle that can be jailed." );
-	    }
-	    else return SendError( playerid, "You need a driver of a vehicle with detained criminals to use this." );
-	}*/
 
 	if ( checkpointid == g_Checkpoints[ CP_FIGHTSTYLE ] || checkpointid == g_Checkpoints[ CP_FIGHTSTYLE_LV ] || checkpointid == g_Checkpoints[ CP_FIGHTSTYLE_LS ] )
 	{
@@ -6512,26 +6358,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 	{
 	  	if ( IsPlayerAttachedObjectSlotUsed( playerid, 1 ) && iWeapon == WEAPON_SNIPER )
 	 		RemovePlayerAttachedObject( playerid, 1 );
-	}
-
-	// taze mechanism
-	else if ( PRESSED( KEY_LOOK_BEHIND ) )
-	{
-		if ( p_Class[ playerid ] == CLASS_POLICE && !IsPlayerSpawnProtected( playerid ) )
-		{
-			new
-				closestid = GetClosestPlayer( playerid );
-
-			if ( closestid != INVALID_PLAYER_ID && p_Class[ closestid ] != CLASS_POLICE && ! ( GetDistanceBetweenPlayers( playerid, closestid ) > 10.0 || !IsPlayerConnected( closestid ) ) ) {
-				if ( p_WantedLevel[ closestid ] > 5 ) {
-					if ( IsPlayerCuffed( closestid ) ) ArrestPlayer( closestid, playerid );
-					else if ( IsPlayerTazed( closestid ) ) CuffPlayer( closestid, playerid );
-					else TazePlayer( closestid, playerid );
-				} else {
-					TicketPlayer( closestid, playerid );
-				}
-			}
-		}
 	}
 	return 1;
 }
@@ -11011,75 +10837,6 @@ stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
 stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
-
-stock DisablePlayerSpawnProtection( playerid )
-{
-	if ( p_AntiSpawnKillEnabled{ playerid } )
-	{
-		SetPlayerHealth( playerid, p_AdminOnDuty{ playerid } ? float( INVALID_PLAYER_ID ) : 100.0 );
-		DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
-		Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
-		p_SpawnKillLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-		p_AntiSpawnKillEnabled{ playerid } = false;
-	}
-	return 1;
-}
-
-stock SetPlayerPassiveMode( playerid )
-{
-	if ( IsPlayerSettingToggled( playerid, SETTING_PASSIVE_MODE ) )
-	{
-		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
-		return 0;
-	}
-
-	// reset any labels etc
-	ResetPlayerPassiveMode( playerid );
-
-	// place label
-	if ( ! p_WantedLevel[ playerid ] && ! IsPlayerInPaintBall( playerid ) && GetPlayerClass( playerid ) != CLASS_POLICE ) {
-		p_PassiveModeLabel[ playerid ] = CreateDynamic3DTextLabel( "Passive Mode", COLOR_GREEN, 0.0, 0.0, -0.6, 15.0, .attachedplayer = playerid );
-		TextDrawShowForPlayer( playerid, g_PassiveModeTD );
-	}
-	return 1;
-}
-
-stock IsPlayerPassive( playerid )
-{
-	return ! p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE && ! p_PassiveModeDisabled{ playerid };
-}
-
-stock ResetPlayerPassiveMode( playerid, bool: passive_disabled = false )
-{
-	DestroyDynamic3DTextLabel( p_PassiveModeLabel[ playerid ] );
-	//KillTimer( p_PassiveModeExpireTimer[ playerid ] );
-	p_PassiveModeLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-	//p_PassiveModeExpireTimer[ playerid ] = -1;
-	p_PassiveModeDisabled{ playerid } = passive_disabled;
-	TextDrawHideForPlayer( playerid, g_PassiveModeTD );
-	return 1;
-}
-
-/*function PassiveMode_Reset( playerid, time_left )
-{
-	// if you happen to die then have a shot synced ... just reset normally
-	if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) {
-		return ResetPlayerPassiveMode( playerid );
-	}
-
-	if ( p_WantedLevel[ playerid ] > 0 || p_Class[ playerid ] != CLASS_CIVILIAN || -- time_left <= 0 )
-	{
-		ResetPlayerPassiveMode( playerid, .passive_disabled = true );
-		ShowPlayerHelpDialog( playerid, 2000, "Passive mode is ~r~disabled." );
-	}
-	else
-	{
-    	UpdateDynamic3DTextLabelText( p_PassiveModeLabel[ playerid ], COLOR_RED, sprintf( "Passive Mode Disabled In %d Seconds", time_left ) );
-		p_PassiveModeExpireTimer[ playerid ] = SetTimerEx( "PassiveMode_Reset", 980, false, "dd", playerid, time_left );
- 		ShowPlayerHelpDialog( playerid, 1500, "Passive mode disabled in ~r~%d seconds.", time_left );
-	}
-	return 1;
-}*/
 
 stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {

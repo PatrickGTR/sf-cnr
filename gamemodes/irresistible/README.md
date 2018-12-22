@@ -54,3 +54,5 @@
     - Called when a player C4 is blown
 - `OnPlayerUnjailed( playerid, reasonid )`
     - Called when a player is unjailed for a reason id
+- ` OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )`
+    - Called when a player is arrested
