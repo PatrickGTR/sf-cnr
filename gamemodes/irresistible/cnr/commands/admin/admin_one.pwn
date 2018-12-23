@@ -320,13 +320,13 @@ CMD:alog( playerid, params[ ] )
 	return 1;
 }
 
-CMD:stpfa( playerid, params[ ] )
+CMD:stopask( playerid, params[ ] )
 {
     new
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stpfa [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stopask [PLAYER_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "This player has a higher administration level than you." );
@@ -464,13 +464,13 @@ CMD:setskin( playerid, params[ ] )
 	return 1;
 }
 
-CMD:stpfr( playerid, params[ ] )
+CMD:stopreport( playerid, params[ ] )
 {
     new
 		pID
 	;
 	if ( p_AdminLevel[ playerid ] < 1 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stpfr [PLAYER_ID]");
+    else if ( sscanf( params, "u", pID ) ) SendUsage(playerid, "/stopreport [PLAYER_ID]");
     else if ( !IsPlayerConnected(pID) ) return SendError(playerid, "Invalid Player ID.");
     else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
     else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "This player has a higher administration level than you." );
