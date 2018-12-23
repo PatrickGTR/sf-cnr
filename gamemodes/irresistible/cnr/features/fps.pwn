@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc
- * Module: fps.inc
+ * Module: cnr\features\fps.pwn
  * Purpose: fps counter in-game
  */
 
@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Variables ** */
-new
+static stock
 	Text:  p_FPSCounterTD 			[ MAX_PLAYERS ] = { Text: INVALID_TEXT_DRAW, ... },
 	bool: p_FPSCounter 				[ MAX_PLAYERS char ],
 	p_FPS_DrunkLevel 				[ MAX_PLAYERS ],
@@ -69,6 +69,26 @@ hook OnScriptInit( )
 		TextDrawSetOutline(p_FPSCounterTD[ playerid ], 1);
 		TextDrawSetProportional(p_FPSCounterTD[ playerid ], 1);
 	}
+	return 1;
+}
+
+hook OnPlayerConnect( playerid )
+{
+	p_FPSCounter{ playerid } = false;
+	p_FPS_DrunkLevel[ playerid ] = 0;
+	p_FPS[ playerid ] = 0;
+	return 1;
+}
+
+hook OnPlayerLoadTextdraws( playerid ) {
+	if ( p_FPSCounter{ playerid } ) {
+		TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
+	}
+	return 1;
+}
+
+hook OnPlayerUnloadTextdraws( playerid ) {
+	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	return 1;
 }
 

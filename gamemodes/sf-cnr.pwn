@@ -512,7 +512,6 @@ public OnPlayerRequestClass( playerid, classid )
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
@@ -617,8 +616,6 @@ public OnPlayerConnect( playerid )
     p_GangID 			[ playerid ] = INVALID_GANG_ID;
 	justConnected		{ playerid } = true;
 	p_ClassSelection	{ playerid } = false;
-	p_FPS_DrunkLevel	[ playerid ] = 0;
-	p_FPS 				[ playerid ] = 0;
 	p_UsingRobberySafe	[ playerid ] = -1;
 
 	// reset jails
@@ -819,7 +816,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_Kidnapped		{ playerid } = false;
 	p_Wood          [ playerid ] = 0;
 	p_inAlcatraz 	{ playerid } = false;
-	p_FPSCounter 	{ playerid } = false;
 	p_Ropes			[ playerid ] = 0;
 	p_Scissors      [ playerid ] = 0;
 	p_Fires         [ playerid ] = 0;
@@ -1005,7 +1001,6 @@ public OnPlayerSpawn( playerid )
 		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 		if ( p_AdminLog{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminLogTD );
-		if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 		if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
 		CallLocalFunction( "OnPlayerLoadTextdraws", "d", playerid );
 	}
@@ -1636,7 +1631,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
@@ -3250,7 +3244,6 @@ public OnPlayerLoadTextdraws( playerid )
 	TextDrawShowForPlayer( playerid, g_WebsiteTD );
 	if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawShowForPlayer( playerid, g_MotdTD );
-	if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawShowForPlayer( playerid, g_WorldDayTD );
 	PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
@@ -3268,7 +3261,6 @@ public OnPlayerUnloadTextdraws( playerid )
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	TextDrawHideForPlayer( playerid, g_WorldDayTD );
-	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	return 1;
 }
 
