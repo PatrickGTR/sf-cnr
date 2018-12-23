@@ -307,7 +307,7 @@ CMD:gang( playerid, params[ ] )
 			iGang = p_GangID[ playerid ],
 			p_Name[ MAX_PLAYER_NAME ];
 
-		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) )
+		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
 			return SendError( playerid, "You are not the gang leader." );
 
 		if ( sscanf( params[ 12 ], "s[24]", p_Name ) )
