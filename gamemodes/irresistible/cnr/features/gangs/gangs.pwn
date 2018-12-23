@@ -762,6 +762,10 @@ thread OnGangKickOffline( playerid, gangid )
 		// verify player is in gang
 		new player_gangid = cache_get_field_content_int( 0, "GANG_ID", dbHandle );
 
+		if ( IsPlayerGangLeader( playerid, player_gangid, .only_leader = 1 ) ) {
+			return SendError( playerid, "You cannot kick this player from the gang." );
+		}
+
 		if ( player_gangid != gangid ) {
 			return SendError( playerid, "This player is not in your gang." );
 		}
