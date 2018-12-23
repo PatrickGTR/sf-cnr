@@ -304,7 +304,8 @@ CMD:gang( playerid, params[ ] )
 	if ( !strcmp( params, "offlinekick", false, 11 ) )
 	{
 		new
-			p_Name[ 24 ];
+			iGang = p_GangID[ playerid ],
+			p_Name[ MAX_PLAYER_NAME ];
 
 		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ], .only_leader = 1 ) )
 			return SendError( playerid, "You are not the gang leader." );
@@ -314,8 +315,8 @@ CMD:gang( playerid, params[ ] )
 
 		trimString( p_Name );
 
-		mysql_format( dbHandle, szNormalString, 128, "SELECT `ID`, `NAME`, `GANG_ID` FROM `USERS` WHERE `NAME`='%e' AND `GANG_ID`=%d", p_Name, p_GangID[ playerid ] );
-		mysql_tquery( dbHandle, szNormalString, "OnGangKickOffline", "dd", playerid, p_GangID[ playerid ] );
+		mysql_format( dbHandle, szNormalString, 128, "SELECT `ID`, `NAME`, `GANG_ID` FROM `USERS` WHERE `NAME`='%e' AND `GANG_ID`=%d", p_Name, g_gangData[ iGang ][ E_SQL_ID ] );
+		mysql_tquery( dbHandle, szNormalString, "OnGangKickOffline", "dd", playerid, g_gangData[ iGang ][ E_SQL_ID ] );
 		return 1;
 	}
 	else if ( !strcmp( params, "turfs", false, 5 ) )
@@ -737,6 +738,7 @@ thread OnListClans( playerid )
 thread OnGangKickOffline( playerid, gangid )
 {
 	new
+		static_gangid = p_GangID[ playerid ],
 		rows = cache_get_row_count( );
 
 	if ( rows )
@@ -768,7 +770,7 @@ thread OnGangKickOffline( playerid, gangid )
 		mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `USER_ID`=%d", player_accid ) );
  		mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `ID`=%d", player_accid ) );
 
-		SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s has left the gang (KICKED)", player_name );
+		SendClientMessageToGang( static_gangid, g_gangData[ static_gangid ] [ E_COLOR ], "[GANG]{FFFFFF} %s has left the gang (KICKED)", player_name );
 	}
 	else
 	{
