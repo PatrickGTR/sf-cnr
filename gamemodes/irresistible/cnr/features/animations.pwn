@@ -375,7 +375,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 		if ( looping ) // Animations that must be played once.
 		{
 	    	p_InAnimation{ playerid } = true;
-			if ( !p_inMovieMode{ playerid } ) TextDrawShowForPlayer( playerid, g_AnimationTD );
+			if ( ! IsPlayerMovieMode( playerid ) ) TextDrawShowForPlayer( playerid, g_AnimationTD );
 		}
 	}
 	return 1;

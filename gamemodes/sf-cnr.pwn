@@ -88,6 +88,8 @@ public OnServerUpdateTimer( );
 public OnServerSecondTick( );
 public OnHelpHTTPResponse( index, response_code, data[ ] );
 public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
+public OnPlayerLoadTextdraws( playerid );
+public OnPlayerUnloadTextdraws( playerid );
 
 main()
 {
@@ -879,7 +881,6 @@ public OnPlayerDisconnect( playerid, reason )
 //	p_XP			[ playerid ] = 0;
 	p_InHouse		[ playerid ] = -1;
 	p_InGarage 		[ playerid ] = -1;
-	p_inMovieMode	{ playerid } = false;
 	p_CantUseAsk    { playerid } = false;
 	p_LastSkin      [ playerid ] = 0;
 	p_SecureWallet	{ playerid } = false;
@@ -990,7 +991,7 @@ public OnPlayerSpawn( playerid )
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 
-	if ( p_inMovieMode{ playerid } == false )
+	if ( ! IsPlayerMovieMode( playerid ) )
 	{
 		ShowPlayerTogglableTextdraws( playerid );
 		ShowPlayerIrresistibleRank( playerid );
@@ -3241,46 +3242,33 @@ CMD:emp( playerid, params[ ] )
 	return 1;
 }
 
-CMD:moviemode( playerid, params[ ] )
+public OnPlayerLoadTextdraws( playerid )
 {
-	switch( p_inMovieMode{ playerid } )
-	{
-		case true:
-		{
-			ShowPlayerTogglableTextdraws( playerid );
-		    PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
-			if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
-			TextDrawShowForPlayer( playerid, g_WebsiteTD );
-			if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-			TextDrawShowForPlayer( playerid, g_MotdTD );
-			if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
-			if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
-			TextDrawShowForPlayer( playerid, g_WorldDayTD );
-			PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
-			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawHideForPlayer( playerid, g_MovieModeTD[ i ] );
-		    p_inMovieMode{ playerid } = false;
-		    SendServerMessage( playerid, "Movie mode has been un-toggled." );
-			CallLocalFunction( "OnPlayerLoadTextdraws", "d", playerid );
-		}
-		case false:
-		{
-			PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-			HidePlayerTogglableTextdraws( playerid );
-			PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
-			PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
-			TextDrawHideForPlayer( playerid, g_WebsiteTD );
-			TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
-			TextDrawHideForPlayer( playerid, g_DoubleXPTD );
-			TextDrawHideForPlayer( playerid, g_MotdTD );
-			TextDrawHideForPlayer( playerid, g_WorldDayTD );
-			TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
-			for( new i; i < sizeof( g_MovieModeTD ); i ++ ) TextDrawShowForPlayer( playerid, g_MovieModeTD[ i ] );
-		    p_inMovieMode{ playerid } = true;
-		    SendServerMessage( playerid, "Movie mode has been toggled." );
-			CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
-		}
-	}
-	CallLocalFunction( "OnPlayerMovieMode", "dd", playerid, p_inMovieMode{ playerid } );
+	ShowPlayerTogglableTextdraws( playerid );
+	PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
+	if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
+	TextDrawShowForPlayer( playerid, g_WebsiteTD );
+	if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
+	TextDrawShowForPlayer( playerid, g_MotdTD );
+	if ( p_FPSCounter{ playerid } ) TextDrawShowForPlayer( playerid, p_FPSCounterTD[ playerid ] );
+	if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
+	TextDrawShowForPlayer( playerid, g_WorldDayTD );
+	PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
+	return 1;
+}
+
+public OnPlayerUnloadTextdraws( playerid )
+{
+	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
+	HidePlayerTogglableTextdraws( playerid );
+	PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
+	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
+	TextDrawHideForPlayer( playerid, g_WebsiteTD );
+	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
+	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
+	TextDrawHideForPlayer( playerid, g_MotdTD );
+	TextDrawHideForPlayer( playerid, g_WorldDayTD );
+	TextDrawHideForPlayer( playerid, p_FPSCounterTD[ playerid ] );
 	return 1;
 }
 

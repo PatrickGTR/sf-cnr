@@ -24,6 +24,7 @@
 // #include "irresistible\cnr\features\eastereggs.pwn"
 
 // other
+#include "irresistible\cnr\features\movie_mode.pwn"
 #include "irresistible\cnr\features\passive_mode.pwn"
 #include "irresistible\cnr\features\server_rules.pwn"
 #include "irresistible\cnr\features\toys.pwn"

@@ -160,9 +160,7 @@ stock ShowPlayerModelPreview( playerid, handleid, title[ ], model, bgcolor = 0x0
 		PlayerTextDrawShow( playerid, p_ModelPreviewTD[ playerid ] [ i ] );
 	}
 
-	p_inMovieMode{ playerid } = false;
-	cmd_moviemode( playerid, "" ); // Hide textdraws
-
+	CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
 	SetPVarInt( playerid, "preview_model_handle", handleid );
 	SelectTextDraw( playerid, COLOR_RED );
 	return 1;
@@ -181,8 +179,7 @@ stock HidePlayerModelPreview( playerid, cancel = 1 )
 		PlayerTextDrawHide( playerid, p_ModelPreviewTD[ playerid ] [ i ] );
 	}
 
-	cmd_moviemode( playerid, "" ); // Show textdraws
-
+	CallLocalFunction( "OnPlayerLoadTextdraws", "d", playerid );
 	CallLocalFunction( "OnPlayerEndModelPreview", "dd", playerid, GetPVarInt( playerid, "preview_model_handle" ) );
 
 	SetPVarInt( playerid, "preview_model_delay", GetTickCount( ) + 100 );

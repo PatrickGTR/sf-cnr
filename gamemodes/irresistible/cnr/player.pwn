@@ -70,7 +70,6 @@ new
 	p_BailOfferer                   [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	Text3D: p_InfoLabel             [ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
 	p_InfoLabelString               [ MAX_PLAYERS ] [ 32 ],
-	bool: p_inMovieMode             [ MAX_PLAYERS char ],
 	bool: p_inCIA                   [ MAX_PLAYERS char ],
 	p_AntiEmpSpam                   [ MAX_PLAYERS ],
 	bool: p_inPaintBall           	[ MAX_PLAYERS char ],
@@ -227,8 +226,6 @@ stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
 stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
 
 stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
-
-stock IsPlayerMovieMode( playerid ) return p_inMovieMode{ playerid };
 
 stock GetPlayerAdminLevel( playerid ) return p_AdminLevel[ playerid ];
 
