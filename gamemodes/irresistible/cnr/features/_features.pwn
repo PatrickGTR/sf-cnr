@@ -7,7 +7,9 @@
 
 /* ** Includes ** */
 
+#include "irresistible\cnr\features\vip\_vip.pwn"
 #include "irresistible\cnr\features\player\_player.pwn"
+#include "irresistible\cnr\features\ammunation\_ammunation.pwn"
 #include "irresistible\cnr\features\stocks\_stocks.pwn"
 #include "irresistible\cnr\features\houses\_houses.pwn"
 #include "irresistible\cnr\features\vehicles\_vehicles.pwn"
@@ -24,6 +26,7 @@
 // #include "irresistible\cnr\features\eastereggs.pwn"
 
 // other
+#include "irresistible\cnr\features\ammunation.pwn"
 #include "irresistible\cnr\features\movie_mode.pwn"
 #include "irresistible\cnr\features\passive_mode.pwn"
 #include "irresistible\cnr\features\server_rules.pwn"

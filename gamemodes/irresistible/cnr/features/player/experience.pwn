@@ -1,7 +1,7 @@
 /*
  * Irresistible Gaming (c) 2018
  * Developed by Lorenc
- * Module: cnr\experience.pwn
+ * Module: cnr\features\player\experience.pwn
  * Purpose: player experience system 2.0
  */
 

@@ -754,3 +754,5 @@ static stock CheckPlayerVipExpiry( playerid )
         p_VIPWep3{ playerid } = 0;
 	}
 }
+
+stock IsPlayerPlatinumVIP( playerid ) return p_VIPLevel[ playerid ] >= VIP_PLATINUM;

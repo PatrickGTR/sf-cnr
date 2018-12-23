@@ -76,7 +76,7 @@ CMD:playerjobs( playerid, params[ ] )
 
 /* ** Functions ** */
 stock IsPlayerJob( playerid, jobid ) {
-	return ( p_Job{ playerid } == jobid ) || ( p_VIPLevel[ playerid ] >= VIP_PLATINUM && p_VIPJob{ playerid } == jobid );
+	return ( p_Job{ playerid } == jobid ) || ( IsPlayerPlatinumVIP( playerid ) && p_VIPJob{ playerid } == jobid );
 }
 
 stock GetJobIDFromName( const job_name[ ] )

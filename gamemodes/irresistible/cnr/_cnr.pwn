@@ -18,16 +18,11 @@
 #include "irresistible\cnr\entrances.pwn"
 #include "irresistible\cnr\checkpoints.pwn"
 #include "irresistible\cnr\wanted_level.pwn"
+#include "irresistible\cnr\jobs.pwn"
+#include "irresistible\cnr\model_preview.pwn"
 
 // reliant on core definitions
 #include "irresistible\cnr\auth\_auth.pwn"
-#include "irresistible\cnr\vip\_vip.pwn"
-#include "irresistible\cnr\jobs.pwn"
-#include "irresistible\cnr\experience.pwn"
-#include "irresistible\cnr\ammunation.pwn"
-#include "irresistible\cnr\irresistibleguard.pwn"
-#include "irresistible\cnr\player_settings.pwn"
-#include "irresistible\cnr\model_preview.pwn"
 
 // discord feature
 #include "irresistible\cnr\discord\_discord.pwn"
