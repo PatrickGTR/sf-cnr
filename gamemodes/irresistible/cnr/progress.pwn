@@ -65,7 +65,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 }
 
 /* ** Functions ** */
-stock ShowProgressBar( playerid, title[ ], progress_id, total_time = 1000, color, params = 0 )
+stock ShowProgressBar( playerid, title[ 64 ], progress_id, total_time = 1000, color, params = 0 )
 {
 	if ( !IsPlayerConnected( playerid ) )
 	    return 0;

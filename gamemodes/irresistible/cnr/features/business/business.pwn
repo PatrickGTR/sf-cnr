@@ -1385,7 +1385,7 @@ thread OnUpdateBusinessTitle( businessid )
 }
 
 /* ** Functions ** */
-stock CreateBusiness( iAccountID, szBusiness[ 32 ], iPrice, iType, Float: fX, Float: fY, Float: fZ, iSupply = 0, iProduct = 0, iProductionTimestamp = 0, iBank = 0, iSecurity = 0, iExistingID = ITER_NONE )
+stock CreateBusiness( iAccountID, const szBusiness[ 32 ], iPrice, iType, Float: fX, Float: fY, Float: fZ, iSupply = 0, iProduct = 0, iProductionTimestamp = 0, iBank = 0, iSecurity = 0, iExistingID = ITER_NONE )
 {
 	new
 		iBusiness = iExistingID != ITER_NONE ? iExistingID : Iter_Free(business);

@@ -302,7 +302,7 @@ thread OnEntrancesLoad( )
 }
 
 /* ** Functions ** */
-stock CreateEntrance( name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: lY, Float: lZ, interior, world, bool: custom = false, bool: viponly = false, mapicon = -1, savedId = 0 )
+stock CreateEntrance( const name[ ], Float: X, Float: Y, Float: Z, Float: lX, Float: lY, Float: lZ, interior, world, bool: custom = false, bool: viponly = false, mapicon = -1, savedId = 0 )
 {
 	new
 		ID = Iter_Free(entrances);

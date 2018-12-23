@@ -663,7 +663,7 @@ CMD:race( playerid, params[ ] )
 
 /* ** Functions ** */
 
-stock SendClientMessageToRace( raceid, colour, format[ ], va_args<> )
+stock SendClientMessageToRace( raceid, colour, const format[ ], va_args<> )
 {
     static
 		out[ 144 ];

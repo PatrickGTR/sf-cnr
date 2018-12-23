@@ -615,21 +615,10 @@ hook OnPlayerEndModelPreview( playerid, handleid )
 /* ** Commands ** */
 CMD:toys( playerid, params[ ] )
 {
-	if ( !IsPlayerSpawned( playerid ) ) return SendError( playerid, "You cannot use this command while you are not spawned." );
+	if ( !IsPlayerSpawned( playerid ) )
+		return SendError( playerid, "You cannot use this command while you are not spawned." );
 
-	new
-		iToy[ 3 ] [ 24 ] = { { "None" }, { "None" }, { "None" } };
-
-	for( new i = 0; i < sizeof( g_ToyData ); i++ ) {
- 		for( new x = 0; x < sizeof( iToy ); x++ ) {
-			if ( g_ToyData[ i ] [ E_MODEL ] == p_AttachedObjectsData[ playerid ] [ x ] [ E_MODELID ] )
-				strcpy( iToy[ x ], g_ToyData[ i ] [ E_NAME ] );
- 		}
- 	}
-
-	format( szNormalString, sizeof( szNormalString ), ""COL_GREY"Disable All Toys\nSlot 1 (%s)\nSlot 2 (%s)\nSlot 3 (%s)", iToy[ 0 ], iToy[ 1 ], iToy[ 2 ] );
-	ShowPlayerDialog( playerid, DIALOG_TOYS_MAIN, DIALOG_STYLE_LIST, "{FFFFFF}Toys", szNormalString, "Select", "Close" );
-	return 1;
+	return ShowPlayerToys( playerid );
 }
 
 /* ** SQL Threads ** */
@@ -788,4 +777,20 @@ stock reloadPlayerToys( playerid )
 		}
 	}
 	return 1;
+}
+
+stock ShowPlayerToys( playerid )
+{
+	new
+		iToy[ 3 ] [ 24 ] = { { "None" }, { "None" }, { "None" } };
+
+	for( new i = 0; i < sizeof( g_ToyData ); i++ ) {
+ 		for( new x = 0; x < sizeof( iToy ); x++ ) {
+			if ( g_ToyData[ i ] [ E_MODEL ] == p_AttachedObjectsData[ playerid ] [ x ] [ E_MODELID ] )
+				strcpy( iToy[ x ], g_ToyData[ i ] [ E_NAME ] );
+ 		}
+ 	}
+
+	format( szNormalString, sizeof( szNormalString ), ""COL_GREY"Disable All Toys\nSlot 1 (%s)\nSlot 2 (%s)\nSlot 3 (%s)", iToy[ 0 ], iToy[ 1 ], iToy[ 2 ] );
+	return ShowPlayerDialog( playerid, DIALOG_TOYS_MAIN, DIALOG_STYLE_LIST, "{FFFFFF}Toys", szNormalString, "Select", "Close" ), 1;
 }

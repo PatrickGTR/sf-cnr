@@ -381,7 +381,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	return 1;
 }
 
-stock IsPlayingAnimation( playerid, library[ ], animation[ ] )
+stock IsPlayingAnimation( playerid, const library[ ], const animation[ ] )
 {
 	if ( IsPlayerConnected( playerid ) )
 	{

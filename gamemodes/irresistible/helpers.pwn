@@ -69,7 +69,7 @@ stock __svrticks__GetTickCount( )
 #define GetTickCount __svrticks__GetTickCount
 
 /* ** Functions ** */
-stock SendClientMessageFormatted( playerid, colour, format[ ], va_args<> )
+stock SendClientMessageFormatted( playerid, colour, const format[ ], va_args<> )
 {
     static
 		out[ 144 ];
@@ -84,7 +84,7 @@ stock SendClientMessageFormatted( playerid, colour, format[ ], va_args<> )
 }
 
 // purpose: send client message to all rcon admins
-stock SendClientMessageToRCON( colour, format[ ], va_args<> )
+stock SendClientMessageToRCON( colour, const format[ ], va_args<> )
 {
     static
         out[ 144 ];

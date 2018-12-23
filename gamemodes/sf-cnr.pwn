@@ -7577,7 +7577,7 @@ stock SavePlayerData( playerid, bool: logout = false )
     return 1;
 }
 
-stock SendClientMessageToGang( gangid, colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+stock SendClientMessageToGang( gangid, colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
 		out[ 144 ];
@@ -7592,7 +7592,7 @@ stock SendClientMessageToGang( gangid, colour, format[ ], va_args<> ) // Convers
 	return 1;
 }
 
-stock SendGlobalMessage( colour, format[ ], va_args<> )
+stock SendGlobalMessage( colour, const format[ ], va_args<> )
 {
     static
 		out[ 144 ];
@@ -7832,7 +7832,7 @@ stock IsNumeric(const str[ ])
     return true;
 }
 
-stock AddFileLogLine( file[ ], input[ ] )
+stock AddFileLogLine( const file[ ], input[ ] )
 {
     new
 		File: fHandle
@@ -7843,7 +7843,7 @@ stock AddFileLogLine( file[ ], input[ ] )
     return 1;
 }
 
-stock GetPlayerIDFromName( pName[ ] )
+stock GetPlayerIDFromName( const pName[ ] )
 {
     foreach(new i : Player)
     {
@@ -8404,7 +8404,7 @@ stock SyncObject( playerid, Float: offsetX = 0.005, Float: offsetY = 0.005, Floa
 		SetPlayerPos( playerid, X + offsetX, Y + offsetY, Z + offsetZ );
 }
 
-stock AddAdminLogLineFormatted( format[ ], va_args<> )
+stock AddAdminLogLineFormatted( const format[ ], va_args<> )
 {
     static
 		out[ sizeof( log__Text[ ] ) ];
@@ -8425,7 +8425,7 @@ stock AddAdminLogLine( szMessage[ sizeof( log__Text[ ] ) ] )
 	return TextDrawSetString( g_AdminLogTD, szLargeString );
 }
 
-stock SaveToAdminLogFormatted( playerid, id, format[ ], va_args<> )
+stock SaveToAdminLogFormatted( playerid, id, const format[ ], va_args<> )
 {
     static
 		out[ sizeof( log__Text[ ] ) ];
@@ -8434,12 +8434,12 @@ stock SaveToAdminLogFormatted( playerid, id, format[ ], va_args<> )
     return SaveToAdminLog( playerid, id, out );
 }
 
-stock SaveToAdminLog( playerid, id, message[ ] )
+stock SaveToAdminLog( playerid, id, const message[ ] )
 {
 	if ( id ) {
-		format( szBigString, sizeof( szBigString ),"INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`, `ACTION_ID`) VALUES (%d, '%s', %d)", p_AccountID[ playerid ], mysql_escape( message ), id );
+		mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`, `ACTION_ID`) VALUES (%d, '%e', %d)", p_AccountID[ playerid ], message, id );
 	} else {
-		format( szBigString, sizeof( szBigString ),"INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`) VALUES (%d, '%s')", p_AccountID[ playerid ], mysql_escape( message ) );
+		mysql_format( dbHandle, szBigString, sizeof( szBigString ), "INSERT INTO `ADMIN_LOG` (`USER_ID`, `ACTION`) VALUES (%d, '%e')", p_AccountID[ playerid ], message );
 	}
 	mysql_single_query( szBigString );
 	return 1;
@@ -8694,7 +8694,7 @@ stock getCurrentTime( )
 new
 	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { -1, ... };
 
-stock ShowPlayerHelpDialog( playerid, timeout, format[ ], va_args<> )
+stock ShowPlayerHelpDialog( playerid, timeout, const format[ ], va_args<> )
 {
     static
 		out[ 255 ]
@@ -9593,7 +9593,7 @@ stock GivePlayerLeoWeapons( playerid ) {
 	}
 }
 
-stock IsSafeGameText(string[])
+stock IsSafeGameText(const string[])
 {
     new count;
     for(new num, len = strlen(string); num < len; num++)
@@ -9633,7 +9633,7 @@ function ope_Unfreeze( a )
 	TogglePlayerControllable( a, 1 );
 }
 
-stock SendClientMessageToAdmins( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+stock SendClientMessageToAdmins( colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
 		out[ 144 ];
@@ -9757,7 +9757,7 @@ stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
 
-stock SendClientMessageToCops( colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+stock SendClientMessageToCops( colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
 		out[ 144 ];

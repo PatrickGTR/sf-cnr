@@ -636,7 +636,7 @@ stock GetCivilianNpcFromPlayer( playerid )
 	return -1;
 }
 
-stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 50.0, &Float: distance = FLOAT_INFINITY )
+stock TriggerClosestCivilians( playerid, clerkid = -1, Float: radius = 50.0 )
 {
     if ( ! IsPlayerConnected( playerid ) )
     	return;

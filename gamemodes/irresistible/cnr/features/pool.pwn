@@ -1353,7 +1353,7 @@ stock Pool_QueueNextPlayer( poolid, current_player )
 	Pool_ResetBallPositions( poolid );
 }
 
-stock Pool_SendTableMessage( poolid, colour, format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+stock Pool_SendTableMessage( poolid, colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
 		out[ 144 ];

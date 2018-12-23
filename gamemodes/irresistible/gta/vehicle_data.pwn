@@ -43,7 +43,7 @@ stock const g_aVehicleNames[ 212 ] [ ] =
 };
 
 /* ** Functions ** */
-stock GetVehicleModelFromName( szVehicleName[ ] )
+stock GetVehicleModelFromName( const szVehicleName[ ] )
 {
 	for( new i = 400; i <= 611; i++ )
 		if( strfind( g_aVehicleNames[ i - 400 ], szVehicleName, true ) != -1 )
