@@ -1934,13 +1934,17 @@ public OnPlayerText( playerid, text[ ] )
 	new
 		time = g_iTime;
 
-	if ( GetPlayerScore( playerid ) < 10 ) {
+	if ( GetPlayerScore( playerid ) < 10 )
 		return SendServerMessage( playerid, "You need at least 10 score to talk. "COL_GREY"Use /ask or /report to talk to an admin in the meanwhile." ), 0;
-	}
 
-	if ( ! IsPlayerLoggedIn( playerid ) ) {
+	if ( !p_PlayerLogged{ playerid } )
 		return SendError( playerid, "You must be logged in to talk." ), 0;
-	}
+
+#if !defined DEBUG_MODE
+	GetServerVarAsString( "rcon_password", szNormalString, sizeof( szNormalString ) ); // Anti-rcon spam poop
+	if ( strfind( text, szNormalString, true ) != -1 )
+	    return SendError( playerid, "An error occured, please try again." ), 0;
+#endif
 
 	if ( textContainsIP( text ) )
 		return SendServerMessage( playerid, "Please do not advertise." ), 0;
@@ -1975,7 +1979,6 @@ public OnPlayerText( playerid, text[ ] )
 			return 0;
 		}
 	}
-
 	if ( ! IsPlayerSettingToggled( playerid, SETTING_CHAT_PREFIXES ) )
 	{
 		switch( text[ 0 ] )

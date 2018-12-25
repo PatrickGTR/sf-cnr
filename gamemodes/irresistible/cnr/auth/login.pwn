@@ -13,12 +13,5 @@
 /* ** Variables ** */
 
 /* ** Hooks ** */
-hook OnPlayerText( playerid, text[ ] )
-{
-	if ( ! IsPlayerNPC( playerid ) ) {
-
-	}
-	return Y_HOOKS_CONTINUE_RETURN_1;
-}
 
 /* ** Functions ** */
