@@ -128,9 +128,19 @@ hook OnServerGameDayEnd( )
 hook OnPlayerDriveVehicle( playerid, vehicleid )
 {
 	new
-		modelid = GetVehicleModel( vehicleid );
+		modelid = GetVehicleModel( vehicleid ),
+		Float: total_experience;
+
+	GetPlayerTotalExperience( playerid, total_experience );
 
 	if ( modelid == 407 ) {
+
+		if ( total_experience < 2500 )
+		{
+			RemovePlayerFromVehicle( playerid );
+			return SendServerMessage( playerid, "You must have 2,500XP to use a Firetruck." );
+		}
+
 		ShowPlayerHelpDialog( playerid, 2500, "You can see where fires are using ~g~/fires" );
 	}
 	return 1;

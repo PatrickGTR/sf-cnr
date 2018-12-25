@@ -1934,6 +1934,14 @@ public OnPlayerText( playerid, text[ ] )
 	new
 		time = g_iTime;
 
+	if ( GetPlayerScore( playerid ) < 10 ) {
+		return SendServerMessage( playerid, "You need at least 10 score to talk. "COL_GREY"Use /ask or /report to talk to an admin in the meanwhile." ), 0;
+	}
+
+	if ( ! IsPlayerLoggedIn( playerid ) ) {
+		return SendError( playerid, "You must be logged in to talk." ), 0;
+	}
+
 	if ( textContainsIP( text ) )
 		return SendServerMessage( playerid, "Please do not advertise." ), 0;
 
