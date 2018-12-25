@@ -194,6 +194,7 @@ new
 	g_businessActors				[ MAX_BUSINESSES ] [ MAX_BIZ_ACTORS ],
 	g_isBusinessVehicle 			[ MAX_VEHICLES ] = { -1, ... },
 	g_businessVehicle 				[ MAX_BUSINESSES ] = { INVALID_VEHICLE_ID, ... },
+	g_businessMemberIndex 			[ MAX_PLAYERS ] [ MAX_BUSINESS_MEMBERS ],
 	bool: g_businessVehicleUnlocked [ MAX_BUSINESSES ] [ MAX_BIZ_VEH_MODELS char ],
 	Iterator: business 				< MAX_BUSINESSES >
 	//g_BusinessUpdateTickCount		= 0
@@ -1029,28 +1030,24 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( listitem == 0 )
 			return ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
 
-	    for( new i, x = 1; i < MAX_BUSINESS_MEMBERS; i ++ )
-		{
-			if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] )
-		 	{
-		       	if ( x == listitem )
-		      	{
-		      		// alert player if online
-		      		foreach (new p : Player) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] == p_AccountID[ p ] ) {
-		      			SendServerMessage( p, "You have been removed as a member of "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
-		      			break;
-		      		}
+		new memberid = g_businessMemberIndex[ playerid ][ listitem ];
 
-		      		// null entry
-		      		g_businessData[ businessid ] [ E_MEMBERS ] [ i ] = 0;
+		if ( g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] )
+	 	{
+	 		printf( "[business remove member] {user: %d, businessid: %d}", g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ], businessid );
+      		
+      		// alert player if online
+      		foreach (new p : Player) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] == p_AccountID[ p ] ) {
+      			SendServerMessage( p, "You have been removed as a member of "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+      			break;
+      		}
 
-		      		// save
-		      		UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
-		      		SendServerMessage( playerid, "You have removed a member from the business." );
-				 	break;
-	      		}
-		      	x ++;
-			}
+      		// null entry
+      		g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] = 0;
+
+      		// save
+      		UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
+      		SendServerMessage( playerid, "You have removed a member from the business." );
 		}
 
 		ShowBusinessMembers( playerid, businessid );
@@ -2034,7 +2031,7 @@ stock ShowBusinessMembers( playerid, businessid )
 function OnShowBusinessMembers( playerid, businessid )
 {
 	new
-		rows, fields, member[ MAX_PLAYER_NAME ];
+		count = 0, rows, fields, member[ MAX_PLAYER_NAME ];
 
 	cache_get_data( rows, fields );
 
@@ -2047,6 +2044,8 @@ function OnShowBusinessMembers( playerid, businessid )
 			// get member name
 			cache_get_field_content( i, "NAME", member, sizeof( member ) );
 			format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, member );
+
+			g_businessMemberIndex[ playerid ][ count ++ ] = i;
 		}
 
 		ShowPlayerDialog( playerid, DIALOG_BUSINESS_MEMBERS, DIALOG_STYLE_LIST, ""COL_GREY"Business System", szBigString, "Kick", "Back" );
