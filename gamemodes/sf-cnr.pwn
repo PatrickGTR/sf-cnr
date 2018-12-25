@@ -1935,11 +1935,11 @@ public OnPlayerText( playerid, text[ ] )
 		time = g_iTime;
 
 	if ( GetPlayerScore( playerid ) < 10 ) {
-		return SendServerMessage( playerid, "You need at least 10 score to talk. "COL_GREY"Use /ask or /report to talk to an admin in the meanwhile." ), return 0;
+		return SendServerMessage( playerid, "You need at least 10 score to talk. "COL_GREY"Use /ask or /report to talk to an admin in the meanwhile." ), 0;
 	}
 
 	if ( ! IsPlayerLoggedIn( playerid ) ) {
-		return SendError( playerid, "You must be logged in to talk." ), return 0;
+		return SendError( playerid, "You must be logged in to talk." ), 0;
 	}
 
 	if ( textContainsIP( text ) )
