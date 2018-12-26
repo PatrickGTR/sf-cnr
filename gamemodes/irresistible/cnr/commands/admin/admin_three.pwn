@@ -560,12 +560,13 @@ thread OnPlayerBanLog( playerid, const Name[ ] )
 		return SendError( playerid, "This player isn't banned." );
 	}
 
-	new ban_ip[ 16 ];
-	new ban_reason[ 80 ];
-	new ban_by[ 24 ];
-	new ban_date;
-	new ban_expire;
-	new country[ 3 ];
+	static 
+		ban_ip[ 16 ],
+		ban_reason[ 80 ],
+		ban_by[ 24 ],
+		ban_date,
+		ban_expire,
+	;
 
 	for ( new row = 0; row < rows; row ++ )
 	{
