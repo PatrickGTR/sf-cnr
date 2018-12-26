@@ -565,7 +565,7 @@ thread OnPlayerBanLog( playerid, const Name[ ] )
 		ban_reason[ 80 ],
 		ban_by[ 24 ],
 		ban_date,
-		ban_expire,
+		ban_expire
 	;
 
 	for ( new row = 0; row < rows; row ++ )

@@ -74,7 +74,7 @@ static stock
 		{ 2, "/kick", 				"Kicking a player from the server" },
 
 		/* ** Level 3 Commands ** */
-		{ 3, "/banlog", 			"Finding ban information about a player"}
+		{ 3, "/banlog", 			"Finding ban information about a player" },
 		{ 3, "/smlog", 				"Cash transaction log from a player" },
 		{ 3, "/iclog", 				"IC transaction log from a player" },
 		{ 3, "/resetwep", 			"Resetting weapons from a player" },
