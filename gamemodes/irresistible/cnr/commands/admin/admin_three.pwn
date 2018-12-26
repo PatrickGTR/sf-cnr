@@ -577,9 +577,9 @@ thread OnPlayerBanLog( playerid, const Name[ ] )
 		cache_get_field_content( row, "BANBY", ban_by );
 
 		if ( ! ban_expire )
-			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Infomation:\n\n"COL_GREY"Userame: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"Never\n", Name, ban_ip, ban_reason, ban_by );
-		else 
-			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Infomation:\n\n"COL_GREY"Userame: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"%s\n", Name, ban_ip, ban_reason, ban_by, secondstotime( ban_expire - g_iTime ) );
+			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Information:\n\n"COL_GREY"Username: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"Never\n", Name, ban_ip, ban_reason, ban_by );
+		else
+			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Information:\n\n"COL_GREY"Username: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"%s\n", Name, ban_ip, ban_reason, ban_by, secondstotime( ban_expire - g_iTime ) );
 	}
 
 	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Ban Search", szHugeString, "Close", "" ), 1;
