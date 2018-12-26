@@ -22,8 +22,9 @@
 #include "irresistible\cnr\features\visage\_visage.pwn"
 
 // special (xmas/easter/nye)
-#include "irresistible\cnr\features\christmas.pwn"
+// #include "irresistible\cnr\features\christmas.pwn"
 // #include "irresistible\cnr\features\eastereggs.pwn"
+#include "irresistible\cnr\features\new_years_eve.pwn"
 
 // other
 #include "irresistible\cnr\features\ammunation.pwn"
