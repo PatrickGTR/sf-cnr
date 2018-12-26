@@ -1264,6 +1264,44 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 
 				if ( p_WantedLevel[ playerid ] <= 2 && p_Class[ playerid ] != CLASS_POLICE && p_Class[ iDriver ] == CLASS_POLICE && GetPVarInt( playerid, "ShotCopWantedCD" ) < g_iTime )
 					SendServerMessage( playerid, "You have physically touched an officer, thus you have been wanted." ), GivePlayerWantedLevel( playerid, 6 ), SetPVarInt( playerid, "ShotCopWantedCD", g_iTime + 120 );
+
+				// Cops Cannot Damage Innocent Vehicles, Unless Wanted Players Occupy Alongside Them
+				if ( p_Class[ playerid ] == CLASS_POLICE && p_WantedLevel[ iDriver ] == 0 )
+				{
+
+					new
+						innocentVehicleID = GetPlayerVehicleID( iDriver );
+
+					foreach ( new i : Player )
+					{
+
+						if ( !IsPlayerConnected( i ) )
+							continue;
+
+						if ( i == iDriver )
+							continue;
+
+						new
+							iTargetVehicle = GetPlayerVehicleID( i );
+
+						if ( iTargetVehicle == innocentVehicleID )
+						{
+							if ( GetPlayerWantedLevel( i ) > 0 )
+								return 1;
+						}
+						else
+						{
+							continue;
+						}
+					
+					}
+
+					return ShowPlayerHelpDialog( playerid, 2000, "You cannot damage an innocent player's vehicle unless they have wanted players alongside them!" ), 0;
+				}
+
+				// Passive Players can't damage normal players vehicles
+				if ( IsPlayerPassive( playerid ) )
+					return 0;
 			}
 		}
 	}
@@ -5937,6 +5975,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				p_JobSet{ playerid } = false;
 				//p_CitySet{ playerid } = false;
 				p_SpawningCity{ playerid } = CITY_SF;
+
+				DisablePassiveMode( playerid );
 				p_Uptime[ playerid ] = 0;
 				ShowAchievement( playerid, "Registering to SF-CnR!", 1 );
                 p_PlayerLogged{ playerid } = true;
@@ -6026,9 +6066,10 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
             TogglePlayerControllable( playerid, 1 );
 
+			/* Passive Mode - Removed E:\SF-CNR\gamemodes\sf-cnr.pwn
 			if ( ! p_JobSet{ playerid } ) {
 				ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
-			}
+			}*/
 
             p_JobSet{ playerid } = true;
 
@@ -6044,7 +6085,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
     }
 
-	if ( dialogid == DIALOG_PASSIVE_MODE )
+	/*if ( dialogid == DIALOG_PASSIVE_MODE )
 	{
 		if ( ! response || ! listitem ) {
 			ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
@@ -6056,7 +6097,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
 			SendServerMessage( playerid, "Since you like deathmatch, passive mode has been automatically enabled for you!" );
 		}
-	}
+	}*/
     if ( ( dialogid == DIALOG_BANK_MENU ) && response )
 	{
 		new
