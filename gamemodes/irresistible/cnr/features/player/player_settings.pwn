@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_SETTINGS 				( 13 )
+#define MAX_SETTINGS 				( 14 )
 
 #define SETTING_BAILOFFERS 			( 0 )
 #define SETTING_EVENT_TP			( 1 )
@@ -24,13 +24,14 @@
 #define SETTING_TOP_DONOR 			( 10 )
 #define SETTING_WEAPON_PICKUP 		( 11 )
 #define SETTING_PASSIVE_MODE 		( 12 )
+#define SETTING_CHAT_ID 			( 13 )
 
 /* ** Variables ** */
 static stock
 	g_PlayerSettings 				[ MAX_SETTINGS ] [ 24 ] = {
 		{ "Prevent Bail Offers" }, { "Prevent Event Teleports" }, { "Prevent Gang Invites" }, { "Prevent Chat Prefixes" }, { "Prevent Ransom Offers" },
 		{ "Prevent Auto-Save" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
-		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }
+		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }, { "Display Chat ID's" }
 	},
 	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
@@ -160,7 +161,7 @@ CMD:passive( playerid, params[ ] )
 	return 1;
 }
 
-CMD:passivelist( playerid, params[ ])
+CMD:passivelist( playerid, params[ ] )
 {
 	new
 		count = 0;
@@ -186,7 +187,6 @@ CMD:passivelist( playerid, params[ ])
 stock IsPlayerSettingToggled( playerid, settingid ) {
 	return p_PlayerSettings[ playerid ] { settingid };
 }
-
 
 stock IsPlayerVIPSkinToggled( playerid ) {
 	return p_PlayerSettings[ playerid ] { SETTING_VIPSKIN };

@@ -27,17 +27,20 @@ hook OnPlayerUpdateEx( playerid )
 
 hook OnPlayerSpawn( playerid )
 {
-    // Toggle Anti Spawn Kill
-	DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
-	SetPlayerHealth( playerid, INVALID_PLAYER_ID );
-	Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
-	p_SpawnKillLabel[ playerid ] = Create3DTextLabel( "Spawn Protected!", COLOR_GOLD, 0.0, 0.0, 0.0, 15.0, 0 );
-	p_AntiSpawnKill[ playerid ] = g_iTime + 15;
-    Attach3DTextLabelToPlayer( p_SpawnKillLabel[ playerid ], playerid, 0.0, 0.0, 0.3 );
-    p_AntiSpawnKillEnabled{ playerid } = true;
+	if ( ! IsPlayerInPaintBall( playerid ) )
+	{
+	    // Toggle Anti Spawn Kill
+		DisableRemoteVehicleCollisions( playerid, p_AdminOnDuty{ playerid } );
+		SetPlayerHealth( playerid, INVALID_PLAYER_ID );
+		Delete3DTextLabel( p_SpawnKillLabel[ playerid ] );
+		p_SpawnKillLabel[ playerid ] = Create3DTextLabel( "Spawn Protected!", COLOR_GOLD, 0.0, 0.0, 0.0, 15.0, 0 );
+		p_AntiSpawnKill[ playerid ] = g_iTime + 15;
+	    Attach3DTextLabelToPlayer( p_SpawnKillLabel[ playerid ], playerid, 0.0, 0.0, 0.3 );
+	    p_AntiSpawnKillEnabled{ playerid } = true;
 
-    // Toggle Passive Mode
-	SetPlayerPassiveMode( playerid );
+	    // Toggle Passive Mode
+		SetPlayerPassiveMode( playerid );
+	}
     return 1;
 }
 

@@ -10,20 +10,17 @@
 //#include 							< physics_dynamic >
 
 /* ** Definitions ** */
-#define POCKET_RADIUS 				0.09
-#define POOL_TIMER_SPEED 			30
-#define DEFAULT_AIM 				0.38
+#define POCKET_RADIUS 				( 0.09 )
+#define POOL_TIMER_SPEED 			( 30 )
+#define DEFAULT_AIM 				( 0.38 )
 #define DEFAULT_POOL_STRING 		"Pool Table\n{FFFFFF}Press ENTER To Play"
-#define POOL_FEE_RATE 				0.02
+#define POOL_FEE_RATE 				( 0.02 )
 
-#define MAX_POOL_TABLES 			48
-#define MAX_POOL_BALLS 				(16) // do not modify
-
-//#define DIALOG_POOL_WAGER 			3284
+#define MAX_POOL_TABLES 			( 48 )
+#define MAX_POOL_BALLS 				( 16 ) // do not modify
 
 /* ** Macros ** */
-#define SendPoolMessage(%0,%1) \
-	SendClientMessageFormatted(%0, -1, "{4B8774}[POOL] {E5861A}" # %1)
+#define SendPoolMessage(%0,%1)		SendClientMessageFormatted(%0, -1, "{4B8774}[POOL] {E5861A}" # %1)
 
 /* ** Constants (do not modify) ** */
 enum E_POOL_BALL_TYPE {
@@ -133,14 +130,14 @@ forward PlayPoolSound 				( poolid, soundid );
 hook OnScriptInit( )
 {
 	// textdraws
-	g_PoolTextdraw = TextDrawCreate(529.000000, 218.000000, "Power");
-	TextDrawBackgroundColor(g_PoolTextdraw, 255);
-	TextDrawFont(g_PoolTextdraw, 1);
-	TextDrawLetterSize(g_PoolTextdraw, 0.300000, 1.299998);
-	TextDrawColor(g_PoolTextdraw, -1);
-	TextDrawSetOutline(g_PoolTextdraw, 1);
-	TextDrawSetProportional(g_PoolTextdraw, 1);
-	TextDrawSetSelectable(g_PoolTextdraw, 0);
+	g_PoolTextdraw = TextDrawCreate( 529.000000, 218.000000, "Power" );
+	TextDrawBackgroundColor( g_PoolTextdraw, 255 );
+	TextDrawFont( g_PoolTextdraw, 1 );
+	TextDrawLetterSize( g_PoolTextdraw, 0.300000, 1.299998 );
+	TextDrawColor( g_PoolTextdraw, -1 );
+	TextDrawSetOutline( g_PoolTextdraw, 1 );
+	TextDrawSetProportional( g_PoolTextdraw, 1 );
+	TextDrawSetSelectable( g_PoolTextdraw, 0 );
 
 	// create static pooltables
 	CreatePoolTableEx( 510.10159, -84.83590, 998.9375, 90.00000, POOL_SKIN_DEFAULT, 11, 7, 54, 55, 56, 50, 52, 51, 15, 10, 21, 58, 48, 17, 36, 41, 22 );

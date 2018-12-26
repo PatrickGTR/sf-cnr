@@ -362,16 +362,16 @@ CMD:duel( playerid, params[ ] )
 		new
 			targetid;
 
-		if ( sscanf( params[7], "u", targetid) )
+		if ( sscanf( params[ 7 ], "u", targetid ) )
 			return SendUsage( playerid, "/duel accept [PLAYER_ID]");
 
-		if ( !IsPlayerConnected( targetid ))
+		if ( !IsPlayerConnected( targetid ) )
 			return SendError( playerid, "You do not have any duel invitations to accept.");
 
-		if ( gettime() > p_duelInvitation[ targetid ][ playerid ] )
+		if ( gettime( ) > p_duelInvitation[ targetid ][ playerid ] )
 			return SendError( playerid, "You have not been invited by %s to duel or it has expired.");
 
-		if ( IsPlayerDueling( playerid ))
+		if ( IsPlayerDueling( playerid ) )
 			return SendError( playerid, "You cannot accept this invite as you are currently dueling.");
 
 		if ( GetDistanceBetweenPlayers( playerid, targetid ) > 25.0)
@@ -380,15 +380,15 @@ CMD:duel( playerid, params[ ] )
 		new
 			waged_amount = g_duelData[ targetid ][ E_BET ];
 
-		if (g_duelData[ targetid ][ E_BET ] != 0)
+		if ( g_duelData[ targetid ][ E_BET ] != 0 )
 		{
-			if ( GetPlayerCash( targetid ) < waged_amount)
+			if ( GetPlayerCash( targetid ) < waged_amount )
 			{
 				SendClientMessageFormatted( targetid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s has accepted but you don't have money to wage (%s).", ReturnPlayerName( playerid ), cash_format( waged_amount ) );
 				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" You have accepted %s's duel invitation but they don't have money.", ReturnPlayerName( targetid ) );
 				return 1;
 			}
-			else if ( GetPlayerCash( playerid ) < waged_amount)
+			else if ( GetPlayerCash( playerid ) < waged_amount )
 			{
 				SendClientMessageFormatted( playerid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s requires you to wage %s.", ReturnPlayerName( targetid ), cash_format( waged_amount ) );
 				SendClientMessageFormatted( targetid, -1, ""COL_DUEL"[DUEL]"COL_WHITE" %s has accepted the duel invitation but they don't have money to wage.", ReturnPlayerName( playerid ) );
@@ -451,9 +451,9 @@ CMD:duel( playerid, params[ ] )
 		}
 		return 1;
 	}
-	else if (strmatch(params, "cancel"))
+	else if ( strmatch( params, "cancel" ) )
 	{
-		if ( ClearDuelInvites( playerid ))
+		if ( ClearDuelInvites( playerid ) )
 		{
 			return SendServerMessage( playerid, "You have cancelled every duel offer that you have made." );
 		}
@@ -486,7 +486,7 @@ stock IsPlayerDueling( playerid ) {
 	return p_playerDueling{ playerid };
 }
 
-stock ShowPlayerDuelMenu(playerid)
+stock ShowPlayerDuelMenu( playerid )
 {
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN )
 		return SendError( playerid, "You can only use this feature whist being a civilian.");
@@ -496,7 +496,7 @@ stock ShowPlayerDuelMenu(playerid)
 
 	format( szBigString, sizeof(szBigString),
 		"Player\t"COL_GREY"%s\nHealth\t"COL_GREY"%.2f%%\nArmour\t"COL_GREY"%.2f%%\nPrimary Weapon\t"COL_GREY"%s\nSecondary Weapon\t"COL_GREY"%s\nLocation\t"COL_GREY"%s\nWager\t"COL_GREY"%s\n"COL_GOLD"Send Invite\t"COL_GOLD">>>",
-		(!IsPlayerConnected(g_duelData[ playerid ][ E_PLAYER ]) ? (""COL_RED"No-one") : (ReturnPlayerName( g_duelData[ playerid ][ E_PLAYER ] ) ) ),
+		( ! IsPlayerConnected( g_duelData[ playerid ][ E_PLAYER ] ) ? ( ""COL_RED"No-one" ) : ( ReturnPlayerName( g_duelData[ playerid ][ E_PLAYER ] ) ) ),
 		g_duelData[ playerid ][ E_HEALTH ],
 		g_duelData[ playerid ][ E_ARMOUR ],
 		ReturnWeaponName( g_duelData[ playerid ][ E_WEAPON ][ 0 ] ),
@@ -505,13 +505,13 @@ stock ShowPlayerDuelMenu(playerid)
 		cash_format( g_duelData[ playerid ][ E_BET ] )
 	);
 
-	ShowPlayerDialog(playerid, DIALOG_DUEL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Duel Settings", szBigString, "Select", "Cancel");
+	ShowPlayerDialog( playerid, DIALOG_DUEL, DIALOG_STYLE_TABLIST, ""COL_WHITE"Duel Settings", szBigString, "Select", "Cancel" );
 	return 1;
 }
 
 static stock forfeitPlayerDuel(playerid)
 {
-	if ( !IsPlayerDueling( playerid ))
+	if ( !IsPlayerDueling( playerid ) )
 		return 0;
 
 	ClearDuelInvites( playerid );
@@ -519,22 +519,22 @@ static stock forfeitPlayerDuel(playerid)
 	new
 		winnerid = g_duelData[ playerid ][ E_PLAYER ];
 
-	if ( ! IsPlayerConnected( winnerid ) || ! IsPlayerDueling( winnerid ))
+	if ( ! IsPlayerConnected( winnerid ) || ! IsPlayerDueling( winnerid ) )
 		return 0;
 
 	// begin wager info
 	new
 		amount_waged = g_duelData[ playerid ][ E_BET ];
 
-	SpawnPlayer(winnerid);
-	ClearDuelInvites(winnerid);
+	SpawnPlayer( winnerid );
+	ClearDuelInvites( winnerid );
 
 	// decrement rounds
 	g_duelData[ playerid ][ E_ROUNDS ] --;
 	g_duelData[ winnerid ][ E_ROUNDS ] = g_duelData[ playerid ][ E_ROUNDS ];
 
 	// check if theres a remaining round
-	if (g_duelData[ playerid ][ E_ROUNDS ] == 0)
+	if ( g_duelData[ playerid ][ E_ROUNDS ] == 0)
 	{
 		if ( 0 < amount_waged < 10000000 )
 		{
@@ -552,10 +552,10 @@ static stock forfeitPlayerDuel(playerid)
 	return 1;
 }
 
-function OnDuelTimer(targetid)
+function OnDuelTimer( targetid )
 {
 	new
-		playerid = g_duelData[targetid][ E_PLAYER ];
+		playerid = g_duelData[ targetid ][ E_PLAYER ];
 
 	g_duelData[ targetid ][ E_COUNTDOWN ] --;
 
@@ -574,7 +574,7 @@ function OnDuelTimer(targetid)
 	}
 	else
 	{
-		format(szSmallString, sizeof(szSmallString), "~w~%d", g_duelData[ targetid ][ E_COUNTDOWN ]);
+		format( szSmallString, sizeof( szSmallString ), "~w~%d", g_duelData[ targetid ][ E_COUNTDOWN ] );
 		GameTextForPlayer( targetid, szSmallString, 1500, 4 );
 		GameTextForPlayer( playerid, szSmallString, 1500, 4 );
 

@@ -536,6 +536,55 @@ CMD:ban( playerid, params [ ] )
 	return 1;
 }
 
+CMD:banlog( playerid, params[ ] )
+{
+	new 
+		iName[ MAX_PLAYER_NAME ];
+
+	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+	else if ( sscanf( params, "s[24]", iName ) ) return SendUsage( playerid, "/banlog [PLAYER_NAME]" );
+	else
+	{
+		format( szNormalString, sizeof( szNormalString ) , "SELECT * FROM `BANS` WHERE `NAME`='%s' LIMIT 1", iName );
+		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerBanLog", "ds", playerid, iName );
+	}
+	return 1;
+}
+
+thread OnPlayerBanLog( playerid, const Name[ ] )
+{
+	new 
+		rows = cache_get_row_count( );
+
+	if ( ! rows ) {
+		return SendError( playerid, "This player isn't banned." );
+	}
+
+	static 
+		ban_ip[ 16 ],
+		ban_reason[ 80 ],
+		ban_by[ 24 ],
+		ban_date,
+		ban_expire
+	;
+
+	for ( new row = 0; row < rows; row ++ )
+	{
+		cache_get_field_content_int( row, "DATE", ban_date );
+		cache_get_field_content_int( row, "EXPIRE", ban_expire );
+		cache_get_field_content( row, "IP", ban_ip );
+		cache_get_field_content( row, "REASON", ban_reason );
+		cache_get_field_content( row, "BANBY", ban_by );
+
+		if ( ! ban_expire )
+			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Infomation:\n\n"COL_GREY"Userame: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"Never\n", Name, ban_ip, ban_reason, ban_by );
+		else 
+			format( szHugeString, sizeof( szHugeString ), ""COL_ORANGE"Ban Infomation:\n\n"COL_GREY"Userame: "COL_WHITE"%s\n"COL_GREY"IP Address: "COL_WHITE"%s\n"COL_GREY"Reason: "COL_WHITE"%s\n"COL_GREY"Banned by: "COL_WHITE"%s\n"COL_GREY"Expires: "COL_WHITE"%s\n", Name, ban_ip, ban_reason, ban_by, secondstotime( ban_expire - g_iTime ) );
+	}
+
+	return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Ban Search", szHugeString, "Close", "" ), 1;
+}
+
 CMD:bring( playerid, params[ ] )
 {
     new

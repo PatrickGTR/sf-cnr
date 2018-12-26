@@ -117,7 +117,7 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
-#if defined DEBUG_MODE
+#if !defined DEBUG_MODE
 	// prevent player from leaking rcon password
 	hook OnPlayerText( playerid, text[ ] )
 	{

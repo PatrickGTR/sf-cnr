@@ -194,6 +194,7 @@ new
 	g_businessActors				[ MAX_BUSINESSES ] [ MAX_BIZ_ACTORS ],
 	g_isBusinessVehicle 			[ MAX_VEHICLES ] = { -1, ... },
 	g_businessVehicle 				[ MAX_BUSINESSES ] = { INVALID_VEHICLE_ID, ... },
+	g_businessMemberIndex 			[ MAX_PLAYERS ] [ MAX_BUSINESS_MEMBERS ],
 	bool: g_businessVehicleUnlocked [ MAX_BUSINESSES ] [ MAX_BIZ_VEH_MODELS char ],
 	Iterator: business 				< MAX_BUSINESSES >
 	//g_BusinessUpdateTickCount		= 0
@@ -1029,12 +1030,15 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( listitem == 0 )
 			return ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
 
-	    for( new i, x = 1; i < MAX_BUSINESS_MEMBERS; i ++ )
+		for( new i, x = 1; i < MAX_BUSINESS_MEMBERS; i ++ )
 		{
 			if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] )
 		 	{
 		       	if ( x == listitem )
 		      	{
+		      		if ( g_Debugging ) {
+		      			printf( "[business remove member] {listitem: %d, user: %d, businessid: %d}", x, g_businessData[ businessid ] [ E_MEMBERS ] [ i ], businessid );
+      				}
 		      		// alert player if online
 		      		foreach (new p : Player) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] == p_AccountID[ p ] ) {
 		      			SendServerMessage( p, "You have been removed as a member of "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
@@ -1675,6 +1679,8 @@ stock UpdateBusinessData( businessid )
     for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
     	format( members, sizeof( members ), "%s%d ", members, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
 
+    print( members );
+
 	format( szLargeString, sizeof( szLargeString ), "UPDATE `BUSINESSES` SET `OWNER_ID`=%d,`NAME`='%s',`SUPPLIES`=%d,`PRODUCT`=%d,`MEMBERS`='%s',`PROD_TIMESTAMP`=%d,`BANK`=%d,`SECURITY`=%d WHERE `ID`=%d",
 		g_businessData[ businessid ] [ E_OWNER_ID ], mysql_escape( g_businessData[ businessid ] [ E_NAME ] ), g_businessData[ businessid ] [ E_SUPPLIES ], g_businessData[ businessid ] [ E_PRODUCT ],
 		members, g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], g_businessData[ businessid ] [ E_BANK ], g_businessData[ businessid ] [ E_SECURITY_LEVEL ], businessid );
@@ -2026,7 +2032,7 @@ stock ShowBusinessMembers( playerid, businessid )
 		format( szMembers, sizeof( szMembers ), "%s,%d", szMembers, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
 	}
 
-	format( szBigString, sizeof( szBigString ), "SELECT `NAME` FROM `USERS` WHERE `ID` IN (%s)", szMembers );
+	format( szBigString, sizeof( szBigString ), "SELECT `ID`, `NAME` FROM `USERS` WHERE `ID` IN (%s) ORDER BY `ID`", szMembers );
 	mysql_function_query( dbHandle, szBigString, true, "OnShowBusinessMembers", "dd", playerid, businessid );
 	return 1;
 }
