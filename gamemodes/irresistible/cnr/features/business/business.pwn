@@ -1030,24 +1030,31 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( listitem == 0 )
 			return ShowPlayerDialog( playerid, DIALOG_BUSINESS_ADD_MEMBER, DIALOG_STYLE_INPUT, ""COL_GREY"Business System", ""COL_WHITE"Type the name of the player you wish to add as a member.", "Add", "Back" );
 
-		new memberid = g_businessMemberIndex[ playerid ][ listitem ];
+		for( new i, x = 1; i < MAX_BUSINESS_MEMBERS; i ++ )
+		{
+			if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] )
+		 	{
+		       	if ( x == listitem )
+		      	{
+		      		if ( g_Debugging ) {
+		      			printf( "[business remove member] {listitem: %d, user: %d, businessid: %d}", x, g_businessData[ businessid ] [ E_MEMBERS ] [ i ], businessid );
+      				}
+		      		// alert player if online
+		      		foreach (new p : Player) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ i ] == p_AccountID[ p ] ) {
+		      			SendServerMessage( p, "You have been removed as a member of "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
+		      			break;
+		      		}
 
-		if ( g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] )
-	 	{
-	 		printf( "[business remove member] {user: %d, businessid: %d}", g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ], businessid );
-      		
-      		// alert player if online
-      		foreach (new p : Player) if ( g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] == p_AccountID[ p ] ) {
-      			SendServerMessage( p, "You have been removed as a member of "COL_GREY"%s"COL_WHITE".", g_businessData[ businessid ] [ E_NAME ] );
-      			break;
-      		}
+		      		// null entry
+		      		g_businessData[ businessid ] [ E_MEMBERS ] [ i ] = 0;
 
-      		// null entry
-      		g_businessData[ businessid ] [ E_MEMBERS ] [ memberid ] = 0;
-
-      		// save
-      		UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
-      		SendServerMessage( playerid, "You have removed a member from the business." );
+		      		// save
+		      		UpdateBusinessData( businessid ), UpdateBusinessTitle( businessid );
+		      		SendServerMessage( playerid, "You have removed a member from the business." );
+				 	break;
+	      		}
+		      	x ++;
+			}
 		}
 
 		ShowBusinessMembers( playerid, businessid );
@@ -1672,6 +1679,8 @@ stock UpdateBusinessData( businessid )
     for ( new i = 0; i < MAX_BUSINESS_MEMBERS; i ++ )
     	format( members, sizeof( members ), "%s%d ", members, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
 
+    print( members );
+
 	format( szLargeString, sizeof( szLargeString ), "UPDATE `BUSINESSES` SET `OWNER_ID`=%d,`NAME`='%s',`SUPPLIES`=%d,`PRODUCT`=%d,`MEMBERS`='%s',`PROD_TIMESTAMP`=%d,`BANK`=%d,`SECURITY`=%d WHERE `ID`=%d",
 		g_businessData[ businessid ] [ E_OWNER_ID ], mysql_escape( g_businessData[ businessid ] [ E_NAME ] ), g_businessData[ businessid ] [ E_SUPPLIES ], g_businessData[ businessid ] [ E_PRODUCT ],
 		members, g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], g_businessData[ businessid ] [ E_BANK ], g_businessData[ businessid ] [ E_SECURITY_LEVEL ], businessid );
@@ -2023,7 +2032,7 @@ stock ShowBusinessMembers( playerid, businessid )
 		format( szMembers, sizeof( szMembers ), "%s,%d", szMembers, g_businessData[ businessid ] [ E_MEMBERS ] [ i ] );
 	}
 
-	format( szBigString, sizeof( szBigString ), "SELECT `NAME` FROM `USERS` WHERE `ID` IN (%s)", szMembers );
+	format( szBigString, sizeof( szBigString ), "SELECT `ID`, `NAME` FROM `USERS` WHERE `ID` IN (%s) ORDER BY `ID`", szMembers );
 	mysql_function_query( dbHandle, szBigString, true, "OnShowBusinessMembers", "dd", playerid, businessid );
 	return 1;
 }
@@ -2031,7 +2040,7 @@ stock ShowBusinessMembers( playerid, businessid )
 function OnShowBusinessMembers( playerid, businessid )
 {
 	new
-		count = 0, rows, fields, member[ MAX_PLAYER_NAME ];
+		rows, fields, member[ MAX_PLAYER_NAME ];
 
 	cache_get_data( rows, fields );
 
@@ -2044,8 +2053,6 @@ function OnShowBusinessMembers( playerid, businessid )
 			// get member name
 			cache_get_field_content( i, "NAME", member, sizeof( member ) );
 			format( szBigString, sizeof( szBigString ), "%s%s\n", szBigString, member );
-
-			g_businessMemberIndex[ playerid ][ count ++ ] = i;
 		}
 
 		ShowPlayerDialog( playerid, DIALOG_BUSINESS_MEMBERS, DIALOG_STYLE_LIST, ""COL_GREY"Business System", szBigString, "Kick", "Back" );
