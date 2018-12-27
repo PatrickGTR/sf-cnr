@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -923,6 +923,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_SpawningIndex[ playerid ] = 0;
 	p_IncorrectLogins{ playerid } = 0;
 	p_VehicleBringCooldown[ playerid ] = 0;
+	p_HiddenNameTags{ playerid } = false;
 	p_AntiTextSpamCount{ playerid } = 0;
     Delete3DTextLabel( p_AdminLabel[ playerid ] );
     p_AdminLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
@@ -1017,9 +1018,10 @@ public OnPlayerSpawn( playerid )
 	CancelEdit( playerid );
 	HidePlayerHelpDialog( playerid );
 
-	// Name Tags
-	foreach( new pID : Player )
-		ShowPlayerNameTagForPlayer( playerid, pID, p_NameTags{ playerid } ? 1 : 0 );
+	// Hide name tags if enabled option
+	foreach( new pID : Player ) if ( p_HiddenNameTags{ pID } ) {
+		ShowPlayerNameTagForPlayer( pID, playerid, 0 );
+	}
 
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
@@ -2701,11 +2703,11 @@ CMD:nametags( playerid, params[ ] )
 {
 	if ( strmatch( params, "off" ) ) {
 		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 0 ); }
-		p_NameTags{ playerid } = false;
+		p_HiddenNameTags{ playerid } = true;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags disabled" );
 	} else if ( strmatch( params, "on" ) ) {
 		foreach( new i : Player ) { ShowPlayerNameTagForPlayer( playerid, i, 1 ); }
-		p_NameTags{ playerid } = true;
+		p_HiddenNameTags{ playerid } = false;
 	    SendClientMessage( playerid, 0x84aa63ff, "-> Name tags enabled" );
 	}
 	else SendClientMessage( playerid, 0xa9c4e4ff, "-> /nametags [ON/OFF]" );
