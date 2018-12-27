@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define FILE_BUILD					"v11.40.120"
+#define FILE_BUILD					"v11.45.130"
 
 #define SERVER_NAME					"San Fierro Cops And Robbers (0.3.7)"
 #define SERVER_MODE_TEXT 			"Cops And Robbers / DM / Gangs"
