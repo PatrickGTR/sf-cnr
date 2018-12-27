@@ -22,7 +22,7 @@ hook OnScriptInit( )
     return 1;
 }
 
-hook OnServerTickSecond( )
+hook OnServerUpdate( )
 {
 	new iCompare = NEW_YEAR_TIMESTAMP - GetServerTime( );
 
@@ -30,7 +30,7 @@ hook OnServerTickSecond( )
 
 	if ( ! bNewYear ) {
 		if ( ! iCompare ) {
-			TextDrawSetString( g_NewYearCDTD[ 0 ], "~y~HAPPY NEW YEAR!" ), bNewYear = true;
+			TextDrawSetString( g_NewYearCDTD[ 0 ], "~y~Happy New Year!" ), bNewYear = true;
         } else {
 			TextDrawSetString( g_NewYearCDTD[ 0 ], sprintf( "%s~n~ till %d", secstonewyear( iCompare ), NEW_YEAR ) );
         }
