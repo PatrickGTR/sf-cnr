@@ -198,3 +198,7 @@ stock IsPlayerSettingToggled( playerid, settingid ) {
 stock IsPlayerVIPSkinToggled( playerid ) {
 	return p_PlayerSettings[ playerid ] { SETTING_VIPSKIN };
 }
+
+stock DisablePassiveMode( playerid ) {
+	return p_PlayerSettings[ playerid ] { SETTING_PASSIVE_MODE } = true;
+}
