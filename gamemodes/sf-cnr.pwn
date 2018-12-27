@@ -1268,32 +1268,17 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 				// Cops Cannot Damage Innocent Vehicles, Unless Wanted Players Occupy Alongside Them
 				if ( p_Class[ playerid ] == CLASS_POLICE && p_WantedLevel[ iDriver ] == 0 )
 				{
-
 					new
 						innocentVehicleID = GetPlayerVehicleID( iDriver );
 
-					foreach ( new i : Player )
+					foreach ( new i : Player ) if ( i != iDriver )
 					{
-
-						if ( !IsPlayerConnected( i ) )
-							continue;
-
-						if ( i == iDriver )
-							continue;
-
 						new
 							iTargetVehicle = GetPlayerVehicleID( i );
 
-						if ( iTargetVehicle == innocentVehicleID )
-						{
-							if ( GetPlayerWantedLevel( i ) > 0 )
-								return 1;
+						if ( iTargetVehicle == innocentVehicleID && GetPlayerWantedLevel( i ) > 0 ) {
+							return 1;
 						}
-						else
-						{
-							continue;
-						}
-
 					}
 
 					return ShowPlayerHelpDialog( playerid, 2000, "You cannot damage an innocent player's vehicle unless they have wanted players alongside them!" ), 0;
