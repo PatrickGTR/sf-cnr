@@ -3923,6 +3923,7 @@ CMD:pm( playerid, params[ ] )
     else if ( p_BlockedPM[ pID ] [ playerid ] == true ) return SendError( playerid, "This person has blocked pm's coming from you." );
 	else if ( textContainsIP( msg ) ) return SendError( playerid, "Advertising via PM is forbidden." );
 	else if ( p_PlayerLogged{ pID } == false ) return SendError( playerid, "This player is not logged in." );
+	else if ( GetPlayerScore( playerid ) < 50 ) return SendError( playerid, "You must have at least 50 score to send private messages in the server." );
 	else
 	{
 		if ( IsPlayerServerMaintainer( pID ) && g_VipPrivateMsging && p_VIPLevel[ playerid ] < VIP_REGULAR ) {
