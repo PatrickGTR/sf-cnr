@@ -107,7 +107,7 @@ static stock NewYears_InitializeTextdraws( )
     TextDrawSetProportional(g_NewYearCDTD[ 1 ], 1);
     TextDrawSetShadow(g_NewYearCDTD[ 1 ], 1);
     TextDrawUseBox(g_NewYearCDTD[ 1 ], 1);
-    TextDrawBoxColor(g_NewYearCDTD[ 1 ], 255);
+    TextDrawBoxColor(g_NewYearCDTD[ 1 ], 0);
     TextDrawTextSize(g_NewYearCDTD[ 1 ], 34.000000, 40.000000);
     TextDrawSetPreviewModel(g_NewYearCDTD[ 1 ], 19822);
     TextDrawSetPreviewRot(g_NewYearCDTD[ 1 ], 0.000000, 0.000000, 0.000000, 1.000000);
@@ -121,7 +121,7 @@ static stock NewYears_InitializeTextdraws( )
     TextDrawSetProportional(g_NewYearCDTD[ 2 ], 1);
     TextDrawSetShadow(g_NewYearCDTD[ 2 ], 1);
     TextDrawUseBox(g_NewYearCDTD[ 2 ], 1);
-    TextDrawBoxColor(g_NewYearCDTD[ 2 ], 255);
+    TextDrawBoxColor(g_NewYearCDTD[ 2 ], 0);
     TextDrawTextSize(g_NewYearCDTD[ 2 ], 30.000000, 30.000000);
     TextDrawSetPreviewModel(g_NewYearCDTD[ 2 ], 19818);
     TextDrawSetPreviewRot(g_NewYearCDTD[ 2 ], 0.000000, 0.000000, 0.000000, 1.000000);
