@@ -56,7 +56,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 		}
 
-		if ( ( p_PlayerSettings[ playerid ] { settingid } = !p_PlayerSettings[ playerid ] { settingid } ) == true )
+		// setting is being toggled ... then
+		if ( ! p_PlayerSettings[ playerid ] { settingid } == true )
 		{
 			if ( settingid == SETTING_VIPSKIN ) {
 				SyncObject( playerid );
@@ -72,10 +73,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			/*else if ( settingid == SETTING_PASSIVE_MODE ) {
 				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
 			}*/
-
-			format( szNormalString, 68, "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid );
 		}
-		else
+		else // setting is not being toggled
 		{
 			if ( settingid == SETTING_COINS_BAR || settingid == SETTING_TOP_DONOR ) {
 			 	HidePlayerTogglableTextdraws( playerid, .force = false );
@@ -84,11 +83,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			/*else if ( settingid == SETTING_PASSIVE_MODE ) {
 				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
 			}*/
-
-			format( szNormalString, 64, "DELETE FROM `SETTINGS` WHERE USER_ID=%d AND SETTING_ID=%d", p_AccountID[ playerid ], settingid );
 		}
-		mysql_single_query( szNormalString );
 
+		TogglePlayerSetting( playerid, settingid, ! p_PlayerSettings[ playerid ] { settingid } );
 		SendServerMessage( playerid, ""COL_ORANGE"%s"COL_WHITE" is now %s. Changes may take effect after spawning/relogging.", g_PlayerSettings[ settingid ], p_PlayerSettings[ playerid ] { settingid } ? ( "enabled" ) : ( "disabled" ) );
 
 	    if ( ! strmatch( inputtext, "ignore" )) {
@@ -184,6 +181,16 @@ CMD:passivelist( playerid, params[ ] )
 }
 
 /* ** Functions ** */
+stock TogglePlayerSetting( playerid, settingid, bool: toggle )
+{
+	if ( ( p_PlayerSettings[ playerid ] { settingid } = toggle ) == true ) {
+		mysql_single_query( sprintf( "INSERT INTO `SETTINGS`(`USER_ID`, `SETTING_ID`) VALUES (%d, %d)", p_AccountID[ playerid ], settingid ) );
+	} else {
+		mysql_single_query( sprintf( "DELETE FROM `SETTINGS` WHERE `USER_ID`=%d AND `SETTING_ID`=%d", p_AccountID[ playerid ], settingid ) );
+	}
+	return 1;
+}
+
 stock IsPlayerSettingToggled( playerid, settingid ) {
 	return p_PlayerSettings[ playerid ] { settingid };
 }
