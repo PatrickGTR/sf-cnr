@@ -2033,14 +2033,18 @@ public OnPlayerText( playerid, text[ ] )
 			}
 		}
 	}
+
 	DCC_SendChannelMessageFormatted( discordGeneralChan, "**%s(%d):** %s", ReturnPlayerName( playerid ), playerid, text ); // p_Class[ playerid ] == CLASS_POLICE ? 12 : 4
 
-	foreach ( new iPlayer : Player )
-	{
-		if ( IsPlayerSettingToggled( iPlayer, SETTING_CHAT_ID ) )
-			return SendClientMessageFormatted( iPlayer, GetPlayerColor( playerid ), "%s(%d): "COL_WHITE"%s", ReturnPlayerName( playerid ), playerid, text ), 0;
+	// custom player id setting
+	foreach ( new iPlayer : Player ) {
+		if ( IsPlayerSettingToggled( iPlayer, SETTING_CHAT_ID ) ) {
+			SendClientMessageFormatted( iPlayer, GetPlayerColor( playerid ), "%s(%d): "COL_WHITE"%s", ReturnPlayerName( playerid ), playerid, text );
+		} else {
+			SendPlayerMessageToPlayer( iPlayer, playerid, text );
+		}
 	}
-	return 1;
+	return 0;
 }
 
 function RapeDamage( playerid )

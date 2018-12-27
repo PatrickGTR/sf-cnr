@@ -31,7 +31,7 @@ static stock
 	g_PlayerSettings 				[ MAX_SETTINGS ] [ 24 ] = {
 		{ "Prevent Bail Offers" }, { "Prevent Event Teleports" }, { "Prevent Gang Invites" }, { "Prevent Chat Prefixes" }, { "Prevent Ransom Offers" },
 		{ "Prevent Auto-Save" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
-		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }, { "Display Chat ID's" }
+		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }, { "Display User ID In Chat" }
 	},
 	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
