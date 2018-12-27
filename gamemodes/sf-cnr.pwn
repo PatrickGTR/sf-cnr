@@ -1293,7 +1293,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 						{
 							continue;
 						}
-					
+
 					}
 
 					return ShowPlayerHelpDialog( playerid, 2000, "You cannot damage an innocent player's vehicle unless they have wanted players alongside them!" ), 0;
@@ -2049,7 +2049,7 @@ public OnPlayerText( playerid, text[ ] )
 		}
 	}
 	DCC_SendChannelMessageFormatted( discordGeneralChan, "**%s(%d):** %s", ReturnPlayerName( playerid ), playerid, text ); // p_Class[ playerid ] == CLASS_POLICE ? 12 : 4
-	
+
 	foreach ( new iPlayer : Player )
 	{
 		if ( IsPlayerSettingToggled( iPlayer, SETTING_CHAT_ID ) )
@@ -5993,7 +5993,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				//p_CitySet{ playerid } = false;
 				p_SpawningCity{ playerid } = CITY_SF;
 
-				DisablePassiveMode( playerid );
+				TogglePlayerSetting( playerid, SETTING_PASSIVE_MODE, true );
 				p_Uptime[ playerid ] = 0;
 				ShowAchievement( playerid, "Registering to SF-CnR!", 1 );
                 p_PlayerLogged{ playerid } = true;
