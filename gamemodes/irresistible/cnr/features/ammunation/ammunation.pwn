@@ -41,7 +41,7 @@ new
 		{ MENU_MELEE, 		"Brass Knuckles", 	1,		1, 		200 },
 		{ MENU_MELEE,		"Parachute", 		46,		1, 		200 },
 		{ MENU_MELEE, 		"Camera",			43, 	1,		250 },
-		{ MENU_MELEE,		"Knife", 			4,		1, 		300 },
+		//{ MENU_MELEE,		"Knife", 			4,		1, 		300 },
 		{ MENU_MELEE,		"Katana", 			8,		1, 		600 },
 		{ MENU_MELEE,		"Chainsaw", 		9,		1, 		750 },
 
