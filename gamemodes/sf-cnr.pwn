@@ -1107,7 +1107,7 @@ public OnPlayerSpawn( playerid )
 			        }
 			        case JOB_HITMAN:
 			        {
-			            GivePlayerWeapon( playerid, 4, 1 );
+			            //GivePlayerWeapon( playerid, 4, 1 );
 			            GivePlayerWeapon( playerid, 23, 130 );
 			            GivePlayerWeapon( playerid, 34, 30 );
 			        }
@@ -6044,7 +6044,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			        }
 			        case JOB_HITMAN:
 			        {
-			            GivePlayerWeapon( playerid, 4, 1 );
+			            //GivePlayerWeapon( playerid, 4, 1 );
 			            GivePlayerWeapon( playerid, 23, 130 );
 			            GivePlayerWeapon( playerid, 34, 30 );
 			        }
@@ -9633,7 +9633,7 @@ stock GivePlayerLeoWeapons( playerid ) {
 
 	if ( p_inArmy{ playerid } == true )
 	{
-	    GivePlayerWeapon( playerid, 4, 1 );
+	    //GivePlayerWeapon( playerid, 4, 1 );
 	    GivePlayerWeapon( playerid, 24, 200 );
 	    GivePlayerWeapon( playerid, 29, 200 );
 	    GivePlayerWeapon( playerid, 31, 200 );
