@@ -6746,7 +6746,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								""COL_PINK"Meth Production Minijob{FFFFFF} - /meth\n"\
 								""COL_PINK"Mining Minijob{FFFFFF} - /ore\n" );
 				strcat( szCMDS, ""COL_PINK"Trucking Minijob{FFFFFF} - /work\n" );
-				strcat( szCMDS, ""COL_BROWN"Fireman Minijob{FFFFFF} - /fires");
+				strcat( szCMDS, ""COL_FIREMAN"Fireman Minijob{FFFFFF} - /fires");
 				ShowPlayerDialog( playerid, DIALOG_CMDS_REDIRECT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Civilian Commands", szCMDS, "Okay", "Back" );
 	        }
 	        case 3:

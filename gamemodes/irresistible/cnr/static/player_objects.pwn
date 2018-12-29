@@ -15655,9 +15655,9 @@ hook OnScriptInit( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1951.776977, 1000.268981, 33.673999, 0.000000, 90.000000, 0.000000, -1, -1, -1 ), 0, 8534, "tikimotel", "sa_wood01_128", -16 );
 	CreateDynamicObject( 646, -1928.176025, 995.880004, 35.551998, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18980, -1930.161987, 985.713989, 34.047000, 0.000000, 90.000000, 90.000000, -1, -1, -1 ), 0, 11391, "hubprops2_sfse", "blackmetal", -16 );
-	new caffehardcodedobj1 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.743000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 
-	    caffehardcodedobj2 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.173000, 0.000000, 0.000000, 90.000000, -1, -1, -1 ), 
-		caffehardcodedobj3 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.623001, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	new caffehardcodedobj1 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.743000, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	new caffehardcodedobj2 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.173000, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+	new caffehardcodedobj3 = CreateDynamicObject( 2789, -1922.354003, 1000.760009, 38.623001, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	SetDynamicObjectMaterial( caffehardcodedobj1, 1, 8534, "tikimotel", "sa_wood01_128", 1 );
 	SetDynamicObjectMaterialText( caffehardcodedobj1, 0, "Le Rich's", 130, "Arial", 60, 1, -1, 0, 1 );
 	SetDynamicObjectMaterial( caffehardcodedobj2, 1, 8534, "tikimotel", "sa_wood01_128", 1 );

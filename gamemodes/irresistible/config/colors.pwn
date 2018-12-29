@@ -23,6 +23,7 @@
 #define COL_YELLOW                  "{FFFF00}"
 #define COL_BLACK					"{333333}"
 #define COL_BRONZE 					"{CD7F32}"
+#define COL_FIREMAN 				"{A83434}"
 #define COLOR_RDMZONES 				0x00CC0010
 #define COLOR_GREEN             	0x00CC00FF
 #define COLOR_RED               	0xFF0000FF
