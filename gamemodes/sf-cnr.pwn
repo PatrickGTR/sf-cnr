@@ -329,12 +329,6 @@ public OnServerUpdateTimer( )
 				ShowPlayerHelpDialog( playerid, 1200, "You have been tied for %s.~n~~n~Your tie is loose.", secondstotime( g_iTime - p_TimeTiedAt[ playerid ] ) );
 			}
 
-			// Anti Money Hack
-			if ( GetPlayerCash( playerid ) != GetPlayerMoney( playerid ) ) {
-	            ResetPlayerMoney( playerid );
-	         	GivePlayerMoney( playerid, GetPlayerCash( playerid ) );
-			}
-
 			if ( p_AdminLevel[ playerid ] < 1 )
 			{
 			    /* ANTICHEAT */
