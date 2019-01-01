@@ -7,6 +7,7 @@
 
 /* ** Includes ** */
 #include "irresistible\cnr\features\gangs\gangs.pwn"
+#include "irresistible\cnr\features\gangs\gbank.pwn"
 #include "irresistible\cnr\features\gangs\facilities.pwn"
 #include "irresistible\cnr\features\gangs\turfs.pwn"
 #include "irresistible\cnr\features\gangs\cannon.pwn"

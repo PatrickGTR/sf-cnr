@@ -7,6 +7,7 @@
 
 /* ** Includes ** */
 #include "irresistible\cnr\features\player\experience.pwn"
+#include "irresistible\cnr\features\player\bank.pwn"
 #include "irresistible\cnr\features\player\player_settings.pwn"
 #include "irresistible\cnr\features\player\irresistibleguard.pwn"
 #include "irresistible\cnr\features\player\streaks.pwn"

@@ -63,7 +63,6 @@ new bool: False = false;
 #define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
-#define GetPlayerTotalCash(%0)  	(p_BankMoney[%0] + GetPlayerCash(%0)) // Bank Money and Money
 #define Achievement:: 				ach_
 #define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
 #define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
@@ -854,7 +853,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_OwnedVehicles [ playerid ] = 0;
 	p_ToggledViewPM	{ playerid } = false;
 	p_VIPExpiretime [ playerid ] = 0;
- 	p_BankMoney		[ playerid ] = 0;
  	p_Kills			[ playerid ] = 0;
 	p_Deaths		[ playerid ] = 0;
  	p_VIPLevel		[ playerid ] = 0;
@@ -3311,7 +3309,7 @@ CMD:richlist( playerid, params[ ] )
 		new
 			rich_player = g_richList[ i ] [ 0 ];
 
- 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\t{666666}%s\n", szLargeString, ReturnPlayerName( rich_player ), rich_player, cash_format( GetPlayerCash( rich_player ) ), cash_format( p_BankMoney[ rich_player ] ) );
+ 		format( szLargeString, sizeof( szLargeString ), "%s%s(%d)\t"COL_GOLD"%s\t{666666}%s\n", szLargeString, ReturnPlayerName( rich_player ), rich_player, cash_format( GetPlayerCash( rich_player ) ), cash_format( GetPlayerBankMoney( rich_player ) ) );
 		is_empty = false;
 	}
 
@@ -5280,8 +5278,13 @@ function unpause_Player( playerid )
 }
 
 #if defined AC_INCLUDED
-	public OnPlayerMoneyChanged( playerid, before_amount, after_amount )
+	public OnPlayerMoneyChanged( playerid, amount )
 	{
+		// save player money on each monetary movement
+		if ( IsPlayerLoggedIn( playerid ) )
+		{
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = %d, `BANKMONEY` = %d WHERE `ID` = %d", GetPlayerCash( playerid ), GetPlayerBankMoney( playerid ), GetPlayerAccountID( playerid ) ) );
+		}
 		return 1;
 	}
 
@@ -5461,7 +5464,7 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			}
 
 			p_AdminLevel[ playerid ] 		= cache_get_field_content_int( 0, "ADMINLEVEL", dbHandle );
-			p_BankMoney[ playerid ] 		= cache_get_field_content_int( 0, "BANKMONEY", dbHandle );
+			SetPlayerBankMoney( playerid, cache_get_field_content_int( 0, "BANKMONEY", dbHandle ) );
 			p_Kills[ playerid ] 			= cache_get_field_content_int( 0, "KILLS", dbHandle );
 			p_Deaths[ playerid ] 			= cache_get_field_content_int( 0, "DEATHS", dbHandle );
 			p_VIPLevel[ playerid ] 			= cache_get_field_content_int( 0, "VIP_PACKAGE", dbHandle );
@@ -5638,10 +5641,8 @@ stock randomString(strDest[], strLen = 10)
 
 public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
-    new
-        Query[ 256 ],
-        szBigQuery[ 764 ]
-    ;
+    static
+        szBigQuery[ 764 ];
 
 	if ( g_DialogLogging ) printf( "[DIALOG_LOG] %s(%d) - %d, %d, %d, %s", ReturnPlayerName( playerid ), playerid, dialogid, response, listitem, inputtext );
 
@@ -5820,251 +5821,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			SendServerMessage( playerid, "Since you like deathmatch, passive mode has been automatically enabled for you!" );
 		}
 	}*/
-    if ( ( dialogid == DIALOG_BANK_MENU ) && response )
-	{
-		new
-			gangid = p_GangID[ playerid ];
-
-	    if ( IsPlayerJailed( playerid ) )
-	    	return SendError( playerid, "You cannot use this while you're in jail." );
-
-		if ( gangid == INVALID_GANG_ID && listitem > 2 )
-	    	return SendError( playerid, "You are not in any gang!" );
-
-        switch( listitem )
-		{
-            case 0:
-            {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
-            }
-            case 1:
-            {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
-            }
-            case 2:
-            {
-                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back");
-            }
-            case 3:
-            {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-                ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
-            }
-           	case 4:
-            {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-                ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
-            }
-            case 5:
-            {
-                format( Query, sizeof( Query ), ""COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
-                ShowPlayerDialog(playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back");
-            }
-        }
-    }
-    if (dialogid == DIALOG_BANK_WITHDRAW)
-	{
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-        if (response)
-		{
-        	new
-        		money_withdraw[ 24 ];
-
-        	format( money_withdraw, sizeof( money_withdraw ), "%s", inputtext );
-
-        	if ( strmatch( money_withdraw, "MAX" ) || strmatch( money_withdraw, "ALL" ) ) format( money_withdraw, sizeof( money_withdraw ), "%d", p_BankMoney[ playerid ] );
-
-            if (!strlen(money_withdraw))
-			{
-			    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
-            }
-            else if (!IsNumeric(money_withdraw)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
-            }
-            else if ( strval( money_withdraw ) > 99999999 || strval( money_withdraw ) <= 0 )
-            {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
-            }
-            else if (strval(money_withdraw) > p_BankMoney[ playerid ]) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Withdraw", "Back");
-            }
-            else {
-            	new iWithdraw = strval( money_withdraw );
-                p_BankMoney[ playerid ] -= iWithdraw;
-                GivePlayerCash( playerid, iWithdraw );
-                format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iWithdraw ), cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
-                ShowPlayerDialog( playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back" );
-            }
-        }
-        else ShowPlayerBankMenuDialog( playerid );
-    }
-    if ( dialogid == DIALOG_BANK_DEPOSIT )
-	{
-	    if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this while you're in jail." );
-        if ( response )
-        {
-        	new
-        		money_deposit[ 24 ];
-
-        	format( money_deposit, sizeof( money_deposit ), "%s", inputtext );
-
-        	if ( strmatch( money_deposit, "MAX" ) || strmatch( money_deposit, "ALL" ) ) format( money_deposit, sizeof( money_deposit ), "%d", GetPlayerCash( playerid ) );
-
-            if (!strlen(money_deposit)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
-            }
-            else if (!IsNumeric(money_deposit)) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
-            }
-            else if (strval(money_deposit) > GetPlayerCash( playerid )) {
-                format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog(playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back");
-            }
-            else if ( strval( money_deposit ) > 99999999 || strval( money_deposit ) <= 0 )
-            {
-            	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( p_BankMoney[ playerid ] ) );
-                ShowPlayerDialog( playerid, DIALOG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Personal Account", Query, "Deposit", "Back" );
-            }
-            else {
-            	new iDeposit = strval( money_deposit );
-                p_BankMoney[ playerid ] += iDeposit;
-                GivePlayerCash( playerid, -iDeposit );
-                format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iDeposit ), cash_format( p_BankMoney[ playerid ] ), cash_format( GetPlayerCash( playerid ) ) );
-                ShowPlayerDialog( playerid, DIALOG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Personal Account", Query, "Ok", "Back" );
-            }
-        }
-        else ShowPlayerBankMenuDialog( playerid );
-    }
-    if ( ( dialogid == DIALOG_BANK_INFO || dialogid == DIALOG_GANG_BANK_INFO ) && !response )
-    {
-	    if ( IsPlayerJailed( playerid ) )
-	    	return SendError( playerid, "You cannot use this while you're in jail." );
-
-  		return ShowPlayerBankMenuDialog( playerid );
-    }
-	if ( dialogid == DIALOG_GANG_BANK_WITHDRAW )
-	{
-		if ( !response )
-			return ShowPlayerBankMenuDialog( playerid );
-
-		new
-			iWithdraw,
-			gangid = p_GangID[ playerid ]
-		;
-
-		if ( gangid == INVALID_GANG_ID )
-			return SendError( playerid, "You must be in a gang to use this feature." );
-
-	    if ( IsPlayerJailed( playerid ) )
-	    	return SendError( playerid, "You cannot use this while you're in jail." );
-
-	    if ( !IsPlayerGangLeader( playerid, gangid ) )
-	    	return ShowPlayerBankMenuDialog( playerid ), SendError( playerid, "You must be the gang leader to use this feature." );
-
-		if ( strmatch( inputtext, "MAX" ) || strmatch( inputtext, "ALL" ) )
-		{
-			iWithdraw = g_gangData[ gangid ] [ E_BANK ];
-		}
-	  	else if ( sscanf( inputtext, "d", iWithdraw ) )
-	    {
-		    format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            return ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
-	    }
-
-	    // double check quantity
-		if ( iWithdraw > 99999999 || iWithdraw <= 0 )
-        {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
-        }
-        else if ( iWithdraw > g_gangData[ gangid ] [ E_BANK ] )
-        {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Withdraw", "Back");
-        }
-        else
-        {
-            g_gangData[ gangid ] [ E_BANK ] -= iWithdraw;
-            GivePlayerCash( playerid, iWithdraw );
-            SaveGangData( gangid );
-
-			// transaction
-	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS` (`TO_ID`, `FROM_ID`, `CASH`, `NATURE`) VALUES (%d, %d, %d, 'gang withdraw')", p_AccountID[ playerid ], g_gangData[ gangid ] [ E_SQL_ID ], iWithdraw );
-	     	mysql_single_query( szNormalString );
-
-	     	// withdraw
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has withdrawn %s from the gang bank account.", ReturnPlayerName( playerid ), playerid, cash_format( iWithdraw ), "%%" );
-            format( Query, sizeof( Query ), ""COL_GREY"Amount Withdrawn:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iWithdraw ), cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
-            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
-        }
-        return 1;
-    }
-	if ( dialogid == DIALOG_GANG_BANK_DEPOSIT )
-	{
-		if ( !response )
-			return ShowPlayerBankMenuDialog( playerid );
-
-		if ( ! IsPlayerSecurityVerified( playerid ) )
-			return SendError( playerid, "You must be verified in order to use this feature. "COL_YELLOW"(use /verify)" );
-
-		new
-			iDeposit,
-			gangid = p_GangID[ playerid ]
-		;
-
-		if ( gangid == INVALID_GANG_ID )
-			return SendError( playerid, "You must be in a gang to use this feature." );
-
-	    if ( IsPlayerJailed( playerid ) )
-	    	return SendError( playerid, "You cannot use this while you're in jail." );
-
-		if ( strmatch( inputtext, "MAX" ) || strmatch( inputtext, "ALL" ) )
-		{
-			iDeposit = GetPlayerCash( playerid );
-		}
-        else if ( sscanf( inputtext, "d", iDeposit ) )
-        {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
-        }
-
-	    // double check
-     	if ( iDeposit > 99999999 || iDeposit < 1 )
-        {
-        	format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back" );
-        }
-        else if ( iDeposit > GetPlayerCash( playerid ) )
-        {
-            format( Query, sizeof( Query ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", Query, "Deposit", "Back");
-        }
-        else
-        {
-            g_gangData[ gangid ] [ E_BANK ] += iDeposit;
-            GivePlayerCash( playerid, -iDeposit );
-            SaveGangData( gangid );
-
-			// transaction
-	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS` (`TO_ID`, `FROM_ID`, `CASH`, `NATURE`) VALUES (%d, %d, %d, 'gang deposit')", p_AccountID[ playerid ], g_gangData[ gangid ] [ E_SQL_ID ], iDeposit );
-	     	mysql_single_query( szNormalString );
-
-	     	// deposit
-            SendClientMessageToGang( gangid, g_gangData[ gangid ] [ E_COLOR ], "[GANG]"COL_GREY" %s(%d) has deposited %s into the gang bank account.", ReturnPlayerName( playerid ), playerid, cash_format( iDeposit ) );
-            format( Query, sizeof( Query ), ""COL_GREY"Amount Deposited:"COL_WHITE" %s\n"COL_GREY"Current Balance:"COL_WHITE" %s\n"COL_GREY"Current Money:{FFFFFF} %s", cash_format( iDeposit ), cash_format( g_gangData[ gangid ] [ E_BANK ] ), cash_format( GetPlayerCash( playerid ) ) );
-            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_INFO, DIALOG_STYLE_MSGBOX, "{FFFFFF}Gang Account", Query, "Ok", "Back" );
-        }
-        return 1;
-    }
 	if ( dialogid == DIALOG_HOUSES )
 	{
 		if ( ! response )
@@ -6599,7 +6355,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Kills:{FFFFFF} %d\n"\
 											""COL_GREY"Deaths:{FFFFFF} %d\n"\
 											""COL_GREY"Ratio (K/D):{FFFFFF} %0.2f\n",
-											GetPlayerScore( pID ), number_format( total_experience, .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( p_BankMoney[ pID ] ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
+											GetPlayerScore( pID ), number_format( total_experience, .decimals = 0 ), cash_format( GetPlayerCash( pID ) ), cash_format( GetPlayerBankMoney( pID ) ), p_Kills[ pID ], p_Deaths[ pID ], floatdiv( p_Kills[ pID ], p_Deaths[ pID ] ) );
 
 				format( szLargeString, 800,	"%s"COL_GREY"Owned Houses:{FFFFFF} %d (Limit %d)\n"\
 				                          	""COL_GREY"Owned Vehicles:{FFFFFF} %d (Limit %d)\n"\
@@ -7155,9 +6911,9 @@ stock SavePlayerData( playerid, bool: logout = false )
 		if ( IsPlayerCuffed( playerid ) || IsPlayerTazed( playerid ) || IsPlayerTied( playerid ) || p_LeftCuffed{ playerid } || p_QuitToAvoidTimestamp[ playerid ] > g_iTime )
 			bQuitToAvoid = true;
 
-        format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`CASH`=%d,`ADMINLEVEL`=%d,`BANKMONEY`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
-                                       	GetPlayerScore( playerid ), 	GetPlayerCash( playerid ),		p_AdminLevel[ playerid ],
-                                       	p_BankMoney[ playerid ], 		p_OwnedHouses[ playerid ], 		p_Kills[ playerid ],
+        format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`ADMINLEVEL`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
+                                       	GetPlayerScore( playerid ), 	p_AdminLevel[ playerid ],
+                                    	p_OwnedHouses[ playerid ], 		p_Kills[ playerid ],
 										p_Deaths[ playerid ], 			p_VIPLevel[ playerid ],
 										p_OwnedVehicles[ playerid ], 	g_iTime, 						p_VIPExpiretime[ playerid ],
 										p_LastSkin[ playerid ], 		p_Burglaries[ playerid ], 		p_Uptime[ playerid ],
@@ -8953,19 +8709,6 @@ stock IsPlayerInCasino( playerid ) {
 	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && world != 0 ) return 1; // visage apartments
 	if ( IsPlayerInRangeOfPoint( playerid, 10.0, -792.8680, 661.2518, 19.3380 ) && world == 0 ) return 1; // roycegate mansion
 	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
-}
-
-stock ShowPlayerBankMenuDialog( playerid )
-{
-	new
-		gangid = p_GangID[ playerid ];
-
-	if ( gangid != -1 && Iter_Contains( gangs, gangid ) ) {
-		format( szBigString, sizeof( szBigString ), "Withdraw\nDeposit\nAccount Information\n{%06x}Gang Bank Withdraw\n{%06x}Gang Bank Deposit\n{%06x}Gang Bank Balance", g_gangData[ gangid ] [ E_COLOR ] >>> 8, g_gangData[ gangid ] [ E_COLOR ] >>> 8, g_gangData[ gangid ] [ E_COLOR ] >>> 8 );
-		return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", szBigString, "Select", "Cancel" );
-	}
-
-	return ShowPlayerDialog( playerid, DIALOG_BANK_MENU, DIALOG_STYLE_LIST, "{FFFFFF}Account", "Withdraw\nDeposit\nAccount Information", "Select", "Cancel" );
 }
 
 stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0, worldid = 0 )

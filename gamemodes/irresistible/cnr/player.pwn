@@ -43,7 +43,6 @@ new
 	bool: p_pausedToLoad    	    [ MAX_PLAYERS char ],
 	bool: p_CantUseReport           [ MAX_PLAYERS char ],
 	p_pausedToLoadTimer     	    [ MAX_PLAYERS ],
-	p_BankMoney               	 	[ MAX_PLAYERS ],
 	p_OwnedHouses                   [ MAX_PLAYERS ],
 	p_OwnedVehicles                 [ MAX_PLAYERS ],
 	p_OwnedBusinesses				[ MAX_PLAYERS ],
@@ -228,7 +227,3 @@ stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
 
 stock IsPlayerLoggedIn( playerid ) return p_PlayerLogged{ playerid };
-
-stock GivePlayerBankMoney( playerid, money ) {
-	p_BankMoney[ playerid ] += money;
-}
