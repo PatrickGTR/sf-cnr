@@ -23,9 +23,11 @@ static stock
 forward OnPlayerMoneyChanged        ( playerid, amount );
 
 /* ** Hooks ** */
-hook OnPlayerUpdate( playerid ) {
+hook OnPlayerUpdate( playerid )
+{
     // reset the player's money if it is inaccurate
-    if ( p_Cash[ playerid ] != GetPlayerMoney( playerid ) ) {
+    if ( p_Cash[ playerid ] != GetPlayerMoney( playerid ) )
+    {
         ResetPlayerMoney( playerid );
         GivePlayerMoney( playerid, p_Cash[ playerid ] );
     }
