@@ -264,6 +264,52 @@ hook OnScriptInit( )
 	return 1;
 }
 
+hook OnPlayerEnterDynamicCP( playerid, checkpointid )
+{
+	if ( CanPlayerExitEntrance( playerid ) && ! IsPlayerInAnyVehicle( playerid ) )
+	{
+		foreach ( new i : entrances )
+		{
+			if ( checkpointid == g_entranceData[ i ] [ E_ENTER ] )
+			{
+				if ( ! CallLocalFunction( "OnPlayerAccessEntrance", "dddd", playerid, i, g_entranceData[ i ] [ E_WORLD ], g_entranceData[ i ] [ E_INTERIOR ] ) ) break;
+				p_LastEnteredEntrance[ playerid ] = i;
+				SetPlayerInterior( playerid, g_entranceData[ i ] [ E_INTERIOR ] );
+				SetPlayerVirtualWorld( playerid, g_entranceData[ i ] [ E_WORLD ] );
+				SetPlayerPos( playerid, g_entranceData[ i ] [ E_LX ], g_entranceData[ i ] [ E_LY ], g_entranceData[ i ] [ E_LZ ] );
+				UpdatePlayerEntranceExitTick( playerid );
+				if ( g_entranceData[ i ] [ E_CUSTOM ] )
+				{
+					pauseToLoad( playerid );
+					p_BulletInvulnerbility[ playerid ] = g_iTime + 6; // Additional 3 because of pausetoload
+				}
+				else
+				{
+					TogglePlayerControllable( playerid, 0 );
+					SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+					p_BulletInvulnerbility[ playerid ] = g_iTime + 3;
+				}
+				SyncSpectation( playerid );
+				return 1;
+			}
+			else if ( checkpointid == g_entranceData[ i ] [ E_EXIT ] )
+			{
+				p_BulletInvulnerbility[ playerid ] = 0;
+				p_LastEnteredEntrance[ playerid ] = -1;
+				SetPlayerPos( playerid, g_entranceData[ i ] [ E_EX ], g_entranceData[ i ] [ E_EY ], g_entranceData[ i ] [ E_EZ ] );
+				SetPlayerInterior( playerid, 0 );
+				TogglePlayerControllable( playerid, 0 );
+				SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+				SetPlayerVirtualWorld( playerid, 0 );
+				UpdatePlayerEntranceExitTick( playerid );
+				SyncSpectation( playerid );
+				return 1;
+			}
+		}
+	}
+	return 1;
+}
+
 /* ** SQL Threads ** */
 thread OnEntrancesLoad( )
 {
