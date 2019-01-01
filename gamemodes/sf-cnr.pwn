@@ -5916,10 +5916,6 @@ public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 /////////////////////////
 //      Functions      //
 /////////////////////////
-stock SetServerRule( const rule[ ], const value[ ] )
-{
-	return SendRconCommand( sprintf( "%s %s", rule, value ) );
-}
 
 stock SendClientMessageToGang( gangid, colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
@@ -6116,38 +6112,6 @@ stock GivePlayerScore( playerid, score )
 	return SetPlayerScore( playerid, GetPlayerScore( playerid ) + score );
 }
 
-stock IsNumeric(const str[ ])
-{
-    new len = strlen(str);
-
-    if (!len) return false;
-    for(new i; i < len; i++)
-    {
-        if (!('0' <= str[i] <= '9')) return false;
-    }
-    return true;
-}
-
-stock AddFileLogLine( const file[ ], input[ ] )
-{
-    new
-		File: fHandle
-	;
-    fHandle = fopen(file, io_append);
-    fwrite(fHandle, input);
-    fclose(fHandle);
-    return 1;
-}
-
-stock GetPlayerIDFromName( const pName[ ] )
-{
-    foreach(new i : Player)
-    {
-        if ( strmatch( pName, ReturnPlayerName( i ) ) )
-			return i;
-    }
-    return INVALID_PLAYER_ID;
-}
 
 stock GetPlayerIDFromAccountID( iAccountID )
 {
@@ -6199,151 +6163,8 @@ stock SetPlayerColorToTeam( playerid )
 	return 1;
 }
 
-stock PutPlayerInEmptyVehicleSeat( vehicleid, playerid )
-{
-	new
-		vModel = GetVehicleModel( vehicleid ),
-	    bool: bNonAvailable[ 16 char ],
-	    seats = 0xF
-	;
-
-	if ( !IsValidVehicle( vehicleid ) )
-	    return -1;
-
-	if ( vModel == 425 || vModel == 481 || vModel == 520 || vModel == 519 || vModel == 509 || vModel == 510 || vModel == 476 )
-		return -1;
-
-	foreach(new iPlayer : Player)
-	{
-		if ( IsPlayerInVehicle( iPlayer, vehicleid ) )
-		{
-			new iVehicle = GetPlayerVehicleSeat( iPlayer );
-			seats = GetVehicleSeatCount( GetVehicleModel( iVehicle ) );
-
-   			if ( seats == 0xF )
-	   			return -1; // Just so the player aint bugged.
-
-			if ( iVehicle >= 0 && iVehicle <= seats ) bNonAvailable{ iVehicle } = true;
-		}
-	}
-	for( new i = 1; i < sizeof( bNonAvailable ); i++ )
-	{
-	    if ( !bNonAvailable{ i } ) {
-			SetPlayerVirtualWorld( playerid, GetVehicleVirtualWorld( vehicleid ) );
-			SetPlayerInterior( playerid, 0 ); // All vehicles are in interior ID 0, unless a stupid did this :|
-			PutPlayerInVehicle( playerid, vehicleid, i );
-			break;
-		}
-	}
-	return seats;
-}
 
 
-stock IsPointToPoint(Float: fRadius, Float: fX1, Float: fY1, Float: fZ1, Float: fX2, Float: fY2, Float: fZ2)
-    return ((-fRadius < floatabs(fX2 - fX1) < fRadius) && (-fRadius < floatabs(fY2 - fY1) < fRadius) && (-fRadius < floatabs(fZ2 - fZ1) < fRadius));
-
-stock GetXYInFrontOfPlayer(playerid, &Float:x, &Float:y, &Float:z, Float:distance)
-{
-	new Float: a;
-    GetPlayerPos(playerid, x, y, z);
-    GetPlayerFacingAngle(playerid, a);
-    if (GetPlayerVehicleID( playerid ))
-    {
-    	GetVehicleZAngle(GetPlayerVehicleID( playerid ), a);
- 	}
- 	x += (distance * floatsin(-a, degrees));
-	y += (distance * floatcos(-a, degrees));
-}
-
-stock ChangeVehicleModel( vehicleid, objectid, Float: offset = 0.0 )
-{
-	new
-		iObject
-	;
-	iObject = CreateDynamicObject( objectid, 0.0, 0.0, 0.0, 0, 0, 0 );
-	AttachDynamicObjectToVehicle( iObject, vehicleid, 0, 0, 0, 0, 0, 0 + offset );
-	LinkVehicleToInterior( vehicleid, 12 );
-}
-
-stock SetObjectFacePoint(iObjectID, Float: fX, Float: fY, Float: fOffset, bool: bDynamic = false )
-{
-    new
-        Float: fOX,
-        Float: fOY,
-        Float: fRZ
-    ;
-    if ( bDynamic )
-    {
-	    if (GetDynamicObjectPos(iObjectID, fOX, fOY, fRZ))
-	    {
-	        fRZ = atan2(fY - fOY, fX - fOX) - 90.0;
-
-	        GetDynamicObjectRot(iObjectID, fX, fY, fOX);
-	        SetDynamicObjectRot(iObjectID, fX, fY, fRZ + fOffset);
-	    }
-	}
-	else
-	{
-	    if (GetObjectPos(iObjectID, fOX, fOY, fRZ))
-	    {
-	        fRZ = atan2(fY - fOY, fX - fOX) - 90.0;
-
-	        GetObjectRot(iObjectID, fX, fY, fOX);
-	        SetObjectRot(iObjectID, fX, fY, fRZ + fOffset);
-	    }
-	}
-}
-
-stock TimeConvert( seconds )
-{
-	static
-	    szTime[ 32 ]
-	;
- 	format( szTime, sizeof( szTime ), "%02d:%02d", floatround( seconds / 60 ), seconds - floatround( ( seconds / 60 ) * 60 ) );
-	return szTime;
-}
-
-stock SetPlayerFacePoint(playerid, Float: fX, Float: fY, Float: offset = 0.0)
-{
-    static
-        Float: X,
-        Float: Y,
-        Float: Z,
-        Float: face
-    ;
-    if (GetPlayerPos(playerid, X, Y, Z))
-    {
-        face = atan2(fY - Y, fX - X) - 90.0;
-        SetPlayerFacingAngle(playerid, face + offset);
-    }
-}
-
-stock GetClosestPlayer( playerid, &Float: distance = FLOAT_INFINITY ) {
-    new
-    	iCurrent = INVALID_PLAYER_ID,
-        Float: fX, Float: fY,  Float: fZ, Float: fTmp,
-        world = GetPlayerVirtualWorld( playerid )
-    ;
-
-    if ( GetPlayerPos( playerid, fX, fY, fZ ) )
-    {
-		foreach(new i : Player)
-		{
-			if ( i != playerid )
-			{
-		        if ( GetPlayerState( i ) != PLAYER_STATE_SPECTATING && GetPlayerVirtualWorld( i ) == world )
-		        {
-		            if ( 0.0 < ( fTmp = GetDistanceFromPlayerSquared( i, fX, fY, fZ ) ) < distance ) // Y_Less mentioned there's no need to sqroot
-		            {
-		                distance = fTmp;
-		                iCurrent = i;
-		            }
-		        }
-			}
-	    }
-    }
-    return iCurrent;
-}
 
 stock GetClosestPlayerEx( playerid, classid, &Float: distance = FLOAT_INFINITY ) {
     new
@@ -6372,28 +6193,6 @@ stock GetClosestPlayerEx( playerid, classid, &Float: distance = FLOAT_INFINITY )
     return iCurrent;
 }
 
-stock GetClosestVehicle(playerid, except = INVALID_VEHICLE_ID, &Float: distance = Float: 0x7F800000) {
-    new
-    	i,
-        Float: X,
-        Float: Y,
-        Float: Z
-    ;
-    if (GetPlayerPos(playerid, X, Y, Z)) {
-        new
-            Float: dis,
-            closest = INVALID_VEHICLE_ID
-        ;
-        while(i != MAX_VEHICLES) {
-            if (0.0 < (dis = GetVehicleDistanceFromPoint(++i, X, Y, Z)) < distance && i != except) {
-                distance = dis;
-                closest = i;
-            }
-        }
-        return closest;
-    }
-    return INVALID_VEHICLE_ID;
-}
 
 stock isValidPlayerName( szName[ ] )
 {
@@ -6430,49 +6229,6 @@ stock ReturnWeaponName(weaponid, bool:vipgun=false)
 	return wname;
 }
 
-stock IsPlayerInArea( playerid, Float: minx, Float: maxx, Float: miny, Float: maxy )
-{
-	static
-		Float: X, Float: Y, Float: Z;
-
-	if ( GetPlayerPos( playerid, X, Y, Z ) )
-		return ( X > minx && X < maxx && Y > miny && Y < maxy );
-
-	return 0;
-}
-
-stock IsPlayerInArea3D( playerid, Float: minx, Float: maxx, Float: miny, Float: maxy, Float: minz, Float: maxz )
-{
-	static Float: X, Float: Y, Float: Z;
-	GetPlayerPos( playerid, X, Y, Z );
-	return ( X > minx && X < maxx && Y > miny && Y < maxy && Z > minz && Z < maxz );
-}
-
-stock IsPointInArea( Float: X, Float: Y, Float: Z, Float: minx, Float: maxx, Float: miny, Float: maxy, Float: minz, Float: maxz )
- 	return ( X > minx && X < maxx && Y > miny && Y < maxy && Z > minz && Z < maxz );
-
-stock HexToInt(string[]) // By DracoBlue
-{
-	if ( isnull( string ) )
-		return 0;
-
-  	new
-  		cur = 1,
-  		res = 0
-  	;
-
-	for( new i; string[ i ] != EOS; ++i )
-	{
-		string[ i ] = ( 'a' <= string[ i ] <= 'z' ) ? ( string[ i ] += 'A' - 'a' ) : ( string[ i ] );
-	}
-
-  	for( new i = strlen( string ); i > 0; i-- )
-  	{
-  	  	res += string[ i - 1 ] < 58 ? ( cur * ( string[ i - 1 ] - 48 ) ) : ( cur * ( string[ i - 1 ] - 65 + 10 ) );
-    	cur *= 16;
-  	}
-  	return res;
-}
 
 stock ReturnGangNameColor( g )
 {
@@ -6493,29 +6249,6 @@ stock ReturnGangNameColor( g )
 	return szColor;
 }
 
-
-stock isHex(str[])
-{
-    new
-        i,
-        cur;
-    if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X')) i = 2;
-    while (str[i])
-    {
-        cur = str[i++];
-        if (!(('0' <= cur <= '9') || ('A' <= cur <= 'F') || ('a' <= cur <= 'f'))) return 0;
-    }
-    return 1;
-}
-
-stock IsWeaponInAnySlot( playerid, weaponid )
-{
-    new
-        szWeapon, szAmmo;
-
-    GetPlayerWeaponData( playerid, GetWeaponSlot( weaponid ), szWeapon, szAmmo );
-    return ( szWeapon == weaponid && szAmmo > 0 );
-}
 
 #if !defined __WEAPONDAMAGEINC__
 stock GetWeaponSlot(weaponid)
@@ -6553,23 +6286,6 @@ stock GetWeaponSlot(weaponid)
 }
 #endif
 
-stock textContainsBadTextdrawLetters( const string[ ] )
-{
-	for( new i, j = strlen( string ); i < j; i++ )
-	{
-	    if ( string[ i ] == '.' || string[ i ] == '*' || string[ i ] == '^' || string[ i ] == '~' )
-	        return true;
-	}
-	return false;
-}
-
-stock IsValidSkin( skinid )
-{
-	if ( skinid == 74 || skinid > 311 || skinid < 0 )
-	    return 0;
-
-	return 1;
-}
 
 stock IsPlayerInCar( playerid )
 {
@@ -6650,15 +6366,6 @@ function Achievement_Hide( playerid ) {
     p_AchievementTimer[ playerid ] = 0xFF;
 	StopSound( playerid );
     return 1;
-}
-
-stock SyncObject( playerid, Float: offsetX = 0.005, Float: offsetY = 0.005, Float: offsetZ = 0.005 )
-{
-	static
-		Float: X, Float: Y, Float: Z;
-
-	if ( GetPlayerPos( playerid, X, Y, Z ) )
-		SetPlayerPos( playerid, X + offsetX, Y + offsetY, Z + offsetZ );
 }
 
 stock AddAdminLogLineFormatted( const format[ ], va_args<> )
@@ -6752,118 +6459,6 @@ stock CutSpectation( playerid )
 	return 1;
 }
 
-stock secondstotime(seconds, const delimiter[] = ", ", start = 0, end = -1)
-{
-    static const times[] = {
-        1,
-        60,
-        3600,
-        86400,
-        604800,
-        2419200,
-        29030400
-    };
-
-
-
-    static const names[][] = {
-        "second",
-        "minute",
-        "hour",
-        "day",
-        "week",
-        "month",
-        "year"
-    };
-
-    static string[128];
-
-    if (!seconds)
-    {
-    	string = "N/A";
-    	return string;
-    }
-
-    erase(string);
-
-    for(new i = start != 0 ? start : (sizeof(times) - 1); i != end; i--)
-    {
-        if (seconds / times[i])
-        {
-            if (string[0])
-            {
-                format(string, sizeof(string), "%s%s%d %s%s", string, delimiter, (seconds / times[i]), names[i], ((seconds / times[i]) == 1) ? ("") : ("s"));
-            }
-            else
-            {
-                format(string, sizeof(string), "%d %s%s", (seconds / times[i]), names[i], ((seconds / times[i]) == 1) ? ("") : ("s"));
-            }
-            seconds -= ((seconds / times[i]) * times[i]);
-        }
-    }
-    return string;
-}
-
-stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false )
-{
-	if ( ! IsValidVehicle( vehicleid ) )
-		return -1;
-
-	new
-		iModel = GetVehicleModel( vehicleid );
-
-	foreach ( new i : Player ) {
-	    if ( GetPlayerVehicleID( i ) == vehicleid )
-	    	return i;
-
-		if ( include_vehicle_interior && IsPlayerSpawned( i ) && ( GetPlayerMethLabVehicle( i ) == vehicleid && iModel == 508 ) || ( GetPlayerShamalVehicle( i ) == vehicleid && iModel == 519 ) )
-			return i;
-	}
-	return -1;
-}
-
-stock randarg( ... )
-	return getarg( random( numargs( ) ) );
-
-stock RemovePlayerWeapon(playerid, ...)
-{
-    new iArgs = numargs();
-    while(--iArgs)
-    {
-        SetPlayerAmmo(playerid, getarg(iArgs), 0);
-    }
-}
-
-stock IsMeleeWeapon(value) {
-	static const valid_values[2] = {
-		65535, 28928
-	};
-	if (0 <= value <= 46) {
-		return (valid_values[value >>> 5] & (1 << (value & 31))) || false;
-	}
-	return false;
-}
-
-stock IsVehicleUpsideDown(vehicleid)
-{
-    new
-        Float: q_W,
-        Float: q_X,
-        Float: q_Y,
-        Float: q_Z
-    ;
-    GetVehicleRotationQuat(vehicleid, q_W, q_X, q_Y, q_Z);
-    return (120.0 < atan2(2.0 * ((q_Y * q_Z) + (q_X * q_W)), (-(q_X * q_X) - (q_Y * q_Y) + (q_Z * q_Z) + (q_W * q_W))) > -120.0);
-}
-
-
-
-stock IsPlayerInWater(playerid) // SuperViper
-{
-    new animationIndex = GetPlayerAnimationIndex(playerid);
-    return (animationIndex >= 1538 && animationIndex <= 1544 && animationIndex != 1542);
-}
-
 stock ForceSpectateOnPlayer( playerid, pID )
 {
 	if ( IsPlayerConnected( p_whomSpectating[ playerid ] ) ) {
@@ -6887,44 +6482,6 @@ stock ForceSpectateOnPlayer( playerid, pID )
 	}
 }
 
-stock returnCityName( city )
-{
-	static
-		string[ 13 ];
-
-	switch( city )
-	{
-		case CITY_SF: string = "San Fierro";
-		case CITY_LV: string = "Las Venturas";
-		case CITY_LS: string = "Los Santos";
-		default: string = "Random City";
-	}
-	return string;
-}
-
-stock getCurrentDate( )
-{
-	static
-		Year, Month, Day,
-		szString[ 11 ]
-	;
-
-	getdate( Year, Month, Day );
-	format( szString, sizeof( szString ), "%02d/%02d/%d", Day, Month, Year );
-	return szString;
-}
-
-stock getCurrentTime( )
-{
-	static
-		Hour, Minute, Second,
-		szString[ 11 ]
-	;
-
-	gettime( Hour, Minute, Second );
-	format( szString, sizeof( szString ), "%02d:%02d:%02d", Hour, Minute, Second );
-	return szString;
-}
 
 new
 	p_HideHelpDialogTimer[ MAX_PLAYERS ] = { -1, ... };
@@ -6967,19 +6524,6 @@ stock hasBadDrivebyWeapon( playerid )
 	return false;
 }
 
-stock CensoreString( query[ ], characters = 5 )
-{
-	static
-		szString[ 256 ];
-
-	format( szString, 256, query );
-	strdel( szString, 0, characters );
-
-	for( new i = 0; i < characters; i++ )
-		strins( szString, "*", 0 );
-
-	return szString;
-}
 
 stock CreateExplosionEx( Float: X, Float: Y, Float: Z, type, Float: radius, world, interior, issuerid = INVALID_PLAYER_ID )
 {
@@ -7436,62 +6980,6 @@ stock isNotNearPlayer( playerid, nearid, Float: distance = 200.0 )
 	return GetPlayerDistanceFromPoint( playerid, X, Y, Z ) > distance ? 1 : 0;
 }
 
-stock GetVehicleDriver( vehicleid )
-{
-	foreach(new i : Player)
-		if ( IsPlayerInVehicle( i, vehicleid ) && GetPlayerState( i ) == PLAYER_STATE_DRIVER )
-			return i;
-
-	return INVALID_PLAYER_ID;
-}
-
-/*stock CreateNoDeathmatchZone( const Float: fRadius, const Float: fX, const Float: fY, const fSize = 15 ) // Warning: do not change size!
-{
-	new
-		iZone = Iter_Free(rdmzone);
-
-	if ( iZone != ITER_NONE )
-	{
-	    new
-	        Float: fIncrement = 90.0 / fSize,
-	        Float: fDegrees = fIncrement,
-	        Float: fCos,
-	        Float: fSin,
-	        iGangZone = -1
-	    ;
-
-	    while( fDegrees < 90.0 )
-	    {
-	        fCos = floatcos( fDegrees, degrees ) * fRadius;
-	        fSin = floatsin( fDegrees, degrees ) * fRadius;
-
-	        g_antiDeathmatchZoneData[ iZone ] [ E_GANGZONES ] [ ++iGangZone ] = GangZoneCreate( fX - fCos, fY - fSin, fX + fCos, fY + fSin );
-	        g_antiDeathmatchZoneData[ iZone ] [ E_CIRCLE ] = CreateDynamicCircle( fX, fY, fRadius );
-
-	        fDegrees += fIncrement;
-	    }
-
-	    Iter_Add(rdmzone, iZone);
-	}
-}
-
-stock IsDeathmatchProtectedZone( playerid ) {
-
-	if ( IsPlayerInPaintBall( playerid ) )
-		return false;
-
-	if ( IsPlayerInEntrance( playerid, g_Ammunation ) || IsPlayerInEntrance( playerid, g_PoliceDepartment ) || IsPlayerInEntrance( playerid, g_Hospital ) )
-		return true;
-
-	if ( IsPlayerInBank( playerid ) )
-		return true;
-
-	foreach(new r : rdmzone)
-		if ( IsPlayerInDynamicArea( playerid, g_antiDeathmatchZoneData[ r ] [ E_CIRCLE ] ) )
-			return true;
-
-	return false;
-}*/
 
 stock GetPlayerLocation( iPlayer, szCity[ ], szLocation[ ] )
 {
@@ -7668,23 +7156,6 @@ stock GivePlayerLeoWeapons( playerid ) {
 	}
 }
 
-stock IsSafeGameText(const string[])
-{
-    new count;
-    for(new num, len = strlen(string); num < len; num++)
-    {
-        if (string[num] == '~')
-		{
-		    if ((num + 1) < len)
-			{
-				if (string[(num + 1)] == '~') return false;
-			}
-			count += 1;
-		}
-    }
-    if ((count % 2) > 0) return false;
-    return true;
-}
 
 function ope_Unfreeze( a )
 {
@@ -7715,22 +7186,23 @@ stock TextDrawShowForAllSpawned( Text: textdrawid ) {
 	}
 }
 
-/**
- * Read all incoming UDP data from discord users that fire commands
- * @return true
- */
-public OnVehicleStreamOut(vehicleid, forplayerid)
+stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false )
 {
-	return 1;
-}
+	if ( ! IsValidVehicle( vehicleid ) )
+		return -1;
 
-public OnVehicleSirenStateChange(playerid, vehicleid, newstate)
-{
-    if(newstate) GameTextForPlayer(playerid, "~W~Siren ~G~on", 1000, 3);
-    else GameTextForPlayer(playerid, "~W~Siren ~r~off", 1000, 3);
-    return 1;
-}
+	new
+		iModel = GetVehicleModel( vehicleid );
 
+	foreach ( new i : Player ) {
+	    if ( GetPlayerVehicleID( i ) == vehicleid )
+	    	return i;
+
+		if ( include_vehicle_interior && IsPlayerSpawned( i ) && ( GetPlayerMethLabVehicle( i ) == vehicleid && iModel == 508 ) || ( GetPlayerShamalVehicle( i ) == vehicleid && iModel == 519 ) )
+			return i;
+	}
+	return -1;
+}
 
 stock ShowPlayerAirportMenu( playerid )
 {

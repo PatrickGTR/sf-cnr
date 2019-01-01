@@ -126,3 +126,18 @@ stock SetPlayerSpawnLocation( playerid, spawn_key[ 4 ], spawn_index = 0 )
 	p_SpawningIndex[ playerid ] = spawn_index;
 	return 1;
 }
+
+stock returnCityName( city )
+{
+	static
+		string[ 13 ];
+
+	switch( city )
+	{
+		case CITY_SF: string = "San Fierro";
+		case CITY_LV: string = "Las Venturas";
+		case CITY_LS: string = "Los Santos";
+		default: string = "Random City";
+	}
+	return string;
+}
