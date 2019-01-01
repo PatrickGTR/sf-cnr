@@ -60,6 +60,7 @@
 #include "irresistible\cnr\features\random_hits.pwn"
 #include "irresistible\cnr\features\c4.pwn"
 #include "irresistible\cnr\features\tax.pwn"
+#include "irresistible\cnr\features\shamal.pwn"
 
 // pool
 #include "irresistible\cnr\features\pool.pwn"

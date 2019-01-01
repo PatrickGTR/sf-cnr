@@ -59,7 +59,6 @@ new bool: False = false;
 /* ** Useful macros ** */
 #define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
 #define IsPlayerRobbing(%0)			IsPlayerAttachedObjectSlotUsed(%0,0)
-#define IsPlayerInShamal(%0)		(GetPlayerInterior(%0)==VW_SHAMAL)
 #define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
@@ -79,7 +78,6 @@ new bool: False = false;
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
 
-#define VW_SHAMAL 					220
 
 /* ** Forwards ** */
 public OnPlayerDriveVehicle( playerid, vehicleid );
@@ -141,7 +139,6 @@ public OnGameModeInit()
 	g_AlcatrazArea = CreateDynamicRectangle( -1921.6816, 1661.7448, -2172.4653, 1876.0469 );
 
 	/* ** Pickups ** */
-	CreateDynamicPickup( 371, 2, 1318.92200, 2002.7311, 1200.250 ); // Parachute @Shamal
 	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
 
 	/* ** Set everyone offline ** */
@@ -1530,8 +1527,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 
 public OnVehicleSpawn( vehicleid )
 {
-	KillEveryoneInShamal( vehicleid );
-
 	if ( g_buyableVehicle{ vehicleid } == true ) {
 		RespawnBuyableVehicle( vehicleid );
 	}
@@ -1540,7 +1535,6 @@ public OnVehicleSpawn( vehicleid )
 
 public OnVehicleDeath( vehicleid, killerid )
 {
-    KillEveryoneInShamal( vehicleid );
 	return 1;
 }
 
@@ -4135,17 +4129,6 @@ public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
 	}
 	else
     {
-    	switch( iModel )
-    	{
-		   	case 519: // Shamal
-		   	{
-		     	SetPlayerPos( playerid, 1322.6577, 1992.5508, 1200.2574 );
-		     	SetPlayerVirtualWorld( playerid, vehicleid + VW_SHAMAL );
-		   		SetPlayerInterior( playerid, VW_SHAMAL );
-		     	pauseToLoad( playerid );
-		   	}
-    	}
-
 		// Enter a wanted players vehicle?
     	if ( driverid != INVALID_PLAYER_ID && !p_WantedLevel[ playerid ] && p_Class[ playerid ] != CLASS_POLICE )
     	{
@@ -4717,38 +4700,6 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 			SetCameraBehindPlayer( playerid );
 			return 1;
 		}
-
-		if ( g_iTime > p_CheckpointEnterTick[ playerid ] && !p_pausedToLoad{ playerid } && !IsPlayerTied( playerid ) )
-		{
-		  	p_CheckpointEnterTick[ playerid ] = g_iTime + 2;
-
-	    	// Enter Shamal Interior
-	    	if ( IsPlayerInShamal( playerid ) )
-	    	{
-	    		if ( IsPlayerInRangeOfPoint( playerid, 10.0, 1322.6577, 1992.5508, 1200.2574 ) )
-	    		{
-	    			new
-	    				vehicleid = GetPlayerVirtualWorld( playerid ) - VW_SHAMAL
-	    			;
-
-	    			if ( IsValidVehicle( vehicleid ) )
-	    			{
-		                GetVehiclePos( vehicleid, X, Y, Z );
-		                GetVehicleZAngle( vehicleid, Angle );
-
-		                X += ( 3.2 * floatsin( -( Angle - 45.0 ), degrees ) );
-		                Y += ( 3.2 * floatcos( -( Angle - 45.0 ), degrees ) );
-
-		                SetPlayerInterior( playerid, 0 );
-		                SetPlayerVirtualWorld( playerid, 0 );
-		                SetPlayerFacingAngle( playerid, Angle );
-		                SetPlayerPos( playerid, X, Y, Z - 1 );
-
-			        	pauseToLoad( playerid );
-	    			}
-	    		}
-	    	}
-		}
 	}
 
 	else if ( HOLDING( KEY_AIM ) )
@@ -5009,12 +4960,12 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( ! response )
 			return ShowPlayerSpawnMenu( playerid );
 
-	#if VIP_ALLOW_OVER_LIMIT == false
-		if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) ) {
-			ResetSpawnLocation( playerid );
-			return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
-		}
-	#endif
+		#if VIP_ALLOW_OVER_LIMIT == false
+			if ( ! p_VIPLevel[ playerid ] && p_OwnedHouses[ playerid ] > GetPlayerHouseSlots( playerid ) ) {
+				ResetSpawnLocation( playerid );
+				return SendError( playerid, "Please renew your V.I.P or sell this home to match your house allocated limit (/h sell)." );
+			}
+		#endif
 
     	new x = 0;
 
@@ -6868,7 +6819,7 @@ stock IsVehicleOccupied( vehicleid, bool: include_vehicle_interior = false )
 	    if ( GetPlayerVehicleID( i ) == vehicleid )
 	    	return i;
 
-		if ( include_vehicle_interior && IsPlayerSpawned( i ) && ( GetPlayerMethLabVehicle( i ) == vehicleid && iModel == 508 ) || ( ( GetPlayerVirtualWorld( i ) - VW_SHAMAL ) == vehicleid && iModel == 519 ) )
+		if ( include_vehicle_interior && IsPlayerSpawned( i ) && ( GetPlayerMethLabVehicle( i ) == vehicleid && iModel == 508 ) || ( GetPlayerShamalVehicle( i ) == vehicleid && iModel == 519 ) )
 			return i;
 	}
 	return -1;
@@ -7031,22 +6982,6 @@ stock CensoreString( query[ ], characters = 5 )
 		strins( szString, "*", 0 );
 
 	return szString;
-}
-
-stock KillEveryoneInShamal( vehicleid )
-{
-	static
-		Float: X, Float: Y, Float: Z;
-
-	foreach(new i : Player) {
-		if ( IsPlayerInShamal( i ) && ( GetPlayerVirtualWorld( i ) - VW_SHAMAL ) == vehicleid ) {
-			if ( IsValidVehicle( vehicleid ) ) {
-				GetPlayerPos( i, X, Y, Z );
-				CreateExplosionForPlayer( i, X, Y, Z - 0.75, 0, 10.0 );
-				SetPlayerHealth( i, -1 );
-			}
-		}
-	}
 }
 
 stock CreateExplosionEx( Float: X, Float: Y, Float: Z, type, Float: radius, world, interior, issuerid = INVALID_PLAYER_ID )
