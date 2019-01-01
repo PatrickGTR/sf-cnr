@@ -19,6 +19,9 @@
 static stock
  	p_Cash              			[ MAX_PLAYERS ];
 
+/* ** Forwards ** */
+forward OnPlayerMoneyChanged        ( playerid, before_amount, after_amount );
+
 /* ** Hooks ** */
 hook OnVehicleMod( playerid, vehicleid, componentid )
 {
@@ -229,23 +232,50 @@ hook OnVehicleRespray( playerid, vehicleid, color1, color2 )
 /* ** Functions ** */
 stock GivePlayerCash( playerid, money )
 {
-    p_Cash[ playerid ] += money;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    if ( CallRemoteFunction( "OnPlayerMoneyChanged", "ddd", playerid, p_Cash[ playerid ], p_Cash[ playerid ] + money ) )
+    {
+        p_Cash[ playerid ] += money;
+        ResetPlayerMoney( playerid );
+        GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    }
+#if defined DEBUG_MODE
+    else
+    {
+        printf( "GivePlayerCash( %d, %d ) prevented [Reason: OnPlayerMoneyChanged returned 0]", playerid, money );
+    }
+#endif
 }
 
 stock SetPlayerCash( playerid, money )
 {
-    p_Cash[ playerid ] = money;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    if ( CallRemoteFunction( "OnPlayerMoneyChanged", "ddd", playerid, p_Cash[ playerid ], money ) )
+    {
+        p_Cash[ playerid ] = money;
+        ResetPlayerMoney( playerid );
+        GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    }
+#if defined DEBUG_MODE
+    else
+    {
+        printf( "SetPlayerCash( %d, %d ) prevented [Reason: OnPlayerMoneyChanged returned 0]", playerid, money );
+    }
+#endif
 }
 
 stock ResetPlayerCash( playerid )
 {
-    p_Cash[ playerid ] = 0;
-    ResetPlayerMoney( playerid );
-    GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    if ( CallRemoteFunction( "OnPlayerMoneyChanged", "ddd", playerid, p_Cash[ playerid ], 0 ) )
+    {
+        p_Cash[ playerid ] = 0;
+        ResetPlayerMoney( playerid );
+        GivePlayerMoney( playerid, p_Cash[ playerid ] );
+    }
+#if defined DEBUG_MODE
+    else
+    {
+        printf( "ResetPlayerCash( %d ) prevented [Reason: OnPlayerMoneyChanged returned 0]", playerid );
+    }
+#endif
 }
 
 stock GetPlayerCash( playerid )

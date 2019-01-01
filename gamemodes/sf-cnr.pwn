@@ -5280,6 +5280,11 @@ function unpause_Player( playerid )
 }
 
 #if defined AC_INCLUDED
+	public OnPlayerMoneyChanged( playerid, before_amount, after_amount )
+	{
+		return 1;
+	}
+
 	public OnPlayerCheatDetected( playerid, detection, params )
 	{
 		if ( detection == CHEAT_TYPE_REMOTE_JACK )
