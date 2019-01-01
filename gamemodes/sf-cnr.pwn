@@ -5346,7 +5346,7 @@ function unpause_Player( playerid )
 
 public OnPlayerUpdate( playerid )
 {
-	if ( !p_PlayerLogged{ playerid } )
+	if ( ! p_PlayerLogged{ playerid } )
 		return 0;
 
 	static
@@ -5412,7 +5412,7 @@ public OnPlayerUpdate( playerid )
 			return 0;
 		}
 	}
-	return fix_NightThermalVisionHack( playerid );
+	return 1;
 }
 
 public OnPlayerStreamIn(playerid, forplayerid)
@@ -8373,51 +8373,6 @@ function HidePlayerHelpDialog( playerid )
 {
 	p_HideHelpDialogTimer[ playerid ] = -1;
 	PlayerTextDrawHide( playerid, p_HelpBoxTD[ playerid ] );
-}
-
-stock fix_NightThermalVisionHack( playerid ) // Created by wups
-{
-    static
-    	weapon;
-
-    weapon = GetPlayerWeapon( playerid );
-    if ( weapon == 44 || weapon == 45 )
-    {
-        static
-            HoldingFire[ MAX_PLAYERS ],
-            IsHoldingFire[ MAX_PLAYERS char ],
-            CanHoldAgain[ MAX_PLAYERS char ],
-            keys, lr, tick
-      	;
-
-        GetPlayerKeys( playerid, keys, lr, lr);
-        tick = GetTickCount( );
-
-        if ( keys & KEY_FIRE )
-        {
-            if ( !IsHoldingFire{ playerid } && CanHoldAgain{ playerid } )
-            {
-                IsHoldingFire{ playerid } = 1;
-                HoldingFire[ playerid ] = tick;
-                CanHoldAgain{ playerid } = 0;
-            }
-        }
-        else if ( !CanHoldAgain{ playerid } ) CanHoldAgain{ playerid } = 1;
-
-        if ( IsHoldingFire{ playerid } )
-        {
-            if ( tick - 1500 <= HoldingFire[ playerid ] )
-            {
-                return 0;
-            }
-            else
-            {
-                IsHoldingFire{ playerid } = 0;
-                return 1;
-            }
-        }
-    }
-    return 1;
 }
 
 stock hasBadDrivebyWeapon( playerid )
