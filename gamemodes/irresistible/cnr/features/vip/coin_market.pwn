@@ -546,6 +546,24 @@ CMD:vip( playerid, params[ ] )
 	return 1;
 }
 
+CMD:vipcmds( playerid, params[ ] )
+{
+	if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
+
+	erase( szLargeString );
+	strcat( szLargeString,	""COL_GREY"/vipspawnwep\tConfigure your spawning weapons\n"\
+							""COL_GREY"/vipskin\tConfigure your spawning skin\n"\
+							""COL_GREY"/vipgun\tRedeem weapons or an armour vest from the gun locker\n"\
+							""COL_GREY"/vsay\tGlobal V.I.P Chat\n" );
+	strcat( szLargeString,	""COL_GREY"/vipjob\tSet your secondary VIP job\n"\
+							""COL_GREY"/vippackage\tCustomize your VIP package name\n"\
+							""COL_GREY"/mynotes\tAccess your VIP notes and material\n"\
+							""COL_GREY"/mycustomizations\tAccess your house customization taxes" );
+
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}V.I.P Commands", szLargeString, "Okay", "" );
+	return 1;
+}
+
 /* ** Functions ** */
 stock ShowPlayerCoinMarketDialog( playerid, page = ICM_PAGE_DEFAULT )
 {
@@ -753,6 +771,17 @@ static stock CheckPlayerVipExpiry( playerid )
         p_VIPWep2{ playerid } = 0;
         p_VIPWep3{ playerid } = 0;
 	}
+}
+
+static stock ShowPlayerVipRedeemedDialog( playerid )
+{
+	szLargeString[ 0 ] = '\0';
+	strcat( szLargeString,	""COL_WHITE"You've just blew quite a bit of Irresistible Coins for your V.I.P, so congratulations! :D\n\n"\
+							""COL_GREY" * What are the commands?"COL_WHITE" Use /vipcmds to view a detailed list of VIP commands.\n"\
+							""COL_GREY" * What did I receive?"COL_WHITE" Check through your V.I.P package contents via our site (forum -> announcements board).\n" );
+	strcat( szLargeString,	""COL_GREY" * How to redeem my houses/vehicles?"COL_WHITE" You will be announced to the admins and noted down for assistance, so please wait!\n"\
+							""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThanks for choosing to spend your Irresistible Coins, enjoy what you've got! :P"  );
+	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szLargeString, "Got it!", "" );
 }
 
 stock IsPlayerPlatinumVIP( playerid ) return p_VIPLevel[ playerid ] >= VIP_PLATINUM;

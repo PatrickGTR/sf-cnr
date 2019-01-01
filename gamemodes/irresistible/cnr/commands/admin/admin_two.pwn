@@ -25,23 +25,6 @@ CMD:slay( playerid, params[ ] )
 	return 1;
 }
 
-CMD:viewnotes( playerid, params[ ] )
-{
-	new
-		pID
-	;
-
-	if ( p_AdminLevel[ playerid ] < 2 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/viewnotes [PLAYER_ID]" );
-	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-	else
-	{
-		format( szNormalString, 96, "SELECT `ID`,`TIME`,`NOTE`,`DELETED` FROM `NOTES` WHERE `USER_ID`=%d AND DELETED IS NULL", p_AccountID[ pID ] );
-		mysql_function_query( dbHandle, szNormalString, true, "readplayernotes", "d", playerid );
-	}
-	return 1;
-}
-
 CMD:suspend( playerid, params [ ] )
 {
     new

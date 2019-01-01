@@ -2206,43 +2206,6 @@ CMD:feedback( playerid, params[ ] )
 	return ShowPlayerDialog( playerid, DIALOG_FEEDBACK, DIALOG_STYLE_INPUT, ""COL_GOLD"Server Feedback", ""COL_WHITE"Let us know how you think we can make the server better to play! Impactful feedback is rewarded.\n\n    Be as serious and straight forward as you wish. You can rant if you need to. Be impactful.", "Submit", "Close" );
 }
 
-CMD:notes( playerid, params[ ] ) return cmd_mynotes( playerid, params );
-CMD:myvipnotes( playerid, params[ ] ) return cmd_mynotes( playerid, params );
-CMD:vipnotes( playerid, params[ ] ) return cmd_mynotes( playerid, params );
-CMD:mynotes( playerid, params[ ] )
-{
-	format( szBigString, 192, "SELECT `NOTE`,`TIME` FROM `NOTES` WHERE (`NOTE` LIKE '{FFDC2E}%%' OR `NOTE` LIKE '{CD7F32}%%') AND `USER_ID`=%d AND `DELETED` IS NULL", p_AccountID[ playerid ] );
-	mysql_function_query( dbHandle, szBigString, true, "readplayervipnotes", "d", playerid );
-	return 1;
-}
-
-thread readplayervipnotes( playerid )
-{
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-
-    if ( rows )
-    {
-    	new
-    		szDate[ 20 ], szNote[ 72 ];
-
-    	erase( szLargeString );
-
-    	for( new i = 0; i < rows; i++ )
-		{
-			cache_get_field_content( i, "NOTE", szNote );
-			cache_get_field_content( i, "TIME", szDate );
-
-			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\n", szLargeString, szNote, szDate );
-		}
-
-		return ShowPlayerDialog( playerid, DIALOG_VIP_NOTE, DIALOG_STYLE_TABLIST, ""COL_GOLD"My V.I.P Notes", szLargeString, "Call Admin", "Close" );
-	}
-	return SendError( playerid, "You do not have any V.I.P notes." );
-}
-
 CMD:top( playerid, params[ ] ) return cmd_highscores( playerid, params );
 CMD:highscores( playerid, params[ ] )
 {
@@ -2803,23 +2766,6 @@ CMD:viplist( playerid, params[ ] )
 	return 1;
 }
 
-CMD:vipcmds( playerid, params[ ] )
-{
-	if ( p_VIPLevel[ playerid ] < 1 ) return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
-
-	erase( szLargeString );
-	strcat( szLargeString,	""COL_GREY"/vipspawnwep\tConfigure your spawning weapons\n"\
-							""COL_GREY"/vipskin\tConfigure your spawning skin\n"\
-							""COL_GREY"/vipgun\tRedeem weapons or an armour vest from the gun locker\n"\
-							""COL_GREY"/vsay\tGlobal V.I.P Chat\n" );
-	strcat( szLargeString,	""COL_GREY"/vipjob\tSet your secondary VIP job\n"\
-							""COL_GREY"/vippackage\tCustomize your VIP package name\n"\
-							""COL_GREY"/mynotes\tAccess your VIP notes and material\n"\
-							""COL_GREY"/mycustomizations\tAccess your house customization taxes" );
-
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST, "{FFFFFF}V.I.P Commands", szLargeString, "Okay", "" );
-	return 1;
-}
 
 CMD:vipspawnwep( playerid, params[ ] )
 {
@@ -5830,11 +5776,6 @@ thread OnAttemptPlayerLogin( playerid, password[ ] )
 			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", p_AccountID[ playerid ] );
 			mysql_function_query( dbHandle, szNormalString, true, "OnVehicleLoad", "d", playerid );
 
-			if ( p_VIPLevel[ playerid ] ) {
-				format( szBigString, 192, "SELECT `ID` FROM `NOTES` WHERE (`NOTE` LIKE '{FFDC2E}%%' OR `NOTE` LIKE '{CD7F32}%%') AND `USER_ID`=%d AND `DELETED` IS NULL", p_AccountID[ playerid ] );
-				mysql_function_query( dbHandle, szBigString, true, "checkforvipnotes", "d", playerid );
-			}
-
 			// Player is online
 			mysql_single_query( sprintf( "UPDATE `USERS` SET `ONLINE`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
 
@@ -7182,11 +7123,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			}
 		}
 	}
-	if ( dialogid == DIALOG_VIP_NOTE && response )
-	{
-		SendClientMessageToAdmins( -1, ""COL_PINK"[DONOR NEEDS HELP]"COL_GREY" %s(%d) is requesting help with their VIP asset(s). (/viewnotes)", ReturnPlayerName( playerid ), playerid );
-		SendServerMessage( playerid, "All admins online have been informed of your request." );
-	}
 	if ( ( dialogid == DIALOG_FEEDBACK ) && response )
 	{
 		if ( ! ( 10 < strlen( inputtext ) <= 512 ) )
@@ -7467,17 +7403,6 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 		printf( "Admin %s Teleported To %f, %f, %f", ReturnPlayerName( playerid ), fX, fY, fZ );
 	}
 	return 1;
-}
-
-stock ShowPlayerVipRedeemedDialog( playerid )
-{
-	szLargeString[ 0 ] = '\0';
-	strcat( szLargeString,	""COL_WHITE"You've just blew quite a bit of Irresistible Coins for your V.I.P, so congratulations! :D\n\n"\
-							""COL_GREY" * What are the commands?"COL_WHITE" Use /vipcmds to view a detailed list of VIP commands.\n"\
-							""COL_GREY" * What did I receive?"COL_WHITE" Check through your V.I.P package contents via our site (forum -> announcements board).\n" );
-	strcat( szLargeString,	""COL_GREY" * How to redeem my houses/vehicles?"COL_WHITE" You will be announced to the admins and noted down for assistance, so please wait!\n"\
-							""COL_GREY" * I'm unsure, help?"COL_WHITE" If you have any questions, please /ask otherwise enquire Lorenc via the forums!\n\nThanks for choosing to spend your Irresistible Coins, enjoy what you've got! :P"  );
-	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szLargeString, "Got it!", "" );
 }
 
 thread OnFetchCategoryResponse( playerid, category )
@@ -9077,41 +9002,6 @@ stock Achievement::HandlePilotMissions( playerid )
 	}
 }
 
-thread readplayernotes( playerid )
-{
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-
-    if ( rows )
-    {
-    	new
-    		ID,
-    		i = 0,
-    		Field[ 30 ],
-    		szNote[ 72 ]
-    	;
-
-    	szHugeString = ""COL_GREY"ID\tTime\t\t\tNote\n" #COL_WHITE;
-
-		while( i < rows )
-		{
-			cache_get_field_content( i, "ID", Field ), 		 ID = strval( Field );
-			cache_get_field_content( i, "NOTE", szNote );
-			cache_get_field_content( i, "TIME", Field );
-
-			format( szHugeString, sizeof( szHugeString ), "%s%05d\t%s\t%s\n", szHugeString, ID, Field, szNote );
-			i++;
-		}
-
-		ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Player Notes", szHugeString, "Okay", "" );
-		return 1;
-	}
-	SendError( playerid, "This user does not have any notes." );
-	return 1;
-}
-
 thread readnamechanges( playerid, searchid )
 {
 	new
@@ -9209,29 +9099,6 @@ thread readiclog( playerid, searchid )
 	return 1;
 }
 
-thread deleteplayernote( playerid, noteid )
-{
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-
-	if ( rows ) {
-		SaveToAdminLog( playerid, noteid, "removed note" );
- 		format( szNormalString, 64, "UPDATE `NOTES` SET `DELETED`=%d WHERE `ID`=%d", p_AccountID[ playerid ], noteid ), mysql_single_query( szNormalString );
- 		SendServerMessage( playerid, "You have removed note id %d. If there are any problems, contact Lorenc/Council.", noteid );
-		AddAdminLogLineFormatted( "%s(%d) has deleted note id %d", ReturnPlayerName( playerid ), playerid, noteid );
- 		return 1;
-	}
-
- 	SendError( playerid, "Couldn't remove note id %d due to it being already deleted or invalid permissions.", noteid );
-	return 1;
-}
-
-stock AddPlayerNote( playerid, authorid, note[ ] ) {
-	format( szBigString, sizeof( szBigString ), "INSERT INTO `NOTES`(`USER_ID`, `ADDED_BY`, `NOTE`) VALUES (%d,%d,'%s')", p_AccountID[ playerid ], IsPlayerConnected( authorid ) ? p_AccountID[ authorid ] : 1, mysql_escape( note ) );
-	mysql_single_query( szBigString );
-}
 
 stock IsPlayerInBank( playerid )
 {
@@ -9627,20 +9494,6 @@ stock IsSafeGameText(const string[])
     }
     if ((count % 2) > 0) return false;
     return true;
-}
-
-thread checkforvipnotes( playerid )
-{
-	new
-	    rows;
-
-    cache_get_data( rows, tmpVariable );
-
-	if ( rows ) {
-		SendServerMessage( playerid, "You have currently %d V.I.P note(s) that you can redeem. Use "COL_GREY"/mynotes"COL_WHITE".", rows );
-		SendClientMessageToAdmins( -1, ""COL_PINK"[VIP HAS NOTES]"COL_GREY" %s(%d) has logged in with %d pending VIP notes. (/viewnotes)", ReturnPlayerName( playerid ), playerid, rows );
-	}
-	return 1;
 }
 
 function ope_Unfreeze( a )
