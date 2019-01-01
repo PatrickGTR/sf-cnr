@@ -216,8 +216,7 @@ new
 	p_AimedAtPolice 				[ MAX_PLAYERS ],
 	bool: p_PassiveModeDisabled 	[ MAX_PLAYERS char ],
 	//p_PassiveModeExpireTimer 		[ MAX_PLAYERS ] = { -1, ... },
-	Text3D: p_PassiveModeLabel 		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID },
-	bool: p_HiddenNameTags 			[ MAX_PLAYERS char ]
+	Text3D: p_PassiveModeLabel 		[ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID }
 ;
 
 /* ** Getters And Setters** */
