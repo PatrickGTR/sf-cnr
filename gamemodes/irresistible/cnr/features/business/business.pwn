@@ -453,7 +453,6 @@ CMD:business( playerid, params[ ] )
 					UpdateBusinessData( b );
 					UpdateBusinessTitle( b );
 					GivePlayerCash( playerid, -( g_businessData[ b ] [ E_COST ] ) );
-					autosaveStart( playerid, true );
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[BUSINESS]"COL_WHITE" You have bought this business for "COL_GOLD"%s"COL_WHITE".", cash_format( g_businessData[ b ] [ E_COST ] ) );
 					return 1;
 				}

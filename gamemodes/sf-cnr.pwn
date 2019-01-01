@@ -8022,22 +8022,6 @@ stock returnCityName( city )
 	return string;
 }
 
-stock autosaveStart( playerid, bool: force_save = false )
-{
-	new
-		iTime = g_iTime;
-
-    if ( IsPlayerSettingToggled( playerid, SETTING_AUTOSAVE ) && force_save == false )
-		return;
-
-    if ( GetPVarInt( playerid, "last_transaction" ) > iTime && force_save == false )
-    	return;
-
-	SavePlayerData( playerid );
-	SetPVarInt( playerid, "last_transaction", iTime + 15 );
-	SendClientMessage( playerid, -1, IsPlayerSettingToggled( playerid, SETTING_AUTOSAVE ) ? ( ""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved." ) :  (""COL_LRED"[AUTO-SAVE]"COL_WHITE" Your statistics have been saved, "COL_GREY"you can disable this over /cp"COL_WHITE"." ) );
-}
-
 stock getCurrentDate( )
 {
 	static

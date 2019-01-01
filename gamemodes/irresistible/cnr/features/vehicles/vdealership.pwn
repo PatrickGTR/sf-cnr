@@ -354,7 +354,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			   	new bID = CreateBuyableVehicle( playerid, model, random( 126 ), random( 126 ), X, Y, Z, fA, g_BuyableVehicleData[ data_id ] [ E_PRICE ] );
 				if ( bID == -1 ) return SendClientMessage( playerid, -1, ""COL_GREY"[VEHICLE]"COL_WHITE" Unable to create a vehicle due to a unexpected error." );
 				GivePlayerCash( playerid, -g_BuyableVehicleData[ data_id ] [ E_PRICE ] );
-				autosaveStart( playerid, true ); // auto-save
 
 		        GetVehicleParamsEx( g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], engine, lights, alarm, doors, bonnet, boot, objective );
 				SetVehicleParamsEx( g_vehicleData[ playerid ] [ bID ] [ E_VEHICLE_ID ], VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective );

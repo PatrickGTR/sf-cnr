@@ -160,7 +160,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	        return SendError( playerid, "You don't have enough money for this ($5,000,000)." );
 
 		GivePlayerCash( playerid, -5000000 );
-		autosaveStart( playerid, true ); // auto-save
 
 		new aID = p_apartmentEnter{ playerid };
 		g_apartmentData[ aID ] [ E_CREATED ] = true;

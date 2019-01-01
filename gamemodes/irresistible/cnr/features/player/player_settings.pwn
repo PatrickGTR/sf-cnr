@@ -9,14 +9,14 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_SETTINGS 				( 14 )
+#define MAX_SETTINGS 				( 13 )
 
 #define SETTING_BAILOFFERS 			( 0 )
 #define SETTING_EVENT_TP			( 1 )
 #define SETTING_GANG_INVITES		( 2 )
 #define SETTING_CHAT_PREFIXES		( 3 )
 #define SETTING_RANSOMS				( 4 )
-#define SETTING_AUTOSAVE			( 5 )
+#define SETTING_CHAT_ID 			( 5 )
 #define SETTING_CONNECTION_LOG 		( 6 )
 #define SETTING_HITMARKER 			( 7 )
 #define SETTING_VIPSKIN 			( 8 )
@@ -24,14 +24,13 @@
 #define SETTING_TOP_DONOR 			( 10 )
 #define SETTING_WEAPON_PICKUP 		( 11 )
 #define SETTING_PASSIVE_MODE 		( 12 )
-#define SETTING_CHAT_ID 			( 13 )
 
 /* ** Variables ** */
 static stock
 	g_PlayerSettings 				[ MAX_SETTINGS ] [ 24 ] = {
 		{ "Prevent Bail Offers" }, { "Prevent Event Teleports" }, { "Prevent Gang Invites" }, { "Prevent Chat Prefixes" }, { "Prevent Ransom Offers" },
-		{ "Prevent Auto-Save" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
-		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }, { "Display User ID In Chat" }
+		{ "Display User ID In Chat" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
+		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }
 	},
 	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;

@@ -210,7 +210,6 @@ CMD:garage( playerid, params[ ] )
 					UpdateGarageData( g );
 					UpdateGarageTitle( g );
 					GivePlayerCash( playerid, -( g_garageData[ g ] [ E_PRICE ] ) );
-					autosaveStart( playerid, true ); // auto-save
 					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GARAGE]"COL_WHITE" You have bought this garage for "COL_GOLD"%s"COL_WHITE".", cash_format( g_garageData[ g ] [ E_PRICE ] ) );
 					return 1;
 				}

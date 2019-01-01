@@ -426,7 +426,6 @@ CMD:h( playerid, params[ ] )
 						return SendError( playerid, "You are not a V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 
 					GivePlayerCash( playerid, -( g_houseData[ i ] [ E_COST ] ) );
-					autosaveStart( playerid, true ); // force_save
 					SendServerMessage( playerid, "You have bought this home for "COL_GOLD"%s"COL_WHITE"!", cash_format( g_houseData[ i ] [ E_COST ] ) );
                     SetHouseOwner( i, p_AccountID[ playerid ], ReturnPlayerName( playerid ) );
 
