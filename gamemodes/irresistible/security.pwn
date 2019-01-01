@@ -9,14 +9,14 @@
 #include 							< YSI\y_hooks >
 
 /* ** Macros ** */
-#define GetServerName(%0) 			g_igServerNames[%0]
-#define ReturnPlayerIP(%0) 			(p_PlayerIP[(%0)])
-#define ReturnPlayerName(%0) 		(p_PlayerName[(%0)])
-#define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
+#define GetServerName(%0) 			( g_igServerNames[ %0 ] )
+#define ReturnPlayerIP(%0) 			( p_PlayerIP[ ( %0 ) ] )
+#define ReturnPlayerName(%0) 		( p_PlayerName[ ( %0 ) ] )
+#define IsPlayerNpcEx(%0)			( IsPlayerNPC( %0 ) || ! strcmp( p_PlayerIP[ %0 ], "127.0.0.1", true ) )
 
 /* ** Constants ** */
 stock const
-	g_igServerNames 				[ ] [ 28 ] = { "San Fierro Cops And Robbers" };
+	g_igServerNames 				[ ] [ ] = { SERVER_NAME };
 
 /* ** Variables ** */
 new
