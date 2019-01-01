@@ -8,10 +8,6 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
-/* ** Definitions ** */
-
-/* ** Variables ** */
-
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
@@ -62,7 +58,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	    if ( IsPlayerJailed( playerid ) )
 	    	return SendError( playerid, "You cannot use this while you're in jail." );
 
-	    if ( !IsPlayerGangLeader( playerid, gangid ) )
+	    if ( ! IsPlayerGangLeader( playerid, gangid ) )
 	    	return ShowPlayerBankMenuDialog( playerid ), SendError( playerid, "You must be the gang leader to use this feature." );
 
 		if ( strmatch( inputtext, "MAX" ) || strmatch( inputtext, "ALL" ) )
@@ -72,19 +68,19 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	  	else if ( sscanf( inputtext, "d", iWithdraw ) )
 	    {
 		    format( szBigString, sizeof( szBigString ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            return ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back");
+            return ShowPlayerDialog( playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back" );
 	    }
 
 	    // double check quantity
 		if ( iWithdraw > 99999999 || iWithdraw <= 0 )
         {
             format( szBigString, sizeof( szBigString ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back");
+            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back" );
         }
         else if ( iWithdraw > g_gangData[ gangid ] [ E_BANK ] )
         {
             format( szBigString, sizeof( szBigString ), "{FFFFFF}Enter the amount that you are willing to withdraw from your gang bank account.\n\n"COL_RED"Insufficient balance, therefore withdrawal failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back");
+            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_WITHDRAW, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Withdraw", "Back" );
         }
         else
         {
@@ -129,7 +125,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( sscanf( inputtext, "d", iDeposit ) )
         {
             format( szBigString, sizeof( szBigString ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Invalid amount entered!\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Deposit", "Back");
+            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Deposit", "Back" );
         }
 
 	    // double check
@@ -141,7 +137,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( iDeposit > GetPlayerCash( playerid ) )
         {
             format( szBigString, sizeof( szBigString ), "{FFFFFF}Enter the amount that you are willing to deposit into your gang bank account below.\n\n"COL_RED"Insufficient balance, therefore deposition failed.\n\n"COL_GREY"Current Balance:"COL_WHITE" %s", cash_format( g_gangData[ gangid ] [ E_BANK ] ) );
-            ShowPlayerDialog(playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Deposit", "Back");
+            ShowPlayerDialog( playerid, DIALOG_GANG_BANK_DEPOSIT, DIALOG_STYLE_INPUT, "{FFFFFF}Gang Account", szBigString, "Deposit", "Back" );
         }
         else
         {
