@@ -9,3 +9,4 @@
 #include "irresistible\cnr\features\cop\jail.pwn"
 #include "irresistible\cnr\features\cop\cop_chat.pwn"
 #include "irresistible\cnr\features\cop\arrest.pwn"
+#include "irresistible\cnr\features\cop\bail.pwn"

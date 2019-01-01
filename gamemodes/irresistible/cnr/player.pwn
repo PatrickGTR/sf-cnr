@@ -67,7 +67,6 @@ new
     p_AntiCommandSpam               [ MAX_PLAYERS ],
     p_PmResponder                  	[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
     bool: justConnected        		[ MAX_PLAYERS char ],
-	p_BailOfferer                   [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	Text3D: p_InfoLabel             [ MAX_PLAYERS ] = { Text3D: INVALID_3DTEXT_ID, ... },
 	p_InfoLabelString               [ MAX_PLAYERS ] [ 32 ],
 	bool: p_inCIA                   [ MAX_PLAYERS char ],
