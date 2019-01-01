@@ -78,6 +78,12 @@ hook OnServerUpdate( )
 	return 1;
 }
 
+hook OnPlayerRegister( playerid )
+{
+	p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
+	return 1;
+}
+
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
 	if ( PRESSED( KEY_WALK ) )
@@ -891,4 +897,10 @@ function SetPlayerHandleNearestSafe( playerid )
 		}
 	}
 	return 1;
+}
+
+stock GetPlayerDrillStrength( playerid ) return p_drillStrength[ playerid ];
+
+stock SetPlayerDrillStrength( playerid, strength ) {
+	p_drillStrength[ playerid ] = strength;
 }

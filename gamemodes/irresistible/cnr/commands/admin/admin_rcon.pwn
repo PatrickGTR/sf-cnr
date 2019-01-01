@@ -447,7 +447,7 @@ CMD:givecoins( playerid, params [ ] )
 	else if ( !IsPlayerConnected( sendtoid ) ) SendError( playerid, "Invalid Player ID." );
 	else
 	{
-	    p_IrresistibleCoins[ sendtoid ] += coins;
+		GivePlayerIrresistibleCoins( sendtoid, coins );
         AddAdminLogLineFormatted( "%s(%d) has given %s(%d) %0.2f IC", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( sendtoid ), sendtoid, coins );
 	    SendClientMessageFormatted( sendtoid, -1, ""COL_PINK"[ADMIN]{FFFFFF} %s(%d) has given you %0.2f IC.", ReturnPlayerName( playerid ), playerid, coins );
 	    SendClientMessageFormatted( playerid, -1, ""COL_PINK"[ADMIN]{FFFFFF} You've given %s(%d) %0.2f IC.", ReturnPlayerName( sendtoid ), sendtoid, coins );

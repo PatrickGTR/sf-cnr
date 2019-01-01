@@ -60,7 +60,7 @@ static const
 	}
 ;
 
-new
+static stock
 	p_MuriaticAcid					[ MAX_PLAYERS char ],
 	p_CausticSoda 					[ MAX_PLAYERS char ],
 	p_HydrogenChloride 				[ MAX_PLAYERS char ],
@@ -71,6 +71,15 @@ new
 forward OnMethamphetamineCooking( playerid, vehicleid, last_chemical );
 
 /* ** Hooks ** */
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_MuriaticAcid{ playerid } = 0;
+	p_CausticSoda{ playerid } = 0;
+	p_Methamphetamine{ playerid } = 0;
+	p_HydrogenChloride{ playerid } = 0;
+	return 1;
+}
+
 hook OnPlayerEnterVehicle( playerid, vehicleid, ispassenger )
 {
 	new
@@ -484,4 +493,28 @@ stock IsPlayerInMethlab( playerid ) {
 
 stock GetPlayerMethLabVehicle( playerid ) {
 	return ( GetPlayerVirtualWorld( playerid ) - VW_METH );
+}
+
+stock GetPlayerMeth( playerid ) return p_Methamphetamine{ playerid };
+
+stock SetPlayerMeth( playerid, amount ) {
+	p_Methamphetamine{ playerid } = amount;
+}
+
+stock GetPlayerMuriaticAcid( playerid ) return p_MuriaticAcid{ playerid };
+
+stock SetPlayerMuriaticAcid( playerid, amount ) {
+	p_MuriaticAcid{ playerid } = amount;
+}
+
+stock GetPlayerHydrogenChloride( playerid ) return p_HydrogenChloride{ playerid };
+
+stock SetPlayerHydrogenChloride( playerid, amount ) {
+	p_HydrogenChloride{ playerid } = amount;
+}
+
+stock GetPlayerCausticSoda( playerid ) return p_CausticSoda{ playerid };
+
+stock SetPlayerCausticSoda( playerid, amount ) {
+	p_CausticSoda{ playerid } = amount;
 }

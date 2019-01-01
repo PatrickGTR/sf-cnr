@@ -18,8 +18,6 @@
 /* ** Variables ** */
 new
     bool: p_Spawned    				[ MAX_PLAYERS char ],
-    bool: p_PlayerLogged    		[ MAX_PLAYERS char ],
-    p_AccountID						[ MAX_PLAYERS ],
     p_AdminLevel       				[ MAX_PLAYERS ],
     p_Job               			[ MAX_PLAYERS char ],
     p_VIPJob               			[ MAX_PLAYERS char ],
@@ -212,8 +210,6 @@ new
 ;
 
 /* ** Getters And Setters** */
-stock GetPlayerAccountID( playerid ) return p_AccountID[ playerid ];
-
 stock GetPlayerVIPLevel( playerid ) return p_VIPLevel[ playerid ];
 
 stock IsPlayerInPaintBall( playerid ) return p_inPaintBall{ playerid };
@@ -225,5 +221,3 @@ stock IsPlayerSpawned( playerid ) return p_Spawned{ playerid };
 stock IsPlayerJailed( playerid ) return p_Jailed{ playerid };
 
 stock IsPlayerAdminOnDuty( playerid ) return p_AdminOnDuty{ playerid };
-
-stock IsPlayerLoggedIn( playerid ) return p_PlayerLogged{ playerid };

@@ -44,7 +44,7 @@ enum E_HITMARKER_SOUND
 	E_NAME[ 10 ], 			E_SOUND_ID
 };
 
-new
+static stock
 	p_HitmarkerSound 				[ MAX_PLAYERS char ]
 ;
 
@@ -128,6 +128,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	if ( dialogid == DIALOG_MODIFY_HITSOUND && response )
 	{
 		p_HitmarkerSound{ playerid } = listitem;
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `HIT_SOUND`=%d WHERE `ID`=%d", listitem, GetPlayerAccountID( playerid ) ) );
 		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[SERVER]"COL_WHITE" You have changed your hitmarker sound to "COL_GREY"%s"COL_WHITE".", g_HitmarkerSounds[ listitem ] [ E_NAME ] );
 
 		PlayerPlaySound( playerid, g_HitmarkerSounds[ listitem ] [ E_SOUND_ID ], 0.0, 0.0, 0.0 );

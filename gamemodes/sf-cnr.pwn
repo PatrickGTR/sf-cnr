@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -296,7 +296,7 @@ public OnServerUpdateTimer( )
 
 			// Toggle total coin bar
 			if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) )
-				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", p_IrresistibleCoins[ playerid ] ) );
+				PlayerTextDrawSetString( playerid, p_CoinsTD[ playerid ], sprintf( "%05.3f", GetPlayerIrresistibleCoins( playerid ) ) );
 
 			// Decrementing Weed Opacity Label
 		    if ( p_WeedLabel[ playerid ] != Text3D: INVALID_3DTEXT_ID )
@@ -527,47 +527,6 @@ public OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
     }
 }
 
-thread OnPlayerRegisterCheck( playerid )
-{
-	if ( GetPVarInt( playerid, "banned_connection" ) == 1 ) return 1; // Stop anything from happening.
-
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-	if ( rows )
-    {
-        format( szBigString, sizeof( szBigString ), "{FFFFFF}Welcome, this account ("COL_GREEN"%s"COL_WHITE") is registered.\nPlease enter the password to login.\n\n"COL_GREY"If you are not the owner of this account, leave and rejoin with a different nickname.", ReturnPlayerName( playerid ) );
-        ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "{FFFFFF}Account - Authentication", szBigString, "Login", "Leave");
-    }
-    else
-    {
-		format( szNormalString, sizeof( szNormalString ), "SELECT `IP` FROM `USERS` WHERE `IP` = '%s' LIMIT 5", mysql_escape( ReturnPlayerIP( playerid ) ) );
- 		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerDuplicateAccountCheck", "i", playerid );
-    }
-	return 1;
-}
-
-thread OnPlayerDuplicateAccountCheck( playerid )
-{
-	new
-		rows, fields;
-
-	cache_get_data( rows, fields );
-
-	if ( rows > 10 )
-	{
-		SendError( playerid, "Sorry, this IP has more than 10 users registered to it which is the maximum limit of users per IP." );
-		KickPlayerTimed( playerid );
-	}
-	else
-	{
-        format( szBigString, sizeof( szBigString ), "{FFFFFF}Welcome, this account ("COL_RED"%s"COL_WHITE") is not registered.\nPlease enter your desired password for this account.\n\n"COL_GREY"Once you are registered, do not share your password with anyone besides yourself!", ReturnPlayerName( playerid ) );
-        ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT, "{FFFFFF}Account - Register", szBigString, "Register", "Leave");
-	}
-	return 1;
-}
-
 public OnNpcConnect( npcid )
 {
 	return Kick( npcid ), 1;
@@ -575,19 +534,6 @@ public OnNpcConnect( npcid )
 
 public OnPlayerConnect( playerid )
 {
-    static
-        Query[ 200 ];
-
-	if ( strmatch( ReturnPlayerName( playerid ), "No-one" ) )
-		return Kick( playerid ), 1;
-
-	if ( textContainsIP( ReturnPlayerName( playerid ) ) )
-	    return Kick( playerid ), 1;
-
-	// Ultra fast queries...
-	format( Query, sizeof( Query ), "SELECT * FROM `BANS` WHERE (`NAME`='%s' OR `IP`='%s') AND `SERVER`=0 LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ), mysql_escape( ReturnPlayerIP( playerid ) ) );
-	mysql_function_query( dbHandle, Query, true, "OnPlayerBanCheck", "i", playerid );
-
 	TogglePlayerClock( playerid, 1 );
 	SetPlayerColor( playerid, COLOR_GREY );
 	ResetPlayerCash( playerid );
@@ -613,8 +559,6 @@ public OnPlayerConnect( playerid )
 		GetGVarString( "connectsong", szNormalString );
 		PlayAudioStreamForPlayer( playerid, szNormalString );
 	}
-
-	//PreloadAnimationLibrary( playerid, "MISC" );
 	return 1;
 }
 
@@ -652,81 +596,6 @@ public OnLookupComplete( playerid, success )
 
 	format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
 	DCC_SendChannelMessage( discordGeneralChan, szNormalString );
-	return 1;
-}
-
-thread OnPlayerBanCheck( playerid )
-{
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-	if ( rows )
-	{
-	    new
-			bannedUser[ 24 ],
-			bannedIP[ 16 ],
-			bannedbyUser[ 24 ],
-			bannedReason[ 50 ],
-			//bannedSerial[ 41 ],
-			bannedExpire = 0,
-			server = 1,
-			serial = 0
-		;
-
-		server  	 = cache_get_field_content_int( 0, "SERVER", dbHandle );
-		bannedExpire = cache_get_field_content_int( 0, "EXPIRE", dbHandle );
-
-		cache_get_field_content( 0, "BANBY", bannedbyUser );
-		cache_get_field_content( 0, "REASON", bannedReason );
-		//cache_get_field_content( 0, "SERIAL", bannedSerial );
-		cache_get_field_content( 0, "NAME", bannedUser );
-		cache_get_field_content( 0, "IP", bannedIP );
-
-		/*gpci( playerid, szNormalString, 41 );
-		if ( strmatch( bannedSerial, szNormalString ) )
-		{
-			serial = 1;
-			format( szBigString, sizeof( szBigString ), "[%s %s] %s => {%s, %s, %s, %s, %s}\n\r", getCurrentDate( ), getCurrentTime( ), ReturnPlayerName( playerid ), bannedbyUser, bannedReason, bannedSerial, bannedUser, bannedIP );
-			AddFileLogLine( "gpcid.txt", szBigString );
-		}*/
-
-		// CNR BANS ONLY
-		if ( !server )
-		{
-			if ( !bannedExpire )
-			{
-				// "COL_ORANGE"Ban evading will be fatal to your account. Do not do it.
-				format( szLargeString, 600, "{FFFFFF}You are banned from this server.\n{FFFFFF}If you feel wrongfully banned, please appeal at "COL_BLUE""#SERVER_WEBSITE"{FFFFFF}\n\n"COL_RED"Username:{FFFFFF} %s\n"COL_RED"IP Address:{FFFFFF} %s\n", bannedUser, bannedIP );
-				format( szLargeString, 600, "%s"COL_RED"Reason:{FFFFFF} %s\n"COL_RED"Server:{FFFFFF} %s\n"COL_RED"Banned by:{FFFFFF} %s%s", szLargeString, bannedReason, GetServerName( server ), bannedbyUser, strmatch( ReturnPlayerName( playerid ), bannedUser ) ? ("") : ( serial ? ("\n\n"COL_RED"Our ban evasion system picked you up! If this is in error then please visit our forums.") : ("\n\n"COL_RED"Your IP Address is banned, if this is a problem then visit our forums.") ) );
-		      	ShowPlayerDialog( playerid, DIALOG_BANNED, DIALOG_STYLE_MSGBOX, "{FFFFFF}Ban Information", szLargeString, "Okay", "" );
-		      	KickPlayerTimed( playerid );
-		  		return 1;
-			}
-			else
-			{
-				if ( g_iTime > bannedExpire )
-				{
-					format( szNormalString, 100, "DELETE FROM `BANS` WHERE `NAME`= '%s' OR `IP` = '%s'", mysql_escape( ReturnPlayerName( playerid ) ), mysql_escape( ReturnPlayerIP( playerid ) ) ), mysql_single_query( szNormalString );
-					SendServerMessage( playerid, "The suspension of this account has expired as of now, this account is available for playing." );
-				}
-				else
-				{
-					// "COL_ORANGE"Ban evading will be fatal to your account. Do not do it.
-					format( szLargeString, 700, "{FFFFFF}You are suspended from this server.\n{FFFFFF}If you feel wrongfully suspended, please appeal at "COL_BLUE""#SERVER_WEBSITE"{FFFFFF}\n\n"COL_RED"Username:{FFFFFF} %s\n"COL_RED"IP Address:{FFFFFF} %s\n", bannedUser, bannedIP );
-					format( szLargeString, 700, "%s"COL_RED"Reason:{FFFFFF} %s\n"COL_RED"Server:{FFFFFF} %s\n"COL_RED"Suspended by:{FFFFFF} %s\n"COL_RED"Expire Time:{FFFFFF} %s%s", szLargeString, bannedReason, GetServerName( server ), bannedbyUser, secondstotime( bannedExpire - g_iTime ), strmatch( ReturnPlayerName( playerid ), bannedUser ) ? (" ") : ("\n\n"COL_RED"Your IP Address is suspended, if this is a problem, visit our forums.") );
-			      	ShowPlayerDialog( playerid, DIALOG_BANNED, DIALOG_STYLE_MSGBOX, "{FFFFFF}Suspension Information", szLargeString, "Okay", "" );
-		      		KickPlayerTimed( playerid );
-			  		return 1;
-			  	}
-			}
-		}
-		else SendClientMessageToAdmins( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s(%d) has been identified as banned under %s.", ReturnPlayerName( playerid ), playerid, bannedbyUser );
-	}
-
-	// Pursue a registration check
-	format( szNormalString, sizeof( szNormalString ), "SELECT `NAME` FROM `USERS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ) );
- 	mysql_function_query( dbHandle, szNormalString, true, "OnPlayerRegisterCheck", "i", playerid );
 	return 1;
 }
 
@@ -789,7 +658,6 @@ public OnPlayerDisconnect( playerid, reason )
 		string[ 64 ], color;
 
 	// Reset player variables
-    SavePlayerData( playerid, true );
 	DisconnectFromGang( playerid );
 	dischargeVehicles( playerid );
 	CutSpectation( playerid );
@@ -855,7 +723,6 @@ public OnPlayerDisconnect( playerid, reason )
  	p_Kills			[ playerid ] = 0;
 	p_Deaths		[ playerid ] = 0;
  	p_VIPLevel		[ playerid ] = 0;
-//	p_XP			[ playerid ] = 0;
 	p_InHouse		[ playerid ] = -1;
 	p_InGarage 		[ playerid ] = -1;
 	p_CantUseAsk    { playerid } = false;
@@ -873,8 +740,6 @@ public OnPlayerDisconnect( playerid, reason )
 	p_JailTime		[ playerid ] = 0;
 	p_Muted			{ playerid } = false;
 	p_Burglaries	[ playerid ] = 0;
-	p_MuriaticAcid	{ playerid } = 0;
-	p_CausticSoda	{ playerid } = 0;
 	p_MethYielded 	[ playerid ] = 0;
 	p_CarsJacked 	[ playerid ] = 0;
 	p_BankBlown		[ playerid ] = 0;
@@ -883,17 +748,13 @@ public OnPlayerDisconnect( playerid, reason )
 	p_DeathMessage	[ playerid ] [ 0 ] = '\0';
 	p_Fireworks 	[ playerid ] = 0;
 	p_AddedEmail 	{ playerid } = false;
-	p_ExtraAssetSlots{ playerid } = 0;
 	p_OwnedBusinesses[ playerid ] = 0;
 	p_ExplosiveBullets[ playerid ] = 0;
 	p_GangSplitProfits[ playerid ] = 0;
-	p_IrresistibleCoins[ playerid ] = 0.0;
 	p_QuitToAvoidTimestamp[ playerid ] = 0;
 	p_AntiExportCarSpam[ playerid ] = 0;
 	p_TruckedCargo[ playerid ] = 0;
 	p_PilotMissions[ playerid ] = 0;
-	p_HydrogenChloride{ playerid } = 0;
-	p_Methamphetamine{ playerid } = 0;
 	p_LastEnteredEntrance[ playerid ] = -1;
 	p_ViewingGangTalk[ playerid ] = -1;
 	p_forcedAnticheat[ playerid ] = 0;
@@ -5378,329 +5239,11 @@ public AC_OnFileCalculated( playerid, filename[ ], md5[ ], bool: isCheat )
 	return 1;
 }*/
 
-thread OnAttemptPlayerLogin( playerid, password[ ] )
-{
-	new
-	    rows, fields
-	;
-    cache_get_data( rows, fields );
-
-    if ( rows )
-    {
-    	new
-    		szHashed[ 129 ],
-    		szPassword[ 129 ],
-    		szSalt[ 25 ],
-    		bool: isSalted = false
-    	;
-
-		cache_get_field_content( 0,  "SALT", szSalt );
-		cache_get_field_content( 0,  "PASSWORD", szPassword );
-
-		if ( !strcmp( szSalt, "NULL", false ) ) // User doesn't have a salt
-		{
-			WP_Hash( szHashed, sizeof( szHashed ), password );
-			isSalted = false;
-		}
-		else
-		{
-			pencrypt( szHashed, sizeof( szHashed ), password, szSalt );
-			isSalted = true;
-		}
-
-		if ( ! strcmp( szHashed, szPassword, false ) )
-    	{
-    		if ( !isSalted ) // Converting from insecure to secure
-    		{
-             	randomString( szSalt, 24 );
-             	pencrypt( szHashed, sizeof( szHashed ), password, szSalt );
-
-    			format( szBigString, sizeof( szBigString ), "UPDATE USERS SET `PASSWORD`='%s', `SALT`='%s' WHERE `NAME`='%s'", szHashed, mysql_escape( szSalt ), ReturnPlayerName( playerid ) );
-    			mysql_single_query( szBigString );
-    		}
-
-    		p_AccountID[ playerid ] = cache_get_field_content_int( 0, "ID", dbHandle );
-
-			new iScore 		= cache_get_field_content_int( 0, "SCORE", dbHandle );
-			new iCash 		= cache_get_field_content_int( 0, "CASH", dbHandle );
-			new iFightStyle = cache_get_field_content_int( 0, "FIGHTSTYLE", dbHandle );
-			new iWanted 	= cache_get_field_content_int( 0, "WANTEDLVL", dbHandle );
-
-			SetPlayerCash			( playerid, iCash );
-			SetPlayerScore			( playerid, iScore );
-			SetPlayerFightingStyle	( playerid, iFightStyle );
-
-			if ( iWanted ) {
-				SetPlayerWantedLevel( playerid, iWanted );
-				SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[RESUME]{FFFFFF} Your wanted level has been set to %d as you are resuming your life.", GetPlayerWantedLevel( playerid ) );
-			}
-
-			p_AdminLevel[ playerid ] 		= cache_get_field_content_int( 0, "ADMINLEVEL", dbHandle );
-			SetPlayerBankMoney( playerid, cache_get_field_content_int( 0, "BANKMONEY", dbHandle ) );
-			p_Kills[ playerid ] 			= cache_get_field_content_int( 0, "KILLS", dbHandle );
-			p_Deaths[ playerid ] 			= cache_get_field_content_int( 0, "DEATHS", dbHandle );
-			p_VIPLevel[ playerid ] 			= cache_get_field_content_int( 0, "VIP_PACKAGE", dbHandle );
-			//p_XP[ playerid ] 				= cache_get_field_content_int( 0, "XP", dbHandle );
-			p_VIPExpiretime[ playerid ] 	= cache_get_field_content_int( 0, "VIP_EXPIRE", dbHandle );
-			p_LastSkin[ playerid ] 			= cache_get_field_content_int( 0, "LAST_SKIN", dbHandle );
-			p_Burglaries[ playerid ] 		= cache_get_field_content_int( 0, "BURGLARIES", dbHandle );
-			p_CopBanned{ playerid } 		= cache_get_field_content_int( 0, "COP_BAN", dbHandle );
-			p_ArmyBanned{ playerid } 		= cache_get_field_content_int( 0, "ARMY_BAN", dbHandle );
-			p_Uptime[ playerid ] 			= cache_get_field_content_int( 0, "UPTIME", dbHandle );
-			p_Arrests[ playerid ] 			= cache_get_field_content_int( 0, "ARRESTS", dbHandle );
-			p_VIPWep1{ playerid } 			= cache_get_field_content_int( 0, "VIPWEP1", dbHandle );
-			p_VIPWep2{ playerid } 			= cache_get_field_content_int( 0, "VIPWEP2", dbHandle );
-			p_VIPWep3{ playerid } 			= cache_get_field_content_int( 0, "VIPWEP3", dbHandle );
-			p_MutedTime[ playerid ] 		= cache_get_field_content_int( 0, "MUTE_TIME", dbHandle );
-			p_Robberies[ playerid ] 		= cache_get_field_content_int( 0, "ROBBERIES", dbHandle );
-			p_Fires[ playerid ] 			= cache_get_field_content_int( 0, "FIRES", dbHandle );
-			p_PingImmunity{ playerid } 		= cache_get_field_content_int( 0, "PING_IMMUNE", dbHandle );
-			p_HitsComplete[ playerid ] 		= cache_get_field_content_int( 0, "CONTRACTS", dbHandle );
-			p_TruckedCargo[ playerid ] 		= cache_get_field_content_int( 0, "TRUCKED", dbHandle );
-			p_PilotMissions[ playerid ] 	= cache_get_field_content_int( 0, "PILOT", dbHandle );
-			//p_TrainMissions[ playerid ] 	= cache_get_field_content_int( 0, "TRAIN", dbHandle );
-			//p_CopTutorial{ playerid } 		= cache_get_field_content_int( 0, "COP_TUTORIAL", dbHandle );
-			p_Job{ playerid } 				= cache_get_field_content_int( 0, "JOB", dbHandle );
-			p_VIPJob{ playerid } 			= cache_get_field_content_int( 0, "VIP_JOB", dbHandle );
-			p_AdminJailed{ playerid } 		= cache_get_field_content_int( 0, "JAIL_ADMIN", dbHandle );
-			p_JailTime[ playerid ] 			= cache_get_field_content_int( 0, "JAIL_TIME", dbHandle );
-			p_Ropes[ playerid ] 			= cache_get_field_content_int( 0, "ROPES", dbHandle );
-			p_MetalMelter[ playerid ] 		= cache_get_field_content_int( 0, "MELTERS", dbHandle );
-			p_Scissors[ playerid ] 			= cache_get_field_content_int( 0, "SCISSORS", dbHandle );
-			p_AntiEMP[ playerid ] 			= cache_get_field_content_int( 0, "FOILS", dbHandle );
-			p_BobbyPins[ playerid ] 		= cache_get_field_content_int( 0, "PINS", dbHandle );
-			p_ContractedAmount[ playerid ] 	= cache_get_field_content_int( 0, "BOUNTY", dbHandle );
-			p_WeedGrams[ playerid ] 		= cache_get_field_content_int( 0, "WEED", dbHandle );
-			p_SpawningCity{ playerid } 		= cache_get_field_content_int( 0, "CITY", dbHandle );
-			p_Methamphetamine{ playerid }	= cache_get_field_content_int( 0, "METH", dbHandle );
-			p_CausticSoda{ playerid } 		= cache_get_field_content_int( 0, "SODA", dbHandle );
-			p_MuriaticAcid{ playerid } 		= cache_get_field_content_int( 0, "ACID", dbHandle );
-			p_HydrogenChloride{ playerid } 	= cache_get_field_content_int( 0, "GAS", dbHandle );
-			p_LeftCuffed{ playerid } 		= !!cache_get_field_content_int( 0, "IS_CUFFED", dbHandle );
-			p_JailsBlown[ playerid ] 		= cache_get_field_content_int( 0, "BLEW_JAILS", dbHandle );
-			p_BankBlown[ playerid ] 		= cache_get_field_content_int( 0, "BLEW_VAULT", dbHandle );
-			p_CarsJacked[ playerid ] 		= cache_get_field_content_int( 0, "VEHICLES_JACKED", dbHandle );
-			p_MethYielded[ playerid ] 		= cache_get_field_content_int( 0, "METH_YIELDED", dbHandle );
-			p_drillStrength[ playerid ] 	= cache_get_field_content_int( 0, "DRILL", dbHandle );
-			p_IrresistibleCoins[ playerid ] = cache_get_field_content_float( 0, "COINS", dbHandle );
-			p_ExtraAssetSlots{ playerid }	= cache_get_field_content_int( 0, "EXTRA_SLOTS", dbHandle );
-			p_forcedAnticheat[ playerid ] 	= cache_get_field_content_int( 0, "FORCE_AC", dbHandle );
-			SetPlayerCasinoRewardsPoints( playerid, cache_get_field_content_float( 0, "CASINO_REWARDS", dbHandle ) );
-			SetPlayerCasinoHighroller( playerid, !!cache_get_field_content_int( 0, "VISAGE_HIGHROLLER", dbHandle ) );
-			p_Fireworks[ playerid ] = cache_get_field_content_int( 0, "FIREWORKS", dbHandle );
-			p_ExplosiveBullets[ playerid ] = cache_get_field_content_int( 0, "EXPLOSIVE_BULLETS", dbHandle );
-			p_AddedEmail{ playerid } = !!cache_get_field_content_int( 0, "USED_EMAIL", dbHandle );
-			// p_TaxTime[ playerid ] = cache_get_field_content_int( 0, "TAX_TIME", dbHandle );
-
-			SetPlayerC4Amount( playerid, cache_get_field_content_int( 0, "C4", dbHandle ) );
-			SetPlayerSeasonalXP( playerid, cache_get_field_content_float( 0, "RANK", dbHandle ) );
-
-			// spawn location
-			new
-				spawn_location[ 10 ];
-
-			cache_get_field_content( 0, "SPAWN", spawn_location, dbHandle, sizeof( spawn_location ) );
-
-			if ( ismysqlnull( spawn_location ) || sscanf( spawn_location, "s[4]d", p_SpawningKey[ playerid ], p_SpawningIndex[ playerid ] ) ) {
-				p_SpawningKey[ playerid ] [ 0 ] = '\0', p_SpawningIndex[ playerid ] = 0;
-			}
-
-			// anti-cheat
-			if ( p_forcedAnticheat[ playerid ] > 0 && ! IsPlayerUsingSampAC( playerid ) ) {
-				SendError( playerid, "You must install an anticheat to play the server. Visit "COL_GREY""AC_WEBSITE""COL_WHITE" to install the anticheat." );
-				KickPlayerTimed( playerid );
-				return 1;
-			}
-
-			// Load some other variables too
-		   	p_OwnedHouses 		[ playerid ] = GetPlayerOwnedHouses( playerid );
-		   	p_OwnedBusinesses 	[ playerid ] = GetPlayerOwnedBusinesses( playerid );
-
-		    p_PlayerLogged	{ playerid } = true;
-			p_JobSet 		{ playerid } = true;
-			// p_CitySet 	{ playerid } = true;
-			p_Muted 		{ playerid } = p_MutedTime[ playerid ] > 0 ? true : false; // Save muting :X
-
-			// Load other player related variables
-			CallLocalFunction( "OnPlayerLogin", "d", playerid );
-
-			// Load some more linking tables
-			format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", p_AccountID[ playerid ] );
-			mysql_function_query( dbHandle, szNormalString, true, "OnVehicleLoad", "d", playerid );
-
-			// Player is online
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `ONLINE`=1 WHERE `ID`=%d", p_AccountID[ playerid ] ) );
-
-			// Log in player
-		  	SendServerMessage( playerid, "You have " COL_GREEN "successfully" COL_WHITE " logged in!" );
-
-		  	// UNDERCOVER USERS
-			/*if ( IsPlayerUnderCover( playerid ) ) {
-		  		// all undercover are american ips
-				format( p_PlayerIP[ playerid ], 16, "187.237.240.%d", random( 255 ) );
-		  	}*/
-
-		  	// Search for valid gang
-			new gang_sql = cache_get_field_content_int( 0, "GANG_ID", dbHandle );
-		  	new bool: foundGang = false;
-
-		  	// Reset gang id just incase
-		  	p_GangID[ playerid ] = INVALID_GANG_ID;
-
-		  	// Search all gangs for the SQL
-			printf("[%s] Reading gang id %d", ReturnPlayerName( playerid ), gang_sql );
-		  	if ( gang_sql ) {
-				foreach (new g : gangs) if( gang_sql == g_gangData[ g ] [ E_SQL_ID ] ) {
-					p_GangID[ playerid ] = g, foundGang = true;
-					break;
-				}
-			}
-
-			printf("[%s] Found gang ? %s , id %d, gangid %d", ReturnPlayerName( playerid ), foundGang ? ("YES") : ("NO"), p_GangID[ playerid ], gang_sql );
-
-			if ( ! foundGang ) {
-				format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `LEADER`=%d OR `ID`=%d LIMIT 0,1", p_AccountID[ playerid ], gang_sql );
-				mysql_function_query( dbHandle, szNormalString, true, "OnPlayerGangLoaded", "d", playerid );
-			}
-
-		  	// Send gang join message
-		  	if ( p_GangID[ playerid ] != INVALID_GANG_ID && strlen( g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] ) ) {
-		  		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_GREY" %s", g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] );
-		  	}
-		}
-	    else
-	    {
-	        p_IncorrectLogins{ playerid } ++;
-	        format( szBigString, sizeof( szBigString ), "{FFFFFF}Welcome, this account ("COL_GREEN"%s"COL_WHITE") is registered.\nPlease enter the password to login.\n\n"COL_RED"Wrong password! Try again! [%d/3]\n\n"COL_GREY"If you are not the owner of this account, leave and rejoin with a different nickname.", ReturnPlayerName( playerid ), p_IncorrectLogins{ playerid } );
-			ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "{FFFFFF}Account - Login", szBigString, "Login", "Leave");
-			if ( p_IncorrectLogins{ playerid } >= 3 ) {
-			    p_IncorrectLogins{ playerid } = 0;
-				SendServerMessage( playerid, "You have been kicked for too many incorrect login attempts." );
-				KickPlayerTimed( playerid );
-			}
-	    }
-    }
-    else
-    {
-    	Kick( playerid );
-    	printf( "User::Error - User Not Created Attempting Login" );
-    }
-	return 1;
-}
-
-thread OnPlayerRegister( playerid )
-{
-	p_AccountID[ playerid ]		= cache_insert_id( );
-	return 1;
-}
-
-stock pencrypt( szLeFinale[ ], iSize = sizeof( szLeFinale ), szPassword[ ], szSalt[ 25 ], iPepper = 24713018, szCost[ 3 ] = "2y" )
-{
-	static
-    	szHash[ 256 ];
-
-    WP_Hash( szHash, sizeof( szHash ), szPassword );
-
-    format( szHash, sizeof( szHash ), "%s%d%s$%s$", szSalt, iPepper, szHash, szCost );
-    WP_Hash( szLeFinale, iSize, szHash );
-}
-
-stock randomString(strDest[], strLen = 10)
-{
-    while(strLen--)
-        strDest[strLen] = random(2) ? (random(26) + (random(2) ? 'a' : 'A')) : (random(10) + '0');
-}
 
 public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
-    static
-        szBigQuery[ 764 ];
-
 	if ( g_DialogLogging ) printf( "[DIALOG_LOG] %s(%d) - %d, %d, %d, %s", ReturnPlayerName( playerid ), playerid, dialogid, response, listitem, inputtext );
 
-    if ( dialogid == DIALOG_LOGIN )
-    {
-        if ( response )
-        {
-        	if ( p_PlayerLogged{ playerid } )
-        	{
-        		AdvancedBan( playerid, "Server", "Exploiting", ReturnPlayerIP( playerid ) );
-        		return SendError( playerid, "You are already logged in!" );
-        	}
-
-			format( szBigQuery, sizeof( szBigQuery ), "SELECT * FROM `USERS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( ReturnPlayerName( playerid ) ) );
-       		mysql_function_query( dbHandle, szBigQuery, true, "OnAttemptPlayerLogin", "ds", playerid, inputtext );
-        }
-        else return ShowPlayerDialog( playerid, DIALOG_LOGIN_QUIT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Account - Authentication", "{FFFFFF}Are you sure you want to leave the server?", "Yes", "No" );
-    }
-    if ( dialogid == DIALOG_LOGIN_QUIT ) {
-    	if ( response ) {
-    		return Kick( playerid );
-    	} else {
-	        format( szBigString, sizeof( szBigString ), "{FFFFFF}Welcome, this account ("COL_GREEN"%s"COL_WHITE") is registered.\nPlease enter the password to login.\n\n"COL_GREY"If you are not the owner of this account, leave and rejoin with a different nickname.", ReturnPlayerName( playerid ) );
-	        return ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "{FFFFFF}Account - Authentication", szBigString, "Login", "Leave");
-    	}
-    }
-    if ( dialogid == DIALOG_REGISTER )
-    {
-        if ( response )
-        {
-        	if ( p_PlayerLogged{ playerid } )
-        		return SendError( playerid, "You are already logged in!" );
-
-            if ( strlen( inputtext ) > 24 || strlen( inputtext ) < 3 )
-            {
-            	format( szBigQuery, 300, "{FFFFFF}Welcome, this account ("COL_RED"%s"COL_WHITE") is not registered.\nPlease enter your desired password for this account.\n\n"COL_RED"Your password length must vary from 3 to 24 characters.\n\n"COL_GREY"Once you are registered, do not share your password with anyone besides yourself!", ReturnPlayerName( playerid ) );
-				ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT, "{FFFFFF}Account - Register", szBigQuery, "Register", "Leave");
-            }
-            else
-            {
-                static
-                	szHashed[ 129 ],
-                	szSalt[ 25 ],
-                	szIP[ 16 ]
-                ;
-
-             	randomString( szSalt, 24 );
-             	pencrypt( szHashed, sizeof( szHashed ), inputtext, szSalt );
-				GetPlayerIp( playerid, szIP, sizeof( szIP ) );
-				format( szBigQuery, sizeof( szBigQuery ), "INSERT INTO `USERS` (`NAME`,`PASSWORD`,`SALT`,`IP`,`SCORE`,`CASH`,`ADMINLEVEL`,`BANKMONEY`,`OWNEDHOUSES`,`KILLS`,`DEATHS`,`VIP_PACKAGE`,`OWNEDCARS`,`LASTLOGGED`,`VIP_EXPIRE`,`LAST_SKIN`,`COP_BAN`,`UPTIME`,`ARRESTS`,`FIGHTSTYLE`,`VIPWEP1`,`VIPWEP2`,`VIPWEP3`,`MUTE_TIME`,`WANTEDLVL`,`ROBBERIES`,`PING_IMMUNE`,`FIRES`,`CONTRACTS`,`COP_TUTORIAL`,`JOB`,`LAST_IP`,`ONLINE`) " );
-				format( szBigQuery, sizeof( szBigQuery ), "%s VALUES('%s','%s','%s','%s',0,0,0,0,0,1,1,0,0,%d,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,'%s',1)", szBigQuery, mysql_escape( ReturnPlayerName( playerid ) ), szHashed, mysql_escape( szSalt ), mysql_escape( szIP ), g_iTime, mysql_escape( szIP ) );
-       			mysql_function_query( dbHandle, szBigQuery, true, "OnPlayerRegister", "d", playerid );
-				p_JobSet{ playerid } = false;
-				//p_CitySet{ playerid } = false;
-				p_SpawningCity{ playerid } = CITY_SF;
-
-				TogglePlayerSetting( playerid, SETTING_PASSIVE_MODE, true );
-				p_Uptime[ playerid ] = 0;
-				ShowAchievement( playerid, "Registering to SF-CnR!", 1 );
-                p_PlayerLogged{ playerid } = true;
-                SetPlayerCash( playerid, 0 );
-                SetPlayerScore( playerid, 0 );
-				p_Kills[ playerid ] = 1;
-				p_Deaths[ playerid ] = 1;
-				//p_XP[ playerid ] = 0;
-				//p_CopTutorial{ playerid } = 0;
-				p_drillStrength[ playerid ] = MAX_DRILL_STRENGTH;
-				p_OwnedHouses[ playerid ] = 0;
-				p_OwnedBusinesses[ playerid ] = 0;
-				p_OwnedVehicles[ playerid ] = 0;
-				p_IrresistibleCoins[ playerid ] = 0;
-				p_Burglaries[ playerid ] = 0;
-				ShowPlayerDialog( playerid, DIALOG_ACC_EMAIL, DIALOG_STYLE_INPUT, "{FFFFFF}Account Email", ""COL_WHITE"Would you like to assign an email to your account for security?\n\nWe'll keep you also informed on in-game and community associated events!", "Confirm", "Cancel" );
-                SendServerMessage( playerid, "You have "COL_GREEN"successfully{FFFFFF} registered! You have been automatically logged in!" );
-            }
-        }
-        else return ShowPlayerDialog( playerid, DIALOG_REGISTER_QUIT, DIALOG_STYLE_MSGBOX, "{FFFFFF}Account - Authentication", "{FFFFFF}Are you sure you want to leave the server?", "Yes", "No" );
-    }
-    if ( dialogid == DIALOG_REGISTER_QUIT ) {
-    	if ( response ) {
-    		return Kick( playerid );
-    	} else {
-	        format( szBigString, sizeof( szBigString ), "{FFFFFF}Welcome, this account ("COL_RED"%s"COL_WHITE") is not registered.\nPlease enter your desired password for this account.\n\n"COL_GREY"Once you are registered, do not share your password with anyone besides yourself!", ReturnPlayerName( playerid ) );
-	        return ShowPlayerDialog(playerid, DIALOG_REGISTER, DIALOG_STYLE_INPUT, "{FFFFFF}Account - Register", szBigString, "Register", "Leave");
-    	}
-    }
     if ( dialogid == DIALOG_JOB )
     {
         if (response)
@@ -6297,7 +5840,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											p_AccountID[ pID ], p_AdminLevel[ pID ],
 											secondstotime( p_Uptime[ pID ] ),
 											seasonal_rank,
-											p_IrresistibleCoins[ pID ] );
+											GetPlayerIrresistibleCoins( pID ) );
 
 				format( szLargeString, 750, "%s"COL_GREY"V.I.P Level:{FFFFFF} %s\n"\
 											""COL_GREY"V.I.P Expiry:{FFFFFF} %s\n"\
@@ -6360,7 +5903,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Weed:{FFFFFF} %d gram(s)\n"\
 											""COL_GREY"Meth:{FFFFFF} %d pounds\n"\
 											""COL_GREY"Money Case:{FFFFFF} %s\n",
-											fDrill, p_Ropes[ pID ], p_MetalMelter[ pID ], p_Scissors[ pID ], p_WeedGrams[ pID ], p_Methamphetamine{ pID }, p_MoneyBag{ pID } == true ? ( "Yes" ) : ( "No" ) );
+											fDrill, p_Ropes[ pID ], p_MetalMelter[ pID ], p_Scissors[ pID ], p_WeedGrams[ pID ], GetPlayerMeth( pID ), p_MoneyBag{ pID } == true ? ( "Yes" ) : ( "No" ) );
 
 				format( szLargeString, 750, "%s"COL_GREY"Aluminium Foil:{FFFFFF} %d\n"\
 											""COL_GREY"Secure Wallet:{FFFFFF} %s\n"\
@@ -6371,7 +5914,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 											""COL_GREY"Muriatic Acid:{FFFFFF} %d\n"\
 											""COL_GREY"Hydrogen Chloride:{FFFFFF} %d\n",
 											szLargeString, p_AntiEMP[ pID ], p_SecureWallet{ pID } == true ? ( "Yes" ) : ( "No" ), p_BobbyPins[ pID ], GetPlayerC4Amount( pID ), p_AidsVaccine{ pID } == true ? ("Yes") : ("No"),
-											p_CausticSoda{ pID }, p_MuriaticAcid{ pID }, p_HydrogenChloride{ pID } );
+											GetPlayerCausticSoda( pID ), GetPlayerMuriaticAcid( pID ), GetPlayerHydrogenChloride( pID ) );
 
 				format( szLargeString, 750, "%s"COL_GREY"Weed Seeds:"COL_WHITE" %d\n"\
 											""COL_GREY"Fireworks:{FFFFFF} %d\n"\
@@ -6762,59 +6305,6 @@ stock SetServerRule( const rule[ ], const value[ ] )
 	return SendRconCommand( sprintf( "%s %s", rule, value ) );
 }
 
-stock SavePlayerData( playerid, bool: logout = false )
-{
-    static
-		Query[ 950 ];
-
-	if ( IsPlayerNPC( playerid ) )
-		return 0;
-
-    if ( p_PlayerLogged{ playerid } )
-    {
-    	new
-    		bool: bQuitToAvoid = false;
-
-		if ( IsPlayerCuffed( playerid ) || IsPlayerTazed( playerid ) || IsPlayerTied( playerid ) || p_LeftCuffed{ playerid } || p_QuitToAvoidTimestamp[ playerid ] > g_iTime )
-			bQuitToAvoid = true;
-
-        format( Query, sizeof( Query ), "UPDATE `USERS` SET `SCORE`=%d,`ADMINLEVEL`=%d,`OWNEDHOUSES`=%d,`KILLS`=%d,`DEATHS`=%d,`VIP_PACKAGE`=%d,`OWNEDCARS`=%d,`LASTLOGGED`=%d,`VIP_EXPIRE`=%d,`LAST_SKIN`=%d,`BURGLARIES`=%d,`UPTIME`=%d,`ARRESTS`=%d,`CITY`=%d,`METH`=%d,`SODA`=%d,`ACID`=%d,`GAS`=%d,",
-                                       	GetPlayerScore( playerid ), 	p_AdminLevel[ playerid ],
-                                    	p_OwnedHouses[ playerid ], 		p_Kills[ playerid ],
-										p_Deaths[ playerid ], 			p_VIPLevel[ playerid ],
-										p_OwnedVehicles[ playerid ], 	g_iTime, 						p_VIPExpiretime[ playerid ],
-										p_LastSkin[ playerid ], 		p_Burglaries[ playerid ], 		p_Uptime[ playerid ],
-									 	p_Arrests[ playerid ],			p_SpawningCity{ playerid },		p_Methamphetamine{ playerid },
-									 	p_CausticSoda{ playerid },		p_MuriaticAcid{ playerid }, 	p_HydrogenChloride{ playerid } );
-
-		format( Query, sizeof( Query ), "%s`VIPWEP1`=%d,`VIPWEP2`=%d,`VIPWEP3`=%d,`MUTE_TIME`=%d,`WANTEDLVL`=%d,`ROBBERIES`=%d,`PING_IMMUNE`=%d,`FIRES`=%d,`CONTRACTS`=%d,`JOB`=%d,`JAIL_TIME`=%d,`ROPES`=%d,`MELTERS`=%d,`SCISSORS`=%d,`FOILS`=%d,`PINS`=%d,`BOUNTY`=%d,`WEED`=%d,`IS_CUFFED`=%d,`DRILL`=%d,",
-										Query,                          p_VIPWep1{ playerid },          p_VIPWep2{ playerid },
-										p_VIPWep3{ playerid },          p_MutedTime[ playerid ],        p_WantedLevel[ playerid ],
-										p_Robberies[ playerid ],        p_PingImmunity{ playerid },     p_Fires[ playerid ],
-										p_HitsComplete[ playerid ],     p_Job{ playerid },              p_JailTime[ playerid ],
-										p_Ropes[ playerid ],			p_MetalMelter[ playerid ],
-										p_Scissors[ playerid ], 		p_AntiEMP[ playerid ], 			p_BobbyPins[ playerid ],
-										p_ContractedAmount[ playerid ],	p_WeedGrams[ playerid ],		logout ? ( bQuitToAvoid ? 1 : 0 ) : 0,
-										p_drillStrength[ playerid ] );
-
-		format( Query, sizeof( Query ), "%s`BLEW_JAILS`=%d,`BLEW_VAULT`=%d,`VEHICLES_JACKED`=%d,`METH_YIELDED`=%d,`LAST_IP`='%s',`VIP_JOB`=%d,`TRUCKED`=%d,`COINS`=%f,`EXPLOSIVE_BULLETS`=%d,`ONLINE`=%d,`HIT_SOUND`=%d,`EXTRA_SLOTS`=%d,`PILOT`=%d WHERE `ID`=%d",
-										Query,
-										p_JailsBlown[ playerid ], 		p_BankBlown[ playerid ], 			p_CarsJacked[ playerid ],
-										p_MethYielded[ playerid ],		mysql_escape( ReturnPlayerIP( playerid ) ),
-										p_VIPJob{ playerid },			p_TruckedCargo[ playerid ],			p_IrresistibleCoins[ playerid ],
-										p_ExplosiveBullets[ playerid ],
-										!logout,						p_HitmarkerSound{ playerid },		p_ExtraAssetSlots{ playerid },
-										p_PilotMissions[ playerid ],
-										p_AccountID[ playerid ] );
-
-		mysql_single_query( Query );
-
-        if ( logout )
-			 p_PlayerLogged{ playerid } = false;
-    }
-    return 1;
-}
-
 stock SendClientMessageToGang( gangid, colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
 {
     static
@@ -7008,54 +6498,6 @@ stock GivePlayerScore( playerid, score )
 		SaveGangData( gangid ), g_gangData[ gangid ] [ E_SCORE ] += score;
 	}
 	return SetPlayerScore( playerid, GetPlayerScore( playerid ) + score );
-}
-
-stock AdvancedBan( playerid, szBannedBy[ ], szReason[ ], szIP[ ], lol_time=0 )
-{
-	static
-		szPlayerNameBanned[ MAX_PLAYER_NAME ]
-	;
-	GetPlayerName( playerid, szPlayerNameBanned, MAX_PLAYER_NAME );
-
-	format( szNormalString, sizeof( szNormalString ), "SELECT `NAME` FROM `BANS` WHERE `NAME` = '%s' LIMIT 0,1", mysql_escape( szPlayerNameBanned ) );
-	mysql_function_query( dbHandle, szNormalString, true, "OnAdvanceBanCheck", "isssi", playerid, szBannedBy, szReason, szIP, lol_time );
-}
-
-thread OnAdvanceBanCheck( playerid, szBannedBy[ ], szReason[ ], szIP[ ], lol_time )
-{
-	static
-	    szPlayerNameBanned[ MAX_PLAYER_NAME ], szSerial[ 41 ],
-		fields, rows
-	;
-
-	gpci( playerid, szSerial, sizeof( szSerial ) );
-	GetPlayerName( playerid, szPlayerNameBanned, MAX_PLAYER_NAME );
-	cache_get_data( rows, fields );
-
-	if ( rows )
-	{
-		SendClientMessageToAdmins( -1, ""COL_PINK"[ADMIN]"COL_GREY" Edited ban entry for %s to "#SERVER_NAME".", szPlayerNameBanned );
-		format( szBigString, 72, "UPDATE `BANS` SET `SERVER`=0 WHERE `NAME`='%s'", mysql_escape( szPlayerNameBanned ) );
-		mysql_single_query( szBigString );
-	}
-	else
-	{
-		new
-			enabled = IsProxyEnabledForPlayer( playerid );
-
-		if ( !enabled )
-		{
-			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`,`SERIAL`) VALUES ('%s','%s','%s','%s',%d,%d,0,'%s')", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time, mysql_escape( szSerial ) );
-		}
-		else
-		{
-			// include country why not
-			format( szLargeString, sizeof( szLargeString ), "INSERT INTO `BANS`(`NAME`,`IP`,`REASON`,`BANBY`,`DATE`,`EXPIRE`,`SERVER`,`SERIAL`,`COUNTRY`) VALUES ('%s','%s','%s','%s',%d,%d,0,'%s','%s')", mysql_escape( szPlayerNameBanned ), mysql_escape( szIP ), mysql_escape( szReason ), mysql_escape( szBannedBy ), g_iTime, lol_time, mysql_escape( szSerial ), mysql_escape( GetPlayerCountryCode( playerid ) ) );
-		}
-
-		mysql_single_query( szLargeString );
-	}
-	return KickPlayerTimed( playerid ), 1;
 }
 
 stock IsNumeric(const str[ ])
@@ -7335,34 +6777,6 @@ stock GetClosestVehicle(playerid, except = INVALID_VEHICLE_ID, &Float: distance 
         return closest;
     }
     return INVALID_VEHICLE_ID;
-}
-
-stock textContainsIP(const string[])
-{
-    static
-        RegEx:rCIP
-    ;
-
-    if ( !rCIP )
-    {
-        rCIP = regex_build("(.*?)([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})(.*?)");
-    }
-
-    return regex_match_exid(string, rCIP);
-}
-
-stock textContainsURL(const string[])
-{
-    static
-        RegEx:rCIP
-    ;
-
-    if ( !rCIP )
-    {
-        rCIP = regex_build("([\\w-]*://)?([\\w-]+\\.)+([\\w-]+)(/[^\\s]*)*");
-    }
-
-    return regex_match_exid(string, rCIP);
 }
 
 stock isValidPlayerName( szName[ ] )
@@ -7867,12 +7281,6 @@ stock ForceSpectateOnPlayer( playerid, pID )
 		PlayerSpectatePlayer( playerid, pID );
 	}
 }
-
-stock KickPlayerTimed( playerid )
-	return SetTimerEx( "KickPlayer", 500, false, "d", playerid );
-
-function KickPlayer( playerid )
-	return SetPVarInt( playerid, "banned_connection", 1 ), Kick( playerid );
 
 stock returnCityName( city )
 {

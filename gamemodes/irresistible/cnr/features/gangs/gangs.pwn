@@ -896,6 +896,35 @@ stock SaveGangData( gangid )
 	mysql_single_query( szLargeString );
 }
 
+stock SetPlayerFindOrCreateGang( playerid, gang_sql )
+{
+	new bool: foundGang = false;
+
+	// Reset gang id just incase
+	p_GangID[ playerid ] = INVALID_GANG_ID;
+
+	// Search all gangs for the SQL
+	printf("[%s] Reading gang id %d", ReturnPlayerName( playerid ), gang_sql );
+	if ( gang_sql ) {
+		foreach (new g : gangs) if( gang_sql == g_gangData[ g ] [ E_SQL_ID ] ) {
+			p_GangID[ playerid ] = g, foundGang = true;
+			break;
+		}
+	}
+
+	printf("[%s] Found gang ? %s , id %d, gangid %d", ReturnPlayerName( playerid ), foundGang ? ("YES") : ("NO"), p_GangID[ playerid ], gang_sql );
+
+	if ( ! foundGang ) {
+		format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `GANGS` WHERE `LEADER`=%d OR `ID`=%d LIMIT 0,1", p_AccountID[ playerid ], gang_sql );
+		mysql_function_query( dbHandle, szNormalString, true, "OnPlayerGangLoaded", "d", playerid );
+	}
+
+	// Send gang join message
+	if ( p_GangID[ playerid ] != INVALID_GANG_ID && strlen( g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] ) ) {
+		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_GREY" %s", g_gangData[ p_GangID[ playerid ] ] [ E_JOIN_MSG ] );
+	}
+}
+
 stock InformGangConnectMessage( playerid, gangid )
 {
 	if ( ! strlen( g_gangData[ gangid ] [ E_JOIN_MSG ] ) ) {

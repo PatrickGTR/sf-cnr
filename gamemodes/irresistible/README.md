@@ -26,7 +26,11 @@
     - Called specifically when an NPC disconnects, as OnPlayerDisconnect will not
 - `OnPlayerDriveVehicle( playerid, vehicleid )`
     - Called when a player enters a vehicle as a driver
-- `OnPlayerLogin( playerid, accountid )`
+- `OnPlayerPassedBanCheck( playerid )`
+    - Called when a player passes a ban check (done before authenticating)
+- `OnPlayerRegister( playerid )`
+    - Called when a player successfully registers an account
+- `OnPlayerLogin( playerid )`
     - Called when a player successfully logs into their account
 - `OnHouseOwnerChange( houseid, ownerid )`
     - Called when the ownership of a home is changed
@@ -62,3 +66,5 @@
     - Called when a player is unjailed for a reason id
 - `OnPlayerArrested( playerid, victimid, totalarrests, totalpeople )`
     - Called when a player is arrested
+- `OnPlayerMoneyChanged( playerid, amount )`
+    - Called when a player's money is changed

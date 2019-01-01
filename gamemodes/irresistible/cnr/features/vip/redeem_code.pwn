@@ -175,7 +175,7 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 				return SendError( playerid, "Thanks for donating! As this donation was under $5.00 USD, no coins have been issued." );
 		}
 
-		p_IrresistibleCoins[ playerid ] += iCoins;
+		GivePlayerIrresistibleCoins( playerid, iCoins );
 		SetPVarFloat( playerid, "just_donated", fAmount );
 
 		SendClientMessageFormatted( playerid, -1, ""COL_GOLD"[VIP PACKAGE]"COL_WHITE" You have received %0.0f Irresistible Coins! Thanks for donating %s!!! :D", iCoins, ReturnPlayerName( playerid ) );

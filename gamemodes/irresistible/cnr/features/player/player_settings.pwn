@@ -36,6 +36,12 @@ static stock
 ;
 
 /* ** Hooks ** */
+hook OnPlayerRegister( playerid )
+{
+	TogglePlayerSetting( playerid, SETTING_PASSIVE_MODE, true ); // remove passive mode by default
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_CP_MENU && response )

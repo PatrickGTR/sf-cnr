@@ -389,3 +389,27 @@ stock randomExcept( except[ ], len = sizeof( except ), available_element_value =
     }
     return random_number;
 }
+
+// purpose: generate a random string up to a length
+stock randomString( strDest[ ], strLen = 10 ) {
+    while ( strLen -- )  {
+        strDest[ strLen ] = random( 2 ) ? ( random( 26 ) + ( random( 2 ) ? 'a' : 'A' ) ) : ( random( 10 ) + '0' );
+    }
+}
+
+// purpose: check if a string contains an IP address
+stock textContainsIP(const string[])
+{
+#if defined _regex_included
+    static
+        RegEx: rCIP;
+
+    if ( ! rCIP ) {
+        rCIP = regex_build( "(.*?)([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})(.*?)" );
+    }
+    return regex_match_exid( string, rCIP );
+#else
+    #warning "You are not using a regex plugin for textContainsIP!"
+    return 1;
+#endif
+}

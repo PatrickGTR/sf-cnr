@@ -99,6 +99,19 @@ hook OnPlayerConnect( playerid )
 		Kick( playerid );
 		return Y_HOOKS_BREAK_RETURN_1;
 	}
+
+	// check if player name is "no-one" since it is used for unowned entities
+	if ( ! strcmp( ReturnPlayerName( playerid ), "No-one", true ) ) {
+	 	Kick( playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+
+	// check advertisers
+	if ( textContainsIP( ReturnPlayerName( playerid ) ) ) {
+	 	Kick( playerid );
+		return Y_HOOKS_BREAK_RETURN_1;
+	}
+
 	return 1;
 }
 

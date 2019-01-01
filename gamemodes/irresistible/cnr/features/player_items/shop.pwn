@@ -177,9 +177,9 @@ stock GetShopItemAmount( playerid, id )
 {
 	switch( g_shopItemData[ id ] [ E_ID ] )
 	{
-		case SHOP_ITEM_DRAIN_CLEANER: return p_CausticSoda{ playerid };
-		case SHOP_ITEM_STONE_CLEANER: return p_MuriaticAcid{ playerid };
-		case SHOP_ITEM_GAS_TANK: return p_HydrogenChloride{ playerid };
+		case SHOP_ITEM_DRAIN_CLEANER: return GetPlayerCausticSoda( playerid );
+		case SHOP_ITEM_STONE_CLEANER: return GetPlayerMuriaticAcid( playerid );
+		case SHOP_ITEM_GAS_TANK: return GetPlayerHydrogenChloride( playerid );
 		case SHOP_ITEM_CHASITY_BELT: return p_AidsVaccine{ playerid };
 		case SHOP_ITEM_SECURE_WALLET: return p_SecureWallet{ playerid };
 		case SHOP_ITEM_SCISSOR: return p_Scissors[ playerid ];
@@ -198,21 +198,21 @@ stock SetPlayerShopItemAmount( playerid, id, value )
 {
 	switch( g_shopItemData[ id ] [ E_ID ] )
 	{
-		case SHOP_ITEM_DRAIN_CLEANER: return p_CausticSoda{ playerid } = value;
-		case SHOP_ITEM_STONE_CLEANER: return p_MuriaticAcid{ playerid } = value;
-		case SHOP_ITEM_GAS_TANK: return p_HydrogenChloride{ playerid } = value;
-		case SHOP_ITEM_CHASITY_BELT: return p_AidsVaccine{ playerid } = !!value;
-		case SHOP_ITEM_SECURE_WALLET: return p_SecureWallet{ playerid } = !!value;
-		case SHOP_ITEM_SCISSOR: return p_Scissors[ playerid ] = value;
-		case SHOP_ITEM_BOBBY_PIN: return p_BobbyPins[ playerid ] = value;
-		case SHOP_ITEM_MONEY_CASE: return p_MoneyBag{ playerid } = !!value;
-		case SHOP_ITEM_ROPES: return p_Ropes[ playerid ] = value;
-		case SHOP_ITEM_FOIL: return p_AntiEMP[ playerid ] = value;
-		case SHOP_ITEM_DRILL: return p_drillStrength[ playerid ] = value;
-		case SHOP_ITEM_METAL_MELTER: return p_MetalMelter[ playerid ] = value;
-		case SHOP_ITEM_WEED_SEED: return g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ] = value;
+		case SHOP_ITEM_DRAIN_CLEANER: SetPlayerCausticSoda( playerid, value );
+		case SHOP_ITEM_STONE_CLEANER: SetPlayerMuriaticAcid( playerid, value );
+		case SHOP_ITEM_GAS_TANK: SetPlayerHydrogenChloride( playerid, value );
+		case SHOP_ITEM_CHASITY_BELT: p_AidsVaccine{ playerid } = !!value;
+		case SHOP_ITEM_SECURE_WALLET: p_SecureWallet{ playerid } = !!value;
+		case SHOP_ITEM_SCISSOR: p_Scissors[ playerid ] = value;
+		case SHOP_ITEM_BOBBY_PIN: p_BobbyPins[ playerid ] = value;
+		case SHOP_ITEM_MONEY_CASE: p_MoneyBag{ playerid } = !!value;
+		case SHOP_ITEM_ROPES: p_Ropes[ playerid ] = value;
+		case SHOP_ITEM_FOIL: p_AntiEMP[ playerid ] = value;
+		case SHOP_ITEM_DRILL: p_drillStrength[ playerid ] = value;
+		case SHOP_ITEM_METAL_MELTER: p_MetalMelter[ playerid ] = value;
+		case SHOP_ITEM_WEED_SEED: g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ] = value;
 	}
-	return 0;
+	return 1;
 }
 
 stock GivePlayerShopItem( playerid, E_SHOP_ITEMS: itemid, amount ) {

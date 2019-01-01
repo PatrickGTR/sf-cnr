@@ -73,7 +73,7 @@ hook OnPlayerTickSecond( playerid )
 			if ( g_HappyHour && ( 0.0 <= g_HappyHourRate <= 0.25 ) )
 				iCoinGenRate *= 1.0 - g_HappyHourRate;
 
-			p_IrresistibleCoins[ playerid ] += ( 1.0 / iCoinGenRate ) / 60.0; // Prev 25.92
+			GivePlayerIrresistibleCoins( playerid, ( 1.0 / iCoinGenRate ) / 60.0 ); // Prev 25.92
 		}
 	}
 	return 1;

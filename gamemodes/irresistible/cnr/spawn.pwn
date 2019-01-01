@@ -116,9 +116,9 @@ stock SetPlayerSpawnLocation( playerid, spawn_key[ 4 ], spawn_index = 0 )
 {
 	// set sql, null if key is null
 	if ( spawn_key[ 0 ] == '\0' ) {
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `ID`=%d", p_AccountID[ playerid ] ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`=NULL WHERE `ID`=%d", GetPlayerAccountID( playerid ) ) );
 	} else {
-		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`='%s %d' WHERE `ID`=%d", spawn_key, spawn_index, p_AccountID[ playerid ] ) );
+		mysql_single_query( sprintf( "UPDATE `USERS` SET `SPAWN`='%s %d' WHERE `ID`=%d", spawn_key, spawn_index, GetPlayerAccountID( playerid ) ) );
 	}
 
 	// variable update

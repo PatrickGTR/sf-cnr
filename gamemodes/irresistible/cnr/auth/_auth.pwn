@@ -6,4 +6,5 @@
  */
 
 /* ** Includes ** */
-#include "irresistible\cnr\auth\login.pwn"
+#include "irresistible\cnr\auth\banning.pwn"
+#include "irresistible\cnr\auth\account.pwn"

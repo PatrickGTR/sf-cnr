@@ -18,13 +18,6 @@
 
 #define VIP_MAX_EXTRA_SLOTS 		( 5 ) // max extra slots a person can buy
 
-/* ** Macros ** */
-#define GetPlayerIrresistibleCoins(%0) \
-	(p_IrresistibleCoins[%0])
-
-#define GivePlayerIrresistibleCoins(%0,%1) \
-	(p_IrresistibleCoins[%0] += %1)
-
 /* ** Coin Market VIP Levels ** */
 #define VIP_REGULAR 				( 1 )
 #define VIP_BRONZE 					( 2 )
@@ -95,15 +88,31 @@ static stock
 ;
 
 /* ** Global Variables ** */
-new
+static stock
 	p_ExtraAssetSlots 				[ MAX_PLAYERS char ],
 	Float: p_IrresistibleCoins 		[ MAX_PLAYERS ]
 ;
+
+/* ** Forwards ** */
+forward Float: GetPlayerIrresistibleCoins( playerid );
 
 /* ** Hooks ** */
 hook OnPlayerUpdateEx( playerid )
 {
 	CheckPlayerVipExpiry( playerid );
+	return 1;
+}
+
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_ExtraAssetSlots{ playerid } = 0;
+	p_IrresistibleCoins[ playerid ] = 0.0;
+	return 1;
+}
+
+hook OnPlayerRegister( playerid )
+{
+	p_IrresistibleCoins[ playerid ] = 0.0;
 	return 1;
 }
 
@@ -246,6 +255,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				p_ExtraAssetSlots{ playerid } ++;
 				GivePlayerIrresistibleCoins( playerid, -iCoinRequirement );
 	    		SendServerMessage( playerid, "You have redeemed an "COL_GOLD"vehicle slot"COL_WHITE" for %s Irresistible Coins!", number_format( iCoinRequirement, .decimals = 0 ) );
+				mysql_single_query( sprintf( "UPDATE `USERS` SET `EXTRA_SLOTS` = %d WHERE `ID` = %d", p_ExtraAssetSlots{ playerid }, GetPlayerAccountID( playerid ) ) );
     			AddPlayerNote( playerid, -1, sprintf( "Bought veh extra slot, has %d extra", p_ExtraAssetSlots{ playerid } ) );
 			}
 			else
@@ -260,7 +270,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			/*case 8:
 			{
-				if ( ( iCoinRequirement = 100.0 * GetGVarFloat( "vip_discount" ) ) <= p_IrresistibleCoins[ playerid ] )
+				if ( ( iCoinRequirement = 100.0 * GetGVarFloat( "vip_discount" ) ) <= GetPlayerIrresistibleCoins( playerid ) )
 				{
 			        new
 			        	ownerid = INVALID_PLAYER_ID,
@@ -289,7 +299,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 								mysql_single_query( szBigString );
 					        }
 
-							p_IrresistibleCoins[ playerid ] -= iCoinRequirement;
+							GivePlayerIrresistibleCoins( playerid, - iCoinRequirement );
 		    				SendServerMessage( playerid, "You have redeemed "COL_GOLD"Gold Rims"COL_WHITE" on your vehicle for %s Irresistible Coins!", number_format( iCoinRequirement, .decimals = 0 ) );
 
 		    				// Receipt
@@ -301,7 +311,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				}
 				else
 				{
-					SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - p_IrresistibleCoins[ playerid ], .decimals = 2 ) );
+					SendError( playerid, "You need around %s coins before you can get this!", number_format( iCoinRequirement - GetPlayerIrresistibleCoins( playerid ), .decimals = 2 ) );
 					return ShowPlayerCoinMarketDialog( playerid, true );
 				}
 			}*/
@@ -459,7 +469,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 
 	if ( strmatch( params, "balance" ) )
 	{
-		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( p_IrresistibleCoins[ playerid ] ) );
+		return SendServerMessage( playerid, "You currently have precisely "COL_GOLD"%s"COL_WHITE" Irresistible Coins!", number_format( GetPlayerIrresistibleCoins( playerid ) ) );
 	}
 	else if ( strmatch( params, "market" ) )
 	{
@@ -475,7 +485,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		else if ( p_VIPLevel[ playerid ] < VIP_BRONZE ) return SendError( playerid, "You are not a Bronze V.I.P, to become one visit "COL_GREY"donate.sfcnr.com" );
 	    else if ( coins < 0.1 || coins > 5000.0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." );
 		else if ( coins > 99999999 || coins < 0 ) return SendError( playerid, "You can only send between 0.1 and 5,000.0 coins at a single time." ); // Making cash go over billions...
-	    else if ( p_IrresistibleCoins[ playerid ] < coins ) return SendError( playerid, "You do not have this number of coins to send." );
+	    else if ( GetPlayerIrresistibleCoins( playerid ) < coins ) return SendError( playerid, "You do not have this number of coins to send." );
 	    else if ( GetPlayerScore( playerid ) < 1000 ) return SendError( playerid, "You need at least 1,000 score to send coins to other players." );
 		else if ( senttoid == playerid ) return SendError( playerid, "You cannot send yourself coins." );
 	    else
@@ -486,8 +496,8 @@ CMD:irresistiblecoins( playerid, params[ ] )
 	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS_IC` (`TO_ID`, `FROM_ID`, `IC`) VALUES (%d, %d, %f)", p_AccountID[ senttoid ], p_AccountID[ playerid ], coins );
 	     	mysql_single_query( szNormalString );
 
-	    	p_IrresistibleCoins[ senttoid ] += coins;
-	    	p_IrresistibleCoins[ playerid ] -= coins;
+	    	GivePlayerIrresistibleCoins( senttoid, coins );
+	    	GivePlayerIrresistibleCoins( playerid, -coins );
 
 	    	SendServerMessage( playerid, "You have sent "COL_GOLD"%s"COL_WHITE" Irresistible Coins to %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( senttoid ), senttoid );
 	    	SendServerMessage( senttoid, "You have received "COL_GOLD"%s"COL_WHITE" Irresistible Coins from %s(%d)!", number_format( coins, .decimals = 2 ), ReturnPlayerName( playerid ), playerid );
@@ -785,3 +795,25 @@ static stock ShowPlayerVipRedeemedDialog( playerid )
 }
 
 stock IsPlayerPlatinumVIP( playerid ) return p_VIPLevel[ playerid ] >= VIP_PLATINUM;
+
+/* ** Macros ** */
+stock Float: GetPlayerIrresistibleCoins( playerid ) {
+	return p_IrresistibleCoins[ playerid ];
+}
+
+stock GivePlayerIrresistibleCoins( playerid, Float: amount )
+{
+	// set variable prior, then just save the value of it
+	p_IrresistibleCoins[ playerid ] += amount;
+
+	// save player coins on a out/inflow of coins
+	mysql_single_query( sprintf( "UPDATE `USERS` SET `COINS` = %f WHERE `ID` = %d", p_IrresistibleCoins[ playerid ], GetPlayerAccountID( playerid ) ) );
+}
+
+stock SetPlayerIrresistibleCoins( playerid, Float: amount ) {
+	GivePlayerIrresistibleCoins( playerid, - p_IrresistibleCoins[ playerid ] + amount );
+}
+
+stock SetPlayerExtraSlots( playerid, slots ) {
+	p_ExtraAssetSlots{ playerid } = slots;
+}

@@ -29,6 +29,13 @@ new
 ;
 
 /* ** Hooks ** */
+hook OnPlayerLogin( playerid )
+{
+	format( szNormalString, sizeof( szNormalString ), "SELECT * FROM `VEHICLES` WHERE `OWNER`=%d", GetPlayerAccountID( playerid ) );
+	mysql_tquery( dbHandle, szNormalString, "OnVehicleLoad", "d", playerid );
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_VEHICLE_SPAWN && response )
