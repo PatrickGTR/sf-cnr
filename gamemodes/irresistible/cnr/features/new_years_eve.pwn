@@ -29,10 +29,10 @@ hook OnServerUpdate( )
 	static bool: bNewYear;
 
 	if ( ! bNewYear ) {
-		if ( ! iCompare ) {
-			TextDrawSetString( g_NewYearCDTD[ 0 ], "~y~Happy New Year!" ), bNewYear = true;
+		if ( iCompare <= 0 ) {
+			TextDrawSetString( g_NewYearCDTD[ 0 ], "Happy New Year!" ), bNewYear = true;
         } else {
-			TextDrawSetString( g_NewYearCDTD[ 0 ], sprintf( "%s~n~ till %d", secstonewyear( iCompare ), NEW_YEAR ) );
+			TextDrawSetString( g_NewYearCDTD[ 0 ], sprintf( "~w~%s~n~~w~ till %d", secstonewyear( iCompare ), NEW_YEAR ) );
         }
 	}
     return 1;
@@ -94,7 +94,7 @@ static stock NewYears_InitializeTextdraws( )
     TextDrawBackgroundColor(g_NewYearCDTD[ 0 ], 255);
     TextDrawFont(g_NewYearCDTD[ 0 ], 3);
     TextDrawLetterSize(g_NewYearCDTD[ 0 ], 0.230000, 1.100000);
-    TextDrawColor(g_NewYearCDTD[ 0 ], -1);
+    TextDrawColor(g_NewYearCDTD[ 0 ], COLOR_GOLD);
     TextDrawSetOutline(g_NewYearCDTD[ 0 ], 1);
     TextDrawSetProportional(g_NewYearCDTD[ 0 ], 1);
 
