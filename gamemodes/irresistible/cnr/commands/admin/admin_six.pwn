@@ -421,8 +421,7 @@ CMD:weather( playerid, params[ ] )
 	if ( sscanf( params, "d", weatherid ) )
 		return SendUsage( playerid, "/weather [WEATHER_ID]" );
 
-	g_WorldWeather = weatherid;
-
+	SetWorldWeather( weatherid );
 	SaveToAdminLogFormatted( playerid, 0, "weather %d", weatherid );
 	AddAdminLogLineFormatted( "%s(%d) has changed the weather to %d", ReturnPlayerName( playerid ), playerid, weatherid );
 	SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_WHITE" %s(%d) has changed the weather to %d!", ReturnPlayerName( playerid ), playerid, weatherid );

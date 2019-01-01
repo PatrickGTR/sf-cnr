@@ -55,8 +55,6 @@ native gpci 						( playerid, serial[ ], len );
 #include 							"irresistible\_main.pwn"
 
 /* ** Useful macros ** */
-#define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
-
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define Achievement:: 				ach_
 
@@ -392,25 +390,6 @@ public OnServerUpdateTimer( )
 
 public OnServerSecondTick( )
 {
-	SendRconCommand( sprintf( "worldtime %s, %s", GetDayToString( g_WorldDayCount ), TimeConvert( g_WorldClockSeconds++ ) ) );
-
- 	if ( g_WorldClockSeconds >= 1440 )
- 	{
- 		// call a function when the server day ends
- 		CallLocalFunction( "OnServerGameDayEnd", "" );
-
- 	    g_WorldWeather = randarg( 10, 11, 12 );
- 	    g_WorldClockSeconds = 0;
-        g_WorldDayCount = ( g_WorldDayCount == 6 ? 0 : g_WorldDayCount + 1 );
-		TextDrawSetString( g_WorldDayTD, GetDayToString( g_WorldDayCount ) );
-
-		foreach(new p : Player) {
-			if ( !p_VIPLevel[ p ] && !IsPlayerUsingRadio( p ) ) {
-				PlayAudioStreamForPlayer( p, "http://files.sfcnr.com/game_sounds/pls_donate.mp3" );
-			}
-		}
-	}
-
 	// call local function
 	CallLocalFunction( "OnServerTickSecond", "" );
 
@@ -419,9 +398,6 @@ public OnServerSecondTick( )
 	{
 		if ( ! p_PlayerLogged{ playerid } )
 			continue;
-
-		SetPlayerWeather( playerid, ( GetPlayerInterior( playerid ) || GetPlayerVirtualWorld( playerid ) ) ? 1 : g_WorldWeather );
-		UpdatePlayerTime( playerid );
 
 		// Callback
 		CallLocalFunction( "OnPlayerTickSecond", "d", playerid );
@@ -461,7 +437,6 @@ public OnPlayerRequestClass( playerid, classid )
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
-	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
@@ -732,7 +707,6 @@ public OnPlayerSpawn( playerid )
 		TextDrawShowForPlayer( playerid, g_WebsiteTD );
 		TextDrawShowForPlayer( playerid, g_MotdTD );
 		PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
-		TextDrawShowForPlayer( playerid, g_WorldDayTD );
 		if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
 		if ( p_AdminLog{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminLogTD );
 		if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
@@ -1308,7 +1282,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	TextDrawHideForPlayer( playerid, g_MotdTD );
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
-	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	TextDrawHideForPlayer( playerid, g_AdminLogTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	PlayerTextDrawHide( playerid, p_PlayerRankTD[ playerid ] );
@@ -2811,7 +2784,6 @@ public OnPlayerLoadTextdraws( playerid )
 	if ( p_WantedLevel[ playerid ] ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawShowForPlayer( playerid, g_MotdTD );
 	if ( p_AdminOnDuty{ playerid } ) TextDrawShowForPlayer( playerid, g_AdminOnDutyTD );
-	TextDrawShowForPlayer( playerid, g_WorldDayTD );
 	PlayerTextDrawShow( playerid, g_ZoneOwnerTD[ playerid ] );
 	return 1;
 }
@@ -2825,7 +2797,6 @@ public OnPlayerUnloadTextdraws( playerid )
 	TextDrawHideForPlayer( playerid, g_AdminOnDutyTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
 	TextDrawHideForPlayer( playerid, g_MotdTD );
-	TextDrawHideForPlayer( playerid, g_WorldDayTD );
 	return 1;
 }
 
@@ -6302,25 +6273,6 @@ stock mysql_escape( string[ ] )
 
 	mysql_real_escape_string( string, szEscaped );
 	return szEscaped;
-}
-
-stock GetDayToString( day )
-{
-	static
-	    string[ 10 ];
-
-	switch( day )
-	{
-		case 0: string = "Monday";
-		case 1: string = "Tuesday";
-		case 2: string = "Wednesday";
-		case 3: string = "Thursday";
-		case 4: string = "Friday";
-		case 5: string = "Saturday";
-		case 6: string = "Sunday";
-		default: string = "Bugged";
-	}
-	return string;
 }
 
 

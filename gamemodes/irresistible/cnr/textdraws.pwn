@@ -13,7 +13,6 @@ new
 	Text:  g_ObjectLoadTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_WebsiteTD        		= Text: INVALID_TEXT_DRAW,
 	Text:  g_MotdTD               	= Text: INVALID_TEXT_DRAW,
-	Text:  g_WorldDayTD       		= Text: INVALID_TEXT_DRAW,
 	Text:  g_AchievementTD          [ 4 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
@@ -138,13 +137,6 @@ hook OnScriptInit( )
 	TextDrawSetOutline(g_AchievementTD[ 3 ], 0);
 	TextDrawSetProportional(g_AchievementTD[ 3 ], 1);
 	TextDrawSetShadow(g_AchievementTD[ 3 ], 1);
-
-   	g_WorldDayTD = TextDrawCreate(501.000000, 6.000000, "Monday");
-	TextDrawBackgroundColor(g_WorldDayTD, 255);
-	TextDrawFont(g_WorldDayTD, 3);
-	TextDrawLetterSize(g_WorldDayTD, 0.519998, 1.499999);
-	TextDrawSetOutline(g_WorldDayTD, 2);
-	TextDrawSetProportional(g_WorldDayTD, 1);
 
 	g_MotdTD = TextDrawCreate(320.000000, 426.000000, "_");
 	TextDrawAlignment(g_MotdTD, 2);

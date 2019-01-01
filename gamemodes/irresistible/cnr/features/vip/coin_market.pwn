@@ -97,6 +97,17 @@ static stock
 forward Float: GetPlayerIrresistibleCoins( playerid );
 
 /* ** Hooks ** */
+#if defined SERVER_PLS_DONATE_MP3
+hook OnServerGameDayEnd( )
+{
+	foreach ( new p : Player ) if ( ! p_VIPLevel[ p ] && ! IsPlayerUsingRadio( p ) )
+	{
+		PlayAudioStreamForPlayer( p, SERVER_PLS_DONATE_MP3 );
+	}
+	return 1;
+}
+#endif
+
 hook OnPlayerUpdateEx( playerid )
 {
 	CheckPlayerVipExpiry( playerid );

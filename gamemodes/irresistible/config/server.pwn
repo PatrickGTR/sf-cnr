@@ -22,10 +22,11 @@
 #define SERVER_TWITTER 				"IrresistibleDev"
 
 /* ** Comment line to disable feature ** */
-#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"				// used for /rules (cnr\features\server_rules.pwn)
-#define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"			// used for /twitter (cnr\commands\cmd_twitter.pwn)
-#define SERVER_HELP_API_URL			"sfcnr.com/api/player/help"					// used for /help (cnr\commands\cmd_help.pwn)
-#define SERVER_CHANGES_FILE 		"updates.txt"								// used for /changes (cnr\commands\cmd_changes.pwn)
+#define SERVER_RULES_URL            "files.sfcnr.com/en_rules.txt"							// used for /rules (cnr\features\server_rules.pwn)
+#define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"						// used for /twitter (cnr\commands\cmd_twitter.pwn)
+#define SERVER_HELP_API_URL			"sfcnr.com/api/player/help"								// used for /help (cnr\commands\cmd_help.pwn)
+#define SERVER_CHANGES_FILE 		"updates.txt"											// used for /changes (cnr\commands\cmd_changes.pwn)
+#define SERVER_PLS_DONATE_MP3		"http://files.sfcnr.com/game_sounds/pls_donate.mp3"		// used for advertising vip (cnr\vip\coin_market.pwn)
 
 /* ** Hooks ** */
 hook OnScriptInit( )

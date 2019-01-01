@@ -119,7 +119,7 @@ CMD:time( playerid, params[ ] )
 	if ( sscanf( params, "d", timeid ) )
 		return SendUsage( playerid, "/time [SECONDS]" );
 
-	g_WorldClockSeconds = timeid;
+	SetWorldClock( timeid );
 	return 1;
 }
 
