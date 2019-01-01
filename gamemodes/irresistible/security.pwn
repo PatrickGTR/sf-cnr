@@ -131,6 +131,18 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+hook OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
+	static
+		szIP[ 16 ];
+
+    GetPlayerIp( playerid, szIP, sizeof( szIP ) );
+
+    if ( iCount > 2 && iTimeSpan < 10000 && ! IsPlayerNpcEx( playerid ) ) {
+   		BanEx( playerid, "BOT-SPAM" );
+    }
+	return 1;
+}
+
 #if !defined DEBUG_MODE
 	// prevent player from leaking rcon password
 	hook OnPlayerText( playerid, text[ ] )

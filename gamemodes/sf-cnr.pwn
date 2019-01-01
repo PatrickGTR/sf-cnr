@@ -433,19 +433,6 @@ public OnPlayerRequestClass( playerid, classid )
 	return 1;
 }
 
-public OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
-	static
-		szIP[ 16 ];
-
-    GetPlayerIp( playerid, szIP, sizeof( szIP ) );
-
-    if ( iCount > 2 && iTimeSpan < 10000 ) {
-    	if ( !IsPlayerNpcEx( playerid ) ) {
-        	BanEx( playerid, "BOT-SPAM" );
-    	}
-    }
-}
-
 public OnNpcConnect( npcid )
 {
 	return Kick( npcid ), 1;
