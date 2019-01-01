@@ -1,11 +1,15 @@
 /*
  * Irresistible Gaming 2018
  * Developed by Lorenc
- * Module: static_cnr\removed_buildings.inc
+ * Module: cnr\static\removed_buildings.pwn
  * Purpose: removed buildings data
  */
 
-stock removeExcessiveBuildings( playerid )
+/* ** Includes ** */
+#include 							< YSI\y_hooks >
+
+/* ** Functions ** */
+hook OnPlayerConnect( playerid )
 {
 	RemoveBuildingForPlayer( playerid, 10149, -1696.0245, 1034.0981, 45.2109, 15.0 );
 	RemoveBuildingForPlayer( playerid, 10553, -2336.9297, -105.2891, 37.0000, 0.25 );
@@ -309,7 +313,7 @@ stock removeExcessiveBuildings( playerid )
 	RemoveBuildingForPlayer(playerid, 10049, -1683.1406, 786.0938, 38.8203, 0.25);
 	RemoveBuildingForPlayer(playerid, 10040, -1765.7422, 799.9453, 53.2266, 0.25);
 	RemoveBuildingForPlayer(playerid, 10234, -1639.7109, 799.3984, 40.0859, 0.25);
-	
+
 	// Zach's Drug Business
 	RemoveBuildingForPlayer(playerid, 5171, 2124.9453, -2275.4531, 20.1406, 0.25);
 	RemoveBuildingForPlayer(playerid, 3577, 2131.3281, -2274.6484, 16.0156, 100.0);

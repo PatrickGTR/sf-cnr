@@ -525,9 +525,6 @@ public OnPlayerConnect( playerid )
 	SetPlayerColor( playerid, COLOR_GREY );
 	ResetPlayerCash( playerid );
 
-	// Create player textdraws and remove buildings
-	removeExcessiveBuildings( playerid );
-
 	// Reset some variables
 	p_Spawned 			{ playerid } = false;
     p_GangID 			[ playerid ] = INVALID_GANG_ID;
