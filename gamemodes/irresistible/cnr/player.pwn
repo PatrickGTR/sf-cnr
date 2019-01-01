@@ -39,8 +39,6 @@ new
   	bool: p_Kidnapped       	  	[ MAX_PLAYERS char ],
   	bool: p_ToggledViewPM        	[ MAX_PLAYERS char ],
   	bool: p_ToggleCopChat			[ MAX_PLAYERS char ],
-  	p_TicketTimestamp  				[ MAX_PLAYERS ],
-   	p_TicketIssuer           		[ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_CheckpointEnterTick   	    [ MAX_PLAYERS ],
 	bool: p_pausedToLoad    	    [ MAX_PLAYERS char ],
 	bool: p_CantUseReport           [ MAX_PLAYERS char ],

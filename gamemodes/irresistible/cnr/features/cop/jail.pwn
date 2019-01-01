@@ -219,8 +219,6 @@ stock JailPlayer( playerid, seconds, admin = 0 )
 	PlayerTextDrawShow		( playerid, p_JailTimeTD[ playerid ] );
 
 	// External Variables to Jail (resetting)
-	p_TicketIssuer		[ playerid ] = INVALID_PLAYER_ID; // Reset Tickets
-	p_TicketTimestamp	[ playerid ] = 0; // Reset Tickets
 	p_Cuffed			{ playerid } = false;
 	p_InfectedHIV 		{ playerid } = false;
 	//p_Detained 		{ playerid } = false;
