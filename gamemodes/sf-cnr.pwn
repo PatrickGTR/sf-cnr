@@ -564,24 +564,6 @@ public OnPlayerConnect( playerid )
 
 public OnLookupComplete( playerid, success )
 {
-	/*if ( IsProxyUser( playerid ) )
-	{
-		if ( IsProxiesBanned( ) )
-		{
-			for( new i = 0; i < sizeof( g_ispUnbans ); i++ )
-			{
-				if ( strfind( GetPlayerISP( playerid ), g_ispUnbans[ i ] ) == -1 )
-				{
-					return KickPlayer( playerid );
-					//return BanEx( playerid, "Proxy Detected!" );
-				}
-			}
-		}
-	}
-
-	format( szLargeString, sizeof( szLargeString ), "SELECT * FROM `MEGABAN` WHERE `ISP`='%s' LIMIT 0,1", mysql_escape( GetPlayerISP( playerid ) ) );
-	mysql_function_query( dbHandle, szLargeString, true, "OnPlayerMegaBanCheck", "i", playerid );*/
-
 	SendDeathMessage( INVALID_PLAYER_ID, playerid, 200 );
 
 	if ( IsProxyEnabledForPlayer( playerid ) ) {
@@ -598,54 +580,6 @@ public OnLookupComplete( playerid, success )
 	DCC_SendChannelMessage( discordGeneralChan, szNormalString );
 	return 1;
 }
-
-/*thread OnPlayerMegaBanCheck( playerid )
-{
-	new
-		rows, fields;
-
-    cache_get_data( rows, fields );
-	if ( rows )
-	{
-		new
-			playerserial[ 45 ];
-
-		gpci( playerid, playerserial, sizeof( playerserial ) );
-	 	if ( g_Debugging ) {
-	 		SendClientMessageToRCON( COLOR_YELLOW, "MEGABAN: %s blocked! GPCI: %s | ISP: %s", ReturnPlayerName( playerid ), playerserial, GetPlayerISP( playerid ) );
-	 		printf("[DEBUG] [MEGABAN] %s blocked! GPCI: %s | ISP: %s", ReturnPlayerName( playerid ), playerserial, GetPlayerISP( playerid ) );
-	 	}
-
-		// IP Blocked
-		//BlockIpAddress( ReturnPlayerIP( playerid ), 0 );
-		//BanEx( playerid, "MEGABAN" );
-		SendServerMessage( playerid, "You are banned from this server. (0xAF)" );
-		KickPlayer( playerid );
-	}
-	else
-	{
-		if ( strmatch( GetPlayerISP( playerid ), "AS812 Rogers Cable Communications Inc." ) || strmatch( GetPlayerISP( playerid ), "AS6799 OTEnet S.A." ) )
-			return 1;
-
-		SendDeathMessage( INVALID_PLAYER_ID, playerid, 200 );
-
-		if ( IsProxyEnabledForPlayer( playerid ) ) {
-			format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server! (%s)", ReturnPlayerName( playerid ), playerid, GetPlayerCountryName( playerid ) );
-		} else {
-			format( szNormalString, sizeof( szNormalString ), "%s(%d) has connected to the server!", ReturnPlayerName( playerid ), playerid );
-		}
-
-		foreach(new i : Player)
-		{
-			if ( p_PlayerSettings[ i ] { SETTING_CONNECTION_LOG } )
-				SendClientMessage( i, COLOR_CONNECT, szNormalString );
-		}
-
-		format( szNormalString, sizeof( szNormalString ), "*%s*", szNormalString );
-		DCC_SendChannelMessage( discordGeneralChan, szNormalString );
-	}
-	return 1;
-}*/
 
 public OnNpcDisconnect( npcid, reason )
 {
@@ -6946,17 +6880,6 @@ stock textContainsBadTextdrawLetters( const string[ ] )
 	}
 	return false;
 }
-
-/*stock BanPlayerISP( playerid ) {
-	if ( !IsPlayerConnected( playerid ) )
-	    return;
-
-	format( szLargeString, sizeof( szLargeString ), "INSERT INTO `MEGABAN`(`ISP`) VALUES ('%s')", mysql_escape( GetPlayerISP( playerid ) ) );
-	mysql_single_query( szLargeString );
-
-	if ( IsPlayerConnected( playerid ) )
-		Kick( playerid );
-}*/
 
 stock IsValidSkin( skinid )
 {
