@@ -8,7 +8,7 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
-/* ** Variables ** */,
+/* ** Variables ** */
 static stock bool: p_HiddenNameTags [ MAX_PLAYERS char ];
 
 /* ** Commands ** */
