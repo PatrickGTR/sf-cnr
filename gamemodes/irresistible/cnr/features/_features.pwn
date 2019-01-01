@@ -62,6 +62,8 @@
 #include "irresistible\cnr\features\c4.pwn"
 #include "irresistible\cnr\features\tax.pwn"
 #include "irresistible\cnr\features\shamal.pwn"
+#include "irresistible\cnr\features\billboards.pwn"
+#include "irresistible\cnr\features\trolley_car.pwn"
 
 // pool
 #include "irresistible\cnr\features\pool.pwn"

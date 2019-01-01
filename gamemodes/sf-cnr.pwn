@@ -58,7 +58,6 @@ native gpci 						( playerid, serial[ ], len );
 #define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define Achievement:: 				ach_
 
-#define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
@@ -86,27 +85,6 @@ public OnGameModeInit()
 	AddServerVariable( "vip_bonus", "0.0", GLOBAL_VARTYPE_FLOAT );
 	AddServerVariable( "connectsong", "http://files.sfcnr.com/game_sounds/Stevie%20Wonder%20-%20Skeletons.mp3", GLOBAL_VARTYPE_STRING );
 	AddServerVariable( "discordurl", "http://sfcnr.com/discord", GLOBAL_VARTYPE_STRING );
-
-	/* ** Custom Vehicles ** */
-	g_TrolleyVehicles[ 0 ] = AddStaticVehicle( 457, -2511.7935, 760.5610, 34.8990, 90.6223, 123, 1 ); // trolley
-	g_TrolleyVehicles[ 1 ] = AddStaticVehicle( 457, -2511.5742, 766.5329, 34.8990, 91.5108, 112, 1 ); // trolley
-	g_TrolleyVehicles[ 2 ] = AddStaticVehicle( 457, -2511.8782, 763.1669, 34.8990, 89.6839, 116, 1 ); // trolley
-	g_TrolleyVehicles[ 3 ] = AddStaticVehicle( 457, -2511.4871, 769.7538, 34.8990, 91.3486, 116, 1 ); // trolley
-	g_TrolleyVehicles[ 4 ] = AddStaticVehicle( 457, -2512.2607, 772.9983, 34.9006, 91.2577, 116, 1 ); // trolley
-
-	for( new i; i < sizeof( g_TrolleyVehicles ); i++ )
-		ChangeVehicleModel( g_TrolleyVehicles[ i ], 1349, 270.0 + 180.0 );
-
-	/* ** Objects ** */
-	// Billboards
-	CreateBillboard( "Want V.I.P? Consider Donating!\n"COL_GREY"donate.sfcnr.com", -2016.22, 326.580, 37.950, 48.9000 );
-	CreateBillboard( "Save us on your favourites!\n"#SERVER_IP"", -1809.64, -590.29, 19.360, -147.30 );
-	CreateBillboard( "You can catch updates on our website!\n"COL_GREY""#SERVER_WEBSITE"", -1571.11, 939.860, 10.030, 45.9600 );
-	CreateBillboard( "Remember to check the "COL_GREY"/rules"COL_WHITE"!\nDisobeying the rules can lead to punishment!", -1911.05, 858.870, 36.290, 44.5200 );
-	CreateBillboard( "Want to view the commands?\n Use "COL_GREY"/commands{FFFFFF}!", -2423.40, -621.18, 135.46, -195.90 );
-	CreateBillboard( "Need help with something?\nUse "COL_GREY"/ask"COL_WHITE" to contact an admin!", -2659.78, 1277.70, 9.8600, 125.100 );
-	CreateBillboard( "Saw a cheater? Report him by typing "COL_GREY"/report{FFFFFF}!", -2443.63, 719.970, 37.900, 0.00000 );
-	CreateBillboard( "You can use "COL_GREY"/vipcmds"COL_WHITE" to view your\nV.I.P commands!", -1958.975830, 841.130798, 1208.881469, -43.700046 );
 
 	/* ** Set everyone offline ** */
 	mysql_single_query( "UPDATE `USERS` SET `ONLINE` = 0" );

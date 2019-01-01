@@ -133,7 +133,9 @@ CMD:vdestroy( playerid, params[ ] )
 	#if defined __cnr__chuffsec
 		if ( IsVehicleSecurityVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
 	#endif
-		if ( g_TrolleyVehicles[ 0 ] == vID || g_TrolleyVehicles[ 1 ] == vID || g_TrolleyVehicles[ 2 ] == vID || g_TrolleyVehicles[ 3 ] == vID || g_TrolleyVehicles[ 4 ] == vID ) return SendError( playerid, "This vehicle is prohibited." );
+	#if defined __cnr__trolley_car
+		if ( IsTrolleyVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
+	#endif
 	    DestroyVehicle( vID );
 	    if ( g_adminSpawnedCar{ vID } ) g_adminSpawnedCar{ vID } = false;
 		SendClientMessage( playerid, -1, ""COL_PINK"[ADMIN]"COL_WHITE" You have destroyed the vehicle you were using." );
@@ -144,7 +146,9 @@ CMD:vdestroy( playerid, params[ ] )
 #if defined __cnr__chuffsec
 	else if ( IsVehicleSecurityVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
 #endif
-	else if ( g_TrolleyVehicles[ 0 ] == vID || g_TrolleyVehicles[ 1 ] == vID || g_TrolleyVehicles[ 2 ] == vID || g_TrolleyVehicles[ 3 ] == vID || g_TrolleyVehicles[ 4 ] == vID ) return SendError( playerid, "This vehicle is prohibited." );
+#if defined __cnr__trolley_car
+	else if ( IsTrolleyVehicle( vID ) ) return SendError( playerid, "This vehicle is prohibited." );
+#endif
 	else
 	{
 		DestroyVehicle( vID );
