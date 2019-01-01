@@ -13,3 +13,4 @@
 #include "irresistible\cnr\commands\cmd_twitter.pwn"
 #include "irresistible\cnr\commands\cmd_highscores.pwn"
 #include "irresistible\cnr\commands\cmd_nametags.pwn"
+#include "irresistible\cnr\commands\cmd_feedback.pwn"
