@@ -202,18 +202,6 @@ thread onRemoveInactiveRows( type )
 	return 1;
 }
 
-public OnPlayerSelectObject(playerid, type, objectid, modelid, Float:fX, Float:fY, Float:fZ)
-{
-	CallRemoteFunction( "mapEditor_OnPlayerSelectObject", "ddddfff", playerid, type, objectid, modelid, fX, fY, fZ );
-	return 1;
-}
-
-public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, Float:fY, Float:fZ, Float:fRotX, Float:fRotY, Float:fRotZ)
-{
-	CallRemoteFunction( "mapEditor_OnPlayerEditObject", "ddddffffff", playerid, playerobject, objectid, response, fX, fY, fZ, fRotX, fRotY, fRotZ );
-	return 1;
-}
-
 public OnGameModeExit( )
 {
 	KillTimer( rl_ServerUpdate );
