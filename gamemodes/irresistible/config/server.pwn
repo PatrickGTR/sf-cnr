@@ -30,16 +30,27 @@
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
+	// set server query information
 	SetGameModeText( SERVER_MODE_TEXT );
-
 	SetServerRule( "hostname", SERVER_NAME );
 	SetServerRule( "language", SERVER_LANGUAGE );
 	SetServerRule( "mapname", SERVER_MAP );
 
+	// simple gameplay rules
 	UsePlayerPedAnims( );
 	AllowInteriorWeapons( 0 );
 	EnableStuntBonusForAll( 0 );
 	DisableInteriorEnterExits( );
+
+	// enable mysql debugging on debug mode
+	#if defined DEBUG_MODE
+	mysql_log( LOG_ERROR | LOG_WARNING );
+	#endif
+
+	// start map andreas (if enabled)
+	#if defined MAP_ANDREAS_MODE_MINIMAL
+	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
+	#endif
 	return 1;
 }
 

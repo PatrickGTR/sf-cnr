@@ -794,9 +794,21 @@ static stock ShowPlayerVipRedeemedDialog( playerid )
 	ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_MSGBOX, ""COL_GOLD"SF-CNR Donation", szLargeString, "Got it!", "" );
 }
 
+stock SendClientMessageToVips( colour, const format[ ], va_args<> )
+{
+    static
+		out[ 144 ];
+
+    va_format( out, sizeof( out ), format, va_start<2> );
+
+	foreach ( new i : Player ) if ( p_VIPLevel[ i ] >= VIP_REGULAR ) {
+		SendClientMessage( i, colour, out );
+	}
+	return 1;
+}
+
 stock IsPlayerPlatinumVIP( playerid ) return p_VIPLevel[ playerid ] >= VIP_PLATINUM;
 
-/* ** Macros ** */
 stock Float: GetPlayerIrresistibleCoins( playerid ) {
 	return p_IrresistibleCoins[ playerid ];
 }

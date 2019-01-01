@@ -18,6 +18,9 @@
 #define STATE_ROBBED 				( 1 )
 #define STATE_PICKED 				( 2 )
 
+/* ** Macros ** */
+#define IsPlayerRobbing(%0)			( p_UsingRobberySafe[ %0 ] != -1 )
+
 /* ** Variables ** */
 enum E_ROBBERY_SYSTEM
 {
@@ -137,7 +140,7 @@ hook OnProgressCompleted( playerid, progressid, params )
 	if ( progressid == PROGRESS_ROBBING )
 	{
 		new
-			robberyid = params,//p_UsingRobberySafe[ playerid ],
+			robberyid = params,
 			Float: distance = distanceFromSafe( playerid, robberyid )
 		;
 

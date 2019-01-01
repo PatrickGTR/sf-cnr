@@ -22,6 +22,9 @@
 #define DISCORD_ROLE_VIP			"191180697547833344"
 #define DISCORD_ROLE_VOICE			"364678874681966592"
 
+/* ** Macros ** */
+#define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
+
 /* ** Variables ** */
 new stock
 	DCC_Guild: discordGuild,

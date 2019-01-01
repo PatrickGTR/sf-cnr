@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -51,30 +51,17 @@ native WP_Hash						( buffer[ ], len, const str[ ] );
 native IsValidVehicle				( vehicleid );
 native gpci 						( playerid, serial[ ], len );
 
-new bool: False = false;
-
 /* ** SF-CNR ** */
 #include 							"irresistible\_main.pwn"
 
 /* ** Useful macros ** */
-#define DQCMD:%1(%2) 				forward discord_%1(%2); public discord_%1(%2)
-#define IsPlayerRobbing(%0)			IsPlayerAttachedObjectSlotUsed(%0,0)
-#define hasTickcountPassed(%1,%2)   ((GetTickCount()-%1)>(%2))
-#define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define UpdatePlayerTime(%0)		SetPlayerTime(%0,floatround(g_WorldClockSeconds/60),g_WorldClockSeconds-floatround((g_WorldClockSeconds/60)*60))
+
+#define Ach_Unlock(%0,%1) 			(%0 >= %1 ?("{6EF83C}"):("{FFFFFF}"))
 #define Achievement:: 				ach_
-#define IsPlayerInEntrance(%0,%1) 	(p_LastEnteredEntrance[%0]==(%1))
-#define IsPlayerInPlayerGang(%0,%1)	(p_Class[%0] == p_Class[%1] && p_Class[%0] == CLASS_CIVILIAN && p_GangID[%0] == p_GangID[%1] && p_GangID[%0] != INVALID_GANG_ID)
-#define IsPlayerNpcEx(%0)			(IsPlayerNPC(%0) || strmatch(p_PlayerIP[%0], "127.0.0.1"))
-
-/* Beast Functions */
-#define SendClientMessageToVips(%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_VIPLevel[fI]>=VIP_REGULAR)format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-
 
 #define CreateBillboard(%0,%1,%2,%3,%4) SetDynamicObjectMaterialText(CreateDynamicObject(7246,%1,%2,%3,0,0,%4),0,(%0),120,"Arial",24,0,-1,-16777216,1)
 
-#define MAX_WANTED_LVL 				2048
 #define MAX_TIME_TIED 				180
 #define MAX_VEH_ATTACHED_OBJECTS  	2
 
@@ -83,7 +70,6 @@ new bool: False = false;
 public OnPlayerDriveVehicle( playerid, vehicleid );
 public OnServerUpdateTimer( );
 public OnServerSecondTick( );
-public OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 public OnPlayerLoadTextdraws( playerid );
 public OnPlayerUnloadTextdraws( playerid );
 
@@ -94,13 +80,6 @@ main()
 
 public OnGameModeInit()
 {
-	#if defined DEBUG_MODE
-	mysql_log( LOG_ERROR | LOG_WARNING );
-	#endif
-
-	// start map andreas
-	MapAndreas_Init( MAP_ANDREAS_MODE_MINIMAL );
-
 	/* ** Server Variables ** */
 	AddServerVariable( "doublexp", "0", GLOBAL_VARTYPE_INT );
 	AddServerVariable( "eventbank", "0", GLOBAL_VARTYPE_INT );
@@ -134,9 +113,6 @@ public OnGameModeInit()
 	// Signs - User friendly addition
 	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
 	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-
-	// Alcatraz
-	g_AlcatrazArea = CreateDynamicRectangle( -1921.6816, 1661.7448, -2172.4653, 1876.0469 );
 
 	/* ** Pickups ** */
 	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
@@ -1639,9 +1615,11 @@ public OnPlayerText( playerid, text[ ] )
 	if ( textContainsIP( text ) )
 		return SendServerMessage( playerid, "Please do not advertise." ), 0;
 
-	if ( !hasTickcountPassed( p_AntiTextSpam[ playerid ], 750 ) )
+	new tick_count = GetTickCount( );
+
+	if ( p_AntiTextSpam[ playerid ] > tick_count )
 	{
-		p_AntiTextSpam[ playerid ] = GetTickCount( );
+		p_AntiTextSpam[ playerid ] = tick_count + 750;
 	    p_AntiTextSpamCount{ playerid } ++;
 	 	SendError( playerid, "You must wait 0.75 seconds before posting again. "COL_GREY"[%d/3]", p_AntiTextSpamCount{ playerid } );
 
@@ -1658,7 +1636,7 @@ public OnPlayerText( playerid, text[ ] )
 	SetPVarString( playerid, "last_message", text );
 
 	p_AntiTextSpamCount{ playerid } = 0;
-	p_AntiTextSpam[ playerid ] = GetTickCount( );
+	p_AntiTextSpam[ playerid ] = tick_count + 750;
 
 	if ( p_Muted{ playerid } )
 	{
@@ -1827,13 +1805,19 @@ public OnPlayerCommandReceived(playerid, cmdtext[])
 {
     if ( p_AdminLevel[ playerid ] < 6 && ! IsPlayerServerMaintainer( playerid ) )
 	{
-		if ( !hasTickcountPassed( p_AntiCommandSpam[ playerid ], 1000 ) )
+		new
+			tick_count = GetTickCount( );
+
+		if ( p_AntiCommandSpam[ playerid ] > tick_count )
 		{
-			p_AntiCommandSpam[ playerid ] = GetTickCount( );
+			p_AntiCommandSpam[ playerid ] = tick_count + 1000;
 		 	SendError( playerid, "You must wait a second before submitting a command again." );
 			return 0;
 		}
-		else p_AntiCommandSpam[ playerid ] = GetTickCount( );
+		else
+		{
+			p_AntiCommandSpam[ playerid ] = tick_count + 1000;
+		}
 
 		if ( !IsPlayerSpawned( playerid ) || GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use commands while you're not spawned." ), 0;
 	}
@@ -7290,7 +7274,7 @@ stock IsPlayerInMinigame( playerid ) {
 	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
 }
 
-stock SendClientMessageToCops( colour, const format[ ], va_args<> ) // Conversion to foreach 14 stuffed the define, not sure how...
+stock SendClientMessageToCops( colour, const format[ ], va_args<> )
 {
     static
 		out[ 144 ];

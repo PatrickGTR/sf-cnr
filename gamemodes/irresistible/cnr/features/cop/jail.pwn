@@ -34,7 +34,8 @@ static stock
 	p_JailObjectLS					[ MAX_PLAYERS ] [ 3 ],
 	p_AlcatrazObject 				[ MAX_PLAYERS ] = { INVALID_OBJECT_ID, ... },
 	p_AlcatrazEscapeTS 				[ MAX_PLAYERS ],
-	g_alcatrazTimestamp 			= 0
+	g_alcatrazTimestamp 			= 0,
+	g_AlcatrazArea 					= -1
 ;
 
 /* ** Forwards ** */
@@ -42,6 +43,13 @@ forward OnPlayerJailed( playerid );
 forward OnPlayerUnjailed( playerid, reasonid );
 
 /* ** Hooks ** */
+hook OnScriptInit( )
+{
+	// Alcatraz
+	g_AlcatrazArea = CreateDynamicRectangle( -1921.6816, 1661.7448, -2172.4653, 1876.0469 );
+	return 1;
+}
+
 hook OnPlayerEnterDynamicCP( playerid, checkpointid ) {
 	if ( IsPlayerJailed( playerid ) ) {
 	    return SendError( playerid, "You're jailed, and you accessed a checkpoint. I smell a cheater." ), KickPlayerTimed( playerid ), Y_HOOKS_BREAK_RETURN_1;

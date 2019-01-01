@@ -9,15 +9,9 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-
 #define MAX_PAINTBALL_ARENAS 		( 6 )
 
-/* ** Macros ** */
-#define SendClientMessageToPaintball(%0,%1,%2,%3) \
-	do{foreach(new fI : Player){if (p_inPaintBall{fI}&&p_PaintBallArena{fI}==(%0))format(szNormalString,sizeof(szNormalString),(%2),%3),SendClientMessage(fI,(%1),szNormalString);}}while(False)
-
 /* ** Variables ** */
-
 enum E_PAINTBALL_DATA
 {
 	E_NAME[ 16 ],		E_HOST, 				E_PASSWORD[ 5 ],
@@ -58,7 +52,6 @@ new
 ;
 
 /* ** Hooks ** */
-
 #if defined AC_INCLUDED
 hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
@@ -329,8 +322,108 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	return 1;
 }
 
-/* ** Functions ** */
+/* ** Commands ** */
+CMD:pb( playerid, params[ ] ) return cmd_paintball( playerid, params );
+CMD:paintball( playerid, params[ ] )
+{
+	if ( !IsPlayerInPaintBall( playerid ) )
+		return SendError( playerid, "You're not in any paintball lobby." );
 
+	if ( strmatch( params, "leave" ) )
+	{
+		if ( !IsPlayerInPaintBall( playerid ) )
+		    return SendError( playerid, "You're not inside the paintball." );
+
+		LeavePlayerPaintball( playerid );
+	    SetPlayerHealth( playerid, -1 );
+	    SendServerMessage( playerid, "You have left the paintball arena." );
+	    return 1;
+	}
+
+	if ( !hasPaintBallArena( playerid ) )
+		return SendError( playerid, "This command requires you to be the host of a lobby." );
+
+	new
+		id = p_PaintBallArena{ playerid },
+		pID
+	;
+
+	if ( strmatch( params, "edit" ) )
+	{
+		showPaintBallLobbyData( playerid, id, "Close" );
+	}
+	else if ( !strcmp( params, "kick", false, 4 ) )
+	{
+		if ( sscanf( params[ 5 ], "u", pID ) ) return SendUsage( playerid, "/paintball kick [PLAYER_ID]" );
+		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
+		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
+		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );
+		else if ( pID == playerid ) return SendError( playerid, "You cannot kick yourself." );
+		else
+		{
+			SendClientMessageToPaintball( id, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" %s(%d) has left the lobby (KICKED)", ReturnPlayerName( pID ), pID );
+			LeavePlayerPaintball( pID );
+			SetPlayerHealth( pID, -1 );
+		}
+	}
+	else if ( !strcmp( params, "leader", false, 6 ) )
+	{
+		if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/paintball paintball [PLAYER_ID]" );
+		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
+		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
+		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );
+		else if ( pID == playerid ) return SendError( playerid, "You cannot apply this action to yourself." );
+		else
+		{
+			g_paintballData[ id ] [ E_HOST ] = pID;
+			SendClientMessageToPaintball( id, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" %s(%d) is the new paintball leader.", ReturnPlayerName( pID ), pID );
+		}
+	}
+	else if ( !strcmp( params, "countdown", false, 6 ) )
+	{
+		new
+			iSeconds;
+
+		if ( sscanf( params[ 10 ], "D(10)", iSeconds ) ) return SendUsage( playerid, "/paintball countdown [SECONDS]" );
+		else if ( iSeconds < 1 || iSeconds > 30 ) return SendError( playerid, "Please specify countdown seconds between 1 and 30." );
+		else
+		{
+			SendServerMessage( playerid, "You have started a countdown from %d in your paintball game.", iSeconds );
+
+		 	KillTimer( g_paintballData[ id ] [ E_CD_TIMER ] );
+			g_paintballData[ id ] [ E_CD_TIMER ] = SetTimerEx( "paintballCountDown", 960, false, "dd", id, iSeconds - 1 );
+		}
+	}
+	else
+	{
+		SendUsage( playerid, "/paintball [LEAVE/EDIT/KICK/COUNTDOWN/LEADER]" );
+	}
+	return 1;
+}
+
+CMD:p( playerid, params[ ] )
+{
+	if ( !IsPlayerInPaintBall( playerid ) )
+		return SendError( playerid, "You're not in any paintball lobby." );
+
+	new
+	    id = p_PaintBallArena{ playerid },
+	    msg[ 90 ]
+	;
+
+	if ( sscanf( params, "s[90]", msg ) ) return SendUsage( playerid, "/p [MESSAGE]" );
+	else if ( textContainsIP( msg ) ) return SendServerMessage( playerid, "Please do not advertise." );
+    else if ( !g_paintballData[ id ] [ E_CHAT ] ) return SendError( playerid, "Paintball chat is disabled in this lobby." );
+    else
+	{
+		SendClientMessageToPaintball( id, -1, ""COL_GREY"<Paintball Chat> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
+	}
+	return 1;
+}
+
+CMD:pleave( playerid, params[ ] ) return cmd_pb( playerid, "leave" );
+
+/* ** Functions ** */
 function paintballCountDown( paintballid, time )
 {
 	if ( paintballid == -1 )
@@ -571,104 +664,15 @@ stock IsPlayerLeavingPaintball( playerid ) {
 	return p_LeftPaintball{ playerid };
 }
 
-/* ** Commands ** */
-
-CMD:pb( playerid, params[ ] ) return cmd_paintball( playerid, params );
-CMD:paintball( playerid, params[ ] )
+stock SendClientMessageToPaintball( paintballid, colour, const format[ ], va_args<> )
 {
-	if ( !IsPlayerInPaintBall( playerid ) )
-		return SendError( playerid, "You're not in any paintball lobby." );
+    static
+		out[ 144 ];
 
-	if ( strmatch( params, "leave" ) )
-	{
-		if ( !IsPlayerInPaintBall( playerid ) )
-		    return SendError( playerid, "You're not inside the paintball." );
+    va_format( out, sizeof( out ), format, va_start<3> );
 
-		LeavePlayerPaintball( playerid );
-	    SetPlayerHealth( playerid, -1 );
-	    SendServerMessage( playerid, "You have left the paintball arena." );
-	    return 1;
-	}
-
-	if ( !hasPaintBallArena( playerid ) )
-		return SendError( playerid, "This command requires you to be the host of a lobby." );
-
-	new
-		id = p_PaintBallArena{ playerid },
-		pID
-	;
-
-	if ( strmatch( params, "edit" ) )
-	{
-		showPaintBallLobbyData( playerid, id, "Close" );
-	}
-	else if ( !strcmp( params, "kick", false, 4 ) )
-	{
-		if ( sscanf( params[ 5 ], "u", pID ) ) return SendUsage( playerid, "/paintball kick [PLAYER_ID]" );
-		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
-		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
-		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );
-		else if ( pID == playerid ) return SendError( playerid, "You cannot kick yourself." );
-		else
-		{
-			SendClientMessageToPaintball( id, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" %s(%d) has left the lobby (KICKED)", ReturnPlayerName( pID ), pID );
-			LeavePlayerPaintball( pID );
-			SetPlayerHealth( pID, -1 );
-		}
-	}
-	else if ( !strcmp( params, "leader", false, 6 ) )
-	{
-		if ( sscanf( params[ 7 ], "u", pID ) ) return SendUsage( playerid, "/paintball paintball [PLAYER_ID]" );
-		else if ( !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not connected." );
-		else if ( !IsPlayerInPaintBall( pID ) ) return SendError( playerid, "This player is not in paintball." );
-		else if ( p_PaintBallArena{ pID } != id ) return SendError( playerid, "This player is not in your paintball lobby." );
-		else if ( pID == playerid ) return SendError( playerid, "You cannot apply this action to yourself." );
-		else
-		{
-			g_paintballData[ id ] [ E_HOST ] = pID;
-			SendClientMessageToPaintball( id, -1, ""COL_GREY"[PAINTBALL]"COL_WHITE" %s(%d) is the new paintball leader.", ReturnPlayerName( pID ), pID );
-		}
-	}
-	else if ( !strcmp( params, "countdown", false, 6 ) )
-	{
-		new
-			iSeconds;
-
-		if ( sscanf( params[ 10 ], "D(10)", iSeconds ) ) return SendUsage( playerid, "/paintball countdown [SECONDS]" );
-		else if ( iSeconds < 1 || iSeconds > 30 ) return SendError( playerid, "Please specify countdown seconds between 1 and 30." );
-		else
-		{
-			SendServerMessage( playerid, "You have started a countdown from %d in your paintball game.", iSeconds );
-
-		 	KillTimer( g_paintballData[ id ] [ E_CD_TIMER ] );
-			g_paintballData[ id ] [ E_CD_TIMER ] = SetTimerEx( "paintballCountDown", 960, false, "dd", id, iSeconds - 1 );
-		}
-	}
-	else
-	{
-		SendUsage( playerid, "/paintball [LEAVE/EDIT/KICK/COUNTDOWN/LEADER]" );
+	foreach ( new i : Player ) if ( p_inPaintBall{ i } && p_PaintBallArena{ i } == paintballid ) {
+		SendClientMessage( i, colour, out );
 	}
 	return 1;
 }
-
-CMD:p( playerid, params[ ] )
-{
-	if ( !IsPlayerInPaintBall( playerid ) )
-		return SendError( playerid, "You're not in any paintball lobby." );
-
-	new
-	    id = p_PaintBallArena{ playerid },
-	    msg[ 90 ]
-	;
-
-	if ( sscanf( params, "s[90]", msg ) ) return SendUsage( playerid, "/p [MESSAGE]" );
-	else if ( textContainsIP( msg ) ) return SendServerMessage( playerid, "Please do not advertise." );
-    else if ( !g_paintballData[ id ] [ E_CHAT ] ) return SendError( playerid, "Paintball chat is disabled in this lobby." );
-    else
-	{
-		SendClientMessageToPaintball( id, -1, ""COL_GREY"<Paintball Chat> %s(%d):"COL_WHITE" %s", ReturnPlayerName( playerid ), playerid, msg );
-	}
-	return 1;
-}
-
-CMD:pleave( playerid, params[ ] ) return cmd_pb( playerid, "leave" );

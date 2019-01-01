@@ -11,6 +11,9 @@
 /* ** Definitions ** */
 #define MAX_ENTERS                  ( 300 )
 
+/* ** Macros ** */
+#define IsPlayerInEntrance(%0,%1)	( p_LastEnteredEntrance[ %0 ] == ( %1 ) )
+
 /* ** Variables ** */
 enum E_ENTER_DATA
 {
@@ -29,6 +32,9 @@ new
 	g_SupaSave 						= -1,
 	g_VIPLounge[ 3 ] 				= { -1, ... }
 ;
+
+/* ** Forwards ** */
+forward OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid );
 
 /* ** Hooks ** */
 hook OnScriptInit( )

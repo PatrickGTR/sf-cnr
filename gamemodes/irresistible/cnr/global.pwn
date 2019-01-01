@@ -33,8 +33,7 @@ new
  	bool: g_VipPrivateMsging 		= false,
  	g_iTime 						= 0,
  	g_VehicleLastAttacker 			[ MAX_VEHICLES ] = { INVALID_PLAYER_ID, ... },
- 	g_VehicleLastAttacked 			[ MAX_VEHICLES ],
-	g_AlcatrazArea 					= -1
+ 	g_VehicleLastAttacked 			[ MAX_VEHICLES ]
 ;
 
 /* ** Getters and Setters ** */

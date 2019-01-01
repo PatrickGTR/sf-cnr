@@ -90,5 +90,3 @@ hook OnPlayerUnloadTextdraws( playerid ) {
 	TextDrawHideForPlayer( playerid, g_NotManyPlayersTD );
     return 1;
 }
-
-/* ** Functions ** */

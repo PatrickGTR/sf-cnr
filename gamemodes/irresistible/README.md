@@ -7,16 +7,16 @@
 
 ### Script Callbacks
 
-- `public SetPlayerRandomSpawn( playerid )`
+- `SetPlayerRandomSpawn( playerid )`
     - Called when a player is attempting to be respawned somewhere randomly
-- `public OnServerUpdate( )`
+- `OnServerUpdate( )`
     - Called every second (or sooner) indefinitely
-- `public OnServerTickSecond( )`
+- `OnServerTickSecond( )`
     - Called every second (specifically) indefinitely
-- `public OnPlayerUpdateEx( playerid )`
+- `OnPlayerUpdateEx( playerid )`
     - Same interval as OnServerUpdate, but it is called indefinitely for every player in-game
     - When you wish to update something frequently, but not use OnPlayerUpdate
-- `public OnPlayerTickSecond( playerid )`
+- `OnPlayerTickSecond( playerid )`
     - Called every second (specifically a second) for a player, indefinitely
 - `OnServerGameDayEnd( )`
     - Called every 24 minutes in-game (basically when a new day starts)
