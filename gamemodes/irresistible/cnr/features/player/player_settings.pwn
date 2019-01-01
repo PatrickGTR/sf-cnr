@@ -109,6 +109,16 @@ hook OnPlayerLogin( playerid )
 	return 1;
 }
 
+hook OnPlayerLoadTextdraws( playerid ) {
+	ShowPlayerTogglableTextdraws( playerid );
+	return 1;
+}
+
+hook OnPlayerUnloadTextdraws( playerid ) {
+	HidePlayerTogglableTextdraws( playerid );
+	return 1;
+}
+
 /* ** SQL Threads ** */
 thread OnSettingsLoad( playerid )
 {
@@ -181,6 +191,34 @@ CMD:passivelist( playerid, params[ ] )
 }
 
 /* ** Functions ** */
+static stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
+{
+	// Current Coins
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
+		TextDrawShowForPlayer( playerid, g_CurrentCoinsTD );
+		PlayerTextDrawShow( playerid, p_CoinsTD[ playerid ] );
+	}
+
+	// Top donor
+	if ( ! IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
+		TextDrawShowForPlayer( playerid, g_TopDonorTD );
+	}
+}
+
+static stock HidePlayerTogglableTextdraws( playerid, bool: force = true )
+{
+	// Current Coins
+	if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
+		TextDrawHideForPlayer( playerid, g_CurrentCoinsTD );
+		PlayerTextDrawHide( playerid, p_CoinsTD[ playerid ] );
+	}
+
+	// Top donor
+	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
+		TextDrawHideForPlayer( playerid, g_TopDonorTD );
+	}
+}
+
 stock TogglePlayerSetting( playerid, settingid, bool: toggle )
 {
 	if ( ( p_PlayerSettings[ playerid ] { settingid } = toggle ) == true ) {

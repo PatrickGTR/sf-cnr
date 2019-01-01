@@ -521,7 +521,6 @@ public OnPlayerRequestClass( playerid, classid )
 	p_TrackingTimer[ playerid ] = -1;
 	PlayerTextDrawHide( playerid, p_TrackPlayerTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
-	HidePlayerTogglableTextdraws( playerid );
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
 	TextDrawHideForPlayer( playerid, g_DoubleXPTD );
@@ -983,14 +982,13 @@ public OnPlayerSpawn( playerid )
 	DeletePVar( playerid, "attached_mugshot" );
 
 	PlayerPlaySound( playerid, 0, 0.0, 0.0, 0.0 );
-	PlayerTextDrawHide( playerid, p_ExperienceTD[ playerid ] );
-	HidePlayerTogglableTextdraws( playerid );
-	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
-	TextDrawHideForPlayer( playerid, g_currentXPTD );
 
-	if ( ! IsPlayerMovieMode( playerid ) )
+	if ( IsPlayerMovieMode( playerid ) )
 	{
-		ShowPlayerTogglableTextdraws( playerid );
+		CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
+	}
+	else
+	{
 		ShowPlayerIrresistibleRank( playerid );
 		TextDrawShowForPlayer( playerid, g_CurrentRankTD );
 		TextDrawShowForPlayer( playerid, g_currentXPTD );
@@ -1664,7 +1662,6 @@ public OnPlayerDeath( playerid, killerid, reason )
 	PlayerTextDrawHide( playerid, p_PlayerRankTextTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_CurrentRankTD );
 	TextDrawHideForPlayer( playerid, g_currentXPTD );
-	HidePlayerTogglableTextdraws( playerid );
 	CallLocalFunction( "OnPlayerUnloadTextdraws", "d", playerid );
 
 	/* ** Tax And Medical Fees **
@@ -3284,7 +3281,6 @@ CMD:emp( playerid, params[ ] )
 
 public OnPlayerLoadTextdraws( playerid )
 {
-	ShowPlayerTogglableTextdraws( playerid );
 	PlayerTextDrawShow( playerid, p_LocationTD[ playerid ] );
 	if ( IsDoubleXP( ) ) TextDrawShowForPlayer( playerid, g_DoubleXPTD );
 	TextDrawShowForPlayer( playerid, g_WebsiteTD );
@@ -3299,7 +3295,6 @@ public OnPlayerLoadTextdraws( playerid )
 public OnPlayerUnloadTextdraws( playerid )
 {
 	PlayerTextDrawHide( playerid, g_ZoneOwnerTD[ playerid ] );
-	HidePlayerTogglableTextdraws( playerid );
 	PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
 	TextDrawHideForPlayer( playerid, g_WebsiteTD );
@@ -9523,34 +9518,6 @@ stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0,
 	}
 
 	return SetPlayerPos( playerid, x, y, z );
-}
-
-stock ShowPlayerTogglableTextdraws( playerid, bool: force = false )
-{
-	// Current Coins
-	if ( ! IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
-		TextDrawShowForPlayer( playerid, g_CurrentCoinsTD );
-		PlayerTextDrawShow( playerid, p_CoinsTD[ playerid ] );
-	}
-
-	// Top donor
-	if ( ! IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
-		TextDrawShowForPlayer( playerid, g_TopDonorTD );
-	}
-}
-
-stock HidePlayerTogglableTextdraws( playerid, bool: force = true )
-{
-	// Current Coins
-	if ( IsPlayerSettingToggled( playerid, SETTING_COINS_BAR ) || force ) {
-		TextDrawHideForPlayer( playerid, g_CurrentCoinsTD );
-		PlayerTextDrawHide( playerid, p_CoinsTD[ playerid ] );
-	}
-
-	// Top donor
-	if ( IsPlayerSettingToggled( playerid, SETTING_TOP_DONOR ) || force ) {
-		TextDrawHideForPlayer( playerid, g_TopDonorTD );
-	}
 }
 
 thread OnNewNameCheckBanned( playerid, Float: iCoinRequirement, newName[ ] )
