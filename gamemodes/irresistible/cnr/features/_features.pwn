@@ -59,6 +59,7 @@
 #include "irresistible\cnr\features\hotel_da_novic.pwn"
 #include "irresistible\cnr\features\random_hits.pwn"
 #include "irresistible\cnr\features\c4.pwn"
+#include "irresistible\cnr\features\tax.pwn"
 
 // pool
 #include "irresistible\cnr\features\pool.pwn"

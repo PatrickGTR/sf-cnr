@@ -368,6 +368,61 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	return 1;
 }
 
+hook OnPlayerEnterDynamicCP( playerid, checkpointid )
+{
+	if ( CanPlayerExitEntrance( playerid ) && ! IsPlayerInAnyVehicle( playerid ) )
+	{
+		// Enter Houses
+		foreach ( new i : houses )
+		{
+			if ( checkpointid == g_houseData[ i ] [ E_CHECKPOINT ] [ 0 ] )
+			{
+				ClearAnimations( playerid ); // clear-fix
+
+				if ( IsHouseOnFire( i ) ) {
+					return SendError( playerid, "This house is on fire, you cannot enter it!" ), 1;
+				}
+
+				if ( GetPlayerSpecialAction( playerid ) == SPECIAL_ACTION_CUFFED ) {
+					return SendError( playerid, "You can't do anything as you are cuffed." ), 1;
+				}
+
+				if ( g_iTime > g_houseData[ i ] [ E_CRACKED_TS ] && g_houseData[ i ] [ E_CRACKED ] )
+					g_houseData[ i ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+
+				new is_owner = strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) );
+
+				if ( ! g_houseData[ i ] [ E_CRACKED ] && ! strmatch( g_houseData[ i ] [ E_PASSWORD ], "N/A" ) && ! is_owner )
+				{
+					p_PasswordedHouse[ playerid ] = i;
+					CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, i, -1 ); // attempting a break in as a burglar/cop
+					ShowPlayerDialog( playerid, DIALOG_HOUSE_PW, DIALOG_STYLE_PASSWORD, "{FFFFFF}House Authentication", ""COL_GREEN"This house is password locked!\n"COL_WHITE"You may only enter this house if you enter the correct password.", "Enter", "Cancel" );
+					return 1;
+				}
+
+				p_InHouse[ playerid ] = i;
+				UpdatePlayerEntranceExitTick( playerid );
+				SetPlayerVirtualWorld( playerid, g_houseData[ i ] [ E_WORLD ] );
+				SetPlayerInterior( playerid, g_houseData[ i ] [ E_INTERIOR_ID ] );
+				SetPlayerPos( playerid, g_houseData[ i ] [ E_TX ], g_houseData[ i ] [ E_TY ], g_houseData[ i ] [ E_TZ ] );
+				CallLocalFunction( "OnPlayerEnterHouse", "dd", playerid, i );
+				return 1;
+			}
+			else if ( checkpointid == g_houseData[ i ] [ E_CHECKPOINT ] [ 1 ] )
+			{
+				p_InHouse[ playerid ] = -1;
+				CancelEdit( playerid );
+				TogglePlayerControllable( playerid, 0 );
+				UpdatePlayerEntranceExitTick( playerid );
+				SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+				SetPlayerPosEx( playerid, g_houseData[ i ] [ E_EX ], g_houseData[ i ] [ E_EY ], g_houseData[ i ] [ E_EZ ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+				return 1;
+			}
+		}
+	}
+	return 1;
+}
+
 /* ** Commands ** */
 CMD:house( playerid, params[ ] ) return cmd_h( playerid, params );
 CMD:h( playerid, params[ ] )

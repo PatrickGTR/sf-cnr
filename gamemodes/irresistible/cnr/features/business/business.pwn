@@ -1274,6 +1274,50 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+hook OnPlayerEnterDynamicCP( playerid, checkpointid )
+{
+	if ( CanPlayerExitEntrance( playerid ) && ! IsPlayerInAnyVehicle( playerid ) )
+	{
+		// Enter Business
+		foreach ( new b : business )
+		{
+			if ( checkpointid == g_businessData[ b ] [ E_ENTER_CP ] )
+			{
+				if ( p_Class[ playerid ] != CLASS_CIVILIAN )
+					return SendError( playerid, "You must be a civilian to access this business." );
+
+				if ( g_iTime > g_businessData[ b ] [ E_CRACKED_TS ] && g_businessData[ b ] [ E_CRACKED ] )
+					g_businessData[ b ] [ E_CRACKED ] = false; // The Virus Is Disabled.
+
+				if ( ! g_businessData[ b ] [ E_CRACKED ] && ! IsBusinessAssociate( playerid, b ) ) {
+					CallLocalFunction( "OnPlayerAttemptBreakIn", "ddd", playerid, -1, b ); // attempting a break in as a burglar/cop
+					return SendError( playerid, "You cannot access this business as you are not an associate of it." );
+				}
+
+				new
+					bType = g_businessData[ b ] [ E_INTERIOR_TYPE ];
+
+				pauseToLoad( playerid );
+				p_InBusiness[ playerid ] = b;
+				UpdatePlayerEntranceExitTick( playerid );
+				SetPlayerPos( playerid, g_businessInteriorData[ bType ] [ E_X ], g_businessInteriorData[ bType ] [ E_Y ], g_businessInteriorData[ bType ] [ E_Z ] );
+				SetPlayerVirtualWorld( playerid, g_businessData[ b ] [ E_WORLD ] );
+				SetPlayerInterior( playerid, g_businessData[ b ] [ E_INTERIOR_TYPE ] + 20 );
+				return 1;
+			}
+			else if ( checkpointid == g_businessData[ b ] [ E_EXIT_CP ] )
+			{
+				p_InBusiness[ playerid ] = -1;
+				TogglePlayerControllable( playerid, 0 );
+				UpdatePlayerEntranceExitTick( playerid );
+				SetTimerEx( "ope_Unfreeze", 1250, false, "d", playerid );
+				SetPlayerPosEx( playerid, g_businessData[ b ] [ E_X ], g_businessData[ b ] [ E_Y ], g_businessData[ b ] [ E_Z ], 0 ), SetPlayerVirtualWorld( playerid, 0 );
+			}
+		}
+	}
+	return 1;
+}
+
 /* ** Threads ** */
 thread OnBusinessLoad( )
 {
