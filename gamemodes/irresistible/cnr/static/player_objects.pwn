@@ -12709,6 +12709,7 @@ hook OnScriptInit( )
 	CreateDynamicObject( 1685, -1752.553588, 59.633178, 866.292968, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 1685, -1752.472534, 57.522521, 866.292968, 0.000000, 0.000000, 0.000000 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -1748.673706, 4.254638, 867.267089, 0.000000, 0.000000, 0.000000 ), 0, 10631, "queensammo_sfs", "ammu_gunboard3", 1 );
+	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
 
 	// Zach's Buz
 	CreateDynamicObject( 19834, 2140.468750, -2291.720947, 21.069238, 0.000000, 30.099998, 45.099987 );

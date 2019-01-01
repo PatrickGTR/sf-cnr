@@ -108,13 +108,6 @@ public OnGameModeInit()
 	CreateBillboard( "Saw a cheater? Report him by typing "COL_GREY"/report{FFFFFF}!", -2443.63, 719.970, 37.900, 0.00000 );
 	CreateBillboard( "You can use "COL_GREY"/vipcmds"COL_WHITE" to view your\nV.I.P commands!", -1958.975830, 841.130798, 1208.881469, -43.700046 );
 
-	// Signs - User friendly addition
-	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
-	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
-
-	/* ** Pickups ** */
-	CreateDynamicPickup( 371, 2, -1745.2754, 59.301500, 866.4556 ); // Parachute @Veloxity
-
 	/* ** Set everyone offline ** */
 	mysql_single_query( "UPDATE `USERS` SET `ONLINE` = 0" );
 

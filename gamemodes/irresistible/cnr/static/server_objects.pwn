@@ -448,6 +448,7 @@ hook OnScriptInit( )
 	CreateDynamicObject(970, -1497.84, 916.18, 6.73,   0.00, 0.00, -180.00);
 	CreateDynamicObject(970, -1500.02, 920.00, 6.73,   0.00, 0.00, -270.06);
 	CreateDynamicObject(970, -1497.84, 924.01, 6.73,   0.00, 0.00, -180.00);
+	SetDynamicObjectMaterialText( CreateDynamicObject( 19353, -1496.6134, 920.0287, 6.0990, 0.0, -90.0, -180 ), 0, "BANK", 100, "Times New Roman", 100, 0, -9170, 0, 1 );
 
 	// Police department doors:
 	CreateDynamicObject(1569, 321.45, 301.96, 998.15,   0.00, 0.00, 0.00);
@@ -469,6 +470,7 @@ hook OnScriptInit( )
 	CreateDynamicObject(1499, -1575.96, 687.99, 6.13,   0.00, 0.00, 0.00);
 
 	//Supa - Market
+	SetDynamicObjectMaterialText( CreateDynamicObject( 7301, -2418.657714, 743.686523, 1058.593750, 0.000000, 0.000000, -44.899974 ), 0, "Use /shop!", 120, "impact", 100, 0, -65536, 0, 1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2443.325927, 756.842773, 1055.205566, 180.000000, 90.000000, 0.000000 ), 0, 12844, "cos_liquorstore", "b_wtilesreflect", -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2418.337158, 756.842773, 1055.205566, 180.000000, 90.000000, 0.000000 ), 0, 12844, "cos_liquorstore", "b_wtilesreflect", -1 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -2393.337890, 756.842773, 1055.205566, 180.000000, 90.000000, 0.000000 ), 0, 12844, "cos_liquorstore", "b_wtilesreflect", -1 );
