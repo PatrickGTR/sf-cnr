@@ -5350,14 +5350,8 @@ public OnPlayerUpdate( playerid )
 		return 0;
 
 	static
-		Float: X, 	Float: Y, 	Float: Z,
-		Float: vX, 	Float: vY, 	Float: vZ,
-
 		iKeys, iLeftRight, iState
 	;
-
-	if ( g_iTime < p_DesyncTime[ playerid ] )
-		return 0; // Desync Feature
 
 	GetPlayerKeys( playerid, iKeys, tmpVariable, iLeftRight );
 	p_AFKTime[ playerid ] = GetTickCount( );
@@ -5375,42 +5369,6 @@ public OnPlayerUpdate( playerid )
 	if ( !( iKeys & KEY_AIM ) && !IsPlayerAttachedObjectSlotUsed( playerid, 1 ) && p_MoneyBag{ playerid } ) {
 		//SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
 		SetPlayerAttachedObject( playerid, 1, 1210, 7, 0.302650, -0.002469, -0.193321, 296.124053, 270.396881, 8.941717, 1.000000, 1.000000, 1.000000 );
-	}
-
-    // Fugga.cs
-	GetPlayerVelocity( playerid, vX, vY, vZ );
-	if ( ( ( vX < -10.0 || vX > 10.0 ) && ( vZ > 1.0 || vZ < -1.0 ) ) || ( ( vX < -3.0 || vX > 3.0 ) && ( vY < -3.0 || vY > 3.0 ) && ( vZ > 3.0 || vZ < -3.0 ) ) )
-	{
-    	//SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for player swinging.", ReturnPlayerName( playerid ), playerid );
-		//BanEx( playerid, "Player Swing" );
-		p_DesyncTime[ playerid ] = g_iTime + 3;
-		return 0;
-	}
-
-    // PlayerBugger.cs
-	GetPlayerPos( playerid, X, Y, Z );
-	if ( X >= 99999.0 || Y >= 99999.0 || Z >= 99999.0 || X <= -99999.0 || Y <= -99999.0 || Z <= -99999.0 ) {
-	  	SendClientMessage( playerid, 0xa9c4e4ff, "Warning: Excessive X, Y, Z has been breached thus last location set." );
-		SetPlayerPos( playerid, p_PlayerBuggerX[ playerid ], p_PlayerBuggerY[ playerid ], p_PlayerBuggerZ[ playerid ] );
-	}
-	else
-	{
-	    p_PlayerBuggerX[ playerid ] = X;
-	    p_PlayerBuggerY[ playerid ] = Y;
-	    p_PlayerBuggerZ[ playerid ] = Z;
-	}
-
-	if ( IsPlayerInAnyVehicle( playerid ) && GetPlayerState( playerid ) == PLAYER_STATE_DRIVER )
-	{
-		GetPlayerPos( playerid, X, Y, Z );
-  		GetVehicleVelocity( GetPlayerVehicleID( playerid ), vX, vY, vZ );
-		if ( ( vX > 3.0 || vY > 3.0 || vZ > 3.0 || vX < -3.0 || vY < -3.0 || vZ < -3.0 ) && ( vX != X && vY != Y && vZ != Z ) )
-		{
-        	//SendGlobalMessage( -1, ""COL_PINK"[ANTI-CHEAT]{FFFFFF} %s(%d) has been banned for car swinging.", ReturnPlayerName( playerid ), playerid );
-			//BanEx( playerid, "Car Swing" );
-			p_DesyncTime[ playerid ] = g_iTime + 3;
-			return 0;
-		}
 	}
 	return 1;
 }

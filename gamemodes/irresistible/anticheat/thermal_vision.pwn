@@ -11,7 +11,7 @@
 /* ** Hooks ** */
 hook OnPlayerUpdate( playerid ) {
     if ( ! AC_NightThermalVisionHack( playerid ) ) {
-        return Y_HOOKS_BREAK_RETURN_1;
+        return Y_HOOKS_BREAK_RETURN_0;
     } else {
         return Y_HOOKS_CONTINUE_RETURN_1;
     }

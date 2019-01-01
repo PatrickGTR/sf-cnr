@@ -159,6 +159,7 @@ stock AC_SetPlayerSpawned( playerid, bool: spawned ) {
 /* ** Modules (remove to disable) ** */
 #include "irresistible\anticheat\money.pwn"
 #include "irresistible\anticheat\thermal_vision.pwn"
+#include "irresistible\anticheat\player_bugger.pwn"
 #include "irresistible\anticheat\bot_attack.pwn"
 #include "irresistible\anticheat\hitpoints.pwn"
 #include "irresistible\anticheat\weapon.pwn"
