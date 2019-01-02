@@ -5,15 +5,16 @@
  * Purpose: checks (and executes if you want) migration files for a server
  */
 
+/* ** Disable Checker If Disabled By Operator / Production Mode ** */
+#if !defined SERVER_MIGRATIONS_FOLDER || !defined DEBUG_MODE
+    #endinput
+#endif
+
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 #tryinclude 						< filemanager >
 
-/* ** Error Checking ** */
-#if !defined SERVER_MIGRATIONS_FOLDER
-    #endinput
-#endif
-
+/* ** Further Error Checking ** */
 #if !defined FM_DIR
     #warning "Migration checker is disabled (Install FileManager Plugin)"
     #endinput
