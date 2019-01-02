@@ -553,7 +553,7 @@ CMD:sync( playerid, params[ ] )
 	if ( ! IsPlayerConnected( playerid ) || ! IsPlayerSpawned( playerid ) || p_SyncingPlayer{ playerid } == true || IsPlayerAFK( playerid ) )
 		return SendError( playerid, "You cannot use this feature at the moment." );
 
-	if ( p_Jailed{ playerid } )
+	if ( IsPlayerJailed( playerid ) )
 		return SendError( playerid, "You cannot use this feature while you are jailed." );
 
 	if ( IsPlayerInAnyVehicle( playerid ) )
