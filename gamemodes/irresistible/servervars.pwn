@@ -5,8 +5,11 @@
  * Purpose: savable server variables
  */
 
+/* ** Error Checking ** */
 #if !defined __irresistible_servervars
 	#define __irresistible_servervars
+#else
+	#endinput
 #endif
 
 /* ** Includes ** */
@@ -64,7 +67,7 @@ thread OnLoadServerVariables( )
 	return printf( "[SERVER] %d server variables have been loaded.", rows ), 1;
 }
 
-stock UpdateServerVariable( const variable_name[ 64 ], int_value = 0, Float: float_value = 0.0, string_value[ 128 ] = '\0', type = GLOBAL_VARTYPE_INT )
+stock UpdateServerVariable( const variable_name[ 64 ], int_value = 0, Float: float_value = 0.0, string_value[ 128 ] = '\0', type = GLOBAL_VARTYPE_NONE )
 {
 	static
 		query[ 256 ];
