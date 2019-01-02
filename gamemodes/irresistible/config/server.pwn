@@ -26,7 +26,8 @@
 #define SERVER_TWITTER_FEED_URL 	"files.sfcnr.com/cnr_twitter.php"						// used for /twitter (cnr\commands\cmd_twitter.pwn)
 #define SERVER_HELP_API_URL			"sfcnr.com/api/player/help"								// used for /help (cnr\commands\cmd_help.pwn)
 #define SERVER_CHANGES_FILE 		"updates.txt"											// used for /changes (cnr\commands\cmd_changes.pwn)
-#define SERVER_PLS_DONATE_MP3		"http://files.sfcnr.com/game_sounds/pls_donate.mp3"		// used for advertising vip (cnr\vip\coin_market.pwn)
+#define SERVER_PLS_DONATE_MP3		"http://files.sfcnr.com/game_sounds/pls_donate.mp3"		// used for advertising vip (cnr\features\vip\coin_market.pwn)
+#define SERVER_MIGRATIONS_FOLDER  	"./gamemodes/irresistible/config/migrations/cnr/"		// used for migrations checking (config\migrations\_migrations.pwn)
 
 /* ** Hooks ** */
 hook OnScriptInit( )

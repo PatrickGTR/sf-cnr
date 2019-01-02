@@ -9,3 +9,6 @@
 #include "irresistible\config\database.pwn" // keep #1
 #include "irresistible\config\server.pwn"
 #include "irresistible\config\colors.pwn"
+
+/* ** Migrations Manager ** */
+#include "irresistible\config\migrations\_migrations.pwn"
