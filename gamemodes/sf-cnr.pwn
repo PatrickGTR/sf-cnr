@@ -16,7 +16,7 @@
 //#pragma option -d3
 #pragma dynamic 7200000
 
-// #define DEBUG_MODE
+#define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -429,9 +429,9 @@ public OnPlayerConnect( playerid )
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[WARNING]{a9c4e4} The concept in this server and GTA in general may be considered explicit material." );
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version " # FILE_BUILD "." );
 
-	if ( GetGVarType( "connectsong" ) != GLOBAL_VARTYPE_NONE )
+	if ( IsValidServerVariable( "connectsong" ) )
 	{
-		GetGVarString( "connectsong", szNormalString );
+		GetServerVariableString( "connectsong", szNormalString );
 		PlayAudioStreamForPlayer( playerid, szNormalString );
 	}
 	return 1;
@@ -1848,7 +1848,7 @@ CMD:eventbank( playerid, params[ ] )
 	    {
 	    	GivePlayerCash( playerid, -iAmount );
 			p_AntiSpammyTS[ playerid ] = g_iTime + 15;
-			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + iAmount, 0.0, "", GLOBAL_VARTYPE_INT );
+			UpdateServerVariableInt( "eventbank", GetGVarInt( "eventbank" ) + iAmount );
 			SendGlobalMessage( playerid, ""COL_GOLD"[EVENT BANK]"COL_WHITE" Thanks for donating %s to the event bank, %s!", cash_format( iAmount ), ReturnPlayerName( playerid ) );
 	    }
 	}
@@ -1861,7 +1861,7 @@ CMD:eventbank( playerid, params[ ] )
 	    else
 	    {
 	    	GivePlayerCash( playerid, iAmount );
-			UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) - iAmount, 0.0, "", GLOBAL_VARTYPE_INT );
+			UpdateServerVariableInt( "eventbank", GetGVarInt( "eventbank" ) - iAmount );
 			SendGlobalMessage( -1, ""COL_GOLD"[EVENT BANK]"COL_WHITE" %s(%d) has withdrawn %s from the event bank!", ReturnPlayerName( playerid ), playerid, cash_format( iAmount ) );
 	    }
 	}
@@ -5628,7 +5628,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				p_ArmyBanned{ playerid } = 0;
 				GivePlayerCash( playerid, -750000 );
-				UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + 250000, 0.0, "", GLOBAL_VARTYPE_INT );
+				UpdateServerVariableInt( "eventbank", GetGVarInt( "eventbank" ) + 250000 );
 
 				format( szNormalString, sizeof( szNormalString ), "UPDATE `USERS` SET `ARMY_BAN`=0 WHERE ID=%d", p_AccountID[ playerid ] );
 				mysql_single_query( szNormalString );
@@ -5645,7 +5645,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 				p_CopBanned{ playerid } = 0;
 				GivePlayerCash( playerid, -500000 );
-				UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + 170000, 0.0, "", GLOBAL_VARTYPE_INT );
+				UpdateServerVariable( "eventbank", GetGVarInt( "eventbank" ) + 170000, .type = GLOBAL_VARTYPE_INT );
 
 				format( szNormalString, sizeof( szNormalString ), "UPDATE `USERS` SET `COP_BAN`=0 WHERE ID=%d", p_AccountID[ playerid ] );
 				mysql_single_query( szNormalString );
