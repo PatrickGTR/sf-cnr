@@ -615,3 +615,32 @@ CMD:bring( playerid, params[ ] )
     }
     return 1;
 }
+
+CMD:forceac( playerid, params[ ] )
+{
+    new
+        pID;
+
+	if ( p_AdminLevel[ playerid ] < 3 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
+    else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
+    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
+    else if ( pID == playerid ) return SendError( playerid, "You cant use this command on yourself." );
+    else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
+    //else if ( GetPlayerScore( pID ) < 100 ) return SendError( playerid, "This player's score is under 100, please spectate instead." );
+    else
+	{
+		if ( p_forcedAnticheat[ pID ] <= 0 )
+		{
+			p_forcedAnticheat[ pID ] = p_AccountID[ playerid ];
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=%d WHERE `ID`=%d", p_AccountID[ playerid ], p_AccountID[ pID ] ) );
+			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
+	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s is required to use an anticheat to play by %s. "COL_YELLOW"("AC_WEBSITE")", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
+	        if ( ! IsPlayerUsingSampAC( pID ) ) KickPlayerTimed( pID );
+		}
+		else
+		{
+			return SendError( playerid, "This user is already forced to use the Anti-Cheat." );
+		}
+    }
+    return 1;
+}
