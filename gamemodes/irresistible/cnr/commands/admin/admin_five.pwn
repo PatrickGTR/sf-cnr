@@ -748,34 +748,62 @@ CMD:hadminsell( playerid, params[ ] )
 	return 1;
 }
 
-CMD:forceac( playerid, params[ ] )
+CMD:unforceac( playerid, params[ ] )
 {
     new
-        pID;
+		player[ MAX_PLAYER_NAME ],
+		Query[ 70 ];
 
 	if ( p_AdminLevel[ playerid ] < 5 ) return SendError( playerid, ADMIN_COMMAND_REJECT );
-    else if ( sscanf( params, "u", pID ) ) SendUsage( playerid, "/forceac [PLAYER_ID]" );
-    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
-    else if ( pID == playerid ) return SendError( playerid, "You cant use this command on yourself." );
-    else if ( p_AdminLevel[ pID ] > p_AdminLevel[ playerid ] ) return SendError( playerid, "You cannot use this command on admins higher than your level." );
-    //else if ( GetPlayerScore( pID ) < 100 ) return SendError( playerid, "This player's score is under 100, please spectate instead." );
-    else
+	else if ( sscanf( params, "s[24]", player ) ) SendUsage( playerid, "/unban [NAME]" );
+	else
 	{
-		if ( p_forcedAnticheat[ pID ] <= 0 )
+		new pID = GetPlayerIDFromName( player );
+
+		mysql_format( dbHandle, Query, sizeof( Query ), "SELECT `NAME` FROM `USERS` WHERE `NAME` = '%e'", player );
+
+		if ( ! IsPlayerConnected( pID ) )
 		{
-			p_forcedAnticheat[ pID ] = p_AccountID[ playerid ];
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=%d WHERE `ID`=%d", p_AccountID[ playerid ], p_AccountID[ pID ] ) );
-			AddAdminLogLineFormatted( "%s(%d) has forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
-	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s is required to use an anticheat to play by %s. "COL_YELLOW"("AC_WEBSITE")", ReturnPlayerName( pID ), ReturnPlayerName( playerid ) );
-	        if ( ! IsPlayerUsingSampAC( pID ) ) KickPlayerTimed( pID );
+			mysql_tquery( dbHandle, Query, "OnPlayerUnforceAC", "dsdd", playerid, player, -1, true );
 		}
 		else
 		{
-			p_forcedAnticheat[ pID ] = 0;
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `ID`=%d", p_AccountID[ pID ] ) );
-			AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s(%d)", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( pID ), pID );
-	        SendGlobalMessage( -1, ""COL_PINK"[ADMIN]"COL_GREY" %s has removed the anticheat requirement on %s.", ReturnPlayerName( playerid ), ReturnPlayerName( pID ) );
+			mysql_tquery( dbHandle, Query, "OnPlayerUnforceAC", "dsdd", playerid, player, pID, false );
 		}
-    }
+	}
     return 1;
+}
+
+thread OnPlayerUnforceAC( playerid, player[ ], pID, bool:offline )
+{
+	new
+		Query[ 70 ], rows = cache_get_row_count( );
+
+	if ( !rows ) return SendError( playerid, "The database does not contain the username you are attempting to remove from forced ac." );
+	
+	if ( offline )
+	{
+
+		AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s (offline)", ReturnPlayerName( playerid ), playerid, player );
+
+		mysql_format( dbHandle, Query, sizeof( Query ), "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `NAME`='%e'", player );
+		mysql_single_query( Query );
+
+		SaveToAdminLogFormatted( playerid, 0, "Offline Unforced %s", player );
+		SendClientMessageToAllFormatted( -1, ""COL_PINK"[ADMIN]{FFFFFF} \"%s\" (offline) has been unforced to use the AC on the server.", player );
+
+	}
+	else
+	{
+
+		AddAdminLogLineFormatted( "%s(%d) has removed forced ac on %s", ReturnPlayerName( playerid ), playerid, player );
+		mysql_format( dbHandle, Query, sizeof( Query ), "UPDATE `USERS` SET `FORCE_AC`=0 WHERE `NAME`='%e'", ReturnPlayerName( pID ) );
+		mysql_single_query( Query );
+
+		SaveToAdminLogFormatted( playerid, 0, "Unforced %s", player );
+		SendClientMessageToAllFormatted( -1, ""COL_PINK"[ADMIN]{FFFFFF} \"%s\" has been unforced to use the AC on the server.", player );
+		p_forcedAnticheat[ pID ] = 0;
+
+	}
+	return 1;
 }
