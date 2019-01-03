@@ -1227,6 +1227,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				// commence
 				GivePlayerCash( playerid, -price );
 				g_businessData[ businessid ] [ E_SUPPLIES ] ++;
+				UpdateBusinessProductionLabel( businessid );
 
 				// alert and redirect
 				SendServerMessage( playerid, "You have bought business supplies for "COL_GOLD"%s"COL_WHITE". "COL_ORANGE"(%d/%d)", cash_format( price ), g_businessData[ businessid ] [ E_SUPPLIES ],  g_businessInteriorData[ business_type ] [ E_MAX_SUPPLIES ] );
