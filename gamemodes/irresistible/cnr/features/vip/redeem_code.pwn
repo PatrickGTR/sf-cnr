@@ -53,12 +53,6 @@ hook OnScriptInit( )
 	TextDrawSetOutline(g_TopDonorTD, 1);
 	TextDrawSetProportional(g_TopDonorTD, 1);
 
-    return 1;
-}
-
-hook OnServerUpdate( )
-{
-
 	/* ** Update Donation TD ** */
 	UpdateGlobalDonated( );
 	return 1;
@@ -201,8 +195,6 @@ thread OnGrabLatestDonor( hidden )
 {
 	new
 		rows = cache_get_row_count( );
-
-	printf( "Rows %d", rows );
 
 	if ( rows )
 	{
