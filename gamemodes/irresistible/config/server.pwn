@@ -15,10 +15,8 @@
 #define SERVER_MODE_TEXT 			"Cops And Robbers / DM / Gangs"
 #define SERVER_MAP 					"San Fierro"
 #define SERVER_LANGUAGE				"English"
-
 #define SERVER_WEBSITE				"www.sfcnr.com"
 #define SERVER_IP					"54.36.127.43:7777"
-
 #define SERVER_TWITTER 				"IrresistibleDev"
 
 /* ** Comment line to disable feature ** */

@@ -26,6 +26,9 @@ enum E_DONATION_DATA
 	E_DATE
 };
 
+static const
+	Float: DONATION_GOAL_AMOUNT 	= 250.0; // $250.00 USD/month goal
+
 static stock g_redeemVipWait 		= 0;
 static stock g_TopDonorWall 		= INVALID_OBJECT_ID;
 stock Text: g_TopDonorTD            = Text: INVALID_TEXT_DRAW;
@@ -50,9 +53,15 @@ hook OnScriptInit( )
 	TextDrawSetOutline(g_TopDonorTD, 1);
 	TextDrawSetProportional(g_TopDonorTD, 1);
 
+    return 1;
+}
+
+hook OnServerUpdate( )
+{
+
 	/* ** Update Donation TD ** */
 	UpdateGlobalDonated( );
-    return 1;
+	return 1;
 }
 
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
@@ -191,29 +200,37 @@ thread OnCheckForRedeemedVIP( playerid, data[ ] )
 thread OnGrabLatestDonor( hidden )
 {
 	new
-		rows;
+		rows = cache_get_row_count( );
 
-    cache_get_data( rows, tmpVariable );
+	printf( "Rows %d", rows );
 
 	if ( rows )
 	{
 		static
-			szName[ MAX_PLAYER_NAME ],
-			Float: fAmount;
-
+			szName[ MAX_PLAYER_NAME ];
 
 		cache_get_field_content( 0, "NAME", szName );
-		fAmount = cache_get_field_content_float( 0, "LAST_AMOUNT", dbHandle );
 
-		// Play song!
-		GameTextForAll( sprintf( "~y~~h~~h~New Donor!~n~~w~%s", szName ), 6000, 3 );
+		new Float: last_donation = cache_get_field_content_float( 0, "LAST_AMOUNT", dbHandle );
+		new Float: total_donations = cache_get_field_content_float( 0, "TOTAL_DONATIONS", dbHandle );
+		new Float: funding_goal_percent = total_donations / DONATION_GOAL_AMOUNT * 100.0;
 
-		// Play sound
-		foreach(new p : Player) if ( !IsPlayerUsingRadio( p ) ) {
-			PlayAudioStreamForPlayer( p, "http://files.sfcnr.com/game_sounds/donated.mp3" );
+		// Prevents total revenue for the month being disclosed mathematically
+		if ( funding_goal_percent >= 100.0 ) {
+			TextDrawSetString( g_TopDonorTD, sprintf( "Latest Donor %s - $%0.2f, ~g~Month Is Fully %0.2f%% Funded!", szName, last_donation, 100.0 ) );
+		} else {
+			TextDrawSetString( g_TopDonorTD, sprintf( "Latest Donor %s - $%0.2f, ~r~Month Is Only %0.2f%% Funded!", szName, last_donation, funding_goal_percent ) );
 		}
 
-		TextDrawSetString( g_TopDonorTD, sprintf( "Le Latest Donor %s - $%0.2f", szName, fAmount ) );
+		// Play song!
+		if ( ! hidden ) {
+			GameTextForAll( sprintf( "~y~~h~~h~New Donor!~n~~w~%s", szName ), 6000, 3 );
+
+			// Play sound
+			foreach(new p : Player) if ( !IsPlayerUsingRadio( p ) ) {
+				PlayAudioStreamForPlayer( p, "http://files.sfcnr.com/game_sounds/donated.mp3" );
+			}
+		}
 	}
 	else
 	{
@@ -310,9 +327,7 @@ static stock UpdateGlobalDonated( playerid = INVALID_PLAYER_ID, Float: amount = 
 	}
 
 	// top donor
-	if ( ! hidden ) {
-		mysql_tquery( dbHandle, "SELECT `NAME`,`LAST_AMOUNT` FROM `TOP_DONOR` INNER JOIN `USERS` ON `TOP_DONOR`.`USER_ID`=`USERS`.`ID` WHERE `LAST_AMOUNT` > 0 AND `HIDE` < 1 ORDER BY `TIME` DESC LIMIT 1", "OnGrabLatestDonor", "" );
-	}
+	mysql_tquery( dbHandle, "SELECT `NAME`,`LAST_AMOUNT`,(SELECT SUM(`AMOUNT`) FROM `TOP_DONOR`) AS `TOTAL_DONATIONS` FROM `TOP_DONOR` LEFT JOIN `USERS` ON `TOP_DONOR`.`USER_ID`=`USERS`.`ID` WHERE `LAST_AMOUNT` > 0 AND `HIDE` < 1 ORDER BY `TIME` DESC LIMIT 1", "OnGrabLatestDonor", "d", hidden );
 
 	// wall of donors
 	mysql_tquery( dbHandle, "SELECT `USERS`.`NAME` FROM `TOP_DONOR` INNER JOIN `USERS` ON `TOP_DONOR`.`USER_ID`=`USERS`.`ID` WHERE `HIDE` < 1 ORDER BY `AMOUNT` DESC, `TIME` DESC", "OnUpdateWallOfDonors", "" );
