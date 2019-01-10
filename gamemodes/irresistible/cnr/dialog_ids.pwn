@@ -212,6 +212,13 @@
 #define DIALOG_BUSINESS_SELL_CONFIRM 		1202
 //#define DIALOG_PASSIVE_MODE					1203
 #define DIALOG_NEXT_PAGE_VIP				1204
+#define DIALOG_FISHING_SHOP                 1205
+#define DIALOG_FISHING_SHOP_ITEMS           1206
+#define DIALOG_FISHING_SHOP_ITEMS_AMOUNT    1207
+#define DIALOG_FISHING_SHOP_SELL            1208
+#define DIALOG_FISHING_SHOP_UPGRADES        1209
+#define DIALOG_FISHING_HELP                 1210
+#define DIALOG_FISHING_STORAGE_CAUTION      1211
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )

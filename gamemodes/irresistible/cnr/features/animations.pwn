@@ -90,6 +90,8 @@ hook OnPlayerFirstSpawn( playerid )
 	PreloadAnimationLibrary( playerid, "MISC" );
 	PreloadAnimationLibrary( playerid, "POOL" );
 	PreloadAnimationLibrary( playerid, "SMOKING" );
+	PreloadAnimationLibrary( playerid, "SAMP" );
+	PreloadAnimationLibrary( playerid, "SWORD" );
 	return 1;
 }
 

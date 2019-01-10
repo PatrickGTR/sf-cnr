@@ -13,3 +13,4 @@
 //#include "irresistible\cnr\features\minijobs\traindriver.pwn"
 #include "irresistible\cnr\features\minijobs\lumberjack.pwn"
 #include "irresistible\cnr\features\minijobs\paramedic.pwn"
+#include "irresistible\cnr\features\minijobs\fishing.pwn"
