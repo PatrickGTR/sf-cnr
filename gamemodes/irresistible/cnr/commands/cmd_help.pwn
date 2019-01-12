@@ -22,9 +22,14 @@ CMD:help( playerid, params[ ] ) {
 }
 
 CMD:features( playerid, params[ ] ) {
+	return DisplayFeatures( playerid );
+}
+
+stock DisplayFeatures( playerid )
+{
 	SetPVarInt( playerid, "help_category", 1 );
     mysql_function_query( dbHandle, "SELECT `SUBJECT`,`ID`,`CATEGORY` FROM `HELP` WHERE `CATEGORY`=1 ORDER BY `SUBJECT` ASC", true, "OnFetchCategoryResponse", "dd", playerid, 1 );
-   	return 1;
+	return 1;
 }
 
 CMD:faq( playerid, params[ ] ) {
