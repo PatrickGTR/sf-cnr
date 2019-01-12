@@ -1,13 +1,7 @@
-(+) Burglar is commandless. Enter a house checkpoint to break in. Press F to steal.
-(+) Stolen furniture can be stored in a Boxville by walking behind it.
-(+) A cheer noise is played at the end of the day if your gang earns money from turfing.
-(+) Mugger pays double if you /rob a person.
-(+) Passive players with vehicles cannot do damage to others.
-(+) Gang leaders can offline kick members using "/gang offlinekick".
-(+) Adds an XP requirement for firetruck usage.
-(+) Adds /banlog for level 3 administrators.
-(+) Passive players unable to damage vehicles by weapons.
-(+) LEO cannot attack innocent vehicles unless they have wanted players alongside.
-(+) You can display the ID of the player in the chat in your player /settings.
-(*) No wanted level when you enter a gang vehicle that looks designed for Police.
-(/) Inactive stock shares are checked frequently and automatically by the server.
+(+) A percentage is showed in the top donor bar, which is the required total funding of the server for the month.
+(+) Server features are shown to newly registered players.
+(/) Player money is saved on an inflow/outflow basis. Before, it saved only when you disconnected.
+(/) You need 50 score to send private messages in the server.
+(*) Fixed issue with cop chat behaving abnormally.
+(*) You cannot use /sync in jail.
+(-) Knives have been removed due to abuse.

@@ -1589,6 +1589,7 @@ public OnPlayerText( playerid, text[ ] )
 				    return 0;
 			    }
 			}
+			case '!': return 0; // Handled in 'cop_chat' -> Needs to be stopped prior to reaching 'Custom Player ID Setting'
 		}
 	}
 
@@ -4826,6 +4827,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             //	ShowPlayerDialog( playerid, DIALOG_SPAWN_CITY, DIALOG_STYLE_LIST, "{FFFFFF}Select Spawning City", "San Fierro\nLas Venturas\nLos Santos\nRandom City", "Select", "" );
 
            	SendServerMessage( playerid, "Your job has been set to %s. you can change it at the City Hall for "COL_GOLD"$5,000"COL_WHITE".", GetJobName( p_Job{ playerid } ) );
+
+			DisplayFeatures( playerid );
 		}
         else
         {
