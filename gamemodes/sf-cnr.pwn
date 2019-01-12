@@ -1589,6 +1589,7 @@ public OnPlayerText( playerid, text[ ] )
 				    return 0;
 			    }
 			}
+			case '!': return 0; // Handled in 'cop_chat' -> Needs to be stopped prior to reaching 'Custom Player ID Setting'
 		}
 	}
 
