@@ -81,7 +81,6 @@ hook OnScriptInit( )
 	CreateEntrance( "[AMMU-NATION]", 		-2626.6299, 208.2514, 4.8125, 285.4629, -41.7990, 1001.5156, 			1,  15, false, false,  6 );
 	CreateEntrance( "[POLICE DEPT.]", 		-1605.3304, 711.6586, 13.8672, 246.3872, 107.3055, 1003.2188, 			10, 30, true , false, 30 ); // The jail world (30) needs to be changed otherwise gg.
 	CreateEntrance( "[HOSPITAL]",			-2655.0923, 640.1625, 14.4545, -2656.3079, 640.9360, 970.4332, 			1,  22, true , false, 22 );
-	CreateEntrance( "[FISHING SHOP]",       -1607.7175, 1284.5105, 7.1854, -1605.2539, 1284.3455, 1207.2159,        1,  33, false, false,  9 );
 
 	// Hardcoded
 	g_SupaSave = 			CreateEntrance( "[SUPA SAVE]",			-2442.5710, 754.6293, 35.1719, -2418.3743, 772.8492, 1056.7056, 		1,   1, true , false, 62 );

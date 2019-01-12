@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define ALL_CHECKPOINTS             ( 38 )
+#define ALL_CHECKPOINTS             ( 37 )
 
 #define CP_BANK_MENU                ( 1 )
 #define CP_247_MENU                	( 2 )
@@ -56,7 +56,6 @@
 #define CP_AIRPORT_LV 				( 34 )
 #define CP_CASINO_BAR 				( 35 )
 #define CP_ALCATRAZ_EXPORT			( 36 )
-#define CP_FISHING_SHOP             ( 37 )
 
 new g_Checkpoints           		[ ALL_CHECKPOINTS ] = { -1, ... };
 
@@ -95,7 +94,6 @@ hook OnScriptInit( )
 	g_Checkpoints[ CP_AIRPORT_SF ] = CreateDynamicCP( -1422.4063, -286.50810, 14.1484, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_CASINO_BAR ] = CreateDynamicCP( 2655.8694, 1591.1545, 1506.1793, 1.0, -1, -1, -1, 30.0 );
 	g_Checkpoints[ CP_ALCATRAZ_EXPORT ] = CreateDynamicCP( -1999.9487, 1781.2325, 43.7386, 1.0, -1, -1, -1, 30.0 );
-	g_Checkpoints[ CP_FISHING_SHOP ] = CreateDynamicCP( -1595.1049, 1283.9769, 1207.2159, 1.0, -1, -1, -1, 30.0 );
 
 	// Out of SF
 	//CreateDynamic3DTextLabel("[DROP OFF]", COLOR_GOLD,  -211.6869, 979.3518, 19.3237, 50.0);
@@ -161,7 +159,6 @@ hook OnScriptInit( )
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, 2034.0669, 1001.6073, 1510.2416, 20.0);
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -1742.9982, -1377.3049, 5874.1333, 20.0);
 	CreateDynamic3DTextLabel("[BUSINESS TERMINAL]", COLOR_GOLD, -6942.8770, -247.7294, 837.5850, 20.0);
-	CreateDynamic3DTextLabel("[SHOP]", COLOR_GOLD, -1595.1049, 1283.9769, 1207.2159, 20.0);
 }
 
 hook OnPlayerEnterDynamicCP( playerid, checkpointid )
