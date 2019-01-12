@@ -26,9 +26,6 @@ enum E_DONATION_DATA
 	E_DATE
 };
 
-static const
-	Float: DONATION_GOAL_AMOUNT 	= 250.0; // $250.00 USD/month goal
-
 static stock g_redeemVipWait 		= 0;
 static stock g_TopDonorWall 		= INVALID_OBJECT_ID;
 stock Text: g_TopDonorTD            = Text: INVALID_TEXT_DRAW;
@@ -39,6 +36,9 @@ forward OnDonationRedemptionResponse( index, response_code, data[ ] );
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
+	// Server Variables
+	AddServerVariable( "donation_goal_amount", "250.0", GLOBAL_VARTYPE_FLOAT );
+
 	// Wall of Donors
 	SetDynamicObjectMaterialText( CreateDynamicObject( 3074, -1574.3559, 885.1296, 28.4690, 0.0000, 0.0000, -0.0156 ), 0, "Thx Monthly Donors", 130, "Times New Roman", 64, 1, -65536, 0, 1 );
 	SetDynamicObjectMaterialText( ( g_TopDonorWall = CreateDynamicObject( 3074, -1574.3559, 885.1296, 14.0153, 0.0000, 0.0000, -0.0156 ) ), 0, "Nobody donated :(", 130, "Arial", 48, 0, -65536, 0, 1 );
@@ -205,7 +205,7 @@ thread OnGrabLatestDonor( hidden )
 
 		new Float: last_donation = cache_get_field_content_float( 0, "LAST_AMOUNT", dbHandle );
 		new Float: total_donations = cache_get_field_content_float( 0, "TOTAL_DONATIONS", dbHandle );
-		new Float: funding_goal_percent = total_donations / DONATION_GOAL_AMOUNT * 100.0;
+		new Float: funding_goal_percent = total_donations / GetServerVariableFloat( "donation_goal_amount" ) * 100.0;
 
 		// Prevents total revenue for the month being disclosed mathematically
 		if ( funding_goal_percent >= 100.0 ) {
@@ -289,12 +289,32 @@ CMD:donated( playerid, params[ ] )
 }
 
 /* ** RCON Commands ** */
+CMD:updatedonategoal( playerid, params[ ] )
+{
+	new
+		Float: donation_goal;
+
+	if ( ! IsPlayerAdmin( playerid ) && ! IsPlayerLeadMaintainer( playerid ) ) return 0;
+	else if ( sscanf( params, "f", donation_goal ) ) return SendUsage( playerid, "/updatedonationreq [DONATION_GOAL_AMOUNT]" );
+	else if ( ! ( 1.0 <= donation_goal < 10000.0 ) ) return SendError( playerid, "Donation goal amount must be between $1 and $10,000." );
+	else
+	{
+		new
+			Float: previous_goal = GetServerVariableFloat( "donation_goal_amount" );
+
+		UpdateGlobalDonated( .hidden = 1 );
+		SendServerMessage( playerid, "Updating donation goal from $%s to $%s!", number_format( previous_goal, .decimals = 2 ), number_format( donation_goal, .decimals = 2 ) );
+		UpdateServerVariableFloat( "donation_goal_amount", donation_goal );
+	}
+	return 1;
+}
+
 CMD:updatedonortd( playerid, params[ ] )
 {
 	new
 		targetid, Float: amount, reset;
 
-	if ( ! IsPlayerAdmin( playerid ) ) return 0;
+	if ( ! IsPlayerAdmin( playerid ) && ! IsPlayerLeadMaintainer( playerid ) ) return 0;
 	else if ( sscanf( params, "D(0)D(65535)F(0.0)", reset, targetid, amount ) ) return SendUsage( playerid, "/updatedonortd [RESET] [PLAYER_ID] [AMOUNT]" );
 	else
 	{
