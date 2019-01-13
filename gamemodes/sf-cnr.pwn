@@ -666,6 +666,8 @@ public OnPlayerSpawn( playerid )
 	StopSound( playerid );
 	CancelEdit( playerid );
 	HidePlayerHelpDialog( playerid );
+	
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
 
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
@@ -1196,6 +1198,7 @@ public OnPlayerDeath( playerid, killerid, reason )
     RemovePlayerStolensFromHands( playerid );
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
@@ -7106,6 +7109,8 @@ stock ShowPlayerSpawnMenu( playerid ) {
 
 stock BreakPlayerCuffs( playerid )
 {
+	if ( !IsPlayerConnected( playerid ) ) return false;
+
 	if ( p_BobbyPins[ playerid ] < 1 )
 	{
 		ShowPlayerHelpDialog( playerid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
@@ -7117,7 +7122,7 @@ stock BreakPlayerCuffs( playerid )
 
 	new probability = 60;
 
-	if ( random( 100 ) <= probability )
+	if ( random( 101 ) <= probability )
 	{
 		if ( !IsPlayerCuffed( playerid ) )
 		{
@@ -7126,7 +7131,7 @@ stock BreakPlayerCuffs( playerid )
 		}
 		else
 		{
-			if ( !IsPlayerConnected( playerid ) || !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
+			if ( !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
 				return false;
 
 			TogglePlayerControllable( playerid, 1 );
