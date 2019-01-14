@@ -26,6 +26,14 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
+hook OnPlayerSpawn( playerid )
+{
+	p_AwaitingBCAttempt{ playerid } = false;
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
 #if defined AC_INCLUDED
 hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
