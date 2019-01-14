@@ -154,29 +154,28 @@ CMD:weed( playerid, params[ ] )
 	}
 	else if ( !strcmp( params, "sell", false, 4 ) )
 	{
-	    new pID, iAmount;
+	    new pID, iAmount, iCost;
 
 		if ( !IsPlayerJob( playerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "You are not a drug dealer." );
 	    else if ( p_SellingWeedTick[ playerid ] > g_iTime ) return SendError( playerid, "You must wait a minute before selling weed again." );
 		else if ( !p_WeedGrams[ playerid ] ) return SendError( playerid, "You don't have any weed with you." );
-	    else if ( sscanf( params[ 5 ], "ud", pID, iAmount ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS]" );
+	    else if ( sscanf( params[ 5 ], "udd", pID, iAmount, iCost ) ) return SendUsage( playerid, "/weed sell [PLAYER_ID] [GRAMS] [PRICE]" );
 	    else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "Invalid Player ID." );
 	    else if ( pID == playerid ) return SendError( playerid, "You cannot sell yourself weed." );
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
 		else if ( iAmount > p_WeedGrams[ playerid ] ) return SendError( playerid, "You only have %d grams of weed on you.", p_WeedGrams[ playerid ] );
 		else if ( iAmount < 1 || iAmount > 25 ) return SendError( playerid, "You can only sell between 1 to 25 grams of weed to a player." );
+		else if ( iCost < 0 || iCost > 100000 ) return SendError( playerid, "Price must be between 0 and 100000." );
 	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	    {
-	    	new
-	    		iCost  = iAmount * 5000,
-	    		iTaxed = floatround( iCost * 0.8 )
-	    	;
+	    	new iTaxed = floatround( iCost * 0.8 );
 
 			if ( GetPlayerCash( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
 
 			p_WeedDealer[ pID ] = playerid;
 			p_WeedTick[ pID ] = GetServerTime( ) + 120;
 			p_WeedSellingGrams[ pID ] = iAmount;
+			p_WeedSellingPrice[ pID ] = iCost;
 			p_SellingWeedTick[ playerid ] = g_iTime + 60;
 			SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) is selling you %d gram(s) of weed for %s. "COL_ORANGE"/weed buy"COL_WHITE" to buy.", ReturnPlayerName( playerid ), playerid, iAmount, cash_format( iCost ) );
 			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, cash_format( iTaxed ) );
@@ -196,7 +195,7 @@ CMD:weed( playerid, params[ ] )
 		    new
 		    	dealerid = p_WeedDealer[ playerid ],
 		    	iGrams 	 = p_WeedSellingGrams[ playerid ],
-		    	iCost 	 = iGrams * 5000,
+		    	iCost 	 = p_WeedSellingPrice[ playerid ],
 		    	iTaxed 	 = floatround( iCost * 0.8 )
 		    ;
 

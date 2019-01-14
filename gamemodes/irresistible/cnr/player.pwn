@@ -95,6 +95,7 @@ new
 	p_WeedDealer                    [ MAX_PLAYERS ] = { INVALID_PLAYER_ID, ... },
 	p_WeedTick                      [ MAX_PLAYERS ],
 	p_WeedSellingGrams 				[ MAX_PLAYERS ],
+	p_WeedSellingPrice              [ MAX_PLAYERS ],
 	p_Arrests                       [ MAX_PLAYERS ],
 	bool: p_AidsVaccine          	[ MAX_PLAYERS char ],
 	bool: p_CantUseAsk              [ MAX_PLAYERS char ],
