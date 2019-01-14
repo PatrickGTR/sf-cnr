@@ -8,10 +8,35 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Variables ** */
+static stock
+	bool: p_AwaitingBCAttempt		[ MAX_PLAYERS char ],
+	p_AwaitingBCAttemptTimer		[ MAX_PLAYERS ] = { -1, ... }
+;
+
 /* ** Forwards ** */
 forward OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 
 /* ** Hooks ** */
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_AwaitingBCAttempt{ playerid } = false;
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath( playerid, killerid, reason )
+#endif
+{
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
 	if ( PRESSED( KEY_LOOK_BEHIND ) ) // MMB to taze/cuff/ar
@@ -330,13 +355,14 @@ stock CuffPlayer( victimid, playerid )
 			KillTimer( p_CuffAbuseTimer[ victimid ] );
 	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
 
-			p_AwaitingBCAttempt[ victimid ] = true;
+			p_AwaitingBCAttempt{ victimid } = true;
+
 			KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
 			p_AwaitingBCAttemptTimer[ victimid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", victimid );
 		}
 		else
 		{
-			SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ) );
+			SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
 		}
 		return 1;
  	}
@@ -382,3 +408,56 @@ function Uncuff( playerid )
    	SendGlobalMessage( -1, ""COL_GREY"[SERVER]{FFFFFF} %s(%d) has been uncuffed and undetained by the anti-abuse system.", ReturnPlayerName( playerid ), playerid );
 	return 1;
 }
+
+stock BreakPlayerCuffs( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) ) return false;
+
+	if ( p_BobbyPins[ playerid ] < 1 )
+	{
+		ShowPlayerHelpDialog( playerid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+		return false;
+	}
+	else p_BobbyPins[ playerid ] --;
+
+	if ( p_AwaitingBCAttempt{ playerid } ) p_AwaitingBCAttempt{ playerid } = false;
+
+	new probability = 60;
+
+	if ( random( 101 ) <= probability )
+	{
+		if ( ! IsPlayerCuffed( playerid ) )
+		{
+			Untaze( playerid, 10 );
+			GivePlayerWantedLevel( playerid, 6 );
+		}
+		else
+		{
+			if ( ! IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
+				return false;
+
+			TogglePlayerControllable( playerid, 1 );
+			RemovePlayerAttachedObject( playerid, 2 );
+			SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+
+			if ( ! IsPlayerInAnyVehicle( playerid ) ) {
+				ClearAnimations( playerid );
+			}
+
+			p_Cuffed{ playerid } = false;
+			p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
+		}
+		SendServerMessage( playerid, "You have successfully broken out of your cuffs!" );
+		return true;
+	}
+	else
+	{
+		SendServerMessage( playerid, "You have snapped your bobby pin and failed to break out of your cuffs. Re-attempting in 3 seconds." );
+		p_AwaitingBCAttempt{ playerid } = true;
+		KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+		p_AwaitingBCAttemptTimer[ playerid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", playerid );
+		return false;
+	}
+}
+
+function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid ), 1;

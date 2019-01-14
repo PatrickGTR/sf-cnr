@@ -29,8 +29,6 @@ new
     bool: p_Tazed           	  	[ MAX_PLAYERS char ],
   	p_LastVehicle       			[ MAX_PLAYERS ] = { INVALID_VEHICLE_ID, ... },
   	bool: p_Cuffed          	  	[ MAX_PLAYERS char ],
-	bool: p_AwaitingBCAttempt		[ MAX_PLAYERS ],
-	p_AwaitingBCAttemptTimer		[ MAX_PLAYERS ],
 	p_CuffAbuseTimer    			[ MAX_PLAYERS ],
  	p_AntiRobSpam       			[ MAX_PLAYERS ],
  	p_AntiRapeSpam      			[ MAX_PLAYERS ],
