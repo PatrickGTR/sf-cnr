@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define JAIL_SECONDS_MULTIPLIER		( 3 )
+#define JAIL_SECONDS_MULTIPLIER		( 2 )
 #define ALCATRAZ_REQUIRED_TIME		( 150 )
 
 #define ALCATRAZ_TIME_PAUSE 		( 5 )

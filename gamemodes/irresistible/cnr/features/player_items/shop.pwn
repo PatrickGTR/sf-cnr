@@ -190,6 +190,7 @@ stock GetShopItemAmount( playerid, id )
 		case SHOP_ITEM_DRILL: return p_drillStrength[ playerid ];
 		case SHOP_ITEM_METAL_MELTER: return p_MetalMelter[ playerid ];
 		case SHOP_ITEM_WEED_SEED: return g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ];
+		case SHOP_ITEM_FIREWORKS: return p_Fireworks[ playerid ];
 	}
 	return 0;
 }
@@ -211,6 +212,7 @@ stock SetPlayerShopItemAmount( playerid, id, value )
 		case SHOP_ITEM_DRILL: p_drillStrength[ playerid ] = value;
 		case SHOP_ITEM_METAL_MELTER: p_MetalMelter[ playerid ] = value;
 		case SHOP_ITEM_WEED_SEED: g_playerShopItems[ playerid ] [ SHOP_ITEM_WEED_SEED ] = value;
+		case SHOP_ITEM_FIREWORKS: p_Fireworks[ playerid ] = value;
 	}
 	return 1;
 }

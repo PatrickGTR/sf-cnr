@@ -515,6 +515,7 @@ public OnPlayerDisconnect( playerid, reason )
 	p_AntiEMP       [ playerid ] = 0;
 	p_LastVehicle	[ playerid ] = INVALID_VEHICLE_ID;
 	p_Cuffed		{ playerid } = false;
+	p_AwaitingBCAttempt[ playerid ] = false;
 	justConnected	{ playerid } = true;
  	p_Muted			{ playerid } = false;
 	p_MetalMelter	[ playerid ] = 0;
@@ -593,6 +594,7 @@ public OnPlayerDisconnect( playerid, reason )
     DestroyAllPlayerC4s( playerid, true );
 	KillTimer( p_JailTimer[ playerid ] );
 	KillTimer( p_CuffAbuseTimer[ playerid ] );
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
 	ResetPlayerCash( playerid );
 	if ( !GetPVarInt( playerid, "banned_connection" ) ) SendDeathMessage( INVALID_PLAYER_ID, playerid, 201 );
 
@@ -664,6 +666,8 @@ public OnPlayerSpawn( playerid )
 	StopSound( playerid );
 	CancelEdit( playerid );
 	HidePlayerHelpDialog( playerid );
+	
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
 
 	// Money Bags
 	if ( p_MoneyBag{ playerid } && p_Class[ playerid ] != CLASS_POLICE ) // SetPlayerAttachedObject( playerid, 1, 1550, 1, 0.131999, -0.140999, 0.053999, 11.299997, 65.599906, 173.900054, 0.652000, 0.573000, 0.594000 );
@@ -1194,6 +1198,7 @@ public OnPlayerDeath( playerid, killerid, reason )
     RemovePlayerStolensFromHands( playerid );
     RemoveEquippedOre( playerid );
     KillTimer( p_CuffAbuseTimer[ playerid ] );
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
     PlayerTextDrawHide( playerid, p_LocationTD[ playerid ] );
 	p_Tazed{ playerid } = false;
 	p_WeaponDealing{ playerid } = false;
@@ -7102,54 +7107,58 @@ stock ShowPlayerSpawnMenu( playerid ) {
 	return ShowPlayerDialog( playerid, DIALOG_SPAWN, DIALOG_STYLE_LIST, "{FFFFFF}Spawn Location", ""COL_GREY"Reset Back To Default\nHouse\nBusiness\nGang Facility\nVisage Casino", "Select", "Cancel" );
 }
 
-stock BreakPlayerCuffs( playerid, &attempts = 0 )
+stock BreakPlayerCuffs( playerid )
 {
+	if ( !IsPlayerConnected( playerid ) ) return false;
+
 	if ( p_BobbyPins[ playerid ] < 1 )
-	    return 0;
-
-	new Float: police_percentage;
-	new bool: success = false;
-
-	// get current police percentage
-	GetServerPoliceRatio( police_percentage );
-
-	// probability based off some factors
-	new probability = 15 + floatround( police_percentage, floatround_floor );
-
-	// attempt to uncuff
-	for ( attempts = 1; attempts < p_BobbyPins[ playerid ]; attempts ++ )
 	{
-		if ( random( 101 ) <= probability ) { // 35% success rate RIP!
-			success = true;
-			break;
-		}
+		ShowPlayerHelpDialog( playerid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+		return false;
 	}
+	else p_BobbyPins[ playerid ]--;
 
-	if ( ( p_BobbyPins[ playerid ] -= attempts ) > 0 ) {
-		ShowPlayerHelpDialog( playerid, 5000, "You only have %d bobby pins left!", p_BobbyPins[ playerid ] );
-	}
+	if ( p_AwaitingBCAttempt[ playerid ] ) p_AwaitingBCAttempt[ playerid ] = false;
 
-	if ( success ) {
-		/*TogglePlayerControllable( playerid, 1 );
-	 	RemovePlayerAttachedObject( playerid, 2 );
-		SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
-		if ( !IsPlayerInAnyVehicle( playerid ) ) {
-			ClearAnimations( playerid );
+	new probability = 60;
+
+	if ( random( 101 ) <= probability )
+	{
+		if ( !IsPlayerCuffed( playerid ) )
+		{
+			Untaze( playerid, 10 );
+			GivePlayerWantedLevel( playerid, 6 );
 		}
-		p_Cuffed{ playerid } = false;
-		p_Tazed{ playerid } = false;
-		//p_Detained{ playerid } = false;
-		//Delete3DTextLabel( p_DetainedLabel[ playerid ] );
-		//p_DetainedLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
-		//p_DetainedBy[ playerid ] = INVALID_PLAYER_ID;*/
-		Untaze( playerid, 10 );
-		SendServerMessage( playerid, "You have used %d bobby pins to successfully break your cuffs.", attempts );
-	    GivePlayerWantedLevel( playerid, 6 );
-	} else {
-		SendError( playerid, "You snapped %d bobby pin(s) and failed to break out of your cuffs.", attempts );
+		else
+		{
+			if ( !IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
+				return false;
+
+			TogglePlayerControllable( playerid, 1 );
+			RemovePlayerAttachedObject( playerid, 2 );
+			SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+
+			if ( !IsPlayerInAnyVehicle( playerid ) ) {
+				ClearAnimations( playerid );
+			}
+
+			p_Cuffed{ playerid } = false;
+			p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
+		}
+		SendServerMessage( playerid, "You have successfully broken out of your cuffs!" );	
+		return true;
 	}
-	return 1;
+	else
+	{
+		SendServerMessage( playerid, "You have snapped your bobby pin and failed to break out of your cuffs. Re-attempting in 3 seconds." );
+		p_AwaitingBCAttempt[ playerid ] = true;
+		KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+		p_AwaitingBCAttemptTimer[ playerid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", playerid );
+		return false;
+	}
 }
+
+function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid );
 
 stock IsPlayerAFK( playerid ) return ( ( GetTickCount( ) - p_AFKTime[ playerid ] ) >= 2595 );
 

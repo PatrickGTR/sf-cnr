@@ -278,6 +278,8 @@ stock ArrestPlayer( victimid, playerid )
 		GivePlayerSeasonalXP( victimid, -20.0 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
+		KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
+		p_AwaitingBCAttemptTimer[ playerid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", victimid );
 		return 1;
  	}
  	else return SendError( playerid, "There are no players around to arrest." );
@@ -312,40 +314,29 @@ stock CuffPlayer( victimid, playerid )
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
 
-      	new
-      		break_attempts = 0;
-
-		if ( ! BreakPlayerCuffs( victimid, break_attempts ) )
+		if ( !BreakPlayerCuffs( victimid ) )
 		{
 			GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
-			//GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
 			GameTextForPlayer( playerid, "~n~~y~~h~/arrest", 2000, 4 );
+
 			SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
-			KillTimer( p_CuffAbuseTimer[ victimid ] );
-	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
-			//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
-			//TogglePlayerControllable( victimid, 0 );
+
 			p_Cuffed{ victimid } = true;
 			p_QuitToAvoidTimestamp[ victimid ] = g_iTime + 3;
 			SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
 	      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
-			ShowPlayerHelpDialog( victimid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+
+			KillTimer( p_CuffAbuseTimer[ victimid ] );
+	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
+
+			p_AwaitingBCAttempt[ victimid ] = true;
+			KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
+			p_AwaitingBCAttemptTimer[ victimid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", victimid );
 		}
 		else
 		{
-			if ( break_attempts )
-			{
-				new
-					money_dropped = RandomEx( 200, 400 ) * break_attempts;
-
-	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off, and dropped %s!", ReturnPlayerName( victimid ), victimid, cash_format( money_dropped ) );
-	    		GivePlayerCash( playerid, money_dropped );
-			}
-			else
-			{
-	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
-			}
+			SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ) );
 		}
 		return 1;
  	}
