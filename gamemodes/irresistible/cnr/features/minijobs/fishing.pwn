@@ -451,6 +451,9 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys ){
 }
 
 hook OnPlayerStateChange( playerid, newstate, oldstate ){
+    if ( IsPlayerNPC( playerid ) )
+		return 1;
+
     if( p_IsHarpoonInUse{ playerid } ) {
         if( oldstate == PLAYER_STATE_ONFOOT ){
             DisassembleHarpoon( playerid );

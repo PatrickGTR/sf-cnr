@@ -216,7 +216,7 @@ stock SetPlayerShopItemAmount( playerid, id, value )
 }
 
 stock GivePlayerShopItem( playerid, E_SHOP_ITEMS: itemid, amount ) {
-	g_playerShopItems[ playerid ] [ itemid ] += amount;
+	return g_playerShopItems[ playerid ] [ itemid ] += amount;
 }
 
 stock GetPlayerShopItemAmount( playerid, E_SHOP_ITEMS: itemid ) {
