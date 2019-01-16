@@ -4609,16 +4609,6 @@ function unpause_Player( playerid )
 		return 1;
 	}
 
-	public OnPlayerBankMoneyChanged( playerid, amount )
-	{
-		// save player bank money on each monetary movement
-		if ( IsPlayerLoggedIn( playerid ) )
-		{
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = %d WHERE `ID` = %d", GetPlayerBankMoney( playerid ), GetPlayerAccountID( playerid ) ) );
-		}
-		return 1;
-	}
-
 	public OnPlayerCheatDetected( playerid, detection, params )
 	{
 		if ( detection == CHEAT_TYPE_REMOTE_JACK )
