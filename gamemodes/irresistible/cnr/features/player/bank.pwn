@@ -14,6 +14,9 @@
 /* ** Variables ** */
 static stock p_BankMoney            [ MAX_PLAYERS ];
 
+/* ** Forwards ** */
+forward OnPlayerBankMoneyChanged    ( playerid, amount );
+
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {

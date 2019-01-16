@@ -3189,11 +3189,11 @@ CMD:sendmoney( playerid, params[ ] )
         if ( amount > 25000 )
         	printf("[sendmoney] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( pID ), cash_format( amount ) ); // 8hska7082bmahu
 
-		if ( amount > 90000000 ) {
+		/*if ( amount > 90000000 ) {
 	   		printf("ISP banned %s for making a 75M transaction", ReturnPlayerName( playerid ));
 			AdvancedBan( playerid, "Server", "Suspicious Transaction", ReturnPlayerIP( playerid ) );
 	   		return 1;
-        }
+        }*/
 
         GivePlayerCash( pID, amount );
         GivePlayerCash( playerid, -( amount ) );
@@ -4628,7 +4628,17 @@ function unpause_Player( playerid )
 		// save player money on each monetary movement
 		if ( IsPlayerLoggedIn( playerid ) )
 		{
-			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = %d, `BANKMONEY` = %d WHERE `ID` = %d", GetPlayerCash( playerid ), GetPlayerBankMoney( playerid ), GetPlayerAccountID( playerid ) ) );
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `CASH` = %d WHERE `ID` = %d", GetPlayerCash( playerid ), GetPlayerAccountID( playerid ) ) );
+		}
+		return 1;
+	}
+
+	public OnPlayerBankMoneyChanged( playerid, amount )
+	{
+		// save player bank money on each monetary movement
+		if ( IsPlayerLoggedIn( playerid ) )
+		{
+			mysql_single_query( sprintf( "UPDATE `USERS` SET `BANKMONEY` = %d WHERE `ID` = %d", GetPlayerBankMoney( playerid ), GetPlayerAccountID( playerid ) ) );
 		}
 		return 1;
 	}
