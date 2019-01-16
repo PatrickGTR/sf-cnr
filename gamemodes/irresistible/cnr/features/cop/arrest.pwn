@@ -312,7 +312,6 @@ stock ArrestPlayer( victimid, playerid )
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
 		KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
-		p_AwaitingBCAttemptTimer[ playerid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", victimid );
 		return 1;
  	}
  	else return SendError( playerid, "There are no players around to arrest." );
