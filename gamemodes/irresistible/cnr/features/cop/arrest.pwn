@@ -430,7 +430,7 @@ stock BreakPlayerCuffs( playerid )
 
 	if ( p_AwaitingBCAttempt{ playerid } ) p_AwaitingBCAttempt{ playerid } = false;
 
-	new probability = 60;
+	new probability = 75; // success rate probability
 
 	if ( random( 101 ) <= probability )
 	{
