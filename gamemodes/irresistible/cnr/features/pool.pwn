@@ -11,7 +11,7 @@
 
 /* ** Definitions ** */
 #define POCKET_RADIUS 				( 0.09 )
-#define POOL_TIMER_SPEED 			( 25 )
+#define POOL_TIMER_SPEED 			( 20 )
 #define DEFAULT_AIM 				( 0.38 )
 #define DEFAULT_POOL_STRING 		"Pool Table\n{FFFFFF}Press ENTER To Play"
 #define POOL_FEE_RATE 				( 0.02 )

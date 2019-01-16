@@ -3347,30 +3347,6 @@ CMD:cmds( playerid, params[ ] )
 	return 1;
 }
 
-CMD:breakout( playerid, params[ ] )
-{
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
-	if ( !IsPlayerJailed( playerid ) ) return SendError( playerid, "You can only use this while you're in jail!" );
-	if ( IsPlayerAdminJailed( playerid ) ) return SendError( playerid, "You have been admin jailed, disallowing this." );
-	if ( p_inAlcatraz{ playerid } ) return SendError( playerid, "You are unable to break out of Alcatraz. Ask a friend to blow you out." );
-	if ( p_MetalMelter[ playerid ] > 0 )
-	{
-	    new
-			iRandom = random( 101 );
-
-		if ( p_MetalMelter[ playerid ]-- <= 3 )
-			ShowPlayerHelpDialog( playerid, 2500, "You only have %d metal melters left!", p_MetalMelter[ playerid ] );
-
-	    if ( iRandom < 80 ) {
-		  	CallLocalFunction( "OnPlayerUnjailed", "dd", playerid, 2 );
-		  	GivePlayerWantedLevel( playerid, 24 );
-	    }
-		else SendServerMessage( playerid, "You have failed to break out." );
-	}
-	else SendError( playerid, "You have no more Metal Melters available.");
-	return 1;
-}
-
 CMD:shop( playerid, params[ ] )
 {
     if ( ( !IsPlayerInEntrance( playerid, g_SupaSave ) && !IsPlayerInDynamicCP( playerid, g_Checkpoints[ CP_247_MENU ] ) ) || !GetPlayerInterior( playerid ) ) return SendError( playerid, "You must be within Supa Save or 24/7 to purchase items." );
