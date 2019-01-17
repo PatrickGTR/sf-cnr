@@ -169,7 +169,7 @@ CMD:fish ( playerid, params[ ] ){
 
 /* Hooks */
 
-hook OnScriptInIt(){
+hook OnScriptInit(){
     g_fishingShopCP = CreateDynamicCP( -1595.1049, 1283.9769, 1207.2159, 1.0, -1, -1, -1, 30.0 ); 
     CreateDynamic3DTextLabel("[SHOP]", COLOR_GOLD, -1595.1049, 1283.9769, 1207.2159, 20.0);
     CreateEntrance( "[FISHING SHOP]", -1607.7175, 1284.5105, 7.1854, -1605.2539, 1284.3455, 1207.2159, 1, 33, false, false, 9 );
