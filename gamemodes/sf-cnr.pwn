@@ -6893,15 +6893,6 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 	return false;
 }
 
-stock IsPlayerInCasino( playerid ) {
-	new world = GetPlayerVirtualWorld( playerid );
-	if ( GetPlayerState( playerid ) != PLAYER_STATE_ONFOOT ) return 0;
-	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && world == VISAGE_WORLD ) return 1; // visage itself
-	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && world != 0 ) return 1; // visage apartments
-	if ( IsPlayerInRangeOfPoint( playerid, 10.0, -792.8680, 661.2518, 19.3380 ) && world == 0 ) return 1; // roycegate mansion
-	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
-}
-
 stock SetPlayerPosition( playerid, Float: x, Float: y, Float: z, interiorid = 0, worldid = 0 )
 {
 	new

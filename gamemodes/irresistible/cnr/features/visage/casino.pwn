@@ -359,3 +359,21 @@ stock IsPlayerInHighRoller( playerid )
 	if ( ! IsPlayerInCasino( playerid ) ) return false;
 	return IsPlayerInArea( playerid, 2545.383056, 2592.488037, 1569.796997, 1651.173950 );
 }
+
+stock IsPlayerInCasino( playerid ) {
+	new world = GetPlayerVirtualWorld( playerid );
+	if ( GetPlayerState( playerid ) != PLAYER_STATE_ONFOOT ) return 0;
+	if ( GetPlayerInterior( playerid ) == VISAGE_INTERIOR && world == VISAGE_WORLD ) return 1; // visage itself
+	if ( IsPlayerInRangeOfPoint( playerid, 100.0, 1993.0846, 1904.5693, 84.2848 ) && world != 0 ) return 1; // visage apartments
+	if ( IsPlayerInRangeOfPoint( playerid, 10.0, -792.8680, 661.2518, 19.3380 ) && world == 0 ) return 1; // roycegate mansion
+	return ( GetPlayerInterior( playerid ) == 10 && GetPlayerVirtualWorld( playerid ) == 23 ) || ( GetPlayerInterior( playerid ) == 1 && GetPlayerVirtualWorld( playerid ) == 82 );
+}
+
+hook OnPlayerTakeDamage( playerid, issuerid, Float:amount, weaponid, bodypart )
+{
+
+	if ( IsPlayerInCasino( playerid ) ) return SendClientMessage( issuerid, -1, "You cannot damage players inside the casino." ), 0;
+	
+	return true;
+
+}
