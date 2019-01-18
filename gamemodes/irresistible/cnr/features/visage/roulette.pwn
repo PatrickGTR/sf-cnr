@@ -18,7 +18,7 @@
 #endif*/
 
 /* ** Definitions ** */
-#define MAX_ROULETTE_TABLES 		30
+#define MAX_ROULETTE_TABLES 		31
 
 /* ** Macros ** */
 #define IsRedRouletteNumber(%0) 	(%0 == 1 || %0 == 3 || %0 == 5 || %0 == 7 || %0 == 9 || %0 == 12 || %0 == 14 || %0 == 16 || %0 == 18 || %0 == 19 || %0 == 21 || %0 == 23 || %0 == 25 || %0 == 27 || %0 == 30 || %0 == 32 || %0 == 34 || %0 == 36)

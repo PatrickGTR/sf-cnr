@@ -2008,6 +2008,7 @@ hook OnScriptInit( )
 	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -1211.950195, -690.987121, 54.248104, 0.000000, 0.000000, -20.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18762, -1203.134765, -668.666198, 54.248104, 0.000000, 0.000000, -20.000000 ), 0, 16150, "ufo_bar", "GEwhite1_64", 0 );
 
+
 	// Cake Fortress
 	SetDynamicObjectMaterial( CreateDynamicObject( 19430, -2716.792480, 77.886123, 5.975038, 0.000000, 90.000000, 86.400039 ), 0, 16150, "ufo_bar", "GEwhite1_64", 0 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 19430, -2717.011474, 74.393028, 5.975038, 0.000000, 90.000000, 86.400039 ), 0, 16150, "ufo_bar", "GEwhite1_64", 0 );
@@ -10759,8 +10760,6 @@ hook OnScriptInit( )
 	CreateDynamicObject( 2059, -1294.773925, -754.778564, 69.742286, 0.000000, 0.000000, -77.899986 );
 	CreateDynamicObject( 1714, -1296.284545, -752.572082, 69.222305, 0.000000, 0.000000, 0.000000 );
 	CreateDynamicObject( 1714, -1295.293701, -753.682922, 69.222305, 0.000000, 0.000000, -90.000000 );
-	CreateDynamicObject( 1978, -1280.337280, -734.914733, 70.312301, 0.000000, 0.000000, 45.000000 );
-	CreateDynamicObject( 1978, -1283.604003, -738.181457, 70.312301, 0.000000, 0.000000, 45.000000 );
 	CreateDynamicObject( 1828, -1296.016967, -753.313232, 69.232330, 0.000000, 0.000000, -135.000000 );
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1290.757324, -728.470214, 65.743881, 0.000000, 90.000000, 45.000000 ), 0, 6056, "venice_law", "stonewall_la", 0 );
 	CreateDynamicObject( 1541, -1273.670898, -732.929016, 70.362335, 0.000000, 0.000000, -45.000000 );
@@ -10912,6 +10911,18 @@ hook OnScriptInit( )
 	CreateDynamicObject( 19817, -1293.137939, -719.424621, 58.693904, 0.000000, 0.000000, -45.000000 );
 	CreateDynamicObject( 3525, -1281.895019, -757.517517, 70.801536, 0.000000, 0.000000, 45.000000 );
 	CreateDynamicObject( 3525, -1279.014648, -754.638549, 70.801536, 0.000000, 0.000000, 45.000000 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19447, -1280.642944, -755.950988, 74.569999, 0.000000, 0.000000, -45.000000, -1, -1, -1 ), 0, 1676, "wshxrefpump", "black64", -16 );
+    tmpVariable = CreateDynamicObject( 8327, -1281.031982, -754.408020, 74.515998, 0.000000, 0.000000, 81.000000, -1, -1, -1 );
+    SetDynamicObjectMaterial( tmpVariable, 1, 18202, "w_towncs_t", "hatwall256hi", 1 );
+    SetDynamicObjectMaterial( tmpVariable, 2, 18202, "w_towncs_t", "hatwall256hi", 1 );
+    SetDynamicObjectMaterial( tmpVariable, 3, 18202, "w_towncs_t", "hatwall256hi", 1 );
+    SetDynamicObjectMaterial( tmpVariable, 4, 18202, "w_towncs_t", "hatwall256hi", 1 );
+    SetDynamicObjectMaterialText( tmpVariable, 0, "Rich's mansion", 120, "Arial", 42, 1, -9170, 0, 1 );
+    CreateDynamicActor( 189, -1274.510009, -731.843994, 70.253997, 135.500000, 1, 100.0, -1, -1, -1 );
+    ApplyDynamicActorAnimation( CreateDynamicActor( 178, -1297.760009, -769.109008, 70.253997, -64.300003, .worldid = -1, .interiorid = -1 ), "BEACH", "bather", 4.1, 1, 1, 1, 1, 0 );
+	CreateBlackjackTable( 1000000, -1289.691040, -737.427001, 70.183998, 45.00000, 0 );
+	CreatePokerTable( 1000000, 10000, -1283.962036, -741.653991, 69.573997, 4, 0, 0 );
+	CreateRouletteTable( -1279.808959, -736.312011, 70.253997, 45.0000, 0, 250000 );
 
 	// [ZF]IMakeMyOwnCAKE City Map
 	SetDynamicObjectMaterial( CreateDynamicObject( 18981, -1689.194946, 815.914489, 23.384389, 0.000000, 90.000000, 0.000000 ), 0, 3906, "libertyhi5", "marblekb_256128", -4368 );
