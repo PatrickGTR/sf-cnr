@@ -2275,7 +2275,7 @@ CMD:vipgun( playerid, params[ ] )
 	if ( !IsPlayerInRangeOfPoint( playerid, 5.0, -1966.1591, 852.7100, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, -1944.1324, 830.0725, 1214.2678 ) && !IsPlayerInRangeOfPoint( playerid, 5.0, 60.3115, 121.5226, 1017.4534 ) )
 		return SendError( playerid, "You must be near a gun vending machine inside the V.I.P lounge to use this." );
 
-    ShowPlayerDialog( playerid, DIALOG_VIP_LOCKER, DIALOG_STYLE_LIST, "{FFFFFF}V.I.P Guns", ""COL_GOLD"[GOLD VIP]"COL_GREY" Armour\n9mm Pistol\nSilenced Pistol\nDesert Eagle\nShotgun\nSawn-off Shotgun\nSpas 12\nMac 10\nMP5\nAK-47\nM4\nTec 9\nRifle\nSniper\nKnuckle Duster\nGolf Club\nBaton\nKnife\nBaseball Bat\nSpade\nPool Cue\nKatana\nChainsaw\nDildo\nFlowers\nCane", "Select", "Cancel");
+    ShowPlayerDialog( playerid, DIALOG_VIP_LOCKER, DIALOG_STYLE_LIST, "{FFFFFF}V.I.P Guns", ""COL_GOLD"[GOLD VIP]"COL_GREY" Armour\n9mm Pistol\nSilenced Pistol\nDesert Eagle\nShotgun\nSawn-off Shotgun\nSpas 12\nMac 10\nMP5\nAK-47\nM4\nTec 9\nRifle\nSniper\nKnuckle Duster\nGolf Club\nBaton\nBaseball Bat\nSpade\nPool Cue\nKatana\nChainsaw\nDildo\nFlowers\nCane", "Select", "Cancel");
 	return 1;
 }
 
@@ -5025,8 +5025,9 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		    switch( listitem )
 		    {
 		    	case 1 .. 13: weaponid = 21 + listitem;
-		    	case 14 .. 23: weaponid = listitem - 13;
-		    	case 24 .. 25: weaponid = listitem - 10;
+		    	case 14 .. 16: weaponid = listitem - 13;
+				case 17 .. 22: weaponid = listitem - 12;
+		    	case 23 .. 24: weaponid = listitem - 9;
 		    }
 		    GivePlayerWeapon( playerid, weaponid, 0xFFFF );
 		    SendServerMessage( playerid, "You have redeemed a %s.", ReturnWeaponName( weaponid ) );
