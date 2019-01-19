@@ -411,12 +411,12 @@ CMD:business( playerid, params[ ] )
 		new
 			bool: has = false;
 
-		szLargeString = ""COL_WHITE"Name\t"COL_WHITE"Production Time\t"COL_WHITE"Product\t"COL_WHITE"Bank\n";
+		szHugeString = ""COL_WHITE"Name\t"COL_WHITE"Production Time\t"COL_WHITE"Product\t"COL_WHITE"Bank\n";
 
 		foreach ( new businessid : business ) if ( IsBusinessAssociate( playerid, businessid ) )
 		{
-			format( szLargeString, sizeof( szLargeString ), "%s%s\t%s\t"COL_GOLD"%s\t"COL_GREEN"%s\n",
-				szLargeString, g_businessData[ businessid ] [ E_NAME ],
+			format( szHugeString, sizeof( szHugeString ), "%s%s\t%s\t"COL_GOLD"%s\t"COL_GREEN"%s\n",
+				szHugeString, g_businessData[ businessid ] [ E_NAME ],
 				g_businessData[ businessid ] [ E_PROD_TIMESTAMP ] ? ( secondstotime( g_businessData[ businessid ] [ E_PROD_TIMESTAMP ], ", ", 5 ) ) : ( ""COL_GREEN"Production Finished" ),
 				g_businessData[ businessid ] [ E_PRODUCT ] == 0 ? ( ""COL_RED"No Product" ) : ( cash_format( g_businessData[ businessid ] [ E_PRODUCT ] * GetProductPrice( businessid ) ) ),
 				cash_format( g_businessData[ businessid ][ E_BANK ] )
@@ -426,7 +426,7 @@ CMD:business( playerid, params[ ] )
 		if ( ! has ) {
 			return SendError( playerid, "You cannot use this command since you don't own any businesses." );
 		} else {
-			return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Business Production", szLargeString, "Close", "" );
+			return ShowPlayerDialog( playerid, DIALOG_NULL, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Business Production", szHugeString, "Close", "" );
 		}
 	}
 	else if ( strmatch( params, "spawn" ))
