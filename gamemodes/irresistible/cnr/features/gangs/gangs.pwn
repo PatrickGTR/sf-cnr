@@ -331,8 +331,8 @@ CMD:gang( playerid, params[ ] )
 		if ( sscanf( params[ 8 ], "ds[32]", requirement, rank ) )
 			return SendUsage( playerid, "/gang addrank [REQUIREMENT (0 = DISABLE)] [RANK_NAME]" );
 
-		format( szLargeString, sizeof( szLargeString ), "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
-		mysql_tquery( dbHandle, szLargeString, "OnGangCreateRank", "ddds", playerid, requirement, p_GangID[ playerid ], rank );
+		format( szNormalString, sizeof( szNormalString ), "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
+		mysql_tquery( dbHandle, szNormalString, "OnGangCreateRank", "ddds", playerid, requirement, p_GangID[ playerid ], rank );
 		return 1;
 	}
 	else if ( ! strcmp( params, "offlinekick", false, 11 ) )
