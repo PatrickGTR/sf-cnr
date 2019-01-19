@@ -299,9 +299,43 @@ CMD:getgang( playerid, params[ ] )
 
 CMD:gang( playerid, params[ ] )
 {
-	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
+	if ( p_Class[ playerid ] != CLASS_CIVILIAN )
+		return SendError( playerid, "This is restricted to civilians only." );
 
-	if ( !strcmp( params, "offlinekick", false, 11 ) )
+	if ( ! strcmp( params, "ranks", false, 5 ) )
+	{
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) 
+			return SendError( playerid, "You are not inside a gang." );
+
+		format( szLargeString, sizeof( szLargeString ), "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
+		mysql_tquery( dbHandle, szLargeString, "OnDisplayCustomGangRanks", "d", playerid );
+		return 1;
+	}
+	else if ( ! strcmp( params, "addrank", false, 7 ) )
+	{
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) 
+			return SendError( playerid, "You are not inside a gang." );
+
+		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
+			return SendError( playerid, "You are not the gang leader." );
+
+		new 
+			requirement, rank[ 32 ];
+
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
+			return SendError( playerid, "You are not inside a gang." );
+
+		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
+			return SendError( playerid, "You are not the gang leader." );
+
+		if ( sscanf( params[ 8 ], "ds[32]", requirement, rank ) )
+			return SendUsage( playerid, "/gang addrank [REQUIREMENT (0 = DISABLE)] [RANK_NAME]" );
+
+		format( szLargeString, sizeof( szLargeString ), "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
+		mysql_tquery( dbHandle, szLargeString, "OnGangCreateRank", "ddds", playerid, requirement, p_GangID[ playerid ], rank );
+		return 1;
+	}
+	else if ( ! strcmp( params, "offlinekick", false, 11 ) )
 	{
 		new
 			iGang = p_GangID[ playerid ],
