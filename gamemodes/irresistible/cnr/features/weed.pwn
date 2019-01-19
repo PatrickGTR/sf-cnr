@@ -168,8 +168,6 @@ CMD:weed( playerid, params[ ] )
 		else if ( iCost < 0 || iCost > 100000 ) return SendError( playerid, "Price must be between 0 and 100000." );
 	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	    {
-	    	new iTaxed = floatround( iCost * 0.8 );
-
 			if ( GetPlayerCash( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
 
 			p_WeedDealer[ pID ] = playerid;
@@ -178,7 +176,7 @@ CMD:weed( playerid, params[ ] )
 			p_WeedSellingPrice[ pID ] = iCost;
 			p_SellingWeedTick[ playerid ] = g_iTime + 60;
 			SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) is selling you %d gram(s) of weed for %s. "COL_ORANGE"/weed buy"COL_WHITE" to buy.", ReturnPlayerName( playerid ), playerid, iAmount, cash_format( iCost ) );
-			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, cash_format( iTaxed ) );
+			SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have sent an offer to %s(%d) to buy a %d gram(s) of weed for "COL_GOLD"%s.", ReturnPlayerName( pID ), pID, iAmount, cash_format( iCost ) );
 	 		return 1;
 	    }
 	    else
@@ -195,8 +193,7 @@ CMD:weed( playerid, params[ ] )
 		    new
 		    	dealerid = p_WeedDealer[ playerid ],
 		    	iGrams 	 = p_WeedSellingGrams[ playerid ],
-		    	iCost 	 = p_WeedSellingPrice[ playerid ],
-		    	iTaxed 	 = floatround( iCost * 0.8 )
+		    	iCost 	 = p_WeedSellingPrice[ playerid ]
 		    ;
 
 			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", cash_format( iCost ), iGrams );
@@ -211,9 +208,9 @@ CMD:weed( playerid, params[ ] )
 	         	p_WeedGrams[ dealerid ] -= iGrams;
 
 				GivePlayerCash( playerid, -iCost );
-				GivePlayerCash( dealerid, iTaxed );
+				GivePlayerCash( dealerid, iCost );
 
-				SendClientMessageFormatted( dealerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) has bought %d grams of weed off you for %s.", ReturnPlayerName( playerid ), playerid, iGrams, cash_format( iTaxed ) );
+				SendClientMessageFormatted( dealerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} %s(%d) has bought %d grams of weed off you for %s.", ReturnPlayerName( playerid ), playerid, iGrams, cash_format( iCost ) );
 				SendClientMessageFormatted( playerid, -1, ""COL_ORANGE"[DRUG DEAL]{FFFFFF} You have bought %d grams of weed for %s.", iGrams, cash_format( iCost ) );
 
 				GivePlayerWantedLevel( dealerid, 6 );
