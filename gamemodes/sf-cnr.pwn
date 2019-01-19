@@ -1997,18 +1997,20 @@ CMD:robitems( playerid, params[ ] )
 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
 	{
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
+		else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
+		else if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
 		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
+		else if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
+		else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
+		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
+		else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
+		else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		else if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 
 		SetPVarInt( playerid, "robitems_timestamp", g_iTime + 60 );
 		GivePlayerWantedLevel( playerid, 4 );
@@ -2958,6 +2960,8 @@ CMD:sellgun( playerid, params[ ] )
 	else if ( p_Jailed{ pID } ) return SendError( playerid, "This player is jailed, you cannot sell weapons to him." );
 	else if ( IsPlayerInPaintBall( pID ) || IsPlayerDueling( pID ) ) return SendError( playerid, "You can't sell weapons in an arena." );
 	else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+	else if ( IsPlayerPassive( pID ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+	else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	{
 		SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} %s(%d) wishes to sell you weapons. "COL_ORANGE"/viewguns{FFFFFF} to view the available weapons.", ReturnPlayerName( playerid ), playerid );
@@ -3579,14 +3583,16 @@ CMD:kidnap( playerid, params[ ] )
 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
 	{
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
-		if ( !IsPlayerTied( victimid ) ) return SendError( playerid, "This player isn't tied!" );
-		if ( IsPlayerKidnapped( victimid ) ) return SendError( playerid, "This player is already kidnapped!" );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at the moment." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ victimid ] - g_iTime ) );
-		if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
+		else if ( !IsPlayerTied( victimid ) ) return SendError( playerid, "This player isn't tied!" );
+		else if ( IsPlayerKidnapped( victimid ) ) return SendError( playerid, "This player is already kidnapped!" );
+		else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at the moment." );
+		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
+		else if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ victimid ] - g_iTime ) );
+		else if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
 		SendClientMessageFormatted( victimid, -1, ""COL_RED"[KIDNAPPED]{FFFFFF} You have been kidnapped by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 	    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[KIDNAPPED]{FFFFFF} You have kidnapped %s(%d), he has been thrown in your previous entered vehicle!", ReturnPlayerName( victimid ), victimid );
 		TogglePlayerControllable( victimid, 0 );
@@ -3638,27 +3644,27 @@ CMD:tie( playerid, params[ ] )
  	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
  	{
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-  		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
-		if ( IsPlayerTied( victimid ) ) return SendError( playerid, "This player is already tied!" );
-  		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot tie inside a vehicle." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot tie while you're cuffed." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot tie while you're tazed." );
-		if ( IsPlayerTazed( victimid ) ) return SendError( playerid, "The person you're trying to tie is tazed." );
-		if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to tie is using a slot machine." );
-		if ( IsPlayerOnRoulette( victimid ) ) return SendError( playerid, "The person you're trying to tie is using roulette." );
-		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "The person you're trying to tie is cuffed." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( GetPlayerState( victimid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot tie wasted players." );
-		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
-		if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "You cannot use this command on spawn protected players." );
-		if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
+  		else if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
+		else if ( IsPlayerTied( victimid ) ) return SendError( playerid, "This player is already tied!" );
+  		else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot tie inside a vehicle." );
+		else if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot tie while you're cuffed." );
+		else if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot tie while you're tazed." );
+		else if ( IsPlayerOnSlotMachine( victimid ) ) return SendError( playerid, "The person you're trying to tie is using a slot machine." );
+		else if ( IsPlayerOnRoulette( victimid ) ) return SendError( playerid, "The person you're trying to tie is using roulette." );
+		else if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "The person you're trying to tie is cuffed." );
+		else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at an arena." );
+		else if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
+		else if ( GetPlayerState( victimid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot tie wasted players." );
+		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+		else if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
+		else if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "You cannot use this command on spawn protected players." );
+		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
+		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+		else if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
 
 		// remove rope after attempt
 		if ( p_Ropes[ playerid ] -- > 0 ) {
@@ -3823,23 +3829,25 @@ CMD:rob( playerid, params[ ] )
 		//if ( IsPlayerInAnyVehicle( playerid ) && !IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "You cannot rob someone while you're a vehicle and they're not." );
 		//if ( IsPlayerInAnyVehicle( playerid ) && IsPlayerInAnyVehicle( victimid ) && !IsPlayerKidnapped( victimid ) ) return SendError( playerid, "The person in your vehicle must be kidnapped to rob them." );
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( GetPlayerCash( victimid ) < 10 ) return SendError( playerid, "This player cannot be robbed since he has a low amount of money." );
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
+		else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
+		else if ( GetPlayerCash( victimid ) < 10 ) return SendError( playerid, "This player cannot be robbed since he has a low amount of money." );
+		else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
+		else if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
 		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rob is in a casino." );
-		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
-		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
+		else if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
+		else if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
+		else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
+		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
+		else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		else if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rob is in a casino." );
+		else if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
+		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+		else if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
+		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 
 		new
 			iRandom = random( 101 );
@@ -3906,27 +3914,28 @@ CMD:rape( playerid, params[ ] )
 		//if ( IsPlayerInAnyVehicle( playerid ) && !IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "You cannot rape someone while you're a vehicle and they're not." );
 		//if ( IsPlayerInAnyVehicle( playerid ) && IsPlayerInAnyVehicle( victimid ) && !IsPlayerKidnapped( victimid ) ) return SendError( playerid, "The person in your vehicle must be kidnapped to rape them." );
   		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle." );
-		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
-		if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
-		if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
+		else if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot use this command inside a vehicle." );
+		else if ( IsPlayerJailed( playerid ) ) return SendError( playerid, "You cannot use this command since you're jailed." );
+		else if ( IsPlayerTazed( playerid ) ) return SendError( playerid, "You cannot use this command since you're tazed." );
 		//if ( IsPlayerDetained( playerid ) ) return SendError( playerid, "You cannot use this command since you're detained." );
-		if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
-		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
-		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
-		if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
-		if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot rape in jail." );
-		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
-		if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
-		if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
-		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rape is in a casino." );
-		if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
-		if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
-		if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
-		if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-		if ( IsPlayerAFK( victimid ) && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) return SendError( playerid, "This player is in an AFK state." );
-		if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
+		else if ( IsPlayerCuffed( playerid ) ) return SendError( playerid, "You cannot use this command since you're cuffed." );
+		else if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You cannot use this command since you're tied." );
+		else if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
+		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a minigame." );
+		else if ( p_Jailed{ playerid } == true ) return SendError( playerid, "You cannot rape in jail." );
+		else if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
+		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
+		else if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
+		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
+		else if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rape is in a casino." );
+		else if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
+		else if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
+		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
+		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
+		else if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
+		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
+		else if ( IsPlayerAFK( victimid ) && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) return SendError( playerid, "This player is in an AFK state." );
+		else if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 
   		new iRandom = random( 101 );
         if ( IsPlayerJob( playerid, JOB_MUGGER ) ) { iRandom += 10; } // Adds more success to muggers
