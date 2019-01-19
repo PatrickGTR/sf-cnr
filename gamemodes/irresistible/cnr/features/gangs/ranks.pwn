@@ -16,7 +16,7 @@
 /* ** Hooks ** */
 
 /* ** Functions ** */
-thread OnDisplayCustomGangRanks( playerid, gangid )
+thread OnDisplayCustomGangRanks( playerid )
 {
     new
 		rows = cache_get_row_count( );
