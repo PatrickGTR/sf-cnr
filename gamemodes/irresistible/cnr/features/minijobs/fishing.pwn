@@ -119,7 +119,7 @@ CMD:fish ( playerid, params[ ] ){
             if ( p_fishingItems[ playerid ][ BAITS ] == 0 )                             return SendError( playerid, "You don't have any baits" );
 
             if ( p_fishingItems[ playerid ][ FISH_KGS ] >= ( p_fishingItems[ playerid ][ STORAGE_UPGRADES ] + 1 ) * g_fishingShopData[ FISH_KGS ][ LIMIT ] ) 
-            return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for fish in your inventory.\nMake some by selling your fish in fishing shop", "Close", "" );
+            return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for fish in your inventory.\nMake some by selling your fish in fishing shop.", "Close", "" );
 
             return StartNormalFishing( playerid );
 
@@ -136,14 +136,14 @@ CMD:fish ( playerid, params[ ] ){
                     if (! IsBoatMoving ( playerid ) )                                           return SendError( playerid, "Vehicle is moving, you are not stable enough.");
 
                     if ( p_fishingItems[ playerid ][ FISH_KGS ] >= ( p_fishingItems[ playerid ][ STORAGE_UPGRADES ] + 1 ) * g_fishingShopData[ FISH_KGS ][ LIMIT ] ) 
-                    return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for fish in your inventory.\nMake some by selling your fish in fishing shop", "Close", "" );
+                    return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for fish in your inventory.\nMake some by selling your fish in fishing shop.", "Close", "" );
 
                     return StartNormalFishing( playerid );
                 }
             }
 
             if ( p_fishingItems[ playerid ][ SHARKS ] >= ( p_fishingItems[ playerid ][ STORAGE_UPGRADES ] + 1 ) * g_fishingShopData[ SHARKS ][ LIMIT ] ) 
-            return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for shark meat in your inventory.\nMake some by selling your shark meat in fishing shop", "Close", "" );
+            return ShowPlayerDialog( playerid, DIALOG_FISHING_STORAGE_CAUTION, DIALOG_STYLE_MSGBOX, "Caution", "You have no more space for shark meat in your inventory.\nMake some by selling your shark meat in fishing shop.", "Close", "" );
 
             return StartSharkFishing( playerid );
 
@@ -158,8 +158,8 @@ CMD:fish ( playerid, params[ ] ){
     } else if ( !strcmp ( params, "help", true ) ) {
 
         szLargeString[ 0 ] = '\0';
-	    strcat( szLargeString, ""COL_WHITE"There are "COL_ORANGE"two"COL_WHITE" types of fishing! \n\nYou can choose between regular fishing (with baits) or shark fishing on an open sea.\n Both are interesting and pay is nearly the same" );
-		strcat( szLargeString, "\n\nTo be able to fish, you need to be on a boat.\nYou need a harpoon for shark fishing (open sea) and baits for regular fishing.\n Open sea is area under a name San Andreas." );
+	    strcat( szLargeString, ""COL_WHITE"There are "COL_ORANGE"two"COL_WHITE" types of fishing! \n\nYou can choose between regular fishing, with baits, or shark fishing in an open sea.\nBoth are interesting and the pay is nearly the same!" );
+		strcat( szLargeString, "\n\nTo be able to fish, you need to be on a boat.\nYou need a harpoon for shark fishing in an open sea and baits for regular fishing.\nOpen sea is within the area named San Andreas." );
 		return ShowPlayerDialog( playerid, DIALOG_FISHING_HELP, DIALOG_STYLE_MSGBOX, "{FFFFFF}Fishing", szLargeString, "Got it", "" );
 
     }
@@ -249,7 +249,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] ) {
             }
     
             if( p_fishingItems[ playerid ][ E_FISHING_SHOP_COMPONENTS:id ] + amount > limit )                                                      return SendError( playerid, "You've reached the limit." );
-            if( amount * g_fishingShopData[ E_FISHING_SHOP_COMPONENTS:id ][ PRICE ] > GetPlayerMoney( playerid ) )                                 return SendError( playerid, "You don't have enough money to buy this much.");
+            if( amount * g_fishingShopData[ E_FISHING_SHOP_COMPONENTS:id ][ PRICE ] > GetPlayerMoney( playerid ) )                                 return SendError( playerid, "You don't have enough money to buy this many.");
 
             GivePlayerCash( playerid, -( g_fishingShopData[ E_FISHING_SHOP_COMPONENTS:id ][ PRICE ] * amount ) );
             p_fishingItems[ playerid ][ E_FISHING_SHOP_COMPONENTS:id ] = p_fishingItems[ playerid ][ E_FISHING_SHOP_COMPONENTS:id ] + amount;
@@ -443,7 +443,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys ){
             }
         }
         if( PRESSED ( KEY_YES ) ){
-            if( IsPlayerInAnyVehicle( playerid ) )           return SendError( playerid, "You can't assemble/disassemble harpoon while in a vehicle.");
+            if( IsPlayerInAnyVehicle( playerid ) )           return SendError( playerid, "You can't assemble or disassemble a harpoon while in a vehicle.");
             return (! p_IsHarpoonInUse{ playerid } ) ? AssembleHarpoon( playerid ) : DisassembleHarpoon( playerid );
         }
     }
@@ -522,9 +522,9 @@ function StartSharkFishing( playerid ){
 
 function StopFishing( playerid ){
 
-    if( p_IsFishOnRod{ playerid } ) return SendError( playerid, "You can't stop now, fish is pulling your rod." );
+    if( p_IsFishOnRod{ playerid } ) return SendError( playerid, "You can't stop now because a fish is currently pulling your rod." );
 
-    if( p_IsLootShark{ playerid } ) SendServerMessage( playerid, "You turned the radar off, shark escaped the area.");
+    if( p_IsLootShark{ playerid } ) SendServerMessage( playerid, "You turned the radar off and the shark escaped the area.");
 
     p_IsPlayerFishing{ playerid } = false;
     p_IsLootFish{ playerid } = false;
@@ -736,14 +736,14 @@ function GiveFisherLoot( playerid ){
 
     if( p_IsLootFish{ playerid } ){
 
-        SendClientMessageFormatted( playerid, -1, "{C0C0C0}[SERVER]{FFFFFF} You successfully fished %i kilograms of fish.", p_fishWeight[ playerid ] );
+        SendClientMessageFormatted( playerid, -1, "{C0C0C0}[SERVER]{FFFFFF} You have successfully caught %i kilograms of fish.", p_fishWeight[ playerid ] );
         p_fishingItems[ playerid ][ FISH_KGS ] = p_fishingItems[ playerid ][ FISH_KGS ] + p_fishWeight[ playerid ];
         mysql_format( dbHandle, szNormalString, sizeof ( szNormalString ), "UPDATE `FISHING` SET `FISH_KGS` = %i WHERE `USER_ID` = %d", p_fishingItems[ playerid ][ FISH_KGS ], p_AccountID[ playerid ] );
         mysql_single_query( szNormalString );
 
     } else if ( p_IsLootShark{ playerid } ){
 
-        SendServerMessage(playerid, "You successfully picked up a shark meat.");
+        SendServerMessage(playerid, "You successfully picked up shark meat.");
         p_fishingItems[ playerid ][ SHARKS ]++;
         mysql_format( dbHandle, szNormalString, sizeof ( szNormalString ), "UPDATE `FISHING` SET `SHARKS` = %i WHERE `USER_ID` = %d", p_fishingItems[ playerid ][ SHARKS ], p_AccountID[ playerid ] );
         mysql_single_query( szNormalString );
