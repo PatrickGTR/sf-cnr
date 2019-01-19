@@ -12,3 +12,4 @@
 #include "irresistible\cnr\features\gangs\turfs.pwn"
 #include "irresistible\cnr\features\gangs\cannon.pwn"
 #include "irresistible\cnr\features\gangs\gvehicles.pwn"
+#include "irresistible\cnr\features\gangs\ranks.pwn"
