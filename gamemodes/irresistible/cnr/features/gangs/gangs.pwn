@@ -307,8 +307,7 @@ CMD:gang( playerid, params[ ] )
 		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) 
 			return SendError( playerid, "You are not inside a gang." );
 
-		format( szLargeString, sizeof( szLargeString ), "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
-		mysql_tquery( dbHandle, szLargeString, "OnDisplayCustomGangRanks", "d", playerid );
+		Ranks_ShowPlayerRanks( playerid );
 		return 1;
 	}
 	else if ( ! strcmp( params, "addrank", false, 7 ) )
@@ -320,7 +319,7 @@ CMD:gang( playerid, params[ ] )
 			return SendError( playerid, "You are not the gang leader." );
 
 		new 
-			requirement, rank[ 32 ];
+			rank[ 32 ];
 
 		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
 			return SendError( playerid, "You are not inside a gang." );
@@ -328,11 +327,42 @@ CMD:gang( playerid, params[ ] )
 		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
 			return SendError( playerid, "You are not the gang leader." );
 
-		if ( sscanf( params[ 8 ], "ds[32]", requirement, rank ) )
-			return SendUsage( playerid, "/gang addrank [REQUIREMENT (0 = DISABLE)] [RANK_NAME]" );
+		if ( sscanf( params[ 8 ], "s[32]", rank ) )
+			return SendUsage( playerid, "/gang addrank [RANK_NAME]" );
+		
+		if ( ! Ranks_IsNameAlreadyUsed( rank ) )
+			return SendError( playerid, "This rank name is already been created." );
 
-		format( szNormalString, sizeof( szNormalString ), "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
-		mysql_tquery( dbHandle, szNormalString, "OnGangCreateRank", "ddds", playerid, requirement, p_GangID[ playerid ], rank );
+		format( szLargeString, sizeof( szLargeString ), "INSERT INTO `GANG_RANKS` (`GANG_ID`,`RANK_NAME`,`COLOR`) VALUE (%d,'%s',-1061109505)", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ], mysql_escape( rank ) );
+		mysql_query( dbHandle, szLargeString );
+
+		SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has created a new rank \"%s\".", ReturnPlayerName( playerid ), playerid, rank );
+		return 1;
+	}
+	else if ( ! strcmp( params, "setrank", false, 7 ) )
+	{
+		new
+		    pID
+		;
+
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
+			return SendError( playerid, "You are not inside a gang." );
+
+		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
+			return SendError( playerid, "You are not the gang leader." );
+
+		if ( sscanf( params[ 8 ], "u", pID ) )
+			return SendUsage( playerid, "/gang setrank [PLAYER_ID]" );
+
+		if ( ! IsPlayerConnected( pID ) || IsPlayerNPC( pID ) )
+			return SendError( playerid, "Invalid Player ID." );
+
+		if ( p_GangID[ pID ] != p_GangID[ playerid ] )
+			return SendError( playerid, "This player isn't in your gang." );
+
+		SetPVarInt( playerid, "otherid_rank", pID );
+
+		Ranks_ShowPlayerRanks( playerid, true );
 		return 1;
 	}
 	else if ( ! strcmp( params, "offlinekick", false, 11 ) )
@@ -882,6 +912,7 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
 	if ( ! soft_delete )
 	{
 	 	// Do SQL operations
+		mysql_single_query( sprintf( "DELETE FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "DELETE FROM `GANGS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
@@ -889,6 +920,7 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
 
  	// Disconnect current users
  	foreach(new i : Player) if ( p_GangID[ i ] == gangid ) {
+		mysql_single_query( sprintf( "DELETE FROM `USER_GANG_RANKS` WHERE `USER_ID`=%d" , p_AccountID[ i ] ) );
  		p_GangID[ i ] = INVALID_GANG_ID;
  	}
 
