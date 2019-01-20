@@ -35,6 +35,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_EDIT_RANK_COLOR )
 	{
+		if ( ! response ) {
+			return Ranks_ShowPlayerRanks( playerid );
+		}
+
 		if ( !strlen( inputtext ) || !isHex( inputtext ) )
 		    return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_COLOR, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "{FFFFFF}Write a hexidecimal color within the textbox\n\n"COL_RED"Invalid HEX color", "Submit", "Cancel" );
 
@@ -49,8 +53,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 	}
 	if ( dialogid == DIALOG_RANK_DELETE )
 	{
-		if ( ! response )
+		if ( ! response ) {
 			return 1;
+		}
 
 		new 
 			rankid = GetPVarInt( playerid, "viewing_rankid" );
