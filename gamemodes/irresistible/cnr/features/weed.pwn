@@ -62,6 +62,7 @@ hook OnServerUpdate( )
 hook OnPlayerDisconnect( playerid, reason )
 {
 	Weed_RemovePlayerPlants( playerid );
+	Weed_ResetSellingProperties( playerid );
 	return 1;
 }
 
@@ -112,8 +113,7 @@ hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 CMD:weed( playerid, params[ ] )
 {
 	new
-		Float: X, Float: Y, Float: Z
-	;
+		Float: X, Float: Y, Float: Z;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You are not a civilian." );
 
@@ -165,7 +165,7 @@ CMD:weed( playerid, params[ ] )
 		else if ( p_Class[ pID ] != CLASS_CIVILIAN ) return SendError( playerid, "This person is not a civilian." );
 		else if ( iAmount > p_WeedGrams[ playerid ] ) return SendError( playerid, "You only have %d grams of weed on you.", p_WeedGrams[ playerid ] );
 		else if ( iAmount < 1 || iAmount > 25 ) return SendError( playerid, "You can only sell between 1 to 25 grams of weed to a player." );
-		else if ( iCost < 0 || iCost > 100000 ) return SendError( playerid, "Price must be between 0 and 100000." );
+		else if ( iCost <= 0 || iCost > 100000 ) return SendError( playerid, "Price must be between 1 and 100000." );
 	    else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	    {
 			if ( GetPlayerCash( pID ) < iCost ) return SendError( playerid, "This person doesn't have enough money." );
@@ -187,7 +187,7 @@ CMD:weed( playerid, params[ ] )
 	else if ( strmatch( params, "buy" ) )
 	{
 	    if ( !IsPlayerConnected( p_WeedDealer[ playerid ] ) ) return SendError( playerid, "Your dealer isn't connected anymore." );
-		else if ( GetServerTime( ) > p_WeedTick[ playerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, each deal goes for 2 minutes maximum. You were late." );
+		else if ( GetServerTime( ) > p_WeedTick[ playerid ] ) return Weed_ResetSellingProperties( playerid ), SendError( playerid, "This deal has ended, each deal goes for 2 minutes maximum. You were late." );
 		else
 		{
 		    new
@@ -198,9 +198,9 @@ CMD:weed( playerid, params[ ] )
 
 			if ( GetPlayerCash( playerid ) < iCost ) return SendError( playerid, "You need %s to buy %d grams of weed.", cash_format( iCost ), iGrams );
 			else if ( IsPlayerInPaintBall( dealerid ) || IsPlayerDueling( dealerid ) ) return SendError( playerid, "Your dealer cannot deal in an arena." );
-			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID, SendError( playerid, "This deal has ended, the dealer is not a civilian." );
+			else if ( p_Class[ dealerid ] != CLASS_CIVILIAN ) return Weed_ResetSellingProperties( playerid ), SendError( playerid, "This deal has ended, the dealer is not a civilian." );
 			else if ( !IsPlayerJob( dealerid, JOB_DRUG_DEALER ) ) return SendError( playerid, "Your dealer no longer does drugs." );
-			else if ( !p_WeedGrams[ dealerid ] ) return p_WeedDealer[ playerid ] = INVALID_PLAYER_ID,  SendError( playerid, "Your dealer doesn't have any more weed." );
+			else if ( !p_WeedGrams[ dealerid ] ) return Weed_ResetSellingProperties( playerid ),  SendError( playerid, "Your dealer doesn't have any more weed." );
 			//else if ( ( p_WeedGrams[ playerid ] + iGrams ) > MAX_WEED_STORAGE ) return SendError( playerid, "You can only carry %d grams of weed.", MAX_WEED_STORAGE );
 			else
 			{
@@ -217,7 +217,7 @@ CMD:weed( playerid, params[ ] )
 				GivePlayerWantedLevel( playerid, 6 );
 
 				Beep( dealerid );
-				p_WeedDealer[ playerid ] = INVALID_PLAYER_ID;
+				Weed_ResetSellingProperties( playerid );
 			}
 		}
 		return 1;
@@ -325,4 +325,11 @@ stock Weed_GetPlantLimit( playerid )
 	else {
 		return 5;
 	}
+}
+
+stock Weed_ResetSellingProperties( playerid )
+{
+	Weed_ResetSellingProperties( playerid );
+	p_WeedSellingGrams[ playerid ] = 0;
+	p_WeedSellingPrice[ playerid ] = 0;
 }
