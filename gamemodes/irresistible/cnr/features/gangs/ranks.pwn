@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_RANKS 					( 32 )
+#define MAX_RANKS 					( 100 )
 
 #define DIALOG_GANG_RANK            ( 1205 )
 #define DIALOG_SET_RANK             ( 1206 )
@@ -20,11 +20,40 @@
 #define DIALOG_EDIT_RANK_COLOR 		( 1211 )
 
 /* ** Variables ** */
-static stock 
-	p_PlayerSelectedRank 			[ MAX_PLAYERS ] [ MAX_RANKS ]
+enum E_GANG_RANK
+{
+	E_SQL_ID,			E_NAME[ 32 ],			E_REQUIRE,
+	E_COLOR
+};
+
+static stock
+	p_PlayerSelectedRank 			[ MAX_PLAYERS ] [ MAX_RANKS ],
+	p_PlayerRespect 				[ MAX_PLAYERS ],
+	p_PlayerRankID 					[ MAX_PLAYERS ],
+	
+	g_gangRankData 					[ MAX_GANGS ] [ MAX_RANKS ] [ E_GANG_RANK ]
 ;
 
 /* ** Hooks ** */
+hook OnPlayerLogin( playerid )
+{
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `USER_GANG_RANKS` WHERE `USER_ID` = %d ", GetPlayerAccountID( playerid ) ), "RankRespect_Load", "d", playerid );
+	return 1;
+}
+
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_PlayerRespect[ playerid ] = 0;
+	p_PlayerRankID[ playerid ]  = 0;
+	return 1;
+}
+
+hook OnGangLoad( gangid )
+{
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID` = %d ", GetGangSqlID( gangid ) ), "GangRanks_Load", "d", gangid );
+	return 1;
+}
+
 hook OnPlayerLeaveGang( playerid, gangid, reason )
 {
 	mysql_single_query( sprintf( "DELETE FROM `USER_GANG_RANKS` WHERE `USER_ID`=%d" , p_AccountID[ playerid ] ) );
@@ -160,6 +189,40 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 }
 
 /* ** Functions ** */
+thread RankRespect_Load( playerid )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( rows )
+	{
+		p_PlayerRespect[ playerid ] = cache_get_field_content_int( 0, "RESPECT" );
+		p_PlayerRankID[ playerid ]  = cache_get_field_content_int( 0, "GANG_RANK_ID" );
+	}
+
+	return 1;
+}
+
+thread GangRanks_Load( gangid )
+{	
+	new
+		rows = cache_get_row_count( );
+
+	if ( rows )
+	{
+		for ( new row = 0; row < rows; row ++ )
+		{
+			g_gangRankData[ gangid ][ row ][ E_SQL_ID ]  = cache_get_field_content_int( row, "ID" );
+			g_gangRankData[ gangid ][ row ][ E_COLOR ] 	 = cache_get_field_content_int( row, "COLOR" );
+			g_gangRankData[ gangid ][ row ][ E_REQUIRE ] = cache_get_field_content_int( row, "REQUIRE" );
+			cache_get_field_content( row, "RANK_NAME", g_gangRankData[ gangid ][ row ][ E_NAME ] );
+
+			printf( "[GANG RANKS] {id: %d, color: %d, requirement: %d, name: %s}", \
+				g_gangRankData[ gangid ][ row ][ E_SQL_ID ], g_gangRankData[ gangid ][ row ][ E_COLOR ], g_gangRankData[ gangid ][ row ][ E_REQUIRE ] , g_gangRankData[ gangid ][ row ][ E_NAME ] );
+		}
+	}
+	return 1;
+}
 stock Ranks_IsNameAlreadyUsed( const rank[ ] )
 {
 	static 
@@ -195,6 +258,42 @@ stock Ranks_ShowPlayerRanks( playerid, bool: setting = false )
 	} else {
 		mysql_tquery( dbHandle, szLargeString, "OnDisplaySetRanks", "d", playerid );
 	}
+	return 1;
+}
+
+stock GivePlayerRespect( playerid, default_respect )
+{
+	if ( ! IsPlayerConnected( playerid ) )
+		return 0;
+	
+	new gangid = p_GangID[ playerid ];
+	new previous_respect = p_PlayerRespect[ playerid ];
+	new current_respect = previous_respect + default_respect;
+
+	if ( current_respect < 0 )
+		current_respect = 0;
+
+	for ( new rankid = 0; rankid < MAX_RANKS; rankid ++ )
+	{
+		new bGained = ( previous_respect < g_gangRankData[ gangid ][ rankid ] [ E_REQUIRE ] <= current_respect );
+		new bLost = ( current_respect < g_gangRankData[ gangid ][ rankid ] [ E_REQUIRE ] <= previous_respect );
+
+		if ( bGained || bLost )
+		{
+			if ( bGained )
+			{
+				p_PlayerRankID[ playerid ] = g_gangRankData[ gangid ][ rankid ][ E_SQL_ID ];
+				SendServerMessage( playerid, "Congratulations, your gang ranking has been increased to {%06x}%s"COL_WHITE"!", g_gangRankData[ gangid ][ rankid ][ E_COLOR ] >>> 8, g_gangRankData[ gangid ][ rankid ][ E_NAME ] );
+
+				mysql_single_query( sprintf( "UPDATE `USER_GANG_RANKS` SET `GANG_RANK_ID`=%d WHERE `USER_ID`=%d", g_gangRankData[ gangid ][ rankid ][ E_SQL_ID ], GetPlayerAccountID( playerid ) ) );
+			}
+
+			break;
+		}
+	}
+
+	p_PlayerRespect[ playerid ] = current_respect;
+	mysql_single_query( sprintf( "UPDATE `USER_GANG_RANKS` SET `RESPECT`=%d WHERE `USER_ID`=%d", p_PlayerRespect[ playerid ], GetPlayerAccountID( playerid ) ) );
 	return 1;
 }
 

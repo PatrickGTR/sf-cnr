@@ -302,6 +302,7 @@ hook OnServerGameDayEnd( )
 
 				foreach ( new p : Player ) if ( GetPlayerGang( p ) == g ) {
 					PlayerPlaySound( p, 36205, 0.0, 0.0, 0.0 );
+					GivePlayerRespect( p, floatround( capture_ratio * 100.0 ) );
 				}
 
 				SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", cash_format( earnings ) );
