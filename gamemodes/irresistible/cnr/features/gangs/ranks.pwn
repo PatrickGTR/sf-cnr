@@ -223,6 +223,15 @@ thread GangRanks_Load( gangid )
 	}
 	return 1;
 }
+
+stock Ranks_RespawnRanks( playerid )
+{
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `USER_GANG_RANKS` WHERE `USER_ID` = %d ", GetPlayerAccountID( playerid ) ), "RankRespect_Load", "d", playerid );
+	p_PlayerRespect[ playerid ] = 0;
+	p_PlayerRankID[ playerid ]  = 0;
+	return 1;
+}
+
 stock Ranks_IsNameAlreadyUsed( const rank[ ] )
 {
 	static 

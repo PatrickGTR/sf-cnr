@@ -20,7 +20,7 @@
 #define GetPlayerGang(%0) 			( p_GangID[ %0 ] )
 #define IsValidGangID(%0)			( 0 <= %0 < MAX_GANGS && Iter_Contains( gangs, %0 ) )
 #define IsPlayerInPlayerGang(%0,%1)	( p_Class[ %0 ] == p_Class[ %1 ] && p_Class[ %0 ] == CLASS_CIVILIAN && p_GangID[ %0 ] == p_GangID[ %1 ] && p_GangID[ %0 ] != INVALID_GANG_ID )
-
+ 
 /* ** Variables ** */
 enum e_gang_data
 {
