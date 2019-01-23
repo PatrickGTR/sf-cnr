@@ -5711,13 +5711,13 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			case 1:
 			{
 				foreach ( new i : houses ) if ( strmatch( g_houseData[ i ] [ E_OWNER ], ReturnPlayerName( playerid ) ) ) {
-					format( szLargeString, sizeof( szLargeString ), "%s%s\n", szLargeString, g_houseData[ i ] [ E_HOUSE_NAME ] ), has = true;
+					format( szHugeString, sizeof( szHugeString ), "%s%s\n", szHugeString, g_houseData[ i ] [ E_HOUSE_NAME ] ), has = true;
 				}
 
 				if ( ! has )
 					return SendError( playerid, "You do not own any home." ), ShowPlayerSpawnMenu( playerid );
 
-				return ShowPlayerDialog( playerid, DIALOG_HOUSES, DIALOG_STYLE_LIST, "{FFFFFF}Set Spawn Location", szLargeString, "Select", "Back" );
+				return ShowPlayerDialog( playerid, DIALOG_HOUSES, DIALOG_STYLE_LIST, "{FFFFFF}Set Spawn Location", szHugeString, "Select", "Back" );
 			}
 
 			// businesses
