@@ -381,3 +381,23 @@ thread OnDisplayGangRanks( playerid )
 
     return ShowPlayerDialog( playerid, DIALOG_GANG_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
 }
+
+/*
+
+	CREATE TABLE `user_gang_ranks` (
+	`ID` int(11) NOT NULL,
+	`USER_ID` int(11) DEFAULT NULL,
+	`GANG_RANK_ID` int(11) DEFAULT NULL,
+	`RESPECT` int(11) DEFAULT NULL
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+	CREATE TABLE `gang_ranks` (
+	`ID` int(11) NOT NULL,
+	`GANG_ID` int(11) NOT NULL,
+	`RANK_NAME` varchar(32) DEFAULT NULL,
+	`COLOR` int(11) DEFAULT NULL,
+	`REQUIRE` int(11) DEFAULT NULL
+	) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+*/
