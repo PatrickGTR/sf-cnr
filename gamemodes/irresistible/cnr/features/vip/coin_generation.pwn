@@ -55,7 +55,7 @@ hook OnPlayerTickSecond( playerid )
     	iKeys, iUpDownKeys, iLeftRightKeys;
 
 	// Increase Irresistible Coins (1/20 = cred/min)
-	if ( ! IsPlayerAFK( playerid ) && GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 )
+	if ( ! IsPlayerAFK( playerid ) && GetPlayerKeys( playerid, iKeys, iUpDownKeys, iLeftRightKeys ) && ! IsPlayerOnRoulette( playerid ) && ! IsPlayerOnSlotMachine( playerid ) && GetPlayerVehicleSeat( playerid ) <= 0 && !IsPlayerUsingAnimation( playerid ) )
 	{
 		if ( iKeys != 0 || iUpDownKeys != 0 || iLeftRightKeys != 0 ) { // GetPlayerScore( playerid ) > 10 &&
 

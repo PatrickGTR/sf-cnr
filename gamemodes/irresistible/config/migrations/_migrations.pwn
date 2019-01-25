@@ -55,7 +55,7 @@ public Migrations_CheckMissing( )
         new
             num_migrations = Migrations_GetCount( );
 
-        if ( executed_migrations != num_migrations )
+        if ( executed_migrations < num_migrations )
         {
             new
                 dir: migrations_directory = dir_open( SERVER_MIGRATIONS_FOLDER ),
