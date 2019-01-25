@@ -305,6 +305,7 @@ CMD:v( playerid, params[ ] )
 	    else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You need to be a driver to use this command." );
 		else if ( v == -1 ) return SendError( playerid, "This vehicle isn't a buyable vehicle." );
 		else if ( playerid != ownerid ) return SendError( playerid, "You cannot park this vehicle." );
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
 		else
 		{
 	        if ( IsVehicleUpsideDown( GetPlayerVehicleID( playerid ) ) ) return SendError( playerid, "Sorry, you're just going to have to ditch your car as soon as possible." );
@@ -344,8 +345,8 @@ CMD:v( playerid, params[ ] )
 	{
 		if ( p_VehicleBringCooldown[ playerid ] > g_iTime )
 			return SendError( playerid, "You must wait %s before using this feature again.", secondstotime( p_VehicleBringCooldown[ playerid ] - g_iTime ) );
-
-		if ( p_OwnedVehicles[ playerid ] > 0 )
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
+		else if ( p_OwnedVehicles[ playerid ] > 0 )
 		{
 		    szLargeString = ""COL_WHITE"Bringing your vehicle to you will cost $10,000!\n";
 			for( new i; i < p_OwnedVehicles[ playerid ]; i++ )
@@ -383,6 +384,7 @@ CMD:v( playerid, params[ ] )
 		;
 		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You must be inside a vehicle to use this command." );
 	    else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You need to be a driver to use this command." );
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
 		else if ( sscanf( params[ 6 ], "dd", color1, color2 ) ) return SendUsage( playerid, "/v color [COLOR_1] [COLOR_2]" );
 		else if ( g_buyableVehicle{ GetPlayerVehicleID( playerid ) } == false ) return SendError( playerid, "This isn't a buyable vehicle." );
 		else if ( GetPlayerCash( playerid ) < 100 ) return SendError( playerid, "You don't have enough cash for this." );
@@ -407,6 +409,7 @@ CMD:v( playerid, params[ ] )
 		;
 		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You must be inside a vehicle to use this command." );
 	    else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You need to be a driver to use this command." );
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
 		else if ( sscanf( params[ 6 ], "s[32]", szPlate ) ) return SendUsage( playerid, "/v plate [TEXT]" );
 		else if ( g_buyableVehicle{ GetPlayerVehicleID( playerid ) } == false ) return SendError( playerid, "This isn't a buyable vehicle." );
 		else
@@ -428,6 +431,7 @@ CMD:v( playerid, params[ ] )
 		;
 		if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You must be inside a vehicle to use this command." );
 	    else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You need to be a driver to use this command." );
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
 		else if ( sscanf( params[ 9 ], "d", paintjobid ) ) return SendUsage( playerid, "/v paintjob [PAINT_JOB_ID]" );
 		else if ( g_buyableVehicle{ GetPlayerVehicleID( playerid ) } == false ) return SendError( playerid, "This isn't a buyable vehicle." );
 		else if ( GetPlayerCash( playerid ) < 500 ) return SendError( playerid, "You don't have enough cash for this." );
@@ -450,6 +454,7 @@ CMD:v( playerid, params[ ] )
 		new v = getVehicleSlotFromID( vehicleid, ownerid );
 	    if ( !IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You need to be in a vehicle to use this command." );
 	    else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You need to be a driver to use this command." );
+		else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
 		else if ( v == -1 ) return SendError( playerid, "This vehicle isn't a buyable vehicle." );
 		else if ( playerid != ownerid ) return SendError( playerid, "This vehicle does not belong to you." );
 		else
@@ -461,7 +466,7 @@ CMD:v( playerid, params[ ] )
 
 			if ( !strcmp( params[ 7 ], "doors", true, 5 ) ) {
 				if ( !strlen( params[ 13 ] ) ) return SendUsage( playerid, "/v toggle doors [OPEN/CLOSE]" );
-				if ( strmatch( params[ 13 ], "open" ) ) {
+				else if ( strmatch( params[ 13 ], "open" ) ) {
 					SetVehicleParamsCarDoors( vehicleid, 1, 1, 1, 1 );
 					return SendServerMessage( playerid, "You have opened the doors of this vehicle." );
 				}
@@ -476,7 +481,7 @@ CMD:v( playerid, params[ ] )
 
 			else if ( !strcmp( params[ 7 ], "windows", true, 7 ) ) {
 				if ( !strlen( params[ 15 ] ) ) return SendUsage( playerid, "/v toggle windows [OPEN/CLOSE]" );
-				if ( strmatch( params[ 15 ], "open" ) ) {
+				else if ( strmatch( params[ 15 ], "open" ) ) {
 					SetVehicleParamsCarWindows( vehicleid, 0, 0, 0, 0 );
 					return SendServerMessage( playerid, "You have opened the windows of this vehicle." );
 				}

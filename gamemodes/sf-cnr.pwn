@@ -7147,3 +7147,15 @@ stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // gets t
   	}
   	return 1;
 }
+
+stock IsPlayerBelowSeaLevel( playerid )
+{
+	new Float: x, Float: y, Float: z;
+
+	GetPlayerPos( playerid, x, y, z );
+
+	if ( z < 0.0 )
+		return true;
+	else
+		return false;
+}
