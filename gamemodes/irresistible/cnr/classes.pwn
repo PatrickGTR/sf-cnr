@@ -489,3 +489,11 @@ stock IsPlayerPolice( playerid )
 	}
 	return false;
 }
+
+stock IsPlayerAnyLEO( playerid )
+{
+	if ( IsPlayerPolice( playerid ) || IsPlayerArmy( playerid ) || IsPlayerCIA( playerid ) || IsPlayerFBI( playerid ) )
+		return true;
+	else
+		return false;
+}

@@ -317,42 +317,12 @@ CMD:dropweapon( playerid, params[ ] ) {
 	if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
 
 	new
-	    iCurrentWeapon = GetPlayerWeapon( playerid ),
-	    iWeaponID[ 13 ],
-	    iWeaponAmmo[ 13 ]
+	    iCurrentWeapon = GetPlayerWeapon( playerid )
 	;
 
 	if ( iCurrentWeapon != 0 )
 	{
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
-		{
-		    new
-				iWeapon,
-				iAmmo;
-
-			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
-
-			if ( iWeapon != iCurrentWeapon ) {
-			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
-			}
-			else
-			{
-				new
-					Float: X, Float: Y, Float: Z;
-
-				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120, .nonpassive_only = false ) != ITER_NONE ) {
-					p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 3;
-				}
-			}
-		}
-
-		ResetPlayerWeapons( playerid );
-
-		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
-		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
-		}
-
-		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
+		RemoveSpecificPlayerWeapon( playerid, iCurrentWeapon, true );
 		return SendServerMessage( playerid, "You have dropped your weapon." );
 	} else {
 		return SendError( playerid, "You are not holding any weapon." );
@@ -436,6 +406,49 @@ stock ClearInactiveWeaponDrops( )
 		g_weaponDropData[ dropid ] [ E_EXPIRE_TIMESTAMP ] = 0;
 		g_weaponDropData[ dropid ] [ E_PICKUP ] = -1;
 		Iter_SafeRemove( weapondrop, cur, dropid );
+	}
+	return 1;
+}
+
+stock RemoveSpecificPlayerWeapon( playerid, weaponid, bool:createpickup )
+{
+	new
+	    iCurrentWeapon = GetPlayerWeapon( playerid ),
+	    iWeaponID[ 13 ],
+	    iWeaponAmmo[ 13 ]
+	;
+
+	if ( iCurrentWeapon != 0 )
+	{
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ )
+		{
+		    new
+				iWeapon,
+				iAmmo;
+
+			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
+
+			if ( iWeapon != iCurrentWeapon || iWeapon != weaponid ) {
+			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
+			}
+			else if ( createpickup )
+			{
+				new
+					Float: X, Float: Y, Float: Z;
+
+				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120, .nonpassive_only = false ) != ITER_NONE ) {
+					p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 3;
+				}
+			}
+		}
+
+		ResetPlayerWeapons( playerid );
+
+		for( new iSlot = 0; iSlot < sizeof( iWeaponAmmo ); iSlot++ ) {
+		    GivePlayerWeapon( playerid, iWeaponID[ iSlot ], 0 <= iWeaponAmmo[ iSlot ] < 16384 ? iWeaponAmmo[ iSlot ] : 16384 );
+		}
+
+		SetPlayerArmedWeapon( playerid, 0 ); // prevent driveby
 	}
 	return 1;
 }

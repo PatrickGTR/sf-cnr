@@ -5039,6 +5039,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				case 17 .. 22: weaponid = listitem - 12;
 		    	case 23 .. 24: weaponid = listitem - 9;
 		    }
+			if ( IsPlayerAnyLEO( playerid ) && weaponid == 9 ) return SendError( playerid, "You cannot purchase a chainsaw as a Law Enforcement Officer." );
 		    GivePlayerWeapon( playerid, weaponid, 0xFFFF );
 		    SendServerMessage( playerid, "You have redeemed a %s.", ReturnWeaponName( weaponid ) );
 			p_VIPWeaponRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_PLATINUM ? 60 : 300 );
@@ -5566,6 +5567,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		        {
 		            if ( x == listitem )
 		            {
+						// Chainsaw Removal for LEO through Ammunation
+						if ( IsPlayerAnyLEO( playerid ) && g_AmmunationWeapons[ i ] [ E_WEPID ] == 9 ) return SendError( playerid, "You cannot purchase a chainsaw as a Law Enforcement Officer." );
 					 	if ( g_AmmunationWeapons[ i ] [ E_PRICE ] > GetPlayerCash( playerid ) )
 						{
 						    SendError( playerid, "You don't have enough money for this." );

@@ -49,6 +49,13 @@ hook OnPlayerDeath( playerid, killerid, reason )
 	return 1;
 }
 
+hook OnPlayerUpdate( playerid )
+{
+	if ( IsPlayerAnyLEO( playerid ) && CheckIfPlayerHasWeapon( playerid, 9 ) )
+		RemoveSpecificPlayerWeapon( playerid, 9, false );
+	return 1;
+}
+
 hook OnPlayerSpawn( playerid )
 {
 	if ( 0 <= playerid < MAX_PLAYERS )
@@ -300,3 +307,26 @@ stock AC_CreateDynamicPickup( modelid, type, Float: x, Float: y, Float: z, world
     #define _ALS_CreateDynamicPickup
 #endif
 #define CreateDynamicPickup AC_CreateDynamicPickup
+
+stock CheckIfPlayerHasWeapon( playerid, weaponid )
+{
+	new
+		iCurrentWeapon = GetPlayerWeapon( playerid ),
+		iWeapon,
+		iAmmo
+	;
+
+	if ( iCurrentWeapon == weaponid )
+		return true;
+	else
+	{
+		for ( new iSlot = 0; iSlot < 13; iSlot++ )
+		{
+			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
+
+			if ( iWeapon == weaponid )
+				return true;
+		}
+		return false;
+	}
+}
