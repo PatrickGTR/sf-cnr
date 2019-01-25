@@ -846,7 +846,11 @@ stock dischargeVehicles( playerid )
 	if ( p_OwnedVehicles[ playerid ] )
 	{
 		for( new v; v < MAX_BUYABLE_VEHICLES; v++ )
-	 		DestroyBuyableVehicle( playerid, v, .db_remove = false );
+		{
+			if ( g_vehicleData[ playerid ][ v ][ E_MODEL ] == 508 ) RemovePlayersFromJourney( g_vehicleData[ playerid ][ v ][ E_VEHICLE_ID ] );
+			DestroyBuyableVehicle( playerid, v, .db_remove = false );
+		}
+	 		
 	}
 	return 1;
 }

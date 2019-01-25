@@ -518,3 +518,30 @@ stock GetPlayerCausticSoda( playerid ) return p_CausticSoda{ playerid };
 stock SetPlayerCausticSoda( playerid, amount ) {
 	p_CausticSoda{ playerid } = amount;
 }
+
+stock RemovePlayersFromJourney( vehicleID )
+{
+	new Float: x, Float: y, Float: z;
+
+	foreach ( new playerid : Player )
+	{
+		if ( GetPlayerVirtualWorld( playerid ) == ( vehicleID + VW_METH ) && !p_Spectating{ playerid } )
+		{
+			haltMethamphetamine( playerid, vehicleID );
+
+			GetVehiclePos( vehicleID, x, y, z );
+			SetPlayerPos( playerid, x, y, z );
+			SetPlayerInterior( playerid, 0 );
+			SetPlayerVirtualWorld( playerid, 0 );
+
+			p_MuriaticAcid{ playerid } = 0;
+			p_CausticSoda{ playerid } = 0;
+			p_Methamphetamine{ playerid } = 0;
+			p_HydrogenChloride{ playerid } = 0;
+			
+			SendServerMessage( playerid, "You have been removed from a player-owned Journey as the player who owned it has left the server." );
+		}
+	}
+
+	return 1;
+}
