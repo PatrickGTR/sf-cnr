@@ -2336,7 +2336,7 @@ CMD:vipjob( playerid, params[ ] )
 	if ( isnull( params ) )
 		return SendUsage( playerid, "/vipjob [PART OF JOB NAME]" );
 
-	if ( ( iJob = GetJobIDFromName( params ) ) == 0xFE )
+	if ( ( iJob = GetJobIDFromName( params ) ) == 0xFE || iJob < 0 || iJob > 7 )
 		return SendError( playerid, "You have entered an invalid job." );
 
 	if ( iJob != p_Job{ playerid } ) {
