@@ -265,8 +265,12 @@ public OnServerUpdateTimer( )
 			{
 				// AFK Jail
 				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) && IsPlayerSpawned( playerid ) ) { // && !IsPlayerDetained( playerid )
-			    	JailPlayer( playerid, 60, 1 );
-		        	SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
+			    	
+					if ( !AwardNearestLEO( playerid, 1 ) )
+					{
+						JailPlayer( playerid, 60, 1 );
+		        		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
+					}
 				}
 
 				// AFK Admins
