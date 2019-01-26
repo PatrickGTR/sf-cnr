@@ -37,7 +37,7 @@ static stock
 /* ** Hooks ** */
 hook OnPlayerLogin( playerid )
 {
-	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `USER_GANG_RANKS` WHERE `USER_ID` = %d ", GetPlayerAccountID( playerid ) ), "RankRespect_Load", "d", playerid );
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `USER_GANG_RANKS` WHERE `USER_ID`=%d", GetPlayerAccountID( playerid ) ), "RankRespect_Load", "d", playerid );
 	return 1;
 }
 
@@ -45,12 +45,13 @@ hook OnPlayerDisconnect( playerid, reason )
 {
 	p_PlayerRespect[ playerid ] = 0;
 	p_PlayerRankID[ playerid ]  = 0;
+	p_PlayerRankName[ playerid ][ 0 ] = '\0';
 	return 1;
 }
 
 hook OnGangLoad( gangid )
 {
-	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID` = %d ", GetGangSqlID( gangid ) ), "GangRanks_Load", "d", gangid );
+	mysql_tquery( dbHandle, sprintf( "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID`=%d", GetGangSqlID( gangid ) ), "GangRanks_Load", "d", gangid );
 	return 1;
 }
 
@@ -104,8 +105,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		new 
 			rankid = GetPVarInt( playerid, "viewing_rankid" ),
-			value
-		;
+			value;
 		
 		if ( sscanf( inputtext, "d", value ) )
 			return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_REQUIRE, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "Type the rank requirement value below (gang respect level to achieve rank)\n0 = No requirement\n\n"COL_RED"Invalid Amount!", "Submit", "Cancel" );
@@ -206,19 +206,23 @@ thread RankRespect_Load( playerid )
 thread GangRanks_Load( gangid )
 {	
 	new
-		rows = cache_get_row_count( );
+		rows, fields, i = -1;
 
+	cache_get_data( rows, fields );
 	if ( rows )
 	{
-		for ( new row = 0; row < rows; row ++ )
+		while( ++i < rows )
 		{
-			g_gangRankData[ gangid ][ row ][ E_SQL_ID ]  = cache_get_field_content_int( row, "ID" );
-			g_gangRankData[ gangid ][ row ][ E_COLOR ] 	 = cache_get_field_content_int( row, "COLOR" );
-			g_gangRankData[ gangid ][ row ][ E_REQUIRE ] = cache_get_field_content_int( row, "REQUIRE" );
-			cache_get_field_content( row, "RANK_NAME", g_gangRankData[ gangid ][ row ][ E_NAME ] );
+			g_gangRankData[ gangid ][ i ][ E_SQL_ID ]  = cache_get_field_content_int( i, "ID" );
+			g_gangRankData[ gangid ][ i ][ E_COLOR ] 	 = cache_get_field_content_int( i, "COLOR" );
+			g_gangRankData[ gangid ][ i ][ E_REQUIRE ] = cache_get_field_content_int( i, "REQUIRE" );
+			cache_get_field_content( i, "RANK_NAME", g_gangRankData[ gangid ][ i ][ E_NAME ] );
 
-			printf( "[GANG RANKS] {id: %d, color: %d, requirement: %d, name: %s}", \
-				g_gangRankData[ gangid ][ row ][ E_SQL_ID ], g_gangRankData[ gangid ][ row ][ E_COLOR ], g_gangRankData[ gangid ][ row ][ E_REQUIRE ] , g_gangRankData[ gangid ][ row ][ E_NAME ] );
+			if ( g_Debugging )
+			{
+				printf( "[GANG RANKS] {id: %d, color: %d, requirement: %d, name: %s}", \
+					g_gangRankData[ gangid ][ i ][ E_SQL_ID ], g_gangRankData[ gangid ][ i ][ E_COLOR ], g_gangRankData[ gangid ][ i ][ E_REQUIRE ] , g_gangRankData[ gangid ][ i ][ E_NAME ] );
+			}
 		}
 	}
 	return 1;
@@ -253,9 +257,10 @@ stock Ranks_GetGangRank( rankid )
 		rankName[ 32 ] = "n/a";
 
 	mysql_query( dbHandle, sprintf( "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `ID`=%d LIMIT 1", rankid ) );
-	cache_get_field_content( 0, "RANK_NAME", rankName );
+	if ( cache_get_row_count( ) )
+		cache_get_field_content( 0, "RANK_NAME", rankName );
 	
-	return ( cache_get_row_count( ) ? ( rankName ) : ( "Unassigned" ) );
+	return rankName;
 }
 
 stock Ranks_ShowPlayerRanks( playerid, bool: setting = false )
@@ -316,6 +321,8 @@ thread OnPlayerSetRank( playerid, otherid, rankid )
 	} else {
 		mysql_single_query( sprintf( "INSERT INTO `USER_GANG_RANKS` (`USER_ID`,`GANG_RANK_ID`) VALUES(%d,%d)", p_AccountID[ otherid ], rankid ) );
 	}
+
+	p_PlayerRankID[ otherid ] = rankid;
 
 	SendClientMessageFormatted( otherid,  g_gangData[ p_GangID[ otherid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has set your rank to %s.", ReturnPlayerName( playerid ), playerid, Ranks_GetGangRank( rankid ) );
 	SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ otherid ] ] [ E_COLOR ], "[GANG]{FFFFFF} You have set %s(%d)'s rank to %s.", ReturnPlayerName( otherid ), otherid, Ranks_GetGangRank( rankid ) );
