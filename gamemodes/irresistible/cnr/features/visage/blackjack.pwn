@@ -18,7 +18,7 @@
 #endif*/
 
 /* ** Definitions ** */
-#define MAX_BLACKJACK_TABLES 		( 33 )
+#define MAX_BLACKJACK_TABLES 		( 34 )
 #define MAX_BLACKJACK_CARDS 		( 5 )
 #define MAX_BLACKJACK_PLAYERS 		( 3 )
 #define BLACKJACK_DEALER_WAIT 		( 500 )

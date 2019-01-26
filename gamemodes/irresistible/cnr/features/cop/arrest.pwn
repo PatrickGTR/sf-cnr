@@ -8,10 +8,43 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Variables ** */
+static stock
+	bool: p_AwaitingBCAttempt		[ MAX_PLAYERS char ],
+	p_AwaitingBCAttemptTimer		[ MAX_PLAYERS ] = { -1, ... }
+;
+
 /* ** Forwards ** */
 forward OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 
 /* ** Hooks ** */
+hook OnPlayerDisconnect( playerid, reason )
+{
+	p_AwaitingBCAttempt{ playerid } = false;
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
+hook OnPlayerSpawn( playerid )
+{
+	p_AwaitingBCAttempt{ playerid } = false;
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath( playerid, killerid, reason )
+#endif
+{
+	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+	return 1;
+}
+
 hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
 {
 	if ( PRESSED( KEY_LOOK_BEHIND ) ) // MMB to taze/cuff/ar
@@ -278,6 +311,7 @@ stock ArrestPlayer( victimid, playerid )
 		GivePlayerSeasonalXP( victimid, -20.0 );
 		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has sent %s(%d) to jail for %d seconds!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( victimid ), victimid, totalSeconds );
 		JailPlayer( victimid, totalSeconds );
+		KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
 		return 1;
  	}
  	else return SendError( playerid, "There are no players around to arrest." );
@@ -312,40 +346,30 @@ stock CuffPlayer( victimid, playerid )
 		if ( GetPlayerState( playerid ) == PLAYER_STATE_WASTED ) return SendError( playerid, "You cannot use this command since you are dead." );
 		if ( !IsPlayerSpawned( victimid ) ) return SendError( playerid, "The player must be spawned." );
 
-      	new
-      		break_attempts = 0;
-
-		if ( ! BreakPlayerCuffs( victimid, break_attempts ) )
+		if ( !BreakPlayerCuffs( victimid ) )
 		{
 			GameTextForPlayer( victimid, "~n~~r~CUFFED!", 2000, 4 );
-			//GameTextForPlayer( playerid, sprintf( "~n~~y~~h~/arrest %d", victimid ), 2000, 4 );
 			GameTextForPlayer( playerid, "~n~~y~~h~/arrest", 2000, 4 );
+
 			SendClientMessageFormatted( victimid, -1, ""COL_RED"[CUFFED]{FFFFFF} You have been cuffed by %s(%d)!", ReturnPlayerName( playerid ), playerid );
 		    SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} You have cuffed %s(%d)!", ReturnPlayerName( victimid ), victimid );
-			KillTimer( p_CuffAbuseTimer[ victimid ] );
-	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
-			//ApplyAnimation( victimid, "ped", "cower", 5.0, 1, 1, 1, 0, 0 );
-			//TogglePlayerControllable( victimid, 0 );
+
 			p_Cuffed{ victimid } = true;
 			p_QuitToAvoidTimestamp[ victimid ] = g_iTime + 3;
 			SetPlayerAttachedObject( victimid, 2, 19418, 6, -0.011000, 0.028000, -0.022000, -15.600012, -33.699977, -81.700035, 0.891999, 1.000000, 1.168000 );
 	      	SetPlayerSpecialAction( victimid, SPECIAL_ACTION_CUFFED );
-			ShowPlayerHelpDialog( victimid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+
+			KillTimer( p_CuffAbuseTimer[ victimid ] );
+	   		p_CuffAbuseTimer[ victimid ] = SetTimerEx( "Uncuff", ( 60 * 1000 ), false, "d", victimid );
+
+			p_AwaitingBCAttempt{ victimid } = true;
+
+			KillTimer( p_AwaitingBCAttemptTimer[ victimid ] );
+			p_AwaitingBCAttemptTimer[ victimid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", victimid );
 		}
 		else
 		{
-			if ( break_attempts )
-			{
-				new
-					money_dropped = RandomEx( 200, 400 ) * break_attempts;
-
-	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off, and dropped %s!", ReturnPlayerName( victimid ), victimid, cash_format( money_dropped ) );
-	    		GivePlayerCash( playerid, money_dropped );
-			}
-			else
-			{
-	    		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
-			}
+			SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[CUFFED]{FFFFFF} %s(%d) just broke their cuffs off!", ReturnPlayerName( victimid ), victimid );
 		}
 		return 1;
  	}
@@ -391,3 +415,56 @@ function Uncuff( playerid )
    	SendGlobalMessage( -1, ""COL_GREY"[SERVER]{FFFFFF} %s(%d) has been uncuffed and undetained by the anti-abuse system.", ReturnPlayerName( playerid ), playerid );
 	return 1;
 }
+
+stock BreakPlayerCuffs( playerid )
+{
+	if ( !IsPlayerConnected( playerid ) ) return false;
+
+	if ( p_BobbyPins[ playerid ] < 1 )
+	{
+		ShowPlayerHelpDialog( playerid, 4000, "You can buy bobby pins at Supa Save or a 24/7 store to break cuffs." );
+		return false;
+	}
+	else p_BobbyPins[ playerid ] --;
+
+	if ( p_AwaitingBCAttempt{ playerid } ) p_AwaitingBCAttempt{ playerid } = false;
+
+	new probability = 75; // success rate probability
+
+	if ( random( 101 ) <= probability )
+	{
+		if ( ! IsPlayerCuffed( playerid ) )
+		{
+			Untaze( playerid, 10 );
+			GivePlayerWantedLevel( playerid, 6 );
+		}
+		else
+		{
+			if ( ! IsPlayerAttachedObjectSlotUsed( playerid, 2 ) )
+				return false;
+
+			TogglePlayerControllable( playerid, 1 );
+			RemovePlayerAttachedObject( playerid, 2 );
+			SetPlayerSpecialAction( playerid, SPECIAL_ACTION_NONE );
+
+			if ( ! IsPlayerInAnyVehicle( playerid ) ) {
+				ClearAnimations( playerid );
+			}
+
+			p_Cuffed{ playerid } = false;
+			p_BulletInvulnerbility[ playerid ] = g_iTime + 5;
+		}
+		SendServerMessage( playerid, "You have successfully broken out of your cuffs!" );
+		return true;
+	}
+	else
+	{
+		SendServerMessage( playerid, "You have snapped your bobby pin and failed to break out of your cuffs. Re-attempting in 3 seconds." );
+		p_AwaitingBCAttempt{ playerid } = true;
+		KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
+		p_AwaitingBCAttemptTimer[ playerid ] = SetTimerEx( "BreakPlayerCuffsAttempt", 3000, false, "d", playerid );
+		return false;
+	}
+}
+
+function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid ), 1;
