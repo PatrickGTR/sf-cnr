@@ -20,12 +20,13 @@ forward OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 /* ** Hooks ** */
 hook OnPlayerDisconnect( playerid, reason )
 {
+
 	p_AwaitingBCAttempt{ playerid } = false;
 	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
 	p_AwaitingBCAttemptTimer[ playerid ] = -1;
 
 	// Quit to Avoid - Award Handling
-	AwardNearestLEO( playerid, 0 );
+	if ( playerid != INVALID_PLAYER_ID ) AwardNearestLEO( playerid, 0 );
 	return 1;
 }
 
@@ -492,22 +493,15 @@ function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid )
 
 stock AwardNearestLEO( playerid, reason )
 {
+	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID )
+		return false;
+
 	new
-		Float: x, Float: y, Float: z,
 		closestLEO = INVALID_PLAYER_ID,
-		radius = ( IsPlayerInAnyVehicle( playerid ) ? 150 : 75 ); // If player is in a vehicle, increase radius due to ability to get farther quicker.
+		Float: radius = ( IsPlayerInAnyVehicle( playerid ) ? 150.0 : 75.0 ) // If player is in a vehicle, increase radius due to ability to get farther quicker.
+	;
 
-	GetPlayerPos( playerid, x, y, z );
-
-	foreach( new pID : Player )
-	{
-		if ( p_Class[ pID ] != CLASS_POLICE ) continue;
-
-		new Float: distance = GetDistanceBetweenPlayers( playerid, pID );
-
-		if ( distance < radius && distance < closestLEO )
-			closestLEO = pID;
-	}
+	closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
 
 	if ( closestLEO != INVALID_PLAYER_ID )
 	{
@@ -527,13 +521,13 @@ stock AwardNearestLEO( playerid, reason )
 	return false;
 }
 
-hook OnPlayerEnterDynamicCP( playerid, checkpointid )
+hook OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid )
 {
-	if ( !p_InHouse[ playerid ] && GetPlayerWantedLevel( playerid ) > 2 )
+	if ( GetPlayerWantedLevel( playerid ) > 2 )
 	{
 		new Float: x, Float: y, Float: z;
 
-		GetEntrancePos( checkpointid, x, y, z );
+		GetEntrancePos( entranceid, x, y, z );
 
 		foreach ( new pID : Player )
 		{

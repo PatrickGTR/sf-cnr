@@ -53,7 +53,7 @@ stock CNR_SetPlayerWantedLevel( playerid, level )
 	else if ( IsPlayerInAnyVehicle( playerid ) )
 	{
 		new vehicleID = GetPlayerVehicleID( playerid );
-		GivePassivePassengersWanted( vehicleID );
+		GivePassivePassengersWanted( playerid, vehicleID );
 	}
 	else
 	{
@@ -84,7 +84,7 @@ stock GivePlayerWantedLevel( playerid, level )
 	else if ( IsPlayerInAnyVehicle( playerid ) )
 	{
 		new vehicleID = GetPlayerVehicleID( playerid );
-		GivePassivePassengersWanted( vehicleID );
+		GivePassivePassengersWanted( playerid, vehicleID );
 	}
 	
 	new
@@ -107,9 +107,6 @@ stock IsWantedPlayerInVehicle( vehicleid )
 {
 	foreach ( new pID : Player )
 	{
-		if ( !IsPlayerInAnyVehicle( pID ) )
-			continue;
-
 		if ( GetPlayerVehicleID( pID ) == vehicleid && GetPlayerWantedLevel( pID ) > 1 )
 			return true;
 	}

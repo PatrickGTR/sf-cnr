@@ -362,7 +362,7 @@ stock CreateLoopingAnimation( playerid, animlib[ ], animname[ ], Float:Speed, lo
 	else if ( IsPlayerAttachedObjectSlotUsed( playerid, 3 ) ) return SendError( playerid, "You cannot use this command since you're holding a stolen good." );
 	else if ( GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_DRIVER || GetPlayerState( playerid ) == PLAYER_STATE_ENTER_VEHICLE_PASSENGER ) return SendError( playerid, "You cannot use this command since you're entering a vehicle." );
     else if ( GetPlayerState( playerid ) == PLAYER_STATE_EXIT_VEHICLE ) return SendError( playerid, "You cannot use this command since you're exiting a vehicle." );
-	else if ( IsPlayerWearingParachute( playerid ) ) return SendError( playerid, "You cannot use this command while wearing a parachute." );
+	else if ( GetPlayerWeapon( playerid ) == 46 ) return SendError( playerid, "You cannot use this command while wearing a parachute." );
 	else
 	{
 		SetPlayerSpecialAction( playerid, 0 );
@@ -397,13 +397,4 @@ stock IsPlayingAnimation( playerid, const library[ ], const animation[ ] )
 
 stock IsPlayerUsingAnimation( playerid ) {
 	return p_InAnimation{ playerid };
-}
-
-
-stock IsPlayerWearingParachute( playerid )
-{
-	if ( GetPlayerWeapon( playerid ) == 46 )
-		return true;
-	else
-		return false;
 }

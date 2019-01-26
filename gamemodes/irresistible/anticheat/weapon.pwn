@@ -49,13 +49,6 @@ hook OnPlayerDeath( playerid, killerid, reason )
 	return 1;
 }
 
-hook OnPlayerUpdate( playerid )
-{
-	if ( IsPlayerAnyLEO( playerid ) && CheckIfPlayerHasWeapon( playerid, 9 ) )
-		RemoveSpecificPlayerWeapon( playerid, 9, false );
-	return 1;
-}
-
 hook OnPlayerSpawn( playerid )
 {
 	if ( 0 <= playerid < MAX_PLAYERS )

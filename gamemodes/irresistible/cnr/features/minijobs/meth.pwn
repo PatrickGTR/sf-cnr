@@ -69,6 +69,7 @@ static stock
 
 /* ** Forwards ** */
 forward OnMethamphetamineCooking( playerid, vehicleid, last_chemical );
+forward OnPlayerVehicleDestroyed( playerid, slot );
 
 /* ** Hooks ** */
 hook OnPlayerDisconnect( playerid, reason )
@@ -341,6 +342,12 @@ public OnMethamphetamineCooking( playerid, vehicleid, last_chemical )
 	return 1;
 }
 
+public OnPlayerVehicleDestroyed( playerid, slot )
+{
+	if ( g_vehicleData[ playerid ][ slot ][ E_MODEL ] == 508 ) RemovePlayersFromJourney( g_vehicleData[ playerid ][ slot ][ E_VEHICLE_ID ] );
+	return 1;
+}
+
 /* ** Commands ** */
 CMD:meth( playerid, params[ ] )
 {
@@ -521,7 +528,7 @@ stock SetPlayerCausticSoda( playerid, amount ) {
 
 stock RemovePlayersFromJourney( vehicleID )
 {
-	new Float: x, Float: y, Float: z;
+	new Float: x, Float: y, Float: z, Float: Angle;
 
 	foreach ( new playerid : Player )
 	{
@@ -530,14 +537,13 @@ stock RemovePlayersFromJourney( vehicleID )
 			haltMethamphetamine( playerid, vehicleID );
 
 			GetVehiclePos( vehicleID, x, y, z );
+			GetVehicleZAngle( vehicleID, Angle );
+			x += ( 5.0 * floatsin( -( Angle - 45.0 ), degrees ) );
+            y += ( 5.0 * floatcos( -( Angle - 45.0 ), degrees ) );
+
 			SetPlayerPos( playerid, x, y, z );
 			SetPlayerInterior( playerid, 0 );
 			SetPlayerVirtualWorld( playerid, 0 );
-
-			p_MuriaticAcid{ playerid } = 0;
-			p_CausticSoda{ playerid } = 0;
-			p_Methamphetamine{ playerid } = 0;
-			p_HydrogenChloride{ playerid } = 0;
 			
 			SendServerMessage( playerid, "You have been removed from a player-owned Journey as the player who owned it has left the server." );
 		}

@@ -26,7 +26,7 @@ hook OnPlayerUpdateEx( playerid )
 	{
 		if ( IsPassivePlayerInVehicle( GetPlayerVehicleID( playerid ) ) )
 		{
-			RemovePlayerFromVehicle( playerid );
+			SyncObject( playerid );
 			SendError( playerid, "You cannot enter vehicles with passive players in it as a wanted criminal." );
 		}
 	}
@@ -94,11 +94,11 @@ hook OnPlayerEnterVehicle( playerid, vehicleid, ispassenger )
 }
 
 /* ** Functions ** */
-stock GivePassivePassengersWanted( vehicleid )
+stock GivePassivePassengersWanted( playerid, vehicleid )
 {
 	foreach( new pID : Player )
 	{
-		if ( !IsPlayerPassive( pID ) || !IsPlayerInAnyVehicle( pID ) )
+		if ( !IsPlayerPassive( pID ) || IsPlayerNPC( pID ) || pID == playerid )
 			continue;
 
 		if ( GetPlayerVehicleID( pID ) == vehicleid )

@@ -723,6 +723,8 @@ stock DestroyBuyableVehicle( playerid, vID, bool: db_remove = true )
     	ResetBuyableVehicleMods( playerid, vID );
 	}
 
+	CallLocalFunction( "OnPlayerVehicleDestroyed", "dd", playerid, vID );
+
 	// Reset vehicle component data (hook into module)
 	DestroyVehicleCustomComponents( playerid, vID, db_remove );
 

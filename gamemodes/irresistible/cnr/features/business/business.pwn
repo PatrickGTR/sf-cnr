@@ -509,7 +509,7 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 		if ( IsPlayerPassive( playerid ) )
 		{
 			ShowPlayerHelpDialog( playerid, 2000, "Passive players cannot enter business vehicles." );
-			RemovePlayerFromVehicle( playerid );
+			SyncObject( playerid );
 			return 1;
 		}
 

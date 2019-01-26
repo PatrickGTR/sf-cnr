@@ -362,6 +362,16 @@ hook OnPlayerRequestSpawn( playerid )
 	return IsPlayerClassApproved( playerid );
 }
 
+hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
+{
+	if( !IsPlayerNPC( playerid ) )
+	{
+		if ( ( newkeys && KEY_FIRE ) && GetPlayerClass( playerid ) == CLASS_POLICE && GetPlayerWeapon( playerid ) == 9 )
+			RemoveSpecificPlayerWeapon( playerid, 9, false );
+	}
+	return 1;
+}
+
 stock IsPlayerClassApproved( playerid ) {
 
 	// is logged in
@@ -488,12 +498,4 @@ stock IsPlayerPolice( playerid )
 		}
 	}
 	return false;
-}
-
-stock IsPlayerAnyLEO( playerid )
-{
-	if ( IsPlayerPolice( playerid ) || IsPlayerArmy( playerid ) || IsPlayerCIA( playerid ) || IsPlayerFBI( playerid ) )
-		return true;
-	else
-		return false;
 }
