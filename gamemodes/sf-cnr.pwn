@@ -148,7 +148,7 @@ public OnGameModeInit()
 	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
 	rl_ZoneUpdate = SetTimer( "OnServerSecondTick", 980, true );
 
-	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: "#FILE_BUILD" | Time: %d | Tickcount: %d)", ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
+	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: %s | Time: %d | Tickcount: %d)", GetServerVersion( ), ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
 	return 1;
 }
 
@@ -265,7 +265,7 @@ public OnServerUpdateTimer( )
 			{
 				// AFK Jail
 				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) && IsPlayerSpawned( playerid ) ) { // && !IsPlayerDetained( playerid )
-			    	
+
 					if ( !AwardNearestLEO( playerid, 1 ) )
 					{
 						JailPlayer( playerid, 60, 1 );
@@ -431,7 +431,7 @@ public OnPlayerConnect( playerid )
 	jailDoors( playerid, false, false );
 
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[WARNING]{a9c4e4} The concept in this server and GTA in general may be considered explicit material." );
-	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version " # FILE_BUILD "." );
+	SendClientMessageFormatted( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version %s.", GetServerVersion( ) );
 
 	if ( IsValidServerVariable( "connectsong" ) )
 	{
