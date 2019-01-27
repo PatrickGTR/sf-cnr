@@ -265,7 +265,7 @@ public OnServerUpdateTimer( )
 			{
 				// AFK Jail
 				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) && IsPlayerSpawned( playerid ) ) { // && !IsPlayerDetained( playerid )
-			    	
+
 					if ( !AwardNearestLEO( playerid, 1 ) )
 					{
 						JailPlayer( playerid, 60, 1 );
@@ -5705,6 +5705,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new bool: has = false;
 
 		// erase large string for ease
+		erase( szHugeString );
 		erase( szLargeString );
 
 		// show items
