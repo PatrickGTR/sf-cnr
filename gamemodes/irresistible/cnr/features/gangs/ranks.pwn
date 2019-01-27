@@ -330,7 +330,7 @@ thread GangRank_OnDisplaySetRanks( playerid )
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
-	szLargeString[ 0 ] = '\0';
+	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\n";
 
     for ( new i = 0; i < rows; i ++ )
     {
@@ -343,7 +343,7 @@ thread GangRank_OnDisplaySetRanks( playerid )
 			new color = cache_get_field_content_int( i, "COLOR" );
 			cache_get_field_content( i, "RANK_NAME", rankName );
 
-			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
 			p_PlayerSelectedRank[ playerid ] [ i ] = id;
 		}
 		else
@@ -352,7 +352,7 @@ thread GangRank_OnDisplaySetRanks( playerid )
 		}
     }
 
-    return ShowPlayerDialog( playerid, DIALOG_SET_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
+    return ShowPlayerDialog( playerid, DIALOG_SET_RANK, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
 }
 
 thread GangRank_OnDisplayGangRanks( playerid )
@@ -365,7 +365,7 @@ thread GangRank_OnDisplayGangRanks( playerid )
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
-	szLargeString[ 0 ] = '\0';
+	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\n";
 
     for ( new i = 0; i < MAX_RANKS; i ++ )
     {
@@ -379,7 +379,7 @@ thread GangRank_OnDisplayGangRanks( playerid )
 
 			cache_get_field_content( i, "RANK_NAME", rankName );
 
-			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
 			p_PlayerSelectedRank[ playerid ] [ i ] = id;
 		}
 		else
@@ -388,7 +388,7 @@ thread GangRank_OnDisplayGangRanks( playerid )
 		}
     }
 
-    return ShowPlayerDialog( playerid, DIALOG_GANG_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
+    return ShowPlayerDialog( playerid, DIALOG_GANG_RANK, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
 }
 
 stock GangRank_IsOverLimit( gangid ) {
