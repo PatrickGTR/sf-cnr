@@ -337,8 +337,8 @@ CMD:gang( playerid, params[ ] )
 			return SendError( playerid, "This gang has reached the limit of gang ranks." );
 		}
 
-		format( szLargeString, sizeof( szLargeString ), "INSERT INTO `GANG_RANKS` (`GANG_ID`,`RANK_NAME`,`COLOR`) VALUE (%d,'%s',-1061109505)", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ], mysql_escape( rank ) );
-		mysql_query( dbHandle, szLargeString );
+		mysql_format( dbHandle, szLargeString, sizeof( szLargeString ), "INSERT INTO `GANG_RANKS` (`GANG_ID`,`RANK_NAME`,`COLOR`) VALUE (%d,'%e',-1061109505)", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ], rank );
+		mysql_single_query( szLargeString );
 
 		SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]{FFFFFF} %s(%d) has created a new rank \"%s\".", ReturnPlayerName( playerid ), playerid, rank );
 		return 1;

@@ -323,29 +323,33 @@ thread GangRank_OnSetPlayerRank( playerid, otherid, rankid )
 
 thread GangRank_OnDisplaySetRanks( playerid )
 {
-	szLargeString[ 0 ] = '\0';
-
-    new
-		count, rows;
-
-    cache_get_data( rows, tmpVariable );
+	new
+		rows = cache_get_row_count( );
 
     if ( ! rows ) {
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
+	szLargeString[ 0 ] = '\0';
+
     for ( new i = 0; i < rows; i ++ )
     {
-        new
-            color, id = 0,
-            rankName[ 32 ];
+		if ( i < MAX_RANKS )
+		{
+			new
+				rankName[ 32 ];
 
-        id = cache_get_field_content_int( i, "ID" );
-		color = cache_get_field_content_int( i, "COLOR" );
-        cache_get_field_content( i, "RANK_NAME", rankName );
+			new id = cache_get_field_content_int( i, "ID" );
+			new color = cache_get_field_content_int( i, "COLOR" );
+			cache_get_field_content( i, "RANK_NAME", rankName );
 
-        format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
-        p_PlayerSelectedRank[ playerid ] [ count ++ ] = id;
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			p_PlayerSelectedRank[ playerid ] [ i ] = id;
+		}
+		else
+		{
+			p_PlayerSelectedRank[ playerid ] [ i ] = 0;
+		}
     }
 
     return ShowPlayerDialog( playerid, DIALOG_SET_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
@@ -353,29 +357,35 @@ thread GangRank_OnDisplaySetRanks( playerid )
 
 thread GangRank_OnDisplayGangRanks( playerid )
 {
-	szLargeString[ 0 ] = '\0';
 
-    new
-		count, rows;
-
-    cache_get_data( rows, tmpVariable );
+	new
+		rows = cache_get_row_count( );
 
     if ( ! rows ) {
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
-    for ( new i = 0; i < rows; i ++ )
+	szLargeString[ 0 ] = '\0';
+
+    for ( new i = 0; i < MAX_RANKS; i ++ )
     {
-        new
-            color, id = 0,
-            rankName[ 32 ];
+		if ( i < rows )
+		{
+			new
+				rankName[ 32 ];
 
-        id = cache_get_field_content_int( i, "ID" );
-		color = cache_get_field_content_int( i, "COLOR" );
-        cache_get_field_content( i, "RANK_NAME", rankName );
+			new id = cache_get_field_content_int( i, "ID" );
+			new color = cache_get_field_content_int( i, "COLOR" );
 
-        format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
-        p_PlayerSelectedRank[ playerid ] [ count ++ ] = id;
+			cache_get_field_content( i, "RANK_NAME", rankName );
+
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s(%d)\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			p_PlayerSelectedRank[ playerid ] [ i ] = id;
+		}
+		else
+		{
+			p_PlayerSelectedRank[ playerid ] [ i ] = 0;
+		}
     }
 
     return ShowPlayerDialog( playerid, DIALOG_GANG_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
