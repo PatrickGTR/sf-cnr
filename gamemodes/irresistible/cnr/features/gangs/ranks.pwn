@@ -30,7 +30,7 @@ static stock
 	p_PlayerSelectedRank 			[ MAX_PLAYERS ] [ MAX_RANKS ],
 	p_PlayerRespect 				[ MAX_PLAYERS ],
 	p_PlayerRankID 					[ MAX_PLAYERS ],
-	
+
 	g_gangRankData 					[ MAX_GANGS ] [ MAX_RANKS ] [ E_GANG_RANK ]
 ;
 
@@ -45,7 +45,6 @@ hook OnPlayerDisconnect( playerid, reason )
 {
 	p_PlayerRespect[ playerid ] = 0;
 	p_PlayerRankID[ playerid ]  = 0;
-	p_PlayerRankName[ playerid ][ 0 ] = '\0';
 	return 1;
 }
 
@@ -61,6 +60,19 @@ hook OnPlayerLeaveGang( playerid, gangid, reason )
 	return 1;
 }
 
+hook OnGangUnload( gangid, bool: deleted )
+{
+	if ( deleted )
+	{
+		// delete from gang rank table
+		mysql_single_query( sprintf( "DELETE FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
+
+		// delete user associated gang ranks
+		mysql_single_query( sprintf( "DELETE FROM `USER_GANG_RANKS` WHERE `GANG_ID`=%d" , g_gangData[ gangid ] [ E_SQL_ID ] ) );
+	}
+	return 1;
+}
+
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
 	if ( dialogid == DIALOG_EDIT_RANK_COLOR )
@@ -72,7 +84,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		if ( !strlen( inputtext ) || !isHex( inputtext ) )
 		    return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_COLOR, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "{FFFFFF}Write a hexidecimal color within the textbox\n\n"COL_RED"Invalid HEX color", "Submit", "Cancel" );
 
-		new 
+		new
 			hex_to_int = HexToInt( inputtext ),
 			rankid = GetPVarInt( playerid, "viewing_rankid" ),
 			color = setAlpha( hex_to_int, 0xFF );
@@ -81,13 +93,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` SET `COLOR`=%d WHERE `ID`=%d", color, rankid ) );
 		return 1;
 	}
-	if ( dialogid == DIALOG_RANK_DELETE )
+	else if ( dialogid == DIALOG_RANK_DELETE )
 	{
 		if ( ! response ) {
 			return 1;
 		}
 
-		new 
+		new
 			rankid = GetPVarInt( playerid, "viewing_rankid" );
 
 		SendClientMessageToGang( p_GangID[ playerid ], g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG] "COL_WHITE"%s rank has been deleted by %s(%d).", Ranks_GetGangRank( rankid ), ReturnPlayerName( playerid ), playerid );
@@ -97,16 +109,16 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 		return 1;
 	}
-	if ( dialogid == DIALOG_EDIT_RANK_REQUIRE )
+	else if ( dialogid == DIALOG_EDIT_RANK_REQUIRE )
 	{
 		if ( ! response ) {
 			return Ranks_ShowPlayerRanks( playerid );
 		}
 
-		new 
+		new
 			rankid = GetPVarInt( playerid, "viewing_rankid" ),
 			value;
-		
+
 		if ( sscanf( inputtext, "d", value ) )
 			return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_REQUIRE, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "Type the rank requirement value below (gang respect level to achieve rank)\n0 = No requirement\n\n"COL_RED"Invalid Amount!", "Submit", "Cancel" );
 
@@ -114,13 +126,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `REQUIRE`='%s' WHERE `ID`=%d", value, rankid ) );
 		return 1;
 	}
-	if ( dialogid == DIALOG_EDIT_RANK_NAME )
+	else if ( dialogid == DIALOG_EDIT_RANK_NAME )
 	{
 		if ( ! response ) {
 			return Ranks_ShowPlayerRanks( playerid );
 		}
 
-		new 
+		new
 			rankid = GetPVarInt( playerid, "viewing_rankid" ),
 			rank_name[ 32 ];
 
@@ -137,9 +149,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `RANK_NAME`='%s' WHERE `ID`=%d" , mysql_escape( rank_name ), rankid ) );
 		return 1;
 	}
-	if ( ( dialogid == DIALOG_GANG_RANK ) && response )
+	else if ( dialogid == DIALOG_GANG_RANK && response )
 	{
-		new 
+		new
             rankid = p_PlayerSelectedRank[ playerid ][ listitem ];
 
         SendServerMessage( playerid, "You have selected rank %s(%d)", Ranks_GetGangRank( rankid ), rankid );
@@ -148,7 +160,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		SetPVarInt( playerid, "viewing_rankid", rankid );
 		return 1;
 	}
-	if ( dialogid == DIALOG_RANK_EDIT )
+	else if ( dialogid == DIALOG_RANK_EDIT )
 	{
 		if ( ! response ) {
 			return Ranks_ShowPlayerRanks( playerid );
@@ -163,28 +175,26 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
 			// edit requirement
 			case 1: ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_REQUIRE, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "{FFFFFF}Type the rank requirement value below (gang respect level to achieve rank)\n0 = No requirement\n\n", "Submit", "Cancel" );
-			
+
 			// edit name
 			case 2: ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_NAME, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "{FFFFFF}Enter the rank name you want to change it to\n\n", "Submit", "Cancel" );
-			
+
 			// delete rank
 			case 3: ShowPlayerDialog( playerid, DIALOG_RANK_DELETE, DIALOG_STYLE_MSGBOX, ""COL_WHITE"Gang Ranks", sprintf( "{FFFFFF}Are you sure you want to delete %s", Ranks_GetGangRank( rankid ) ), "Yes", "No" );
 		}
 
 		return 1;
 	}
-
-	if ( ( dialogid == DIALOG_SET_RANK ) && response )
+	else if ( dialogid == DIALOG_SET_RANK && response )
 	{
-		new 
+		new
 			rankid = p_PlayerSelectedRank[ playerid ][ listitem ],
 			otherid = GetPVarInt( playerid, "set_rankid" );
-		
+
 		format( szNormalString, sizeof( szNormalString ), "SELECT `USER_ID` FROM `USER_GANG_RANKS` WHERE `USER_ID`=%d LIMIT 0,1", p_AccountID[ playerid ] );
 		mysql_tquery( dbHandle, szNormalString, "OnPlayerSetRank", "ddd", playerid, otherid, rankid );
 		return 1;
 	}
-
 	return 1;
 }
 
@@ -204,7 +214,7 @@ thread RankRespect_Load( playerid )
 }
 
 thread GangRanks_Load( gangid )
-{	
+{
 	new
 		rows, fields, i = -1;
 
@@ -238,12 +248,12 @@ stock Ranks_RespawnRanks( playerid )
 
 stock Ranks_IsNameAlreadyUsed( const rank[ ] )
 {
-	static 
+	static
 		static_rank[ 32 ];
-	
+
 	mysql_query( dbHandle, sprintf( "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `RANK_NAME`='%s'", rank ) );
 	cache_get_field_content( 0, "RANK_NAME", static_rank );
-	
+
 	if ( strmatch( static_rank, rank ) ) {
 		return false;
 	}
@@ -253,20 +263,20 @@ stock Ranks_IsNameAlreadyUsed( const rank[ ] )
 
 stock Ranks_GetGangRank( rankid )
 {
-	static 
+	static
 		rankName[ 32 ] = "n/a";
 
 	mysql_query( dbHandle, sprintf( "SELECT `RANK_NAME` FROM `GANG_RANKS` WHERE `ID`=%d LIMIT 1", rankid ) );
 	if ( cache_get_row_count( ) )
 		cache_get_field_content( 0, "RANK_NAME", rankName );
-	
+
 	return rankName;
 }
 
 stock Ranks_ShowPlayerRanks( playerid, bool: setting = false )
 {
 	format( szLargeString, sizeof( szLargeString ), "SELECT * FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ] );
-	
+
 	if ( ! setting ) {
 		mysql_tquery( dbHandle, szLargeString, "OnDisplayGangRanks", "d", playerid );
 	} else {
@@ -279,7 +289,7 @@ stock GivePlayerRespect( playerid, default_respect )
 {
 	if ( ! IsPlayerConnected( playerid ) )
 		return 0;
-	
+
 	new gangid = p_GangID[ playerid ];
 	new previous_respect = p_PlayerRespect[ playerid ];
 	new current_respect = previous_respect + default_respect;
@@ -313,7 +323,7 @@ stock GivePlayerRespect( playerid, default_respect )
 
 thread OnPlayerSetRank( playerid, otherid, rankid )
 {
-	new 
+	new
 		rows = cache_get_row_count( );
 
 	if ( rows ) {
@@ -344,7 +354,7 @@ thread OnDisplaySetRanks( playerid )
 
     for ( new i = 0; i < rows; i ++ )
     {
-        new 
+        new
             color, id = 0,
             rankName[ 32 ];
 
@@ -374,7 +384,7 @@ thread OnDisplayGangRanks( playerid )
 
     for ( new i = 0; i < rows; i ++ )
     {
-        new 
+        new
             color, id = 0,
             rankName[ 32 ];
 

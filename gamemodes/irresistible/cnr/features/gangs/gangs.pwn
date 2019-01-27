@@ -20,7 +20,7 @@
 #define GetPlayerGang(%0) 			( p_GangID[ %0 ] )
 #define IsValidGangID(%0)			( 0 <= %0 < MAX_GANGS && Iter_Contains( gangs, %0 ) )
 #define IsPlayerInPlayerGang(%0,%1)	( p_Class[ %0 ] == p_Class[ %1 ] && p_Class[ %0 ] == CLASS_CIVILIAN && p_GangID[ %0 ] == p_GangID[ %1 ] && p_GangID[ %0 ] != INVALID_GANG_ID )
- 
+
 /* ** Variables ** */
 enum e_gang_data
 {
@@ -304,7 +304,7 @@ CMD:gang( playerid, params[ ] )
 
 	if ( ! strcmp( params, "ranks", false, 5 ) )
 	{
-		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) 
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
 			return SendError( playerid, "You are not inside a gang." );
 
 		Ranks_ShowPlayerRanks( playerid );
@@ -312,13 +312,13 @@ CMD:gang( playerid, params[ ] )
 	}
 	else if ( ! strcmp( params, "addrank", false, 7 ) )
 	{
-		if ( p_GangID[ playerid ] == INVALID_GANG_ID ) 
+		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
 			return SendError( playerid, "You are not inside a gang." );
 
 		if ( ! IsPlayerGangLeader( playerid, p_GangID[ playerid ] ) )
 			return SendError( playerid, "You are not the gang leader." );
 
-		new 
+		new
 			rank[ 32 ];
 
 		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
@@ -329,7 +329,7 @@ CMD:gang( playerid, params[ ] )
 
 		if ( sscanf( params[ 8 ], "s[32]", rank ) )
 			return SendUsage( playerid, "/gang addrank [RANK_NAME]" );
-		
+
 		if ( ! Ranks_IsNameAlreadyUsed( rank ) )
 			return SendError( playerid, "This rank name is already been created." );
 
@@ -912,7 +912,6 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
 	if ( ! soft_delete )
 	{
 	 	// Do SQL operations
-		mysql_single_query( sprintf( "DELETE FROM `GANG_RANKS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "DELETE FROM `GANGS` WHERE `ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "DELETE FROM `GANG_COLEADERS` WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
 	 	mysql_single_query( sprintf( "UPDATE `USERS` SET `GANG_ID`=-1 WHERE `GANG_ID`=%d", g_gangData[ gangid ] [ E_SQL_ID ] ) );
@@ -920,7 +919,6 @@ stock DestroyGang( gangid, bool: soft_delete, bool: iter_remove = true )
 
  	// Disconnect current users
  	foreach(new i : Player) if ( p_GangID[ i ] == gangid ) {
-		mysql_single_query( sprintf( "DELETE FROM `USER_GANG_RANKS` WHERE `USER_ID`=%d" , p_AccountID[ i ] ) );
  		p_GangID[ i ] = INVALID_GANG_ID;
  	}
 
