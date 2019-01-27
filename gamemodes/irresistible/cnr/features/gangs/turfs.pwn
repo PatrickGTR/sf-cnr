@@ -91,8 +91,8 @@ new
 	g_gangHardpointAttacker			= INVALID_GANG_ID,
 	g_gangHardpointMapIcon 			= -1,
 
-	g_gangHardpointCaptureTime 		[ MAX_GANGS ]
-
+	g_gangHardpointCaptureTime 		[ MAX_GANGS ],
+	g_playerHardpointCaptureTime 	[ MAX_PLAYERS ]
 ;
 
 /* ** Forwards ** */
@@ -113,6 +113,12 @@ hook OnGameModeInit( )
 	for ( new i = 0; i < sizeof( g_gangzoneData ); i ++ ) {
 		Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE, .bordersize = GANGZONE_DEFAULT_BORDER_SIZE, .numbersize = GANGZONE_DEFAULT_NUMBER_SIZE );
 	}
+	return 1;
+}
+
+hook OnPlayerDisconnect( playerid, reason )
+{
+	g_playerHardpointCaptureTime[ playerid ] = 0;
 	return 1;
 }
 
@@ -184,6 +190,9 @@ hook OnServerTickSecond( )
 	    			} else {
 	    				ShowPlayerHelpDialog( playerid, 2500, "~g~%s~w~ is in control for %s!~n~~n~Earning potential is ~g~%s", ReturnGangName( current_attacker ), TimeConvert( g_gangHardpointCaptureTime[ current_attacker ] ), cash_format( potential_earnings ) );
 	    			}
+
+					// if the player is the attacker, add to their seconds
+					g_playerHardpointCaptureTime[ playerid ] ++;
 	        	}
 
 	        	// message the defender
@@ -245,6 +254,9 @@ stock Turf_CreateHardpoint( )
 		else if ( g_gangHardpointTurf != INVALID_GANG_TURF && IsPlayerInDynamicArea( playerid, g_gangTurfData[ g_gangHardpointTurf ] [ E_AREA ] ) ) {
 			CallLocalFunction( "OnPlayerUpdateGangZone", "dd", playerid, g_gangHardpointTurf );
 		}
+
+		// reset player capture time
+		g_playerHardpointCaptureTime[ playerid ] = 0;
 	}
 
 	// create map icon
@@ -300,9 +312,13 @@ hook OnServerGameDayEnd( )
 				GiveGangCash( g, earnings );
 				SaveGangData( g );
 
-				foreach ( new p : Player ) if ( GetPlayerGang( p ) == g ) {
+				foreach ( new p : Player ) if ( GetPlayerGang( p ) == g )
+				{
+					new
+						Float: player_capture_ratio = float( g_playerHardpointCaptureTime[ p ] ) / float( total_capture_seconds );
+
 					PlayerPlaySound( p, 36205, 0.0, 0.0, 0.0 );
-					GivePlayerRespect( p, floatround( capture_ratio * 100.0 ) );
+					GangRank_GivePlayerRespect( p, floatround( player_capture_ratio * 100.0 ) );
 				}
 
 				SendClientMessageToGang( g, g_gangData[ g ] [ E_COLOR ], "[GANG] "COL_GOLD"%s"COL_WHITE" has been earned from territories and deposited in the gang bank account.", cash_format( earnings ) );

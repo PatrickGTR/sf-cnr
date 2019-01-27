@@ -270,7 +270,7 @@ stock Ranks_ShowPlayerRanks( playerid, bool: setting = false )
 	return 1;
 }
 
-stock GivePlayerRespect( playerid, default_respect )
+stock GangRank_GivePlayerRespect( playerid, default_respect )
 {
 	if ( ! IsPlayerConnected( playerid ) )
 		return 0;
