@@ -12,7 +12,7 @@
 #define Ranks_GetGangRank(%0,%1)	( g_gangRankData[ %0 ] [ %1 ] [ E_NAME ] )
 
 /* ** Definitions ** */
-#define MAX_RANKS 					( 100 )
+#define MAX_RANKS 					( 25 )
 
 #define DIALOG_GANG_RANK            ( 1205 )
 #define DIALOG_SET_RANK             ( 1206 )
@@ -379,6 +379,13 @@ thread GangRank_OnDisplayGangRanks( playerid )
     }
 
     return ShowPlayerDialog( playerid, DIALOG_GANG_RANK, DIALOG_STYLE_LIST, "{FFFFFF}Gang Ranks", szLargeString, "Okay", "" ), 1;
+}
+
+stock GangRank_IsOverLimit( gangid ) {
+	for ( new i = 0; i < MAX_RANKS; i ++ ) if ( ! g_gangRankData[ gangid ] [ i ] [ E_SQL_ID ] ) {
+		return false;
+	}
+	return true;
 }
 
 /*
