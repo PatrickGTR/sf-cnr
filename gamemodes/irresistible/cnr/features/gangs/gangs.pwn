@@ -330,8 +330,8 @@ CMD:gang( playerid, params[ ] )
 		if ( sscanf( params[ 8 ], "s[32]", rank ) )
 			return SendUsage( playerid, "/gang addrank [RANK_NAME]" );
 
-		if ( ! Ranks_IsNameAlreadyUsed( rank ) )
-			return SendError( playerid, "This rank name is already been created." );
+		if ( ! Ranks_IsNameAlreadyUsed( p_GangID[ playerid ], rank ) )
+			return SendError( playerid, "This rank name already exists." );
 
 		format( szLargeString, sizeof( szLargeString ), "INSERT INTO `GANG_RANKS` (`GANG_ID`,`RANK_NAME`,`COLOR`) VALUE (%d,'%s',-1061109505)", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ], mysql_escape( rank ) );
 		mysql_query( dbHandle, szLargeString );
