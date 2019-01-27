@@ -307,7 +307,7 @@ CMD:gang( playerid, params[ ] )
 		if ( p_GangID[ playerid ] == INVALID_GANG_ID )
 			return SendError( playerid, "You are not inside a gang." );
 
-		Ranks_ShowPlayerRanks( playerid );
+		GangRank_ShowPlayerRanks( playerid );
 		return 1;
 	}
 	else if ( ! strcmp( params, "addrank", false, 7 ) )
@@ -330,7 +330,7 @@ CMD:gang( playerid, params[ ] )
 		if ( sscanf( params[ 8 ], "s[32]", rank ) )
 			return SendUsage( playerid, "/gang addrank [RANK_NAME]" );
 
-		if ( ! Ranks_IsNameAlreadyUsed( p_GangID[ playerid ], rank ) )
+		if ( ! GangRank_IsNameAlreadyUsed( p_GangID[ playerid ], rank ) )
 			return SendError( playerid, "This rank name already exists." );
 
 		format( szLargeString, sizeof( szLargeString ), "INSERT INTO `GANG_RANKS` (`GANG_ID`,`RANK_NAME`,`COLOR`) VALUE (%d,'%s',-1061109505)", g_gangData[ p_GangID[ playerid ] ][ E_SQL_ID ], mysql_escape( rank ) );
@@ -362,7 +362,7 @@ CMD:gang( playerid, params[ ] )
 
 		SetPVarInt( playerid, "otherid_rank", pID );
 
-		Ranks_ShowPlayerRanks( playerid, true );
+		GangRank_ShowPlayerRanks( playerid, true );
 		return 1;
 	}
 	else if ( ! strcmp( params, "offlinekick", false, 11 ) )
