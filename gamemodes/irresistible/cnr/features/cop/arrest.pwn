@@ -493,7 +493,7 @@ function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid )
 
 stock AwardNearestLEO( playerid, reason )
 {
-	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID )
+	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID || GetPlayerWantedLevel( playerid ) < 2 )
 		return false;
 
 	new
