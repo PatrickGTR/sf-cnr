@@ -265,8 +265,12 @@ public OnServerUpdateTimer( )
 			{
 				// AFK Jail
 				if ( p_WantedLevel[ playerid ] >= 6 && p_InHouse[ playerid ] == -1 && !IsPlayerAdminOnDuty( playerid ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_SF ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LV ] ) && !IsPlayerInEntrance( playerid, g_VIPLounge[ CITY_LS ] ) && !IsPlayerTied( playerid ) && !IsPlayerKidnapped( playerid ) && !IsPlayerCuffed( playerid ) && !IsPlayerTazed( playerid ) && IsPlayerSpawned( playerid ) ) { // && !IsPlayerDetained( playerid )
-			    	JailPlayer( playerid, 60, 1 );
-		        	SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
+			    	
+					if ( !AwardNearestLEO( playerid, 1 ) )
+					{
+						JailPlayer( playerid, 60, 1 );
+		        		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been sent to jail for 60 seconds by the server "COL_LRED"[AFK Wanted]", ReturnPlayerName( playerid ), playerid );
+					}
 				}
 
 				// AFK Admins
@@ -2332,7 +2336,7 @@ CMD:vipjob( playerid, params[ ] )
 	if ( isnull( params ) )
 		return SendUsage( playerid, "/vipjob [PART OF JOB NAME]" );
 
-	if ( ( iJob = GetJobIDFromName( params ) ) == 0xFE )
+	if ( ( iJob = GetJobIDFromName( params ) ) == 0xFE || iJob < 0 || iJob > 7 )
 		return SendError( playerid, "You have entered an invalid job." );
 
 	if ( iJob != p_Job{ playerid } ) {
@@ -2357,8 +2361,9 @@ CMD:mech( playerid, params[ ] )
 	;
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be a civilian to use this command." );
-	if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
-	if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
+	else if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
+	else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
+	else if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
 	else if ( strmatch( params, "fix" ) )
 	{
 	    if ( p_AntiMechFixSpam[ playerid ] > g_iTime )
@@ -2705,12 +2710,14 @@ CMD:emp( playerid, params[ ] )
 	    	{
 		        SendClientMessage( playerid, -1, ""COL_RED"[EMP]{FFFFFF} An Electromagnetic Pulse attempt has been repelled by an aluminum foil!" );
 				SendClientMessage( pID, -1, ""COL_GREEN"[EMP]{FFFFFF} Electromagnetic Pulse had been repelled by aluminum foil set on vehicle." );
+				p_QuitToAvoidTimestamp[ pID ] = g_iTime + 15;
 	    		return 1;
 	    	}
 	    }
 
  		SendClientMessageFormatted( pID, -1, ""COL_RED"[EMP]{FFFFFF} %s(%d) has sent an electromagnetic pulse on your vehicle causing it to crash for 30 seconds.", ReturnPlayerName( playerid ), playerid );
 		SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[EMP]{FFFFFF} You have activated a electromagnetic pulse on %s(%d)'s vehicle!", ReturnPlayerName( pID ), pID );
+		p_QuitToAvoidTimestamp[ pID ] = g_iTime + 15;
 		SetTimerEx( "emp_deactivate", 30000, false, "d", GetPlayerVehicleID( pID ) );
 		GetVehicleParamsEx( iVehicle, engine, lights, alarm, doors, bonnet, boot, objective );
 		SetVehicleParamsEx( iVehicle, VEHICLE_PARAMS_OFF, lights, alarm, doors, bonnet, boot, objective );
@@ -5038,6 +5045,7 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				case 17 .. 22: weaponid = listitem - 12;
 		    	case 23 .. 24: weaponid = listitem - 9;
 		    }
+			if ( GetPlayerClass( playerid ) == CLASS_POLICE && weaponid == 9 ) return SendError( playerid, "You cannot purchase a chainsaw as a Law Enforcement Officer." );
 		    GivePlayerWeapon( playerid, weaponid, 0xFFFF );
 		    SendServerMessage( playerid, "You have redeemed a %s.", ReturnWeaponName( weaponid ) );
 			p_VIPWeaponRedeem[ playerid ] = g_iTime + ( p_VIPLevel[ playerid ] == VIP_PLATINUM ? 60 : 300 );
@@ -5565,6 +5573,8 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		        {
 		            if ( x == listitem )
 		            {
+						// Chainsaw Removal for LEO through Ammunation
+						if ( GetPlayerClass( playerid ) == CLASS_POLICE && g_AmmunationWeapons[ i ] [ E_WEPID ] == 9 ) return SendError( playerid, "You cannot purchase a chainsaw as a Law Enforcement Officer." );
 					 	if ( g_AmmunationWeapons[ i ] [ E_PRICE ] > GetPlayerCash( playerid ) )
 						{
 						    SendError( playerid, "You don't have enough money for this." );
@@ -7146,4 +7156,13 @@ stock GetPlayerOutsidePos( playerid, &Float: X, &Float: Y, &Float: Z ) // gets t
   		GetPlayerPos( playerid, X, Y, Z );
   	}
   	return 1;
+}
+
+stock IsPlayerBelowSeaLevel( playerid )
+{
+	new Float: z;
+
+	GetPlayerPos( playerid, z, z, z );
+
+	return z < 0.0;
 }

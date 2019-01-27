@@ -50,6 +50,11 @@ stock CNR_SetPlayerWantedLevel( playerid, level )
 			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
 		}
 	}
+	else if ( IsPlayerInAnyVehicle( playerid ) )
+	{
+		new vehicleID = GetPlayerVehicleID( playerid );
+		GivePassivePassengersWanted( playerid, vehicleID );
+	}
 	else
 	{
 		PlayerTextDrawHide( playerid, p_WantedLevelTD[ playerid ] );
@@ -76,7 +81,12 @@ stock GivePlayerWantedLevel( playerid, level )
 {
 	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerJailed( playerid ) || IsPlayerDueling( playerid ) || level == 0 )
 	    return 0;
-
+	else if ( IsPlayerInAnyVehicle( playerid ) )
+	{
+		new vehicleID = GetPlayerVehicleID( playerid );
+		GivePassivePassengersWanted( playerid, vehicleID );
+	}
+	
 	new
 		current_wanted = GetPlayerWantedLevel( playerid );
 
@@ -91,4 +101,14 @@ stock ClearPlayerWantedLevel( playerid )
     p_WantedLevel[ playerid ] = 0;
 	SetPlayerWantedLevel( playerid, 0 );
 	SetPlayerColorToTeam( playerid );
+}
+
+stock IsWantedPlayerInVehicle( vehicleid )
+{
+	foreach ( new pID : Player )
+	{
+		if ( GetPlayerVehicleID( pID ) == vehicleid && GetPlayerWantedLevel( pID ) > 1 )
+			return true;
+	}
+	return false;
 }

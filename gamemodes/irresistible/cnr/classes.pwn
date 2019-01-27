@@ -362,6 +362,16 @@ hook OnPlayerRequestSpawn( playerid )
 	return IsPlayerClassApproved( playerid );
 }
 
+hook OnPlayerKeyStateChange( playerid, newkeys, oldkeys )
+{
+	if( !IsPlayerNPC( playerid ) )
+	{
+		if ( ( newkeys && KEY_FIRE ) && GetPlayerClass( playerid ) == CLASS_POLICE && GetPlayerWeapon( playerid ) == 9 )
+			RemoveSpecificPlayerWeapon( playerid, 9, false );
+	}
+	return 1;
+}
+
 stock IsPlayerClassApproved( playerid ) {
 
 	// is logged in

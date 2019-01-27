@@ -42,6 +42,12 @@ hook OnScriptInit( )
 	return 1;
 }
 
+hook OnPlayerConnect( playerid )
+{
+	p_AntiExportCarSpam [ playerid ] = g_iTime + 60;
+	return 1;
+}
+
 hook OnPlayerDisconnect( playerid, reason )
 {
 	g_LastExportModel[ playerid ] = 0;

@@ -20,9 +20,13 @@ forward OnPlayerArrested( playerid, victimid, totalarrests, totalpeople );
 /* ** Hooks ** */
 hook OnPlayerDisconnect( playerid, reason )
 {
+
 	p_AwaitingBCAttempt{ playerid } = false;
 	KillTimer( p_AwaitingBCAttemptTimer[ playerid ] );
 	p_AwaitingBCAttemptTimer[ playerid ] = -1;
+
+	// Quit to Avoid - Award Handling
+	if ( playerid != INVALID_PLAYER_ID ) AwardNearestLEO( playerid, 0 );
 	return 1;
 }
 
@@ -317,6 +321,24 @@ stock ArrestPlayer( victimid, playerid )
  	else return SendError( playerid, "There are no players around to arrest." );
 }
 
+stock AwardArrest( victimid, playerid )
+{
+	p_QuitToAvoidTimestamp[ playerid ] = 0;
+	new totalCash = ( p_WantedLevel[ victimid ] < MAX_WANTED_LVL ? p_WantedLevel[ victimid ] : MAX_WANTED_LVL ) * ( 300 );
+	new totalSeconds = p_WantedLevel[ victimid ] * ( JAIL_SECONDS_MULTIPLIER );
+	GivePlayerScore( playerid, 2 );
+	GivePlayerExperience( playerid, E_POLICE );
+	GivePlayerCash( playerid, totalCash );
+	StockMarket_UpdateEarnings( E_STOCK_GOVERNMENT, totalCash, 0.1 );
+	if ( totalCash > 20000 ) printf("[police arrest] %s -> %s - %s", ReturnPlayerName( playerid ), ReturnPlayerName( victimid ), cash_format( totalCash ) ); // 8hska7082bmahu
+	SendClientMessageFormatted( playerid, -1, ""COL_GREEN"[ACHIEVE]{FFFFFF} You have earned "COL_GOLD"%s{FFFFFF} dollars and 2 score for arresting %s(%d)!", cash_format( totalCash ), ReturnPlayerName( victimid ), victimid );
+	GameTextForPlayer( victimid, "~r~Busted!", 4000, 0 );
+	CallLocalFunction( "OnPlayerArrested", "dddd", playerid, victimid, p_Arrests[ playerid ], 1 );
+	GivePlayerSeasonalXP( victimid, -20.0 );
+	JailPlayer( victimid, totalSeconds );
+	return 1;
+}
+
 stock CuffPlayer( victimid, playerid )
 {
    	if ( p_Class[ playerid ] != CLASS_POLICE ) return SendError( playerid, "This is restricted to police only." );
@@ -468,3 +490,58 @@ stock BreakPlayerCuffs( playerid )
 }
 
 function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid ), 1;
+
+stock AwardNearestLEO( playerid, reason )
+{
+	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID )
+		return false;
+
+	new
+		closestLEO = INVALID_PLAYER_ID,
+		Float: radius = ( IsPlayerInAnyVehicle( playerid ) ? 150.0 : 75.0 ) // If player is in a vehicle, increase radius due to ability to get farther quicker.
+	;
+
+	closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
+
+	if ( IsPlayerConnected( closestLEO ) )
+	{
+		new reasonText[ 24 ];
+
+		switch ( reason )
+		{
+			case 0: reasonText = "Q'ing to Avoid";
+			case 1: reasonText = "being AFK while wanted";
+		}
+
+		AwardArrest( playerid, closestLEO );
+		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been awarded for the arrest on %s(%d) due to them "COL_LRED"%s.", ReturnPlayerName( closestLEO ), closestLEO, ReturnPlayerName( playerid ), playerid, reasonText );
+		return true;
+	}
+
+	return false;
+}
+
+hook OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid )
+{
+	if ( GetPlayerWantedLevel( playerid ) > 2 )
+	{
+
+		new Float: x, Float: y, Float: z;
+
+		GetEntrancePos( entranceid, x, y, z );
+
+		foreach ( new pID : Player )
+		{
+			if ( p_Class[ pID ] != CLASS_POLICE ) continue;
+
+			new Float: distance = GetPlayerDistanceFromPoint( pID, x, y, z );
+
+			if ( distance < 50 )
+			{
+				p_QuitToAvoidTimestamp[ playerid ] = g_iTime + 30;
+				break;
+			}
+		}
+	}
+	return 1;
+}

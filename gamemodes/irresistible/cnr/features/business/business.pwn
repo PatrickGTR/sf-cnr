@@ -506,6 +506,13 @@ hook OnPlayerDriveVehicle( playerid, vehicleid )
 {
 	if ( g_isBusinessVehicle[ vehicleid ] != -1 && Iter_Contains( business, g_isBusinessVehicle[ vehicleid ] ) )
 	{
+		if ( IsPlayerPassive( playerid ) )
+		{
+			ShowPlayerHelpDialog( playerid, 2000, "Passive players cannot enter business vehicles." );
+			SyncObject( playerid );
+			return 1;
+		}
+
 		new
 			businessid = g_isBusinessVehicle[ vehicleid ];
 

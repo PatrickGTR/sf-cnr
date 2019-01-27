@@ -329,7 +329,6 @@ stock Weed_GetPlantLimit( playerid )
 
 stock Weed_ResetSellingProperties( playerid )
 {
-	Weed_ResetSellingProperties( playerid );
 	p_WeedSellingGrams[ playerid ] = 0;
 	p_WeedSellingPrice[ playerid ] = 0;
 	return 1;
