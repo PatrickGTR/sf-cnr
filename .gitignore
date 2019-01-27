@@ -16,6 +16,7 @@ pawno/*
 # filterscripts
 filterscripts/*
 !filterscripts/objects.pwn
+!filterscri
 
 # plugins
 plugins/*
@@ -35,7 +36,8 @@ gamemodes/irresistible/config/database.pwn
 scriptfiles/**/*
 !scriptfiles/COD/
 !scriptfiles/COD/**
-!scriptfiles/updates.txt
+!scriptfiles/changelogs/
+!scriptfiles/changelogs/**
 
 # npc
 npcmodes/**/*
