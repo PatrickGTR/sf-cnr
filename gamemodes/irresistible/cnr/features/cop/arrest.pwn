@@ -503,7 +503,7 @@ stock AwardNearestLEO( playerid, reason )
 
 	closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
 
-	if ( closestLEO != INVALID_PLAYER_ID )
+	if ( IsPlayerConnected( closestLEO ) )
 	{
 		new reasonText[ 24 ];
 
@@ -525,6 +525,7 @@ hook OnPlayerAccessEntrance( playerid, entranceid, worldid, interiorid )
 {
 	if ( GetPlayerWantedLevel( playerid ) > 2 )
 	{
+
 		new Float: x, Float: y, Float: z;
 
 		GetEntrancePos( entranceid, x, y, z );

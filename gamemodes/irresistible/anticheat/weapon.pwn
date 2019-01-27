@@ -300,26 +300,3 @@ stock AC_CreateDynamicPickup( modelid, type, Float: x, Float: y, Float: z, world
     #define _ALS_CreateDynamicPickup
 #endif
 #define CreateDynamicPickup AC_CreateDynamicPickup
-
-stock CheckIfPlayerHasWeapon( playerid, weaponid )
-{
-	new
-		iCurrentWeapon = GetPlayerWeapon( playerid ),
-		iWeapon,
-		iAmmo
-	;
-
-	if ( iCurrentWeapon == weaponid )
-		return true;
-	else
-	{
-		for ( new iSlot = 0; iSlot < 13; iSlot++ )
-		{
-			GetPlayerWeaponData( playerid, iSlot, iWeapon, iAmmo );
-
-			if ( iWeapon == weaponid )
-				return true;
-		}
-		return false;
-	}
-}
