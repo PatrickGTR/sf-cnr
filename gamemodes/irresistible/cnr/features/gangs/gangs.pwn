@@ -642,7 +642,7 @@ CMD:gang( playerid, params[ ] )
 		}
 		return 1;
 	}
-	return SendUsage( playerid, "/gang [CREATE/LEAVE/INVITE/JOIN/KICK/NAME/LEADER/COLEADER/COLOR/SPLITPROFIT/PRIVATE/JOINMSG]" );
+	return SendUsage( playerid, "/gang [CREATE/LEAVE/INVITE/JOIN/KICK/NAME/LEADER/COLEADER/COLOR/SPLITPROFIT/PRIVATE/JOINMSG/RANKS/ADDRANK/SETRANK]" );
 }
 
 CMD:g( playerid, params[ ] )
