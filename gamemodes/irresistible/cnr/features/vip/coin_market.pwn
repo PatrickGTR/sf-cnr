@@ -501,7 +501,7 @@ CMD:irresistiblecoins( playerid, params[ ] )
 		else if ( senttoid == playerid ) return SendError( playerid, "You cannot send yourself coins." );
 	    else
 	    {
-	    	if ( GetDistanceBetweenPlayers( playerid, senttoid ) > 8.0 )
+	    	if ( GetDistanceBetweenPlayers( playerid, senttoid ) > 8.0 || p_Spectating{ senttoid } )
 				return SendError( playerid, "Please make sure you are close to the player before sending coins to them." );
 
 	    	format( szNormalString, sizeof( szNormalString ), "INSERT INTO `TRANSACTIONS_IC` (`TO_ID`, `FROM_ID`, `IC`) VALUES (%d, %d, %f)", p_AccountID[ senttoid ], p_AccountID[ playerid ], coins );
