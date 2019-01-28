@@ -432,7 +432,7 @@ stock RemoveSpecificPlayerWeapon( playerid, weaponid, bool:createpickup )
 			    GetPlayerWeaponData( playerid, iSlot, iWeaponID[ iSlot ], iWeaponAmmo[ iSlot ] );
 			}
 			
-			if ( createpickup )
+			if ( createpickup && iCurrentWeapon == iWeapon )
 			{
 				new
 					Float: X, Float: Y, Float: Z;

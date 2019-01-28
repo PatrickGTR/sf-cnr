@@ -11,4 +11,4 @@
 #include "irresistible\config\colors.pwn"
 
 /* ** Migrations Manager ** */
-#include "irresistible\config\migrations\_migrations.pwn"
+//#include "irresistible\config\migrations\_migrations.pwn"
