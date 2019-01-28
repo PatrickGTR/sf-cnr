@@ -5124,6 +5124,11 @@ hook OnScriptInit( )
 	CreateDynamicObject( 2607, -2376.293945, 1553.312988, 1.487188, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
 	CreateDynamicObject( 1514, -2375.768554, 1553.325317, 2.117187, 0.000000, 0.000000, 22.000122, -1, -1, -1 );
 
+	// Militia Ship Fix
+	SetDynamicObjectMaterial( CreateDynamicObject( 19368, -2366.884033, 1551.858032, 2.117000, 0.000000, 0.000000, 86.300003, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19368, -2369.967041, 1556.052978, 2.117000, 0.000000, 0.000000, -3.900000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+	SetDynamicObjectMaterial( CreateDynamicObject( 19464, -2367.564941, 1554.942993, 3.707000, 0.000000, 90.000000, -3.700000, -1, -1, -1 ), 0, 18202, "w_towncs_t", "concretebig4256128", 1 );
+
 	// SF Penis Tower
 	// tmpVariable = CreateDynamicObject( 8131, -1980.097290, 884.313598, 54.389820, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
 	// SetDynamicObjectMaterial( tmpVariable, 0, 8460, "vgseland03_lvs", "ceaserwall06_128", 0 );

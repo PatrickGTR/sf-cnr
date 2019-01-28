@@ -22,6 +22,14 @@ hook OnPlayerUpdateEx( playerid )
     if ( p_AntiSpawnKillEnabled{ playerid } && g_iTime > p_AntiSpawnKill[ playerid ] ) {
         DisablePlayerSpawnProtection( playerid );
     }
+	if ( GetPlayerWantedLevel( playerid ) > 0 )
+	{
+		if ( IsPassivePlayerInVehicle( GetPlayerVehicleID( playerid ) ) )
+		{
+			SyncObject( playerid );
+			SendError( playerid, "You cannot enter vehicles with passive players in it as a wanted criminal." );
+		}
+	}
     return 1;
 }
 
@@ -69,7 +77,52 @@ hook OnPlayerUnjailed( playerid, reasonid )
     return 1;
 }
 
+hook OnPlayerEnterVehicle( playerid, vehicleid, ispassenger )
+{
+
+	if ( IsPlayerPassive( playerid ) )
+	{
+		if ( IsWantedPlayerInVehicle( vehicleid ) )
+		{
+			SetPlayerWantedLevel( playerid, 6 );
+			ShowPlayerHelpDialog( playerid, 3000, "You are now considered wanted for associating yourself with a wanted player." );
+			return 1;
+		}
+	}
+	return 1;
+
+}
+
 /* ** Functions ** */
+stock GivePassivePassengersWanted( playerid, vehicleid )
+{
+	foreach( new pID : Player )
+	{
+		if ( !IsPlayerPassive( pID ) || IsPlayerNPC( pID ) || pID == playerid )
+			continue;
+
+		if ( GetPlayerVehicleID( pID ) == vehicleid )
+		{
+			SetPlayerWantedLevel( pID, 6 );
+			ShowPlayerHelpDialog( pID, 3000, "You are now considered wanted for associating yourself with a wanted player." );
+		}			
+	}
+	return true;
+}
+
+stock IsPassivePlayerInVehicle( vehicleid )
+{
+	foreach ( new pID : Player )
+	{
+		if ( !IsPlayerPassive( pID ) || !IsPlayerInAnyVehicle( pID ) )
+			continue;
+
+		if ( GetPlayerVehicleID( pID ) == vehicleid )
+			return true;
+	}
+	return false;
+}
+
 stock DisablePlayerSpawnProtection( playerid )
 {
 	if ( p_AntiSpawnKillEnabled{ playerid } )

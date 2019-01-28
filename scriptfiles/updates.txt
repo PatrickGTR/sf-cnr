@@ -1,13 +1,17 @@
-(+) A percentage is showed in the top donor bar, which is the required total funding of the server for the month.
-(+) Server features are shown to newly registered players.
-(/) Breaking Cuffs is now at a 75% chance success rate.
-(/) Jail Multiplier is now lowered from 3 to 2.
-(/) /sm is no longer capped at a 90M transaction.
-(/) /ic send limit has been increased from 5,000 to 10,000.
-(/) Player money is saved on an inflow/outflow basis. Before, it saved only when you disconnected.
-(/) You need 50 score to send private messages in the server.
-(*) Bank Money changes now trigger it to be saved. Fixing IC & Stock selling issue.
-(*) Fireworks purchasing is now functional and grants you the item upon purchase.
-(*) Fixed issue with cop chat behaving abnormally.
-(*) You cannot use /sync in jail.
-(-) Knives have been removed due to abuse.
+(/) Weed is no longer taxed when bought or sold. (Kova)
+(*) Quit to Avoid and AFK Wanted will now award the nearest LEO (75m On Foot, 150m In Vehicle). (Damen)
+(*) Passive Mode Players are no longer able to enter Business Vehicles. (Damen)
+(*) Passive Mode Players will now become wanted through association when interacting with wanted players. (Damen)
+(*) Law Enforcement Officers are no longer able to purchase or obtain chainsaws. (Damen)
+(*) When inside a player-owned Journey vehicle interior and the owner disconnects, you will be removed from the interior. (Damen)
+(*) Info pickup text typo fixed. (Damen)
+(*) /vipjob should no longer allow you to put in an incorrect job name and still take your money. (Damen)
+(*) You can no longer use player-owned vehicle or dirty mechanic commands to allow your vehicle to drive underwater. (Damen)
+(*) You can no longer relog to reset the Dirty Mechanic export timer restriction. (Damen)
+(*) Removes the ability to send IC to administrators who are spectating you. (Damen)
+(*) Removes the ability to farm IC by using animations. (Damen)
+(*) You can no longer use animations while wearing a parachute to avoid fake deaths. (Damen)
+(*) EMPs now trigger the anti-Q to avoid system to punish those who attempt to evade LEOs. (Damen)
+(*) /spawn should now display beyond 60 homes. (Stev)
+(*) Business production label should now display the correct amount of money. (Stev)
+(*) Militia Ship should no longer be robbable through the wall. (Kova)
