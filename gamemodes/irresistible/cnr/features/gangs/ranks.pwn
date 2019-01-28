@@ -132,7 +132,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_REQUIRE, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "Type the rank requirement value below (gang respect level to achieve rank)\n0 = No requirement\n\n"COL_RED"Invalid Amount!", "Submit", "Cancel" );
 
 		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_WHITE" You have changed the requirement on %s to %d.", Ranks_GetGangRank( gangid, rankid ), value );
-		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `REQUIRE`='%s' WHERE `ID`=%d", value, rankid ) );
+		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `REQUIRE`='%d' WHERE `ID`=%d", value, rankid ) );
 		return 1;
 	}
 	else if ( dialogid == DIALOG_EDIT_RANK_NAME )
