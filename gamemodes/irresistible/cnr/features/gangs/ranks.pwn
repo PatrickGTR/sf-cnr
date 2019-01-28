@@ -9,7 +9,6 @@
 #include 							< YSI\y_hooks >
 
 /* ** Macros ** */
-#define Ranks_GetGangRank(%0,%1)	( g_gangRankData[ %0 ] [ %1 ] [ E_NAME ] )
 
 /* ** Definitions ** */
 #define MAX_RANKS 					( 25 )
@@ -132,7 +131,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_REQUIRE, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "Type the rank requirement value below (gang respect level to achieve rank)\n0 = No requirement\n\n"COL_RED"Invalid Amount!", "Submit", "Cancel" );
 
 		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_WHITE" You have changed the requirement on %s to %d.", Ranks_GetGangRank( gangid, rankid ), value );
-		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `REQUIRE`='%d' WHERE `ID`=%d", value, rankid ) );
+		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` SET `REQUIRE`=%d WHERE `ID`=%d", value, rankid ) );
 		return 1;
 	}
 	else if ( dialogid == DIALOG_EDIT_RANK_NAME )
@@ -155,13 +154,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			return ShowPlayerDialog( playerid, DIALOG_EDIT_RANK_NAME, DIALOG_STYLE_INPUT, ""COL_WHITE"Gang Ranks", "Enter the rank name you want to change it to\n\n", "Submit", "Cancel" );
 
 		SendClientMessageFormatted( playerid, g_gangData[ p_GangID[ playerid ] ] [ E_COLOR ], "[GANG]"COL_WHITE" You have changed %s to %s.", Ranks_GetGangRank( gangid, rankid ), rank_name );
-		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` WHERE `RANK_NAME`='%s' WHERE `ID`=%d" , mysql_escape( rank_name ), rankid ) );
+		mysql_query( dbHandle, sprintf( "UPDATE `GANG_RANKS` SET `RANK_NAME`='%s' WHERE `ID`=%d" , mysql_escape( rank_name ), rankid ) );
 		return 1;
 	}
 	else if ( dialogid == DIALOG_GANG_RANK && response )
 	{
-		new
-            rankid = p_PlayerSelectedRank[ playerid ] [ listitem ];
+		new 
+			rankid = p_PlayerSelectedRank[ playerid ] [ listitem ];
 
         SendServerMessage( playerid, "You have selected rank %s(%d)", Ranks_GetGangRank( gangid, rankid ), rankid );
 
@@ -230,16 +229,19 @@ thread GangRank_Load( gangid )
 	{
 		for ( new i = 0; i < rows; i ++ )
 		{
-			g_gangRankData[ gangid ] [ i ] [ E_SQL_ID ]  = cache_get_field_content_int( i, "ID" );
-			g_gangRankData[ gangid ] [ i ] [ E_COLOR ] = cache_get_field_content_int( i, "COLOR" );
-			g_gangRankData[ gangid ] [ i ] [ E_REQUIRE ] = cache_get_field_content_int( i, "REQUIRE" );
-
-			cache_get_field_content( i, "RANK_NAME", g_gangRankData[ gangid ] [ i ] [ E_NAME ] );
-
-			if ( g_Debugging )
+			if ( i < MAX_RANKS )
 			{
-				printf( "[GANG RANKS] {id: %d, color: %d, requirement: %d, name: %s}", \
-					g_gangRankData[ gangid ] [ i ] [ E_SQL_ID ], g_gangRankData[ gangid ] [ i ] [ E_COLOR ], g_gangRankData[ gangid ] [ i ] [ E_REQUIRE ] , g_gangRankData[ gangid ] [ i ] [ E_NAME ] );
+				g_gangRankData[ gangid ] [ i ] [ E_SQL_ID ]  = cache_get_field_content_int( i, "ID" );
+				g_gangRankData[ gangid ] [ i ] [ E_COLOR ] = cache_get_field_content_int( i, "COLOR" );
+				g_gangRankData[ gangid ] [ i ] [ E_REQUIRE ] = cache_get_field_content_int( i, "REQUIRE" );
+
+				cache_get_field_content( i, "RANK_NAME", g_gangRankData[ gangid ] [ i ] [ E_NAME ] );
+
+				if ( g_Debugging )
+				{
+					printf( "[GANG RANKS] {id: %d, color: %d, requirement: %d, name: %s}", \
+						g_gangRankData[ gangid ] [ i ] [ E_SQL_ID ], g_gangRankData[ gangid ] [ i ] [ E_COLOR ], g_gangRankData[ gangid ] [ i ] [ E_REQUIRE ] , g_gangRankData[ gangid ] [ i ] [ E_NAME ] );
+				}
 			}
 		}
 	}
@@ -330,7 +332,7 @@ thread GangRank_OnDisplaySetRanks( playerid )
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
-	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\n";
+	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\t"COL_WHITE"Requirement\n";
 
     for ( new i = 0; i < rows; i ++ )
     {
@@ -341,9 +343,10 @@ thread GangRank_OnDisplaySetRanks( playerid )
 
 			new id = cache_get_field_content_int( i, "ID" );
 			new color = cache_get_field_content_int( i, "COLOR" );
+			new requirement = cache_get_field_content_int( i, "REQUIRE" );
 			cache_get_field_content( i, "RANK_NAME", rankName );
 
-			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id, requirement );
 			p_PlayerSelectedRank[ playerid ] [ i ] = id;
 		}
 		else
@@ -357,7 +360,6 @@ thread GangRank_OnDisplaySetRanks( playerid )
 
 thread GangRank_OnDisplayGangRanks( playerid )
 {
-
 	new
 		rows = cache_get_row_count( );
 
@@ -365,7 +367,7 @@ thread GangRank_OnDisplayGangRanks( playerid )
         return SendError( playerid, "This gang doesn't have any ranks." );
     }
 
-	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\n";
+	szLargeString = ""COL_WHITE"Rank\t"COL_WHITE"Internal ID\t"COL_WHITE"Requirement\n";
 
     for ( new i = 0; i < MAX_RANKS; i ++ )
     {
@@ -376,10 +378,11 @@ thread GangRank_OnDisplayGangRanks( playerid )
 
 			new id = cache_get_field_content_int( i, "ID" );
 			new color = cache_get_field_content_int( i, "COLOR" );
+			new requirement = cache_get_field_content_int( i, "REQUIRE" );
 
 			cache_get_field_content( i, "RANK_NAME", rankName );
 
-			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id );
+			format( szLargeString, sizeof( szLargeString ), "%s{%06x}%s\t%d\t%d\n", szLargeString, setAlpha( color, 0xFF ) >>> 8, rankName, id, requirement );
 			p_PlayerSelectedRank[ playerid ] [ i ] = id;
 		}
 		else
@@ -396,4 +399,30 @@ stock GangRank_IsOverLimit( gangid ) {
 		return false;
 	}
 	return true;
+}
+
+stock Ranks_GetGangRank( gangid, rankid )
+{
+	new 
+		rankName[ 32 ],
+		output_rank = GangRank_GetArrayID( gangid, rankid );
+
+	format( rankName, sizeof( rankName ), g_gangRankData[ gangid ][ output_rank ][ E_NAME ] );
+	return rankName;
+}
+
+stock GangRank_GetArrayID( gangid, rank_sql_id )
+{
+	new iRank = -1;
+
+	for ( new r = 0; r < MAX_RANKS; r ++ )
+	{
+		if ( g_gangRankData[ gangid ] [ r ] [ E_SQL_ID ] == rank_sql_id )
+		{
+			iRank = r;
+			break;
+		}
+	}
+
+	return iRank;
 }
