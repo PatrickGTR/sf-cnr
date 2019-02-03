@@ -197,30 +197,34 @@ CMD:gps( playerid, params[ ] )
 	}
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You have to be a driver of a vehicle to use this a command." );
 	else if ( GetPlayerInterior( playerid ) != 0 ) return SendError( playerid, "You must be outside of the interior." );
-    else if( !strcmp( params, "atm", false, 3 ) ) {
+    else if ( ! strcmp( params, "atm", false, 3 ) )
+	{
         new Float: oX, Float: oY, Float: oZ;
         new atmID = GetClosestATM( playerid );
         GetATMPos( atmID, oX, oY, oZ );
         GPS_SetPlayerWaypoint( playerid, "Closest ATM", oX, oY, oZ );
-		SendServerMessage( playerid, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest atm." );
+		SendClientMessage( playerid, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest atm." );
     }
-    else if( !strcmp( params, "vehicle", false, 7 ) ){
+    else if ( ! strcmp( params, "vehicle", false, 7 ) )
+	{
         new vehName[ 24 ];
-        if ( sscanf( params[ 8 ], "s[ 24 ]", vehName ) ) return SendUsage( playerid, "/gps vehicle [NAME]" );
+
+        if ( sscanf( params[ 8 ], "s[24]", vehName ) ) return SendUsage( playerid, "/gps vehicle [NAME]" );
 
         new Float: vXp, Float: vYp, Float: vZp, vehID = GetVehicleModelFromName( vehName );
 
-		if( vehID == -1 ) return SendError( playerid, "Invalid vehicle name." );
+		if ( vehID == -1 ) return SendError( playerid, "Invalid vehicle name." );
 
         GetVehiclePos( GetClosestVehicleModel( playerid, vehID ), vXp, vYp, vZp );
 
-		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest %s", GetVehicleName( vehID ) );
+		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest %s.", GetVehicleName( vehID ) );
 
-        GPS_SetPlayerWaypoint( playerid, sprintf( "Closest vehicle: %s", GetVehicleName( vehID ) ), vXp, vYp, vZp );
+        GPS_SetPlayerWaypoint( playerid, sprintf( "Closest %s", GetVehicleName( vehID ) ), vXp, vYp, vZp );
     }
 	else
 	{
         ShowPlayerDialog( playerid, DIALOG_GPS_CITY, DIALOG_STYLE_LIST, "{FFFFFF}GPS - Choose City", "San Fierro\nLas Venturas\nLos Santos", "Select", "Cancel" );
+		SendClientMessage( playerid, -1, ""COL_GREY"[TIP]"COL_WHITE" You can locate a vehicle model or ATM using "COL_GREY"/gps [VEHICLE/ATM]"COL_WHITE"." );
 	}
 	return 1;
 }
@@ -309,9 +313,9 @@ stock GetClosestVehicleModel( playerid, id ){
     new closest = -1, Float: closestDist = 8000.00, Float: distance, Float: pX, Float: pY, Float: pZ;
 	GetPlayerPos( playerid, pX, pY, pZ );
     for ( new i = 0; i < MAX_VEHICLES; i++ ) {
-		if( GetVehicleModel( i ) == id ) {
+		if ( GetVehicleModel( i ) == id ) {
             distance = GetVehicleDistanceFromPoint( i, pX, pY, pZ );
-            if( closestDist > distance ){
+            if ( closestDist > distance ){
                 closestDist = distance;
                 closest = i;
             }
