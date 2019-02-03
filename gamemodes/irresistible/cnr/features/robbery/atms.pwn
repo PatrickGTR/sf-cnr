@@ -239,3 +239,7 @@ stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0,
 	}
 	return ID;
 }
+
+stock GetATMPos( atmID, &Float: X, &Float: Y, &Float: Z ) {
+	return GetDynamicObjectPos( g_atmData[ atmID ] [ E_OBJECT ], X, Y, Z );
+}
