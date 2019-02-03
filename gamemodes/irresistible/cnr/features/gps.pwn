@@ -203,7 +203,7 @@ CMD:gps( playerid, params[ ] )
         new atmID = GetClosestATM( playerid );
         GetATMPos( atmID, oX, oY, oZ );
         GPS_SetPlayerWaypoint( playerid, "Closest ATM", oX, oY, oZ );
-		SendClientMessage( playerid, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest atm." );
+		SendClientMessage( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest atm." );
     }
     else if ( ! strcmp( params, "vehicle", false, 7 ) )
 	{
