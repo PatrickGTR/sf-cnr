@@ -40,7 +40,11 @@ CMD:updates( playerid, params[ ] )
         strreplace( szNormalString, "\n", "" ), trimString( szNormalString );
 
         // format string
-        format( szHugeString, sizeof( szHugeString ), "%s%s\t%s\n", szHugeString, szNormalString, ! changelogs ? ( COL_GREEN # "CURRENT" ) : ( " " ) );
+        if ( ! changelogs ) {
+            format( szHugeString, sizeof( szHugeString ), "%s%s\t"COL_GREEN"LATEST\n", szHugeString, szNormalString );
+        } else {
+            format( szHugeString, sizeof( szHugeString ), "%s{333333}%s\t \n", szHugeString, szNormalString );
+        }
         changelogs ++;
     }
 
