@@ -205,8 +205,8 @@ CMD:gps( playerid, params[ ] )
 		SendServerMessage( playerid, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest atm." );
     }
     else if( !strcmp( params, "vehicle", false, 7 ) ){
-        new vehName[24];
-        if ( sscanf( params[ 8 ], "s[24]", vehName ) ) return SendUsage( playerid, "/gps vehicle [NAME]" );
+        new vehName[ 24 ];
+        if ( sscanf( params[ 8 ], "s[ 24 ]", vehName ) ) return SendUsage( playerid, "/gps vehicle [NAME]" );
 
         new Float: vXp, Float: vYp, Float: vZp, vehID = GetVehicleModelFromName( vehName );
 
@@ -216,7 +216,7 @@ CMD:gps( playerid, params[ ] )
 
 		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest %s", GetVehicleName( vehID ) );
 
-        GPS_SetPlayerWaypoint( playerid, "Closest vehicle (model)", vXp, vYp, vZp );
+        GPS_SetPlayerWaypoint( playerid, sprintf( "Closest vehicle: %s", GetVehicleName( vehID ) ), vXp, vYp, vZp );
     }
 	else
 	{
@@ -307,9 +307,9 @@ function GPS_Update( playerid, Float: destX, Float: destY, Float: destZ )
 
 stock GetClosestVehicleModel( playerid, id ){
     new closest = -1, Float: closestDist = 8000.00, Float: distance, Float: pX, Float: pY, Float: pZ;
-    for(new i = 0; i < MAX_VEHICLES; i++){
-		if( GetVehicleModel(i) == id ){
-            GetPlayerPos( playerid, pX, pY, pZ );
+	GetPlayerPos( playerid, pX, pY, pZ );
+    for ( new i = 0; i < MAX_VEHICLES; i++ ) {
+		if( GetVehicleModel( i ) == id ) {
             distance = GetVehicleDistanceFromPoint( i, pX, pY, pZ );
             if( closestDist > distance ){
                 closestDist = distance;
