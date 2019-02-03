@@ -196,6 +196,7 @@ CMD:gps( playerid, params[ ] )
 		return SendServerMessage( playerid, "You have de-activated your GPS." ), 1;
 	}
 	else if ( GetPlayerState( playerid ) != PLAYER_STATE_DRIVER ) return SendError( playerid, "You have to be a driver of a vehicle to use this a command." );
+	else if ( GetPlayerInterior( playerid ) != 0 ) return SendError( playerid, "You must be outside of the interior." );
     else if( !strcmp( params, "atm", false, 3 ) ) {
         new Float: oX, Float: oY, Float: oZ;
         new atmID = GetClosestATM( playerid );
@@ -208,9 +209,12 @@ CMD:gps( playerid, params[ ] )
         if ( sscanf( params[ 8 ], "s[24]", vehName ) ) return SendUsage( playerid, "/gps vehicle [NAME]" );
 
         new Float: vXp, Float: vYp, Float: vZp, vehID = GetVehicleModelFromName( vehName );
+
+		if( vehID == -1 ) return SendError( playerid, "Invalid vehicle name." );
+
         GetVehiclePos( GetClosestVehicleModel( playerid, vehID ), vXp, vYp, vZp );
 
-		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest vehicle (model %d)", vehID );
+		SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to closest %s", GetVehicleName( vehID ) );
 
         GPS_SetPlayerWaypoint( playerid, "Closest vehicle (model)", vXp, vYp, vZp );
     }
@@ -299,20 +303,6 @@ function GPS_Update( playerid, Float: destX, Float: destY, Float: destZ )
     AttachDynamicObjectToVehicle( p_GPSObject[ playerid ], vehicleid, 0.0, 0.0, 1.5, 0.0, fRY, fRZ - fAZ );
 	PlayerTextDrawSetString( playerid, p_GPSInformation[ playerid ], sprintf( "~g~Location:~w~ %s~n~~g~Distance:~w~ %0.2fm", p_GPSDestName[ playerid ], distance ) );
 	return 1;
-}
-
-stock GetClosestATM( playerid ){
-    new closest = -1, Float: closestDist = 8000.00, Float: distance, Float: pX, Float: pY, Float: pZ, Float: oX, Float: oY, Float: oZ;
-    for(new i = 0; i < MAX_ATMS; i++){
-        GetATMPos( i, oX, oY, oZ );
-        GetPlayerPos( playerid, pX, pY, pZ );
-        distance = floatsqroot( ( (pX - oX) * (pX - oX) ) + ( (pY - oY) * (pY - oY) + ( (pZ - oZ) * (pZ - oZ) ) ) );
-        if( closestDist > distance ){
-            closestDist = distance;
-            closest = i;
-        }
-    }
-    return closest;
 }
 
 stock GetClosestVehicleModel( playerid, id ){
