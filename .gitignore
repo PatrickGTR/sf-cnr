@@ -16,7 +16,6 @@ pawno/*
 # filterscripts
 filterscripts/*
 !filterscripts/objects.pwn
-!filterscri
 
 # plugins
 plugins/*
