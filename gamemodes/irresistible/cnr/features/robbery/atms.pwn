@@ -239,3 +239,21 @@ stock CreateATM( Float: X, Float: Y, Float: Z, Float: rX, Float: offset = 180.0,
 	}
 	return ID;
 }
+
+stock GetClosestATM( playerid ){
+    new closest = -1, Float: closestDist = 8000.00, Float: distance, Float: pX, Float: pY, Float: pZ, Float: oX, Float: oY, Float: oZ;
+	GetPlayerPos( playerid, pX, pY, pZ );
+    for( new i = 0; i < MAX_ATMS; i++ ){
+        GetATMPos( i, oX, oY, oZ );
+        distance = VectorSize( pX-oX, pY-oY, pZ-oZ );
+        if( closestDist > distance ){
+            closestDist = distance;
+            closest = i;
+        }
+    }
+    return closest;
+}
+
+stock GetATMPos( atmID, &Float: X, &Float: Y, &Float: Z ) {
+	return GetDynamicObjectPos( g_atmData[ atmID ] [ E_OBJECT ], X, Y, Z );
+}

@@ -148,7 +148,7 @@ public OnGameModeInit()
 	rl_ServerUpdate = SetTimer( "OnServerUpdateTimer", 960, true );
 	rl_ZoneUpdate = SetTimer( "OnServerSecondTick", 980, true );
 
-	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: "#FILE_BUILD" | Time: %d | Tickcount: %d)", ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
+	printf( "[SF-CNR] SF-CnR has been successfully initialized. (Build: %s | Time: %d | Tickcount: %d)", GetServerVersion( ), ( g_ServerUptime = gettime( ) ), GetTickCount( ) );
 	return 1;
 }
 
@@ -431,7 +431,7 @@ public OnPlayerConnect( playerid )
 	jailDoors( playerid, false, false );
 
 	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[WARNING]{a9c4e4} The concept in this server and GTA in general may be considered explicit material." );
-	SendClientMessage( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version " # FILE_BUILD "." );
+	SendClientMessageFormatted( playerid, 0xa9c4e4ff, "{FF0000}[INFO]{a9c4e4} The server is currently operating on version %s.", GetServerVersion( ) );
 
 	if ( IsValidServerVariable( "connectsong" ) )
 	{

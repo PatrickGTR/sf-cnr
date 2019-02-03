@@ -9,7 +9,6 @@
 #include "irresistible\cnr\commands\admin\_admin.pwn"
 
 /* ** Files ** */
-#include "irresistible\cnr\commands\cmd_changes.pwn"
 #include "irresistible\cnr\commands\cmd_twitter.pwn"
 #include "irresistible\cnr\commands\cmd_highscores.pwn"
 #include "irresistible\cnr\commands\cmd_nametags.pwn"
