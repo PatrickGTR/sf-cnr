@@ -320,7 +320,7 @@ CMD:svrstats( playerid, params[ ] )
 		return SendError( playerid, ADMIN_COMMAND_REJECT );
 
 	if ( strmatch( params, "version" ) )
-		return SendServerMessage( playerid, "Current version is "COL_GREY"%s", FILE_BUILD ), 1;
+		return SendServerMessage( playerid, "Current version is "COL_GREY"%s", GetServerVersion( ) ), 1;
 
 	if ( strmatch( params, "ticks" ) )
 		return SendServerMessage( playerid, "Current tick rate of server is: %d", GetServerTickRate( ) ), 1;

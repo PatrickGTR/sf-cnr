@@ -1,0 +1,2 @@
+(+) You can now use /GPS to find the closest ATM or vehicle with /gps [ATM/VEHICLE].
+(+) /changes will show a list of changelogs from hereon out.
