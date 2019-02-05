@@ -6,3 +6,4 @@
  */
 
 /* ** Includes ** */
+#include "irresistible\cnr\features\battleroyale\battleroyale.pwn"
