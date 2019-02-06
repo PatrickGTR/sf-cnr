@@ -135,7 +135,14 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby has reached its maximum player count." );
                 }
 
-                return BattleRoyale_ShowLobbyInfo( playerid, l ), 1;
+                // check if player has money for the lobby
+                if ( GetPlayerCash( playerid ) < br_lobbyData[ l ] [ E_ENTRY_FEE ] )
+                {
+                    return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You need %s to join this lobby.", cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] ) );
+                }
+
+                GivePlayerCash( playerid, -br_lobbyData[ l ] [ E_ENTRY_FEE ] );
+                return BattleRoyale_JoinLobby( playerid, l ), 1;
             }
         }
 
@@ -367,13 +374,10 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
-static stock BattleRoyale_ShowLobbyInfo( playerid, lobbyid )
+static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 {
-    if ( ! BR_IsValidLobby( lobbyid ) ) {
-        return 0;
-    }
-
-    return 1; // join lobby dialog
+    // TODO:
+    return 1;
 }
 
 static stock BattleRoyale_ShowLobbies( playerid )
