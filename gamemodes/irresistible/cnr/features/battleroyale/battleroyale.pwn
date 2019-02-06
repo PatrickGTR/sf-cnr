@@ -6,7 +6,7 @@
  */
 
  /*
-
+https://github.com/RIDE-2DAY/GZ_Shapes/blob/master/GZ_ShapesALS.inc
 1. Player creates lobby
     - Lobby can be CAC only
     - Player can select area
@@ -34,6 +34,8 @@
 
 /* ** Dialogs ** */
 #define DIALOG_BR_LOBBY             ( 6373 )
+#define DIALOG_BR_LOBBY_EDIT        ( 6374 )
+#define DIALOG_BR_LOBBY_EDIT_ENTRY  ( 6375 )
 
 /* ** Constants ** */
 static const
@@ -51,31 +53,31 @@ static const
 /* ** Variables ** */
 enum E_BR_LOBBY_STATUS
 {
-    E_SETUP,
-    E_WAITING_FOR_PLAYERS,
-    E_STARTED
+    E_STATUS_SETUP,
+    E_STATUS_WAITING_FOR_PLAYERS,
+    E_STATUS_STARTED
 };
 
 enum E_BR_LOBBY_DATA
 {
-	E_NAME[ 16 ],		E_HOST, 				E_PASSWORD[ 5 ],
+	E_NAME[ 24 ],		E_HOST, 				E_PASSWORD[ 5 ],
 	E_LIMIT,			E_AREA_ID,              E_BR_LOBBY_STATUS: E_STATUS,
     E_ENTRY_FEE,
 
     Float: E_ARMOUR, 	Float: E_HEALTH,
 
-    bool: E_CHAT,       bool: E_WALKING_WEAPONS
+    bool: E_WALK_WEP,   bool: E_CAC_ONLY
 };
 
 enum E_BR_AREA_DATA
 {
-    E_NAME[ 16 ],       E_MIN_X,                E_MAX_X,
-    E_MIN_Y,            E_MAX_Y
+    E_NAME[ 24 ],       Float: E_MIN_X,         Float: E_MAX_X,
+    Float: E_MIN_Y,     Float: E_MAX_Y
 };
 
 static stock
     // where all the area data is stored
-    br_areaData                     [ ] [ E_BR_AREA_DATA ] =
+    br_areaData                     [ 1 ] [ E_BR_AREA_DATA ] =
     {
         { "San Fierro", 0.0, 0.0, 0.0, 0.0 }
     },
@@ -122,7 +124,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             if ( x == listitem )
             {
                 // status must be in a waiting state
-                if ( br_lobbyData[ l ] [ E_STATUS ] != E_WAITING_FOR_PLAYERS )
+                if ( br_lobbyData[ l ] [ E_STATUS ] != E_STATUS_WAITING_FOR_PLAYERS )
                 {
                     return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You cannot join this lobby at the moment." );
                 }
@@ -137,9 +139,167 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             }
         }
 
+        // check if player has money
+        if ( GetPlayerCash( playerid ) < 10000 ) {
+            return SendError( playerid, "You need $10,000 to create a battle royale lobby." );
+        }
+
+        new
+            lobbyid = BattleRoyale_CreateLobby( playerid );
+
         // otherwise assume they are creating a new lobby
-        BattleRoyale_CreateLobby( playerid );
-        return 1;
+        if ( lobbyid != ITER_NONE ) {
+            return SendError( playerid, "You cannot create a battle royale lobby at the moment" );
+        }
+
+        GivePlayerCash( playerid, -10000 );
+        p_battleRoyaleLobby[ playerid ] = lobbyid;
+        return BattleRoyale_EditLobby( playerid, lobbyid );
+    }
+    else if ( dialogid == DIALOG_BR_LOBBY_EDIT )
+    {
+        new lobbyid = p_battleRoyaleLobby[ playerid ];
+
+        if ( listitem == 3 ) // select an area
+        {
+            // TODO: select an area
+        }
+        else if ( listitem == 7 ) // select walking weapon mode
+        {
+            br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ];
+            SendServerMessage( playerid, "You have set only walking weapons to %s.", bool_to_string( br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
+            return BattleRoyale_EditLobby( playerid, lobbyid );
+        }
+        else if ( listitem == 8 ) // select cac mode
+        {
+            if ( IsPlayerUsingSampAC( playerid ) ) {
+                br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] = ! br_lobbyData[ lobbyid ] [ E_CAC_ONLY ];
+                SendServerMessage( playerid, "You have set CAC mode to %s.", bool_to_string( br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ) );
+            } else {
+                SendError( playerid, "You must have SA-MP CAC activated in order to enable this option." );
+            }
+            return BattleRoyale_EditLobby( playerid, lobbyid );
+        }
+        else
+        {
+            SetPVarInt( playerid, "editing_field", listitem );
+            return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", "Please enter a value for this field:", "Submit", "Back" );
+        }
+    }
+    else if ( dialogid == DIALOG_BR_LOBBY_EDIT_ENTRY )
+    {
+        if ( ! response ) {
+            return BattleRoyale_EditLobby( playerid, p_battleRoyaleLobby[ playerid ] );
+        }
+
+        new lobbyid = p_battleRoyaleLobby[ playerid ];
+
+        new editing_field = GetPVarInt( playerid, "editing_field" );
+
+        switch ( editing_field )
+        {
+            // lobby name
+            case 0:
+            {
+                new
+                    name[ 24 ];
+
+                if ( sscanf( inputtext, "s[24]", name ) ) SendError( playerid, "You must enter a valid name." );
+                else if ( 3 <= strlen( name ) < 24 ) SendError( playerid, "You must enter a name between 3 and 24 characters." );
+                else
+                {
+                    strcpy( br_lobbyData[ lobbyid ] [ E_NAME ], name );
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+
+            // lobby pw
+            case 1:
+            {
+                new
+                    password[ 5 ];
+
+                if ( sscanf( inputtext, "s[24]", password ) )
+                {
+                    erase( br_lobbyData[ lobbyid ] [ E_PASSWORD ] );
+                    SendServerMessage( playerid, "Password for this lobby has been reset." );
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+                else if ( strlen( password ) >= 5 ) SendError( playerid, "You must enter a password between 1 and 5 characters." );
+                else
+                {
+                    strcpy( br_lobbyData[ lobbyid ] [ E_PASSWORD ], password );
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+
+            // limit
+            case 2:
+            {
+                new
+                    limit;
+
+                if ( sscanf( inputtext, "d", limit ) ) SendError( playerid, "You must enter a valid limit." );
+                else if ( ! ( 1 <= limit < BR_MAX_PLAYERS ) ) SendError( playerid, "You must enter a limit between 1 and %d", BR_MAX_PLAYERS );
+                else
+                {
+                    br_lobbyData[ lobbyid ] [ E_LIMIT ] = limit;
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+
+            // entry_fee
+            case 4:
+            {
+                new
+                    entry_fee;
+
+                if ( sscanf( inputtext, "d", entry_fee ) ) SendError( playerid, "You must enter a valid entry fee." );
+                else if ( entry_fee <= 0 )
+                {
+                    br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = entry_fee;
+                    SendServerMessage( playerid, "Password for this lobby has been reset." );
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+                else if ( ! ( 0 < entry_fee <= 10000000 ) ) SendError( playerid, "You must enter a entry fee between $1 and $10,000,000." );
+                else
+                {
+                    br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = entry_fee;
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+
+            // health
+            case 5:
+            {
+                new
+                    Float: health;
+
+                if ( sscanf( inputtext, "f", health ) ) SendError( playerid, "You must enter a valid health value." );
+                else if ( ! ( 1.0 <= health <= 100.0 ) ) SendError( playerid, "You must enter a health value between 1 and 100." );
+                else
+                {
+                    br_lobbyData[ lobbyid ] [ E_HEALTH ] = health;
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+
+            // armour
+            case 6:
+            {
+                new
+                    Float: armour;
+
+                if ( sscanf( inputtext, "f", armour ) ) SendError( playerid, "You must enter a valid armour value." );
+                else if ( ! ( 1.0 <= armour <= 100.0 ) ) SendError( playerid, "You must enter a armour value between 1 and 100." );
+                else
+                {
+                    br_lobbyData[ lobbyid ] [ E_ARMOUR ] = armour;
+                    return BattleRoyale_EditLobby( playerid, lobbyid );
+                }
+            }
+        }
+        return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", "Please enter a value for this field:", "Submit", "Back" );
     }
     return 1;
 }
@@ -147,7 +307,64 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Functions ** */
 static stock BattleRoyale_CreateLobby( playerid )
 {
-    return 1; // create lobby dialog
+    new
+        lobbyid = Iter_Free( battleroyale );
+
+    if ( lobbyid != ITER_NONE )
+    {
+        strcpy( br_lobbyData[ lobbyid ] [ E_NAME ], "Battle Royale Lobby" );
+        erase( br_lobbyData[ lobbyid ] [ E_PASSWORD ] );
+
+        br_lobbyData[ lobbyid ] [ E_LIMIT ] = 6;
+        br_lobbyData[ lobbyid ] [ E_AREA_ID ] = 0;
+        br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 0;
+        br_lobbyData[ lobbyid ] [ E_HOST ] = playerid;
+        br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_SETUP;
+
+        br_lobbyData[ lobbyid ] [ E_ARMOUR ] = 100.0;
+        br_lobbyData[ lobbyid ] [ E_HEALTH ] = 0.0;
+
+        br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = false;
+        br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] = false;
+    }
+    return lobbyid; // create lobby dialog
+}
+
+static stock BattleRoyale_EditLobby( playerid, lobbyid )
+{
+    if ( ! BR_IsValidLobby( lobbyid ) ) {
+        return 0;
+    }
+
+    // header
+    szLargeString = ""COL_WHITE"Lobby Setting\t"COL_WHITE"Value\n";
+
+    for ( new i = 0; i < sizeof( br_lobbyData ); i ++ )
+    {
+        format(
+            szLargeString, sizeof( szLargeString ),
+            "%sLobby Name\n"COL_GREY"%s\n" \
+            "Password\n"COL_GREY"%s\n" \
+            "Player Limit\n"COL_GREY"%d\n" \
+            "Area\n"COL_GREY"%s\n" \
+            "Entry Fee\n"COL_GREEN"%s\n" \
+            "Health\t"COL_GREY"%0.2f%%\n" \
+            "Armour\t"COL_GREY"%0.2f%%\n" \
+            "Running Weapons Only\t%s\n",
+            "CAC Only\t%s\n",
+            szLargeString,
+            br_lobbyData[ lobbyid ] [ E_NAME ],
+            br_lobbyData[ lobbyid ] [ E_PASSWORD ],
+            br_lobbyData[ lobbyid ] [ E_LIMIT ],
+            br_areaData[ br_lobbyData[ lobbyid ] [ E_AREA_ID ] ] [ E_NAME ],
+            cash_format( br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] ),
+            br_lobbyData[ lobbyid ] [ E_HEALTH ],
+            br_lobbyData[ lobbyid ] [ E_ARMOUR ],
+            br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" ),
+            br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" )
+        );
+    }
+    return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
 static stock BattleRoyale_ShowLobbyInfo( playerid, lobbyid )
@@ -180,7 +397,7 @@ static stock BattleRoyale_ShowLobbies( playerid )
     }
 
     // make final option to create lobby
-    format( szLargeString, sizeof( szLargeString ), COL_PURPLE # "Create Lobby\t"COL_PURPLE">>>\t"COL_PURPLE">>>\t"COL_PURPLE">>>" );
+    format( szLargeString, sizeof( szLargeString ), COL_PURPLE # "Create Lobby\t \t"COL_PURPLE"$10,000\t"COL_PURPLE">>>" );
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
