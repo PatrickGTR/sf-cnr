@@ -6,21 +6,21 @@
  */
 
  /*
-https://github.com/RIDE-2DAY/GZ_Shapes/blob/master/GZ_ShapesALS.inc
-1. Player creates lobby
-    - Lobby can be CAC only
-    - Player can select area
-    - Player can select speed in which the circle shrinks
-    - Player can select between running weapons, walking weapons or both (as drops)
-    - Player can make an entry fee, this entry fee gets added to a prize pool
+[ ] https://github.com/RIDE-2DAY/GZ_Shapes/blob/master/GZ_ShapesALS.inc
+[ ] Player creates lobby
+    [X] Lobby can be CAC only
+    [X] Player can select area
+    [ ] Player can select speed in which the circle shrinks
+    [X] Player can select between running weapons, walking weapons or both (as drops)
+    [X] Player can make an entry fee, this entry fee gets added to a prize pool
 
-2. Players join the lobby, you teleport to an island
-    - After the maximum slots are achieved, the game will start
-    - Host can start the match forcefully
-3. Plane in the middle, you have a parachute, jump out
-4. Stay within red zone, if you leave it you get killed
-5. Last man standing wins ...
+[ ] Players join the lobby, you teleport to an island
+    [ ] After the maximum slots are achieved, the game will start
+    [ ] Host can start the match forcefully
 
+[ ] Plane in the middle, you have a parachute, jump out
+[ ] Stay within red zone, if you leave it you get killed
+[ ] Last man standing wins ...
 */
 
 /* ** Includes ** */
@@ -36,6 +36,7 @@ https://github.com/RIDE-2DAY/GZ_Shapes/blob/master/GZ_ShapesALS.inc
 #define DIALOG_BR_LOBBY             ( 6373 )
 #define DIALOG_BR_LOBBY_EDIT        ( 6374 )
 #define DIALOG_BR_LOBBY_EDIT_ENTRY  ( 6375 )
+#define DIALOG_BR_SELECT_AREA       ( 6376 )
 
 /* ** Constants ** */
 static const
@@ -62,7 +63,7 @@ enum E_BR_LOBBY_DATA
 {
 	E_NAME[ 24 ],		E_HOST, 				E_PASSWORD[ 5 ],
 	E_LIMIT,			E_AREA_ID,              E_BR_LOBBY_STATUS: E_STATUS,
-    E_ENTRY_FEE,
+    E_ENTRY_FEE,        E_PRIZE_POOL,
 
     Float: E_ARMOUR, 	Float: E_HEALTH,
 
@@ -141,7 +142,11 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You need %s to join this lobby.", cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] ) );
                 }
 
+                // add entry fee to the pool
                 GivePlayerCash( playerid, -br_lobbyData[ l ] [ E_ENTRY_FEE ] );
+                br_lobbyData[ l ] [ E_PRIZE_POOL ] += br_lobbyData[ l ] [ E_ENTRY_FEE ];
+
+                // join the player to the lobby
                 return BattleRoyale_JoinLobby( playerid, l ), 1;
             }
         }
@@ -167,9 +172,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     {
         new lobbyid = p_battleRoyaleLobby[ playerid ];
 
+        if ( ! BR_IsHost( playerid, lobbyid ) ) {
+            return SendError( playerid, "You cannot edit this lobby as you are no longer the host." );
+        }
+
         if ( listitem == 3 ) // select an area
         {
-            // TODO: select an area
+            return BattleRoyale_EditArea( playerid );
         }
         else if ( listitem == 7 ) // select walking weapon mode
         {
@@ -193,6 +202,23 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", "Please enter a value for this field:", "Submit", "Back" );
         }
     }
+    else if ( dialogid == DIALOG_BR_SELECT_AREA )
+    {
+        if ( ! response ) {
+            return BattleRoyale_EditLobby( playerid, p_battleRoyaleLobby[ playerid ] );
+        }
+
+        new
+            lobbyid = p_battleRoyaleLobby[ playerid ];
+
+        if ( ! BR_IsHost( playerid, lobbyid ) ) {
+            return SendError( playerid, "You cannot edit this lobby as you are no longer the host." );
+        }
+
+        br_lobbyData[ lobbyid ] [ E_AREA_ID ] = listitem;
+        SendServerMessage( playerid, "You have set the area to %s.", br_areaData[ listitem ] [ E_NAME ] );
+        return BattleRoyale_EditLobby( playerid, lobbyid );
+    }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT_ENTRY )
     {
         if ( ! response ) {
@@ -200,6 +226,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
 
         new lobbyid = p_battleRoyaleLobby[ playerid ];
+
+        if ( ! BR_IsHost( playerid, lobbyid ) ) {
+            return SendError( playerid, "You cannot edit this lobby as you are no longer the host." );
+        }
 
         new editing_field = GetPVarInt( playerid, "editing_field" );
 
@@ -374,6 +404,19 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
+static stock BattleRoyale_EditArea( playerid )
+{
+    static
+        areas[ 512 ];
+
+    if ( areas[ 0 ] == '\0' ) {
+        for ( new i = 0; i < sizeof( br_areaData ); i ++ ) {
+            format( areas, sizeof( areas ), "%s%s\n", areas, br_areaData[ i ] [ E_NAME ] );
+        }
+    }
+    return ShowPlayerDialog( playerid, DIALOG_BR_SELECT_AREA, DIALOG_STYLE_LIST, ""COL_WHITE"Battle Royale", areas, "Select", "Close" );
+}
+
 static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 {
     // TODO:
@@ -439,4 +482,8 @@ static stock BattleRoyale_DestroyLobby( lobbyid )
 
 static stock BR_IsValidLobby( lobbyid ) {
     return 0 <= lobbyid < BR_MAX_LOBBIES && Iter_Contains( battleroyale, lobbyid );
+}
+
+static stock BR_IsHost( playerid, lobbyid ) {
+    return BR_IsValidLobby( lobbyid ) && br_lobbyData[ lobbyid ] [ E_HOST ] == playerid;
 }
