@@ -41,7 +41,10 @@
 /* ** Constants ** */
 static const
     Float: BR_CHECKPOINT_POS[ 3 ] = {
-        0.0, 0.0, 0.0
+        -2080.1951, -407.7742, 38.7344
+    },
+    Float: BR_ISLAND_POS[ 3 ] = {
+        -1504.9567, 1373.8749, 3.8165
     },
     BR_RUNNING_WEAPONS[ ] = {
         22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
@@ -80,7 +83,7 @@ static stock
     // where all the area data is stored
     br_areaData                     [ 1 ] [ E_BR_AREA_DATA ] =
     {
-        { "San Fierro", 0.0, 0.0, 0.0, 0.0 }
+        { "Fort Carson", -394.0, 956.0, 164.0, 1254.0 }
     },
 
     // lobby data & info
@@ -160,16 +163,20 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             lobbyid = BattleRoyale_CreateLobby( playerid );
 
         // otherwise assume they are creating a new lobby
-        if ( lobbyid != ITER_NONE ) {
+        if ( lobbyid == ITER_NONE ) {
             return SendError( playerid, "You cannot create a battle royale lobby at the moment" );
         }
 
         GivePlayerCash( playerid, -10000 );
-        p_battleRoyaleLobby[ playerid ] = lobbyid;
+        BattleRoyale_JoinLobby( playerid, lobbyid );
         return BattleRoyale_EditLobby( playerid, lobbyid );
     }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT )
     {
+        if ( ! response ) {
+            return SendServerMessage( playerid, "You can edit your battle royale lobby settings with "COL_GREY"/br edit"COL_WHITE"." );
+        }
+
         new lobbyid = p_battleRoyaleLobby[ playerid ];
 
         if ( ! BR_IsHost( playerid, lobbyid ) ) {
@@ -341,6 +348,24 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
     return 1;
 }
 
+/* ** Comands ** */
+CMD:br( playerid, params[ ] ) return cmd_battleroyale( playerid, params );
+CMD:battleroyale( playerid, params[ ] )
+{
+    new
+        lobbyid = p_battleRoyaleLobby[ playerid ];
+
+    if ( ! BR_IsValidLobby( lobbyid ) ) {
+        return SendError( playerid, "You are not in any lobby." );
+    }
+
+    if ( strmatch( params, "edit" ) )
+    {
+        return BattleRoyale_EditLobby( playerid, lobbyid ), 1;
+    }
+    return SendUsage( playerid, "/battleroyale [EDIT]" );
+}
+
 /* ** Functions ** */
 static stock BattleRoyale_CreateLobby( playerid )
 {
@@ -358,11 +383,13 @@ static stock BattleRoyale_CreateLobby( playerid )
         br_lobbyData[ lobbyid ] [ E_HOST ] = playerid;
         br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_SETUP;
 
-        br_lobbyData[ lobbyid ] [ E_ARMOUR ] = 100.0;
-        br_lobbyData[ lobbyid ] [ E_HEALTH ] = 0.0;
+        br_lobbyData[ lobbyid ] [ E_HEALTH ] = 100.0;
+        br_lobbyData[ lobbyid ] [ E_ARMOUR ] = 0.0;
 
         br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = false;
         br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] = false;
+
+        Iter_Add( battleroyale, lobbyid );
     }
     return lobbyid; // create lobby dialog
 }
@@ -373,35 +400,28 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         return 0;
     }
 
-    // header
-    szLargeString = ""COL_WHITE"Lobby Setting\t"COL_WHITE"Value\n";
-
-    for ( new i = 0; i < sizeof( br_lobbyData ); i ++ )
-    {
-        format(
-            szLargeString, sizeof( szLargeString ),
-            "%sLobby Name\n"COL_GREY"%s\n" \
-            "Password\n"COL_GREY"%s\n" \
-            "Player Limit\n"COL_GREY"%d\n" \
-            "Area\n"COL_GREY"%s\n" \
-            "Entry Fee\n"COL_GREEN"%s\n" \
-            "Health\t"COL_GREY"%0.2f%%\n" \
-            "Armour\t"COL_GREY"%0.2f%%\n" \
-            "Running Weapons Only\t%s\n",
-            "CAC Only\t%s\n",
-            szLargeString,
-            br_lobbyData[ lobbyid ] [ E_NAME ],
-            br_lobbyData[ lobbyid ] [ E_PASSWORD ],
-            br_lobbyData[ lobbyid ] [ E_LIMIT ],
-            br_areaData[ br_lobbyData[ lobbyid ] [ E_AREA_ID ] ] [ E_NAME ],
-            cash_format( br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] ),
-            br_lobbyData[ lobbyid ] [ E_HEALTH ],
-            br_lobbyData[ lobbyid ] [ E_ARMOUR ],
-            br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" ),
-            br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" )
-        );
-    }
-    return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
+    format(
+        szLargeString, sizeof( szLargeString ),
+        "Lobby Name\t"COL_GREY"%s\n" \
+        "Password\t"COL_GREY"%s\n" \
+        "Player Limit\t"COL_GREY"%d\n" \
+        "Area\t"COL_GREY"%s\n" \
+        "Entry Fee\t"COL_GREEN"%s\n" \
+        "Health\t"COL_GREY"%0.2f%%\n" \
+        "Armour\t"COL_GREY"%0.2f%%\n" \
+        "Running Weapons Only\t%s\n" \
+        "CAC Only\t%s\n",
+        br_lobbyData[ lobbyid ] [ E_NAME ],
+        br_lobbyData[ lobbyid ] [ E_PASSWORD ],
+        br_lobbyData[ lobbyid ] [ E_LIMIT ],
+        br_areaData[ br_lobbyData[ lobbyid ] [ E_AREA_ID ] ] [ E_NAME ],
+        cash_format( br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] ),
+        br_lobbyData[ lobbyid ] [ E_HEALTH ],
+        br_lobbyData[ lobbyid ] [ E_ARMOUR ],
+        br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" ),
+        br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" )
+    );
+    return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST, ""COL_WHITE"Battle Royale", szLargeString, "Edit", "Close" );
 }
 
 static stock BattleRoyale_EditArea( playerid )
@@ -419,7 +439,17 @@ static stock BattleRoyale_EditArea( playerid )
 
 static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 {
-    // TODO:
+    // set lobby id
+    p_battleRoyaleLobby[ playerid ] = lobbyid;
+    Iter_Add( battleroyaleplayers[ lobbyid ], playerid );
+
+    // set player position in an island
+    SendServerMessage( playerid, "You have joined %s "COL_ORANGE"[%d/%d]", br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
+    SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] );
+    SetPlayerVirtualWorld( playerid, 100 + lobbyid );
+
+    // check if lobby is full
+    BattleRoyale_CheckPlayers( lobbyid );
     return 1;
 }
 
@@ -444,7 +474,7 @@ static stock BattleRoyale_ShowLobbies( playerid )
     }
 
     // make final option to create lobby
-    format( szLargeString, sizeof( szLargeString ), COL_PURPLE # "Create Lobby\t \t"COL_PURPLE"$10,000\t"COL_PURPLE">>>" );
+    format( szLargeString, sizeof( szLargeString ), "%s"COL_PURPLE"Create Lobby\t \t"COL_PURPLE"$10,000\t"COL_PURPLE">>>", szLargeString );
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
@@ -467,11 +497,32 @@ stock BattleRoyale_RemovePlayer( playerid )
 
 static stock BattleRoyale_CheckPlayers( lobbyid )
 {
-    if ( BR_IsValidLobby( lobbyid ) && Iter_Count( battleroyaleplayers[ lobbyid ] ) <= 0 )
+    if ( ! BR_IsValidLobby( lobbyid ) ) {
+        return 0;
+    }
+
+    new
+        total_players = Iter_Count( battleroyaleplayers[ lobbyid ] );
+
+    // check if player limit surpassed
+    if ( total_players >= br_lobbyData[ lobbyid ] [ E_LIMIT ] && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_WAITING_FOR_PLAYERS )
+    {
+        return BattleRoyale_StartGame( lobbyid );
+    }
+
+    // if no players, get rid of the lobby
+    else if ( total_players <= 0 )
     {
         return BattleRoyale_DestroyLobby( lobbyid );
     }
-    return 0;
+    return 1;
+}
+
+static stock BattleRoyale_StartGame( lobbyid )
+{
+    br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_STARTED;
+    print("Started game");
+    return 1;
 }
 
 static stock BattleRoyale_DestroyLobby( lobbyid )
