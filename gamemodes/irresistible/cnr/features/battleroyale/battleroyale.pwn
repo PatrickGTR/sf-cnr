@@ -55,7 +55,8 @@ static const
         4, 8, 9, 23, 24, 25, 27, 29, 30, 31, 33, 34
     },
     Float: BR_MIN_HEIGHT = 300.0,
-    Float: BR_MIN_CAMERA_HEIGHT = 50.0
+    Float: BR_MIN_CAMERA_HEIGHT = 50.0,
+    Float: BR_PLANE_RADIUS_FROM_BORDER = 25.0
 ;
 
 /* ** Variables ** */
@@ -76,7 +77,9 @@ enum E_BR_LOBBY_DATA
 
     bool: E_WALK_WEP,   bool: E_CAC_ONLY,
 
-    E_PLANE,            E_PLANE_TIMER,          Float: E_PLANE_ROTATION
+    E_PLANE,            E_PLANE_TIMER,          Float: E_PLANE_ROTATION,
+
+    E_GAME_TIMER,       E_BORDER_ZONE[ 4 ]
 };
 
 enum E_BR_AREA_DATA
@@ -94,6 +97,10 @@ static stock
 
     // lobby data & info
     br_lobbyData                    [ BR_MAX_LOBBIES ] [ E_BR_LOBBY_DATA ],
+    br_wallBorderObjectUp           [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    br_wallBorderObjectDown         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    br_wallBorderObjectLeft         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    br_wallBorderObjectRight        [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     Iterator: battleroyale          < BR_MAX_LOBBIES >,
     Iterator: battleroyaleplayers   [ BR_MAX_LOBBIES ] < BR_MAX_PLAYERS >,
 
@@ -138,7 +145,7 @@ hook SetPlayerRandomSpawn( playerid )
         GivePlayerWeapon( playerid, 46, 1 ); // parachute
 
         SetPlayerPos( playerid, X, Y, Z - 1.0 );
-        print("Spawned");
+        SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 		return Y_HOOKS_BREAK_RETURN_1;
     }
     return 1;
@@ -498,7 +505,7 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
     // set player position in an island
     SendServerMessage( playerid, "You have joined %s "COL_ORANGE"[%d/%d]", br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] );
-    SetPlayerVirtualWorld( playerid, 100 + lobbyid );
+    SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
     // check if lobby is full
     BattleRoyale_CheckPlayers( lobbyid );
@@ -572,18 +579,48 @@ static stock BattleRoyale_CheckPlayers( lobbyid )
 
 static stock BattleRoyale_StartGame( lobbyid )
 {
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+
     br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_STARTED;
 
+    // plane movement
     br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] = 0.0;
     br_lobbyData[ lobbyid ] [ E_PLANE ] = CreateDynamicObject( 1681, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = -1, .interiorid = -1 );
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = SetTimerEx( "BattleRoyale_PlaneMove", BR_UPDATE_TIME_RATE, true, "d", lobbyid );
 
+    // game timer
+    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
+    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
+    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
+    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
+
+    // destroy border walls
+    BattleRoyale_DestroyBorder( lobbyid );
+
+    // create border walls
+    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    {
+        for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
+        {
+            br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+        }
+    }
+
+    // load the player into the area
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
+        for ( new g = 0; g < 4; g ++ )
+        {
+            GangZoneShowForPlayer( playerid, br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ], 0x000000FF );
+        }
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
         TogglePlayerSpectating( playerid, true );
+        Streamer_Update( playerid );
     }
     print("Started game");
     return 1;
@@ -596,8 +633,8 @@ function BattleRoyale_PlaneMove( lobbyid )
     new Float: middle_x = ( br_areaData[ areaid ] [ E_MIN_X ] + br_areaData[ areaid ] [ E_MAX_X ] ) / 2.0;
     new Float: middle_y = ( br_areaData[ areaid ] [ E_MIN_Y ] + br_areaData[ areaid ] [ E_MAX_Y ] ) / 2.0;
 
-    new Float: radius_x = ( VectorSize( br_areaData[ areaid ] [ E_MIN_X ] - br_areaData[ areaid ] [ E_MAX_X ], 0.0, 0.0 ) ) / 2.0;
-    new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0;
+    new Float: radius_x = ( VectorSize( br_areaData[ areaid ] [ E_MIN_X ] - br_areaData[ areaid ] [ E_MAX_X ], 0.0, 0.0 ) ) / 2.0 - BR_PLANE_RADIUS_FROM_BORDER;
+    new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0 - BR_PLANE_RADIUS_FROM_BORDER;
 
     // if the plane completes a full rotation, throw everyone out
     if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_UPDATE_TIME_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
@@ -650,15 +687,39 @@ static stock BattleRoyale_ThrowFromPlane( playerid )
 
 static stock BattleRoyale_DestroyLobby( lobbyid )
 {
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+
     Iter_Remove( battleroyale, lobbyid );
     Iter_Clear( battleroyaleplayers[ lobbyid ] );
+
+    BattleRoyale_DestroyBorder( lobbyid );
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
 
     DestroyDynamicObject( br_lobbyData[ lobbyid ] [ E_PLANE ] );
     br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
+
+    for ( new g = 0; g < 4; g ++ )
+    {
+        GangZoneDestroy( br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ] );
+        br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ] = -1;
+    }
     return 1;
+}
+
+static stock BattleRoyale_DestroyBorder( lobbyid )
+{
+    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    {
+        for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
+        {
+            DestroyDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = -1;
+            DestroyDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = -1;
+            DestroyDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = -1;
+            DestroyDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = -1;
+        }
+    }
 }
 
 static stock BR_IsValidLobby( lobbyid ) {
@@ -667,4 +728,8 @@ static stock BR_IsValidLobby( lobbyid ) {
 
 static stock BR_IsHost( playerid, lobbyid ) {
     return BR_IsValidLobby( lobbyid ) && br_lobbyData[ lobbyid ] [ E_HOST ] == playerid;
+}
+
+static stock BR_GetWorld( lobbyid ) {
+    return 639 + lobbyid;
 }
