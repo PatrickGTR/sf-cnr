@@ -18,7 +18,7 @@
     [X] After the maximum slots are achieved, the game will start
     [X] Host can start the match forcefully
 
-[ ] Randomly bomb region
+[X] Randomly bomb region
 
 [X] Plane in the middle, you have a parachute, jump out
 [ ] Stay within red zone, if you leave it you get killed
@@ -41,6 +41,13 @@
 #define DIALOG_BR_LOBBY_EDIT        ( 6374 )
 #define DIALOG_BR_LOBBY_EDIT_ENTRY  ( 6375 )
 #define DIALOG_BR_SELECT_AREA       ( 6376 )
+
+/* ** Macros ** */
+#define BattleRoyale_SendMessage(%0,%1) \
+    BattleRoyale_SMF(%0, -1, "{4B8774}[BATTLE ROYALE] {FFFFFF}" # %1)
+
+#define BattleRoyale_SendMessageAll(%1) \
+    SendClientMessageToAllFormatted(-1, "{4B8774}[BATTLE ROYALE] {FFFFFF}" # %1)
 
 /* ** Constants ** */
 static const
@@ -68,7 +75,8 @@ static const
 enum E_BR_LOBBY_STATUS
 {
     E_STATUS_WAITING,
-    E_STATUS_STARTED
+    E_STATUS_STARTED,
+    E_STATUS_ENDED
 };
 
 enum E_BR_LOBBY_DATA
@@ -86,7 +94,8 @@ enum E_BR_LOBBY_DATA
     E_PICKUPS[ 100 ],   E_VEHICLES[ 5 ],
 
     E_GAME_TIMER,       E_BORDER_ZONE[ 4 ],     Float: E_B_MIN_X,
-    Float: E_B_MIN_Y,   Float: E_B_MAX_X,       Float: E_B_MAX_Y
+    Float: E_B_MIN_Y,   Float: E_B_MAX_X,       Float: E_B_MAX_Y,
+    E_BOMB_TICK
 };
 
 enum E_BR_AREA_DATA
@@ -116,6 +125,8 @@ static stock
     // player related
     p_battleRoyaleLobby                     [ MAX_PLAYERS ] = { BR_INVALID_LOBBY, ... },
     E_BR_LOBBY_STATUS: p_battleRoyaleStatus [ MAX_PLAYERS ],
+    p_battleRoyaleJetNoiseTick              [ MAX_PLAYERS ],
+    bool: p_waitingForRespawn               [ MAX_PLAYERS char ],
 
     // global related
     g_battleRoyaleStadiumCP         = -1
@@ -126,6 +137,38 @@ hook OnScriptInit( )
 {
     g_battleRoyaleStadiumCP = CreateDynamicCP( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 1.0, 0 );
 	CreateDynamic3DTextLabel( "[BATTLE ROYALE]", COLOR_GOLD, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 20.0 );
+    return 1;
+}
+
+hook OnPlayerDisconnect( playerid, reason )
+{
+    new
+        lobbyid = BattleRoyale_RemovePlayer( playerid, false );
+
+    if ( lobbyid != BR_INVALID_LOBBY ) {
+        BattleRoyale_SendMessage( lobbyid, "%s(%d) has disconnected from the match!", ReturnPlayerName( playerid ), playerid );
+    }
+    return 1;
+}
+
+#if defined AC_INCLUDED
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+#else
+hook OnPlayerDeath( playerid, killerid, reason )
+#endif
+{
+    new
+        lobbyid = BattleRoyale_RemovePlayer( playerid, true );
+
+    if ( lobbyid != BR_INVALID_LOBBY ) {
+        if ( IsPlayerConnected( killerid ) ) {
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ) );
+        } else {
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed!", ReturnPlayerName( playerid ), playerid );
+        }
+		SendDeathMessage( killerid, playerid, reason );
+        return Y_HOOKS_BREAK_RETURN_1;
+    }
     return 1;
 }
 
@@ -143,19 +186,27 @@ hook SetPlayerRandomSpawn( playerid )
     new
         lobbyid = p_battleRoyaleLobby[ playerid ];
 
-    if ( BR_IsValidLobby( lobbyid ) && p_battleRoyaleStatus[ playerid ] == E_STATUS_STARTED )
+    if ( BR_IsValidLobby( lobbyid ) )
     {
-        new
-            Float: X, Float: Y, Float: Z;
+        if ( p_battleRoyaleStatus[ playerid ] == E_STATUS_STARTED )
+        {
+            new
+                Float: X, Float: Y, Float: Z;
 
-        GetDynamicObjectPos( br_lobbyData[ lobbyid ] [ E_PLANE ], X, Y, Z );
+            GetDynamicObjectPos( br_lobbyData[ lobbyid ] [ E_PLANE ], X, Y, Z );
 
-        ResetPlayerWeapons( playerid );
-        GivePlayerWeapon( playerid, 46, 1 ); // parachute
+            ResetPlayerWeapons( playerid );
+            GivePlayerWeapon( playerid, 46, 1 ); // parachute
 
-        SetPlayerPos( playerid, X, Y, Z - 1.0 );
-        SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
-		return Y_HOOKS_BREAK_RETURN_1;
+            SetPlayerPos( playerid, X, Y, Z - 1.0 );
+            SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
+            return Y_HOOKS_BREAK_RETURN_1;
+        }
+    }
+    else if ( p_waitingForRespawn{ playerid } )
+    {
+        BattleRoyale_RespawnPlayer( playerid );
+        return Y_HOOKS_BREAK_RETURN_1;
     }
     return 1;
 }
@@ -252,14 +303,14 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( listitem == 7 ) // select walking weapon mode
         {
             br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ];
-            SendServerMessage( playerid, "You have set only walking weapons to %s.", bool_to_string( br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
+            BattleRoyale_SendMessage( lobbyid, "%s has set only walking weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
         else if ( listitem == 8 ) // select cac mode
         {
             if ( IsPlayerUsingSampAC( playerid ) ) {
                 br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] = ! br_lobbyData[ lobbyid ] [ E_CAC_ONLY ];
-                SendServerMessage( playerid, "You have set CAC mode to %s.", bool_to_string( br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ) );
+                BattleRoyale_SendMessage( lobbyid, "%s has set CAC mode to %s.", ReturnPlayerName( playerid ), bool_to_string( br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ) );
             } else {
                 SendError( playerid, "You must have SA-MP CAC activated in order to enable this option." );
             }
@@ -285,7 +336,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
 
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = listitem;
-        SendServerMessage( playerid, "You have set the area to %s.", br_areaData[ listitem ] [ E_NAME ] );
+        BattleRoyale_SendMessage( lobbyid, "You have set the area to %s.", ReturnPlayerName( playerid ), br_areaData[ listitem ] [ E_NAME ] );
         return BattleRoyale_EditLobby( playerid, lobbyid );
     }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT_ENTRY )
@@ -328,7 +379,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 if ( sscanf( inputtext, "s[24]", password ) )
                 {
                     erase( br_lobbyData[ lobbyid ] [ E_PASSWORD ] );
-                    SendServerMessage( playerid, "Password for this lobby has been reset." );
+                    BattleRoyale_SendMessage( lobbyid, "%s has removed the password requirement for the lobby.", ReturnPlayerName( playerid ) );
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
                 else if ( strlen( password ) >= 5 ) SendError( playerid, "You must enter a password between 1 and 5 characters." );
@@ -364,7 +415,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( entry_fee <= 0 )
                 {
                     br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = entry_fee;
-                    SendServerMessage( playerid, "Password for this lobby has been reset." );
+                    BattleRoyale_SendMessage( lobbyid, "%s has removed the entry fee requirement for the lobby.", ReturnPlayerName( playerid ) );
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
                 else if ( ! ( 0 < entry_fee <= 10000000 ) ) SendError( playerid, "You must enter a entry fee between $1 and $10,000,000." );
@@ -429,7 +480,13 @@ CMD:battleroyale( playerid, params[ ] )
     {
         return BattleRoyale_StartGame( lobbyid );
     }
-    return SendUsage( playerid, "/battleroyale [EDIT]" );
+    else if ( strmatch( params, "stop" ) )
+    {
+        // if ( br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED )
+        //     return SendError( playerid, "You cannot end the game when the lobby has started." );
+
+    }
+    return SendUsage( playerid, "/battleroyale [EDIT/START/STOP]" );
 }
 
 /* ** Functions ** */
@@ -512,7 +569,7 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
     Iter_Add( battleroyaleplayers[ lobbyid ], playerid );
 
     // set player position in an island
-    SendServerMessage( playerid, "You have joined %s "COL_ORANGE"[%d/%d]", br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
+    BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] );
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
@@ -546,7 +603,18 @@ static stock BattleRoyale_ShowLobbies( playerid )
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
-stock BattleRoyale_RemovePlayer( playerid )
+static stock BattleRoyale_RespawnPlayer( playerid )
+{
+    // set position to the entrance of game
+    SetPlayerPos( playerid, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ] );
+    SetPlayerVirtualWorld( playerid, 0 );
+    SetPlayerInterior( playerid, 0 );
+
+    // reset the respawn variable
+    p_waitingForRespawn{ playerid } = false;
+}
+
+static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_from_iterator = true )
 {
     new
         lobbyid = p_battleRoyaleLobby[ playerid ];
@@ -555,12 +623,31 @@ stock BattleRoyale_RemovePlayer( playerid )
     {
         // unset player variables from the match
         p_battleRoyaleLobby[ playerid ] = BR_INVALID_LOBBY;
+        p_waitingForRespawn{ playerid } = respawn;
 
         // perform neccessary operations/checks on the lobby
-        Iter_Remove( battleroyaleplayers[ lobbyid ], playerid );
-        BattleRoyale_CheckPlayers( lobbyid );
+        if ( remove_from_iterator )
+        {
+            Iter_Remove( battleroyaleplayers[ lobbyid ], playerid );
+            BattleRoyale_CheckPlayers( lobbyid );
+        }
     }
-    return 1;
+    return lobbyid;
+}
+
+static stock BattleRoyale_EndGame( lobbyid )
+{
+    new Float: distribution = float( br_lobbyData[ lobbyid ] [ E_LIMIT ] ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) );
+    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * ( distribution > 1.0 ? 1.0 : distribution ) );
+
+    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    {
+        BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%%) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution, br_lobbyData[ lobbyid ] [ E_NAME ] );
+        BattleRoyale_RemovePlayer( playerid, true, false );
+        GivePlayerCash( playerid, prize );
+        SpawnPlayer( playerid );
+    }
+    return BattleRoyale_DestroyLobby( lobbyid );
 }
 
 static stock BattleRoyale_CheckPlayers( lobbyid )
@@ -572,8 +659,14 @@ static stock BattleRoyale_CheckPlayers( lobbyid )
     new
         total_players = Iter_Count( battleroyaleplayers[ lobbyid ] );
 
+    // check if there is no more players
+    if ( total_players <= 1 && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED )
+    {
+        return BattleRoyale_EndGame( lobbyid );
+    }
+
     // check if player limit surpassed
-    if ( total_players >= br_lobbyData[ lobbyid ] [ E_LIMIT ] && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_WAITING )
+    else if ( total_players >= br_lobbyData[ lobbyid ] [ E_LIMIT ] && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_WAITING )
     {
         return BattleRoyale_StartGame( lobbyid );
     }
@@ -620,8 +713,7 @@ static stock BattleRoyale_StartGame( lobbyid )
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
-        for ( new g = 0; g < 4; g ++ )
-        {
+        for ( new g = 0; g < 4; g ++ ) {
             GangZoneShowForPlayer( playerid, br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ], 0x000000FF );
         }
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
@@ -636,6 +728,7 @@ function BattleRoyale_GameUpdate( lobbyid )
 {
     static const Float: UNITS_PER_SECOND_SHRINK = 1.0;
 
+    // decrease zone size
     new Float: radius_x = ( VectorSize( br_lobbyData[ lobbyid ] [ E_B_MIN_X ] - br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 0.0, 0.0 ) ) / 2.0;
     new Float: radius_y = ( VectorSize( 0.0, br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] - br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 0.0 ) ) / 2.0;
 
@@ -664,6 +757,49 @@ function BattleRoyale_GameUpdate( lobbyid )
         BattleRoyale_RedrawBorder( lobbyid, UNITS_PER_SECOND_SHRINK, rate_of_change * UNITS_PER_SECOND_SHRINK );
     }
 
+    // ensure a minimum zone area
+    if ( br_lobbyData[ lobbyid ] [ E_B_MAX_X ] - br_lobbyData[ lobbyid ] [ E_B_MIN_X ] < 5.0 || br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] < 5.0 ) {
+        return 1;
+    }
+
+    // rocket
+    new
+        tick_count = GetServerTime( );
+
+    if ( br_lobbyData[ lobbyid ] [ E_BOMB_TICK ] < tick_count )
+    {
+        new Float: X = fRandomEx( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ] );
+        new Float: Y = fRandomEx( br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] );
+        new Float: Z;
+
+        MapAndreas_FindZ_For2DCoord( X, Y, Z );
+
+        new rocket = CreateDynamicObject( 3786, X, Y, Z + 250.0, 5.0, -90.0, 0.0 );
+        new flare = CreateDynamicObject( 18728, X, Y, Z, 0.0, 0.0, 0.0 );
+        new move_speed = MoveDynamicObject( rocket, X, Y, Z, 25.0 );
+
+        foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) {
+            PlayerPlaySound( playerid, 14800, X, Y, Z );
+            Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
+        }
+
+        br_lobbyData[ lobbyid ] [ E_BOMB_TICK ] = tick_count + 10;
+        SetTimerEx( "BattleRoyale_ExplodeBomb", move_speed, false, "dddfff", lobbyid, rocket, flare, X, Y, Z );
+    }
+    return 1;
+}
+
+function BattleRoyale_ExplodeBomb( lobbyid, rocketid, flareid, Float: X, Float: Y, Float: Z )
+{
+	// destroy the rocket after it is moved
+	DestroyDynamicObject( rocketid );
+	DestroyDynamicObject( flareid );
+
+    // create explosion
+    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    {
+        CreateExplosionForPlayer( playerid, X, Y, Z, 6, 10.0 );
+    }
     return 1;
 }
 
@@ -680,7 +816,7 @@ function BattleRoyale_PlaneMove( lobbyid )
     // if the plane completes a full rotation, throw everyone out
     if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_PLANE_UPDATE_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
     {
-        foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+        foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) if ( p_battleRoyaleStatus[ playerid ] != E_STATUS_STARTED )
         {
             BattleRoyale_ThrowFromPlane( playerid );
             SendServerMessage( playerid, "You have been thrown out of your plane due to a lack of decision." );
@@ -710,6 +846,14 @@ function BattleRoyale_PlaneMove( lobbyid )
     {
         SetPlayerCameraPos( playerid, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT );
         SetPlayerCameraLookAt( playerid, plane_x, plane_y, BR_MIN_HEIGHT );
+
+        new
+            tick_count = GetTickCount( );
+
+        if ( tick_count > p_battleRoyaleJetNoiseTick[ playerid ] ) {
+            PlayerPlaySound( playerid, 14400, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT * 0.70 );
+            p_battleRoyaleJetNoiseTick[ playerid ] = tick_count + 250;
+        }
     }
 }
 
@@ -732,6 +876,9 @@ static stock BattleRoyale_DestroyLobby( lobbyid )
     Iter_Clear( battleroyaleplayers[ lobbyid ] );
 
     BattleRoyale_DestroyBorder( lobbyid );
+
+    KillTimer( br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] );
+    br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = -1;
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
@@ -794,10 +941,15 @@ static stock BattleRoyale_CreateBorder( lobbyid )
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
-            br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ) );
+            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ) );
+            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
+            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
+
+            SetDynamicObjectMaterial( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
+            SetDynamicObjectMaterial( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
+            SetDynamicObjectMaterial( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
+            SetDynamicObjectMaterial( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
         }
     }
 }
@@ -854,14 +1006,13 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
         br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
     }
 
-
     // generate random cars
     for ( new c = 0; c < 5; c ++ )
     {
         new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
 
-        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER );
-        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER );
+        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER * 3.0, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER * 3.0 );
+        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER * 3.0, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER * 3.0 );
         new Float: Z = 0.0;
 
         new nodeid = NearestNodeFromPoint( X, Y, Z );
@@ -870,4 +1021,17 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
         br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = CreateVehicle( modelid, X, Y, Z + 1.5, fRandomEx( 0.0, 360.0 ), -1, -1, 0, 0 );
         SetVehicleVirtualWorld( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ], BR_GetWorld( lobbyid ) );
     }
+}
+
+stock BattleRoyale_SMF( lobbyid, colour, const format[ ], va_args<> )
+{
+    static
+		out[ 144 ];
+
+    va_format( out, sizeof( out ), format, va_start<3> );
+
+	foreach ( new i : battleroyaleplayers[ lobbyid ] ) {
+		SendClientMessage( i, colour, out );
+	}
+	return 1;
 }
