@@ -62,7 +62,6 @@ static const
 /* ** Variables ** */
 enum E_BR_LOBBY_STATUS
 {
-    E_STATUS_SETUP,
     E_STATUS_WAITING,
     E_STATUS_STARTED
 };
@@ -438,7 +437,7 @@ static stock BattleRoyale_CreateLobby( playerid )
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = 0;
         br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 0;
         br_lobbyData[ lobbyid ] [ E_HOST ] = playerid;
-        br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_SETUP;
+        br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_WAITING;
 
         br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
 
@@ -590,26 +589,14 @@ static stock BattleRoyale_StartGame( lobbyid )
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = SetTimerEx( "BattleRoyale_PlaneMove", BR_UPDATE_TIME_RATE, true, "d", lobbyid );
 
-    // game timer
-    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
-    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
-    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
-    br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
-
     // destroy border walls
     BattleRoyale_DestroyBorder( lobbyid );
 
     // create border walls
-    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
-    {
-        for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
-        {
-            br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
-        }
-    }
+    BattleRoyale_CreateBorder( lobbyid );
+
+    // game timer
+    br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = SetTimerEx( "BattleRoyale_GameUpdate", 2500, true, "d", lobbyid);
 
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
@@ -623,6 +610,47 @@ static stock BattleRoyale_StartGame( lobbyid )
         Streamer_Update( playerid );
     }
     print("Started game");
+    return 1;
+}
+
+function BattleRoyale_GameUpdate( lobbyid )
+{
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+
+    static const Float: UNITS_PER_SECOND_SHRINK = 1.0;
+
+    new Float: radius_x = ( VectorSize( br_areaData[ areaid ] [ E_MIN_X ] - br_areaData[ areaid ] [ E_MAX_X ], 0.0, 0.0 ) ) / 2.0;
+    new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0;
+
+    if ( radius_x > radius_y )
+    {
+        new Float: rate_of_change = 1.0 / ( radius_y / radius_x );
+
+        printf("X>Y %fx faster", rate_of_change);
+
+        br_areaData[ areaid ] [ E_MIN_X ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_areaData[ areaid ] [ E_MAX_X ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
+
+        br_areaData[ areaid ] [ E_MIN_Y ] += UNITS_PER_SECOND_SHRINK;
+        br_areaData[ areaid ] [ E_MAX_Y ] -= UNITS_PER_SECOND_SHRINK;
+
+        BattleRoyale_RedrawBorder( lobbyid, rate_of_change * UNITS_PER_SECOND_SHRINK, UNITS_PER_SECOND_SHRINK );
+    }
+    else
+    {
+        new Float: rate_of_change = 1.0 / ( radius_x / radius_y );
+
+        printf("Y>X %fx faster", rate_of_change);
+
+        br_areaData[ areaid ] [ E_MIN_X ] += UNITS_PER_SECOND_SHRINK;
+        br_areaData[ areaid ] [ E_MAX_X ] -= UNITS_PER_SECOND_SHRINK;
+
+        br_areaData[ areaid ] [ E_MIN_Y ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_areaData[ areaid ] [ E_MAX_Y ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
+
+        BattleRoyale_RedrawBorder( lobbyid, UNITS_PER_SECOND_SHRINK, rate_of_change * UNITS_PER_SECOND_SHRINK );
+    }
+
     return 1;
 }
 
@@ -687,8 +715,6 @@ static stock BattleRoyale_ThrowFromPlane( playerid )
 
 static stock BattleRoyale_DestroyLobby( lobbyid )
 {
-    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
-
     Iter_Remove( battleroyale, lobbyid );
     Iter_Clear( battleroyaleplayers[ lobbyid ] );
 
@@ -699,17 +725,80 @@ static stock BattleRoyale_DestroyLobby( lobbyid )
 
     DestroyDynamicObject( br_lobbyData[ lobbyid ] [ E_PLANE ] );
     br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
-
-    for ( new g = 0; g < 4; g ++ )
-    {
-        GangZoneDestroy( br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ] );
-        br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ] = -1;
-    }
     return 1;
+}
+
+static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float: top_rate = 1.0 )
+{
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+    new temporary_gangzone[ 4 ];
+
+    // redraw gangzones
+    temporary_gangzone[ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
+    temporary_gangzone[ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
+    temporary_gangzone[ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
+    temporary_gangzone[ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
+
+    // show the new gangzone
+    foreach ( new playerid : battleroyaleplayers[ areaid ] ) {
+        for ( new g = 0; g < 4; g ++ ) {
+            GangZoneShowForPlayer( playerid, temporary_gangzone[ g ], 0x000000FF );
+        }
+    }
+
+    // delete old gangzone, set the new
+    for ( new g = 0; g < 4; g ++ ) {
+        GangZoneDestroy( br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ] );
+    }
+
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] = temporary_gangzone;
+
+    // move objects
+    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    {
+        for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
+        {
+            MoveDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), top_rate );
+            MoveDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), top_rate );
+            MoveDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+            MoveDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+        }
+    }
+}
+
+static stock BattleRoyale_CreateBorder( lobbyid )
+{
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+
+    // gang zone
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
+
+    // walls
+    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    {
+        for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
+        {
+            br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ), .streamdistance = 1000.0 );
+        }
+    }
 }
 
 static stock BattleRoyale_DestroyBorder( lobbyid )
 {
+    // gangzone
+    for ( new g = 0; g < 4; g ++ )
+    {
+        GangZoneDestroy( br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ] );
+        br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ] = -1;
+    }
+
+    // walls
     for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
