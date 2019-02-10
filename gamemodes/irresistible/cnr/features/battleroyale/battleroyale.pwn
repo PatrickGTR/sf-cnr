@@ -68,7 +68,8 @@ static const
     },
     Float: BR_MIN_HEIGHT = 300.0,
     Float: BR_MIN_CAMERA_HEIGHT = 50.0,
-    Float: BR_PLANE_RADIUS_FROM_BORDER = 25.0
+    Float: BR_PLANE_RADIUS_FROM_BORDER = 25.0,
+    Float: BR_UNITS_PER_SECOND_SHRINK = 1.0
 ;
 
 /* ** Variables ** */
@@ -198,8 +199,11 @@ hook SetPlayerRandomSpawn( playerid )
             ResetPlayerWeapons( playerid );
             GivePlayerWeapon( playerid, 46, 1 ); // parachute
 
-            SetPlayerPos( playerid, X, Y, Z - 1.0 );
+            SetPlayerPos( playerid, X, Y, Z - 2.0 );
             SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
+
+            SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
+            SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
             return Y_HOOKS_BREAK_RETURN_1;
         }
     }
@@ -282,6 +286,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
         GivePlayerCash( playerid, -10000 );
         BattleRoyale_JoinLobby( playerid, lobbyid );
+        BattleRoyale_SendMessageAll( "%s(%d) has created a Battle Royale lobby!", ReturnPlayerName( playerid ), playerid );
+
         return BattleRoyale_EditLobby( playerid, lobbyid );
     }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT )
@@ -726,7 +732,10 @@ static stock BattleRoyale_StartGame( lobbyid )
 
 function BattleRoyale_GameUpdate( lobbyid )
 {
-    static const Float: UNITS_PER_SECOND_SHRINK = 1.0;
+    // prevent zone shrinking and bombing while the plane is rotating
+    if ( br_lobbyData[ lobbyid ] [ E_PLANE ] != -1 ) {
+        return 1;
+    }
 
     // decrease zone size
     new Float: radius_x = ( VectorSize( br_lobbyData[ lobbyid ] [ E_B_MIN_X ] - br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 0.0, 0.0 ) ) / 2.0;
@@ -736,25 +745,25 @@ function BattleRoyale_GameUpdate( lobbyid )
     {
         new Float: rate_of_change = 1.0 / ( radius_y / radius_x );
 
-        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
-        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += rate_of_change * BR_UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= rate_of_change * BR_UNITS_PER_SECOND_SHRINK;
 
-        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += UNITS_PER_SECOND_SHRINK;
-        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += BR_UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= BR_UNITS_PER_SECOND_SHRINK;
 
-        BattleRoyale_RedrawBorder( lobbyid, rate_of_change * UNITS_PER_SECOND_SHRINK, UNITS_PER_SECOND_SHRINK );
+        BattleRoyale_RedrawBorder( lobbyid, rate_of_change * BR_UNITS_PER_SECOND_SHRINK, BR_UNITS_PER_SECOND_SHRINK );
     }
     else
     {
         new Float: rate_of_change = 1.0 / ( radius_x / radius_y );
 
-        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += UNITS_PER_SECOND_SHRINK;
-        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += BR_UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= BR_UNITS_PER_SECOND_SHRINK;
 
-        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
-        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += rate_of_change * BR_UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= rate_of_change * BR_UNITS_PER_SECOND_SHRINK;
 
-        BattleRoyale_RedrawBorder( lobbyid, UNITS_PER_SECOND_SHRINK, rate_of_change * UNITS_PER_SECOND_SHRINK );
+        BattleRoyale_RedrawBorder( lobbyid, BR_UNITS_PER_SECOND_SHRINK, rate_of_change * BR_UNITS_PER_SECOND_SHRINK );
     }
 
     // ensure a minimum zone area
@@ -909,9 +918,8 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     // delete old gangzone, set the new
     for ( new g = 0; g < 4; g ++ ) {
         GangZoneDestroy( br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ] );
+        br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ] = temporary_gangzone[ g ];
     }
-
-    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] = temporary_gangzone;
 
     // move objects
     for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
@@ -1034,4 +1042,8 @@ stock BattleRoyale_SMF( lobbyid, colour, const format[ ], va_args<> )
 		SendClientMessage( i, colour, out );
 	}
 	return 1;
+}
+
+stock IsPlayerInBattleRoyale( playerid ) {
+    return BR_IsValidLobby( p_battleRoyaleLobby[ playerid ] );
 }
