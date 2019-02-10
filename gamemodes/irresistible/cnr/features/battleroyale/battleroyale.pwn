@@ -18,7 +18,9 @@
     [X] After the maximum slots are achieved, the game will start
     [X] Host can start the match forcefully
 
-[ ] Plane in the middle, you have a parachute, jump out
+[ ] Randomly bomb region
+
+[X] Plane in the middle, you have a parachute, jump out
 [ ] Stay within red zone, if you leave it you get killed
 [ ] Last man standing wins ...
 */
@@ -32,7 +34,7 @@
 #define BR_MAX_PLAYERS              ( 32 )
 
 #define BR_INVALID_LOBBY            ( -1 )
-#define BR_UPDATE_TIME_RATE         ( 30 )
+#define BR_PLANE_UPDATE_RATE        ( 30 )
 
 /* ** Dialogs ** */
 #define DIALOG_BR_LOBBY             ( 6373 )
@@ -53,6 +55,9 @@ static const
     },
     BR_WALKING_WEAPONS[ ] = {
         4, 8, 9, 23, 24, 25, 27, 29, 30, 31, 33, 34
+    },
+    BR_VEHICLE_MODELS[ ] = {
+        404, 422, 471, 478, 505, 543, 566, 552, 554
     },
     Float: BR_MIN_HEIGHT = 300.0,
     Float: BR_MIN_CAMERA_HEIGHT = 50.0,
@@ -78,7 +83,10 @@ enum E_BR_LOBBY_DATA
 
     E_PLANE,            E_PLANE_TIMER,          Float: E_PLANE_ROTATION,
 
-    E_GAME_TIMER,       E_BORDER_ZONE[ 4 ]
+    E_PICKUPS[ 100 ],   E_VEHICLES[ 5 ],
+
+    E_GAME_TIMER,       E_BORDER_ZONE[ 4 ],     Float: E_B_MIN_X,
+    Float: E_B_MIN_Y,   Float: E_B_MAX_X,       Float: E_B_MAX_Y
 };
 
 enum E_BR_AREA_DATA
@@ -87,13 +95,15 @@ enum E_BR_AREA_DATA
     Float: E_MAX_X,     Float: E_MAX_Y
 };
 
-static stock
+static const
     // where all the area data is stored
     br_areaData                     [ 1 ] [ E_BR_AREA_DATA ] =
     {
         { "Fort Carson", -394.0, 956.0, 164.0, 1254.0 }
-    },
+    }
+;
 
+static stock
     // lobby data & info
     br_lobbyData                    [ BR_MAX_LOBBIES ] [ E_BR_LOBBY_DATA ],
     br_wallBorderObjectUp           [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
@@ -587,7 +597,16 @@ static stock BattleRoyale_StartGame( lobbyid )
     br_lobbyData[ lobbyid ] [ E_PLANE ] = CreateDynamicObject( 1681, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = -1, .interiorid = -1 );
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
-    br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = SetTimerEx( "BattleRoyale_PlaneMove", BR_UPDATE_TIME_RATE, true, "d", lobbyid );
+    br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = SetTimerEx( "BattleRoyale_PlaneMove", BR_PLANE_UPDATE_RATE, true, "d", lobbyid );
+
+    // set the area variables
+    br_lobbyData[ lobbyid ] [ E_B_MIN_X ] = br_areaData[ areaid ] [ E_MIN_X ];
+    br_lobbyData[ lobbyid ] [ E_B_MAX_X ] = br_areaData[ areaid ] [ E_MAX_X ];
+    br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] = br_areaData[ areaid ] [ E_MIN_Y ];
+    br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] = br_areaData[ areaid ] [ E_MAX_Y ];
+
+    // generate entities randomly
+    BattleRoyale_GenerateEntities( lobbyid );
 
     // destroy border walls
     BattleRoyale_DestroyBorder( lobbyid );
@@ -615,24 +634,20 @@ static stock BattleRoyale_StartGame( lobbyid )
 
 function BattleRoyale_GameUpdate( lobbyid )
 {
-    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
-
     static const Float: UNITS_PER_SECOND_SHRINK = 1.0;
 
-    new Float: radius_x = ( VectorSize( br_areaData[ areaid ] [ E_MIN_X ] - br_areaData[ areaid ] [ E_MAX_X ], 0.0, 0.0 ) ) / 2.0;
-    new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0;
+    new Float: radius_x = ( VectorSize( br_lobbyData[ lobbyid ] [ E_B_MIN_X ] - br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 0.0, 0.0 ) ) / 2.0;
+    new Float: radius_y = ( VectorSize( 0.0, br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] - br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 0.0 ) ) / 2.0;
 
     if ( radius_x > radius_y )
     {
         new Float: rate_of_change = 1.0 / ( radius_y / radius_x );
 
-        printf("X>Y %fx faster", rate_of_change);
+        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
 
-        br_areaData[ areaid ] [ E_MIN_X ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
-        br_areaData[ areaid ] [ E_MAX_X ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
-
-        br_areaData[ areaid ] [ E_MIN_Y ] += UNITS_PER_SECOND_SHRINK;
-        br_areaData[ areaid ] [ E_MAX_Y ] -= UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= UNITS_PER_SECOND_SHRINK;
 
         BattleRoyale_RedrawBorder( lobbyid, rate_of_change * UNITS_PER_SECOND_SHRINK, UNITS_PER_SECOND_SHRINK );
     }
@@ -640,13 +655,11 @@ function BattleRoyale_GameUpdate( lobbyid )
     {
         new Float: rate_of_change = 1.0 / ( radius_x / radius_y );
 
-        printf("Y>X %fx faster", rate_of_change);
+        br_lobbyData[ lobbyid ] [ E_B_MIN_X ] += UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_X ] -= UNITS_PER_SECOND_SHRINK;
 
-        br_areaData[ areaid ] [ E_MIN_X ] += UNITS_PER_SECOND_SHRINK;
-        br_areaData[ areaid ] [ E_MAX_X ] -= UNITS_PER_SECOND_SHRINK;
-
-        br_areaData[ areaid ] [ E_MIN_Y ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
-        br_areaData[ areaid ] [ E_MAX_Y ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] += rate_of_change * UNITS_PER_SECOND_SHRINK;
+        br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] -= rate_of_change * UNITS_PER_SECOND_SHRINK;
 
         BattleRoyale_RedrawBorder( lobbyid, UNITS_PER_SECOND_SHRINK, rate_of_change * UNITS_PER_SECOND_SHRINK );
     }
@@ -665,7 +678,7 @@ function BattleRoyale_PlaneMove( lobbyid )
     new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0 - BR_PLANE_RADIUS_FROM_BORDER;
 
     // if the plane completes a full rotation, throw everyone out
-    if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_UPDATE_TIME_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
+    if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_PLANE_UPDATE_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
     {
         foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
         {
@@ -686,8 +699,8 @@ function BattleRoyale_PlaneMove( lobbyid )
 
     SetDynamicObjectPos( br_lobbyData[ lobbyid ] [ E_PLANE ], plane_x, plane_y, BR_MIN_HEIGHT );
 
-    new Float: plane_ahead_x = middle_x + radius_x * floatsin( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_UPDATE_TIME_RATE ), degrees );
-    new Float: plane_ahead_y = middle_y + radius_y * floatcos( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_UPDATE_TIME_RATE ), degrees );
+    new Float: plane_ahead_x = middle_x + radius_x * floatsin( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_PLANE_UPDATE_RATE ), degrees );
+    new Float: plane_ahead_y = middle_y + radius_y * floatcos( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_PLANE_UPDATE_RATE ), degrees );
 
     new Float: rotation = atan2( plane_ahead_y - plane_y, plane_ahead_x - plane_x ) - 90.0;
 
@@ -734,10 +747,10 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     new temporary_gangzone[ 4 ];
 
     // redraw gangzones
-    temporary_gangzone[ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
-    temporary_gangzone[ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
-    temporary_gangzone[ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
-    temporary_gangzone[ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
+    temporary_gangzone[ 0 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MAX_X ],-3000, 3000, 3000 );
+    temporary_gangzone[ 1 ] = GangZoneCreate( -3000, -3000, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], 3000 );
+    temporary_gangzone[ 2 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], -3000, br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] );
+    temporary_gangzone[ 3 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 3000 );
 
     // show the new gangzone
     foreach ( new playerid : battleroyaleplayers[ areaid ] ) {
@@ -758,10 +771,10 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
-            MoveDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), top_rate );
-            MoveDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), top_rate );
-            MoveDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
-            MoveDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+            MoveDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 240.0 * float( z ), top_rate );
+            MoveDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], 240.0 * float( z ), top_rate );
+            MoveDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+            MoveDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
         }
     }
 }
@@ -821,4 +834,40 @@ static stock BR_IsHost( playerid, lobbyid ) {
 
 static stock BR_GetWorld( lobbyid ) {
     return 639 + lobbyid;
+}
+
+static stock BattleRoyale_GenerateEntities( lobbyid )
+{
+    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
+
+    // generate pickups
+    for ( new i = 0; i < 100; i ++ )
+    {
+        new weaponid = br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? BR_WALKING_WEAPONS[ random( sizeof( BR_WALKING_WEAPONS ) ) ] : BR_RUNNING_WEAPONS[ random( sizeof( BR_RUNNING_WEAPONS ) ) ];
+
+        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER );
+        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER );
+        new Float: Z;
+
+        MapAndreas_FindZ_For2DCoord( X, Y, Z );
+
+        br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
+    }
+
+
+    // generate random cars
+    for ( new c = 0; c < 5; c ++ )
+    {
+        new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
+
+        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER );
+        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER );
+        new Float: Z = 0.0;
+
+        new nodeid = NearestNodeFromPoint( X, Y, Z );
+        GetNodePos( nodeid, X, Y, Z );
+
+        br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = CreateVehicle( modelid, X, Y, Z + 1.5, fRandomEx( 0.0, 360.0 ), -1, -1, 0, 0 );
+        SetVehicleVirtualWorld( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ], BR_GetWorld( lobbyid ) );
+    }
 }
