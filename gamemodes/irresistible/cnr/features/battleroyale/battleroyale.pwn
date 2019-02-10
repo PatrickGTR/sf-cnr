@@ -5,24 +5,14 @@
  * Purpose: Battle Royale minigame implementation for SA-MP
  */
 
- /*
-[ ] https://github.com/RIDE-2DAY/GZ_Shapes/blob/master/GZ_ShapesALS.inc
-[ ] Player creates lobby
-    [X] Lobby can be CAC only
-    [X] Player can select area
-    [ ] Player can select speed in which the circle shrinks
-    [X] Player can select between running weapons, walking weapons or both (as drops)
-    [X] Player can make an entry fee, this entry fee gets added to a prize pool
-
-[X] Players join the lobby, you teleport to an island
-    [X] After the maximum slots are achieved, the game will start
-    [X] Host can start the match forcefully
-
-[X] Randomly bomb region
-
-[X] Plane in the middle, you have a parachute, jump out
-[ ] Stay within red zone, if you leave it you get killed
-[ ] Last man standing wins ...
+/*
+    TODO:
+        [ ] Make pickups work
+        [ ] Messages fix
+        [ ] Prize pool deposit
+        [ ] Invisible walls
+        [ ] Make areas
+        [ ] Hide player name tags / checkpoints
 */
 
 /* ** Includes ** */
@@ -69,9 +59,9 @@ static const
     BR_VEHICLE_MODELS[ ] = {
         404, 422, 471, 478, 505, 543, 566, 552, 554
     },
-    Float: BR_MIN_HEIGHT = 300.0,
+    Float: BR_MIN_HEIGHT = 750.0,
     Float: BR_MIN_CAMERA_HEIGHT = 50.0,
-    Float: BR_PLANE_RADIUS_FROM_BORDER = 25.0,
+    Float: BR_PLANE_RADIUS_FROM_BORDER = 50.0,
     Float: BR_UNITS_PER_SECOND_SHRINK = 1.0
 ;
 
@@ -110,8 +100,9 @@ enum E_BR_AREA_DATA
 
 static const
     // where all the area data is stored
-    br_areaData                     [ 1 ] [ E_BR_AREA_DATA ] =
+    br_areaData                     [ 2 ] [ E_BR_AREA_DATA ] =
     {
+        { "San Fierro", -2799.0, -358.0, -1400.0, 1513.0 },
         { "Fort Carson", -394.0, 956.0, 164.0, 1254.0 }
     }
 ;
@@ -590,7 +581,7 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 static stock BattleRoyale_ShowLobbies( playerid )
 {
     // set the headers
-    szLargeString = ""COL_WHITE"Lobby Name\tHost\tPlayers\tEntry Fee\n";
+    szLargeString = ""COL_WHITE"Lobby Name\t"COL_WHITE"Host\t"COL_WHITE"Players\t"COL_WHITE"Entry Fee\n";
 
     // format dialog
     foreach ( new l : battleroyale )
@@ -633,6 +624,12 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
         // unset player variables from the match
         p_battleRoyaleLobby[ playerid ] = BR_INVALID_LOBBY;
         p_waitingForRespawn{ playerid } = respawn;
+
+        // toggle checkpoints etc
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, true );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, true );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, true );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, true );
 
         // perform neccessary operations/checks on the lobby
         if ( remove_from_iterator )
@@ -722,12 +719,24 @@ static stock BattleRoyale_StartGame( lobbyid )
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
+        p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
+        TogglePlayerSpectating( playerid, true );
+
+        // hide default cnr things
+        Turf_HideAllGangZones( playerid );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, false );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, false );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, false );
+        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, false );
+        Streamer_Update( playerid );
+
+        // show the battle royal playable zone
         for ( new g = 0; g < 4; g ++ ) {
             GangZoneShowForPlayer( playerid, br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ], 0x000000FF );
         }
-        p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
-        TogglePlayerSpectating( playerid, true );
-        Streamer_Update( playerid );
+
+        // show controls
+        ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_JUMPING~~w~ - Jump Out Of Plane" );
     }
     print("Started game");
     return 1;
@@ -771,7 +780,21 @@ function BattleRoyale_GameUpdate( lobbyid )
 
     // ensure a minimum zone area
     if ( br_lobbyData[ lobbyid ] [ E_B_MAX_X ] - br_lobbyData[ lobbyid ] [ E_B_MIN_X ] < 5.0 || br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] < 5.0 ) {
-        return 1;
+        return BattleRoyale_EndGame( lobbyid );
+    }
+
+    // hurt players outside the zone
+    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    {
+        if ( ! IsPlayerInArea( playerid, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
+        {
+            new
+                Float: health;
+
+            GetPlayerHealth( playerid, health );
+            GameTextForPlayer( playerid, "~r~STAY IN THE AREA!", 3500, 3 );
+            SetPlayerHealth( playerid, health - 5.0 );
+        }
     }
 
     // rocket
@@ -828,17 +851,25 @@ function BattleRoyale_PlaneMove( lobbyid )
     // if the plane completes a full rotation, throw everyone out
     if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_PLANE_UPDATE_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
     {
+        new
+            unready_players = 0;
+
         foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) if ( p_battleRoyaleStatus[ playerid ] != E_STATUS_STARTED )
         {
+            unready_players ++;
             BattleRoyale_ThrowFromPlane( playerid );
             SendServerMessage( playerid, "You have been thrown out of your plane due to a lack of decision." );
         }
 
-        KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
-        br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
+        // ensures that the plane object is kept while players are thrown out
+        if ( ! unready_players )
+        {
+            KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
+            br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
 
-        DestroyDynamicObject( br_lobbyData[ lobbyid ] [ E_PLANE ] );
-        br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
+            DestroyDynamicObject( br_lobbyData[ lobbyid ] [ E_PLANE ] );
+            br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
+        }
         return;
     }
 
@@ -878,6 +909,7 @@ static stock BattleRoyale_ThrowFromPlane( playerid )
     {
         p_battleRoyaleStatus[ playerid ] = E_STATUS_STARTED;
         TogglePlayerSpectating( playerid, false );
+        HidePlayerHelpDialog( playerid );
     }
     return 1;
 }

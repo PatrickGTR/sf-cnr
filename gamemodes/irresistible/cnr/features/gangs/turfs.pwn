@@ -253,7 +253,7 @@ stock Turf_CreateHardpoint( )
 
 	Turf_GetMiddlePos( g_gangHardpointTurf, middle_x, middle_y );
 
-	g_gangHardpointMapIcon = CreateDynamicMapIcon( middle_x, middle_y, 0.0, 19, -1, -1, -1, 0, 3000.0, MAPICON_GLOBAL );
+	g_gangHardpointMapIcon = CreateDynamicMapIcon( middle_x, middle_y, 0.0,  19, -1, .worldid = 0, .interiorid = 0, .playerid = 0, .streamdistance = 3000.0, .style = MAPICON_GLOBAL );
 	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_gangHardpointMapIcon, E_STREAMER_PLAYER_ID, 0 );
 
 	// redraw gangzones
@@ -527,6 +527,15 @@ stock Turf_IsAbleToTakeover( i ) {
 
 	GetPlayerPos( i, Z, Z, Z );
 	return p_Class[ i ] == CLASS_CIVILIAN && ! IsPlayerSpawnProtected( i ) && ! IsPlayerPassive( i ) && ! IsPlayerAdminOnDuty( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! IsPlayerAFK( i ) && Z <= 250.0;
+}
+
+stock Turf_HideAllGangZones( playerid )
+{
+	foreach ( new x : turfs )
+	{
+		GangZoneHideForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ] );
+	}
+	return 1;
 }
 
 stock Turf_RedrawPlayerGangZones( playerid )
