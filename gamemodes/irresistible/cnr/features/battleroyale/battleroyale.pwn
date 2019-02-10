@@ -33,6 +33,9 @@
 #define BR_MAX_LOBBIES              ( 10 )
 #define BR_MAX_PLAYERS              ( 32 )
 
+#define BR_MAX_PICKUPS              ( 100 )
+#define BR_MAX_VEHICLES             ( 5 )
+
 #define BR_INVALID_LOBBY            ( -1 )
 #define BR_PLANE_UPDATE_RATE        ( 30 )
 
@@ -92,11 +95,11 @@ enum E_BR_LOBBY_DATA
 
     E_PLANE,            E_PLANE_TIMER,          Float: E_PLANE_ROTATION,
 
-    E_PICKUPS[ 100 ],   E_VEHICLES[ 5 ],
-
     E_GAME_TIMER,       E_BORDER_ZONE[ 4 ],     Float: E_B_MIN_X,
     Float: E_B_MIN_Y,   Float: E_B_MAX_X,       Float: E_B_MAX_Y,
-    E_BOMB_TICK
+    E_BOMB_TICK,
+
+    E_PICKUPS[ BR_MAX_PICKUPS ],   E_VEHICLES[ BR_MAX_VEHICLES ],
 };
 
 enum E_BR_AREA_DATA
@@ -885,6 +888,7 @@ static stock BattleRoyale_DestroyLobby( lobbyid )
     Iter_Clear( battleroyaleplayers[ lobbyid ] );
 
     BattleRoyale_DestroyBorder( lobbyid );
+    BattleRoyale_DestroyEntities( lobbyid );
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = -1;
@@ -1000,8 +1004,11 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
 {
     new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
 
+    // destroy entities incase they exist
+    BattleRoyale_DestroyEntities( lobbyid );
+
     // generate pickups
-    for ( new i = 0; i < 100; i ++ )
+    for ( new i = 0; i < BR_MAX_PICKUPS; i ++ )
     {
         new weaponid = br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? BR_WALKING_WEAPONS[ random( sizeof( BR_WALKING_WEAPONS ) ) ] : BR_RUNNING_WEAPONS[ random( sizeof( BR_RUNNING_WEAPONS ) ) ];
 
@@ -1015,7 +1022,7 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
     }
 
     // generate random cars
-    for ( new c = 0; c < 5; c ++ )
+    for ( new c = 0; c < BR_MAX_VEHICLES; c ++ )
     {
         new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
 
@@ -1029,6 +1036,24 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
         br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = CreateVehicle( modelid, X, Y, Z + 1.5, fRandomEx( 0.0, 360.0 ), -1, -1, 0, 0 );
         SetVehicleVirtualWorld( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ], BR_GetWorld( lobbyid ) );
     }
+}
+
+static stock BattleRoyale_DestroyEntities( lobbyid )
+{
+    for ( new i = 0; i < BR_MAX_PICKUPS; i ++ )
+    {
+        // destroy pickup
+        DestroyDynamicPickup( br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] );
+        br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] = -1;
+
+        // destroy vehicles (do it in the same loop)
+        if ( i < BR_MAX_VEHICLES )
+        {
+            DestroyVehicle( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ i ] );
+            br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ i ] = -1;
+        }
+    }
+    return 1;
 }
 
 stock BattleRoyale_SMF( lobbyid, colour, const format[ ], va_args<> )
