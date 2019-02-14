@@ -20,6 +20,7 @@
 #include "irresistible\cnr\features\robbery\_robbery.pwn"
 #include "irresistible\cnr\features\player_items\_player_items.pwn"
 #include "irresistible\cnr\features\visage\_visage.pwn"
+#include "irresistible\cnr\features\drugs\_drugs.pwn"
 
 // special (xmas/easter/nye)
 // #include "irresistible\cnr\features\christmas.pwn"
