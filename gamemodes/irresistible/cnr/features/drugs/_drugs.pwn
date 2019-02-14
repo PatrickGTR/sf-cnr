@@ -7,4 +7,4 @@
 
 /* ** Includes ** */
 #include "irresistible\cnr\features\drugs\cocaine.pwn"
-#include "irresistible\cnr\features\gangs\weed.pwn"
+#include "irresistible\cnr\features\drugs\weed.pwn"

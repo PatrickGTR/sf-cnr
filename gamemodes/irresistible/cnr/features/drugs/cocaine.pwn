@@ -33,18 +33,18 @@ hook OnPlayerDisconnect( playerid, reason )
 {
 	p_CokeGrams[ playerid ] = 0;
 	DestroyDynamic3DTextLabel( p_CocaineLabel[ playerid ] );
-	p_CocaineLabel[ playerid ] = Text: INVALID_3DTEXT_ID;
+	p_CocaineLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	return 1;
 }
 
 #if defined AC_INCLUDED
-public OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
+hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
 #else
-public OnPlayerDeath( playerid, killerid, reason )
+hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
 	DestroyDynamic3DTextLabel( p_CocaineLabel[ playerid ] );
-	p_CocaineLabel[ playerid ] = Text: INVALID_3DTEXT_ID;
+	p_CocaineLabel[ playerid ] = Text3D: INVALID_3DTEXT_ID;
 	return 1;
 }
 
@@ -56,7 +56,7 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 	return 1;
 }
 
-public OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
+hook OnPlayerTakenDamage( playerid, issuerid, Float: amount, weaponid, bodypart )
 {
 	new 
 		iVehicle = GetPlayerVehicleID( issuerid );
@@ -78,20 +78,22 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 		new 
 			iAmount;
 		
-		if ( sscanf( inputtext, "d", iAmount ) ) return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"You must use a valid value.", "Select", "Cancel" );
-		else if ( iAmount < 1 ) return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"The minimum number of grams you can buy is 1.", "Select", "Cancel" );
-		else if ( ( iAmount * COCAINE_PER_PRICE ) > GetPlayerCash( playerid ) ) return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"You don't have enough money!", "Select", "Cancel" );
-		else
-		{
-			new
-				iPrice = ( iAmount * COCAINE_PER_PRICE );
+		if ( sscanf( inputtext, "d", iAmount ) )
+			return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"You must use a valid value.", "Select", "Cancel" );
 
-			SendServerMessage( playerid, "You have purchased %d gram(s) of Cocaine for "COL_GOLD"%s"COL_WHITE".", iAmount, cash_format( iPrice ) );
+		if ( iAmount < 1 )
+			return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"The minimum number of grams you can buy is 1.", "Select", "Cancel" );
 
-			GivePlayerCash( playerid, - iPrice );
-			return GivePlayerCocaine( playerid, iAmount );
-		}
+		if ( ( iAmount * COCAINE_PER_PRICE ) > GetPlayerCash( playerid ) )
+			return ShowPlayerDialog( playerid, DIALOG_COKE, DIALOG_STYLE_INPUT, ""COL_WHITE"Purchase Cocaine", ""COL_WHITE"How many grams do you want to buy?\n\n"COL_RED"You don't have enough money!", "Select", "Cancel" );
+		
+		new
+			iPrice = ( iAmount * COCAINE_PER_PRICE );
 
+		SendServerMessage( playerid, "You have purchased %d gram(s) of Cocaine for "COL_GOLD"%s"COL_WHITE".", iAmount, cash_format( iPrice ) );
+
+		GivePlayerCash( playerid, - iPrice );
+		GivePlayerCocaine( playerid, iAmount );
 		return 1;
 	}
 
@@ -147,7 +149,6 @@ CMD:coke( playerid, params[ ] )
 	{
 		return SendUsage( playerid, "/coke [USE]" ), 1;
 	}
-	return 1;
 }
 
 /*

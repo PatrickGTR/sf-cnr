@@ -212,6 +212,7 @@
 #define DIALOG_BUSINESS_SELL_CONFIRM 		1202
 //#define DIALOG_PASSIVE_MODE					1203
 #define DIALOG_NEXT_PAGE_VIP				1204
+#define DIALOG_COKE                         1205
 
 /* ** Hooks ** */
 hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
