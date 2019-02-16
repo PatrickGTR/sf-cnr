@@ -10,7 +10,7 @@
         [ ] Make pickups work
         [ ] Messages fix
         [ ] Prize pool deposit
-        [ ] Invisible walls
+        [X] Invisible walls
         [ ] Make areas
         [ ] Hide player name tags / checkpoints
 */
@@ -89,7 +89,12 @@ enum E_BR_LOBBY_DATA
     Float: E_B_MIN_Y,   Float: E_B_MAX_X,       Float: E_B_MAX_Y,
     E_BOMB_TICK,
 
-    E_PICKUPS[ BR_MAX_PICKUPS ],   E_VEHICLES[ BR_MAX_VEHICLES ],
+    E_VEHICLES[ BR_MAX_VEHICLES ],
+};
+
+enum E_BR_PICKUP_DATA
+{
+    E_PICKUP,           E_WEAPON_ID,
 };
 
 enum E_BR_AREA_DATA
@@ -100,9 +105,8 @@ enum E_BR_AREA_DATA
 
 static const
     // where all the area data is stored
-    br_areaData                     [ 2 ] [ E_BR_AREA_DATA ] =
+    br_areaData                     [ ] [ E_BR_AREA_DATA ] =
     {
-        { "San Fierro", -2799.0, -358.0, -1400.0, 1513.0 },
         { "Fort Carson", -394.0, 956.0, 164.0, 1254.0 }
     }
 ;
@@ -110,6 +114,7 @@ static const
 static stock
     // lobby data & info
     br_lobbyData                    [ BR_MAX_LOBBIES ] [ E_BR_LOBBY_DATA ],
+    br_lobbyPickupData              [ BR_MAX_LOBBIES ] [ BR_MAX_PICKUPS ] [ E_BR_PICKUP_DATA ],
     br_wallBorderObjectUp           [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     br_wallBorderObjectDown         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     br_wallBorderObjectLeft         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
@@ -142,6 +147,18 @@ hook OnPlayerDisconnect( playerid, reason )
 
     if ( lobbyid != BR_INVALID_LOBBY ) {
         BattleRoyale_SendMessage( lobbyid, "%s(%d) has disconnected from the match!", ReturnPlayerName( playerid ), playerid );
+    }
+    return 1;
+}
+
+hook OnPlayerPickUpDynPickup( playerid, pickupid )
+{
+    new
+        lobbyid = p_battleRoyaleLobby[ playerid ];
+
+    if ( BR_IsValidLobby( lobbyid ) )
+    {
+
     }
     return 1;
 }
@@ -627,9 +644,10 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
 
         // toggle checkpoints etc
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, true );
-        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, true );
+        //Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, true );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, true );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, true );
+        BattleRoyale_PlayerTags( playerid, lobbyid, true );
 
         // perform neccessary operations/checks on the lobby
         if ( remove_from_iterator )
@@ -719,15 +737,17 @@ static stock BattleRoyale_StartGame( lobbyid )
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
+        // respawn player
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
         TogglePlayerSpectating( playerid, true );
 
         // hide default cnr things
         Turf_HideAllGangZones( playerid );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, false );
-        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, false );
+        //Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, false );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, false );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, false );
+        BattleRoyale_PlayerTags( playerid, lobbyid, false );
         Streamer_Update( playerid );
 
         // show the battle royal playable zone
@@ -986,14 +1006,20 @@ static stock BattleRoyale_CreateBorder( lobbyid )
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
             br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MAX_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ) );
-            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ) );
-            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
-            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
+            SetDynamicObjectMaterialText( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], 0, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+            SetDynamicObjectMaterialText( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], 1, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
 
-            SetDynamicObjectMaterial( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
-            SetDynamicObjectMaterial( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
-            SetDynamicObjectMaterial( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
-            SetDynamicObjectMaterial( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 0, 3925, "weemap", "chevron_red_64HVa", -65536 );
+            br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ] + 240.0 * float( i ), br_areaData[ areaid ] [ E_MIN_Y ], 240.0 * float( z ), 0.0, -90.0, 90.0, .worldid = BR_GetWorld( lobbyid ) );
+            SetDynamicObjectMaterialText( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], 0, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+            SetDynamicObjectMaterialText( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], 1, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+
+            br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
+            SetDynamicObjectMaterialText( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], 0, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+            SetDynamicObjectMaterialText( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], 1, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+
+            br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = CreateDynamicObject( 18754, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), 0.0, -90.0, 0.0, .worldid = BR_GetWorld( lobbyid ) );
+            SetDynamicObjectMaterialText( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 0, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
+            SetDynamicObjectMaterialText( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 1, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
         }
     }
 }
@@ -1050,7 +1076,8 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
 
         MapAndreas_FindZ_For2DCoord( X, Y, Z );
 
-        br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
+        br_lobbyPickupData[ lobbyid ] [ i ] [ E_WEAPON_ID ] = weaponid;
+        br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
     }
 
     // generate random cars
@@ -1075,8 +1102,8 @@ static stock BattleRoyale_DestroyEntities( lobbyid )
     for ( new i = 0; i < BR_MAX_PICKUPS; i ++ )
     {
         // destroy pickup
-        DestroyDynamicPickup( br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] );
-        br_lobbyData[ lobbyid ] [ E_PICKUPS ] [ i ] = -1;
+        DestroyDynamicPickup( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] );
+        br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = -1;
 
         // destroy vehicles (do it in the same loop)
         if ( i < BR_MAX_VEHICLES )
@@ -1103,4 +1130,12 @@ stock BattleRoyale_SMF( lobbyid, colour, const format[ ], va_args<> )
 
 stock IsPlayerInBattleRoyale( playerid ) {
     return BR_IsValidLobby( p_battleRoyaleLobby[ playerid ] );
+}
+
+stock BattleRoyale_PlayerTags( playerid, lobbyid, bool: toggle ) {
+    foreach ( new x : battleroyaleplayers[ lobbyid ] ) {
+        ShowPlayerNameTagForPlayer( playerid, x, toggle );
+        if ( toggle ) SetPlayerColorToTeam( x );
+        SetPlayerMarkerForPlayer( playerid, x, toggle ? GetPlayerColor( x ) : setAlpha( GetPlayerColor( x ), 0x00 ) );
+    }
 }
