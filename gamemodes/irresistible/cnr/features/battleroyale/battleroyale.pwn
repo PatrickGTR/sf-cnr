@@ -123,10 +123,10 @@ static stock
     // lobby data & info
     br_lobbyData                    [ BR_MAX_LOBBIES ] [ E_BR_LOBBY_DATA ],
     br_lobbyPickupData              [ BR_MAX_LOBBIES ] [ BR_MAX_PICKUPS ] [ E_BR_PICKUP_DATA ],
-    br_wallBorderObjectUp           [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
-    br_wallBorderObjectDown         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
-    br_wallBorderObjectLeft         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
-    br_wallBorderObjectRight        [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    //br_wallBorderObjectUp           [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    //br_wallBorderObjectDown         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    //br_wallBorderObjectLeft         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
+    //br_wallBorderObjectRight        [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     Iterator: battleroyale          < BR_MAX_LOBBIES >,
     Iterator: battleroyaleplayers   [ BR_MAX_LOBBIES ] < BR_MAX_PLAYERS >,
 
@@ -1034,6 +1034,9 @@ static stock BattleRoyale_DestroyLobby( lobbyid )
 
 static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float: top_rate = 1.0 )
 {
+    #pragma unused sides_rate
+    #pragma unused top_rate
+
     new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
     new temporary_gangzone[ 4 ];
 
@@ -1057,7 +1060,7 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     }
 
     // move objects
-    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    /*for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
@@ -1078,7 +1081,7 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
                 SetDynamicObjectPos( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ) );
             }
         }
-    }
+    }*/
 }
 
 static stock BattleRoyale_CreateBorder( lobbyid )
@@ -1092,7 +1095,7 @@ static stock BattleRoyale_CreateBorder( lobbyid )
     br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
 
     // walls
-    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    /*for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
@@ -1112,7 +1115,7 @@ static stock BattleRoyale_CreateBorder( lobbyid )
             SetDynamicObjectMaterialText( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 0, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
             SetDynamicObjectMaterialText( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], 1, " ", 140, "Arial", 64, 1, -32256, 0, 1 );
         }
-    }
+    }*/
 }
 
 static stock BattleRoyale_DestroyBorder( lobbyid )
@@ -1125,7 +1128,7 @@ static stock BattleRoyale_DestroyBorder( lobbyid )
     }
 
     // walls
-    for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
+    /*for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
@@ -1134,7 +1137,7 @@ static stock BattleRoyale_DestroyBorder( lobbyid )
             DestroyDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ] = -1;
             DestroyDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] ), br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ] = -1;
         }
-    }
+    }*/
 }
 
 static stock BR_IsValidLobby( lobbyid ) {
