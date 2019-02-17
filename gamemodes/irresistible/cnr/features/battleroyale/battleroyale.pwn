@@ -35,7 +35,7 @@
 /* ** Constants ** */
 static const
     Float: BR_CHECKPOINT_POS[ 3 ] = {
-        -2080.1951, -407.7742, 38.7344
+        -2109.6680, -444.1471, 38.7344
     },
     Float: BR_ISLAND_POS[ 3 ] = {
         -4957.9775, 2031.4171, 5.8310
@@ -139,6 +139,7 @@ hook OnScriptInit( )
     // checkpoint
     g_battleRoyaleStadiumCP = CreateDynamicCP( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 1.0, 0 );
 	CreateDynamic3DTextLabel( "[BATTLE ROYALE]", COLOR_GOLD, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 20.0 );
+	CreateDynamicMapIcon( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 23, 0, -1, -1, -1, 750.0 );
     return 1;
 }
 
@@ -367,9 +368,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( listitem == 9 ) // start lobby option
         {
             if ( Iter_Count( battleroyaleplayers[ lobbyid ] ) < 2 ) {
-                return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
+                SendError( playerid, "You need at least 2 players in your lobby to start this match." );
+            } else {
+                BattleRoyale_StartGame( lobbyid );
             }
-            BattleRoyale_StartGame( lobbyid );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
         else
@@ -618,7 +620,7 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         "Armour\t"COL_GREY"%0.2f%%\n" \
         "Walking Weapons Only\t%s\n" \
         "CAC Only\t%s\n" \
-        ""COL_PURPLE"Start Match\t"COL_PURPLE">>>",
+        ""COL_GREEN"Start Match\t"COL_GREEN">>>",
         br_lobbyData[ lobbyid ] [ E_NAME ],
         br_lobbyData[ lobbyid ] [ E_PASSWORD ],
         br_lobbyData[ lobbyid ] [ E_LIMIT ],
@@ -926,7 +928,7 @@ function BattleRoyale_GameUpdate( lobbyid )
         MapAndreas_FindZ_For2DCoord( X, Y, Z );
 
         new rocket = CreateDynamicObject( 3786, X, Y, Z + 250.0, 5.0, -90.0, 0.0 );
-        new flare = CreateDynamicObject( 18728, X, Y, Z, 0.0, 0.0, 0.0 );
+        new flare = CreateDynamicObject( 18728, X, Y, Z - 1.0, 0.0, 0.0, 0.0 );
         new move_speed = MoveDynamicObject( rocket, X, Y, Z, 25.0 );
 
         foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) {
