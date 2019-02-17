@@ -187,7 +187,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
     if ( BR_IsValidLobby( lobbyid ) )
     {
         new
-            remaining = Iter_Count( battleroyaleplayers< playerid > );
+            remaining = Iter_Count( battleroyaleplayers< lobbyid > ) - 1;
 
         if ( IsPlayerConnected( killerid ) ) {
             BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s, %d player%s remaining!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ), remaining, remaining == 1 ? ( "" ) : ( "s" ) );
@@ -599,7 +599,7 @@ static stock BattleRoyale_CreateLobby( playerid )
         strcpy( br_lobbyData[ lobbyid ] [ E_NAME ], "Battle Royale Lobby" );
         erase( br_lobbyData[ lobbyid ] [ E_PASSWORD ] );
 
-        br_lobbyData[ lobbyid ] [ E_LIMIT ] = 6;
+        br_lobbyData[ lobbyid ] [ E_LIMIT ] = 12;
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = 0;
         br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 10000;
         br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] = 0;
