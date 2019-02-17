@@ -11,7 +11,7 @@
 
 /* ** Definitions ** */
 #define BR_MAX_LOBBIES              ( 5 )
-#define BR_MAX_PLAYERS              ( 32 )
+#define BR_MAX_PLAYERS              ( 33 )
 
 #define BR_MAX_PICKUPS              ( 250 )
 #define BR_MAX_VEHICLES             ( 25 )
@@ -51,8 +51,7 @@ static const
     },
     Float: BR_MIN_HEIGHT = 750.0,
     Float: BR_MIN_CAMERA_HEIGHT = 50.0,
-    Float: BR_PLANE_RADIUS_FROM_BORDER = 50.0,
-    Float: BR_UNITS_PER_SECOND_SHRINK = 2.0
+    Float: BR_PLANE_RADIUS_FROM_BORDER = 50.0
 ;
 
 /* ** Variables ** */
@@ -91,21 +90,21 @@ enum E_BR_AREA_DATA
 {
     E_NAME[ 24 ],       Float: E_MIN_X,         Float: E_MIN_Y,
     Float: E_MAX_X,     Float: E_MAX_Y,         E_MAX_PICKUPS,
-    E_MAX_VEHICLES
+    E_MAX_VEHICLES,     Float: E_SHRINK_SPEED
 };
 
 static const
     // where all the area data is stored
     br_areaData                     [ ] [ E_BR_AREA_DATA ] =
     {
-        { "Fort Carson", -465.9, 751.0, 277.0, 1361.0, 50, 5 },
-        { "Blueberry", -294.5, -451.5, 479.5, 272.5, 50, 5 },
-        { "Polomino Creek", 2082.5, -326.5, 2952.5, 496.5, 75, 5 },
-        { "Angel Pine", -2913.5, -2963.0, -1459.5, -1953.0, 100, 10 },
-        { "Tierra Robada", -2989.5, 2074.5, -1144.5, 2990.5, 150, 10 },
-        { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20 },
-        { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
-        { "Flint County", -2988.0, -2988.5, 170.0, -634.5, BR_MAX_PICKUPS, BR_MAX_VEHICLES }
+        { "Fort Carson", -465.9, 751.0, 277.0, 1361.0, 50, 5, 2.0 },
+        { "Blueberry", -294.5, -451.5, 479.5, 272.5, 50, 5, 2.0 },
+        { "Polomino Creek", 2082.5, -326.5, 2952.5, 496.5, 75, 5, 2.0 },
+        { "Angel Pine", -2913.5, -2963.0, -1459.5, -1953.0, 100, 10, 3.0 },
+        { "Tierra Robada", -2989.5, 2074.5, -1144.5, 2990.5, 150, 10, 4.0 },
+        { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20, 4.0 },
+        { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES, 6.0 },
+        { "Flint County", -2988.0, -2988.5, 170.0, -634.5, BR_MAX_PICKUPS, BR_MAX_VEHICLES, 6.0 }
     }
 ;
 
@@ -231,6 +230,7 @@ hook SetPlayerRandomSpawn( playerid )
                 SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
 
                 BattleRoyale_ShowGangZone( playerid, lobbyid );
+                ResetPlayerPassiveMode( playerid );
                 return Y_HOOKS_BREAK_RETURN_1;
             }
             else
@@ -329,6 +329,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     // join the player to the lobby
                     return BattleRoyale_JoinLobby( playerid, l ), 1;
                 }
+                x ++;
             }
             return 1;
         }
@@ -420,7 +421,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     name[ 24 ];
 
                 if ( sscanf( inputtext, "s[24]", name ) ) SendError( playerid, "You must enter a valid name." );
-                else if ( 3 <= strlen( name ) < 24 ) SendError( playerid, "You must enter a name between 3 and 24 characters." );
+                else if ( ! ( 3 <= strlen( name ) < 24 ) ) SendError( playerid, "You must enter a name between 3 and 24 characters." );
                 else
                 {
                     BattleRoyale_SendMessage( lobbyid, "%s has set the lobby name to %s.", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ] );
@@ -457,10 +458,10 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     limit;
 
                 if ( sscanf( inputtext, "d", limit ) ) SendError( playerid, "You must enter a valid limit." );
-                else if ( ! ( 1 <= limit < BR_MAX_PLAYERS ) ) SendError( playerid, "You must enter a limit between 1 and %d", BR_MAX_PLAYERS );
+                else if ( ! ( 2 <= limit < BR_MAX_PLAYERS ) ) SendError( playerid, "You must enter a limit between 2 and %d players.", BR_MAX_PLAYERS );
                 else
                 {
-                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby player limit to %d.", ReturnPlayerName( playerid ), limit );
+                    BattleRoyale_SendMessage( lobbyid, "%s has set the lobby player limit to %d.", ReturnPlayerName( playerid ), limit );
                     br_lobbyData[ lobbyid ] [ E_LIMIT ] = limit;
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -551,6 +552,7 @@ CMD:battleroyale( playerid, params[ ] )
     {
         BattleRoyale_SendMessage( lobbyid, "%s(%d) has disconnected from the match!", ReturnPlayerName( playerid ), playerid );
         BattleRoyale_RemovePlayer( playerid, true );
+        SpawnPlayer( playerid );
         return 1;
     }
 	else if ( ! strcmp( params, "donate", false, 6 ) )
@@ -682,12 +684,16 @@ static stock BattleRoyale_ShowLobbies( playerid )
     {
         format(
             szLargeString, sizeof( szLargeString ),
-            "%s%s\t%s\t%d / %d\t%s\n",
+            "%s%s%s\t%s%s\t%s%d / %d\t%s%s\n",
             szLargeString,
+            br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             br_lobbyData[ l ] [ E_NAME ],
+            br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             IsPlayerConnected( br_lobbyData[ l ] [ E_HOST ] ) ? ( ReturnPlayerName( br_lobbyData[ l ] [ E_HOST ] ) ) : ( "N/A" ),
+            br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             Iter_Count( battleroyaleplayers[ l ] ),
             br_lobbyData[ l ] [ E_LIMIT ],
+            br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] )
         );
     }
@@ -701,6 +707,7 @@ static stock BattleRoyale_RespawnPlayer( playerid )
     SetPlayerPos( playerid, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ] );
     SetPlayerVirtualWorld( playerid, 0 );
     SetPlayerInterior( playerid, 0 );
+    SetPlayerPassiveMode( playerid );
 
     // reset the respawn variable
     p_waitingForRespawn{ playerid } = false;
@@ -717,12 +724,13 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
         p_battleRoyaleLobby[ playerid ] = BR_INVALID_LOBBY;
         p_waitingForRespawn{ playerid } = respawn;
 
-        // toggle checkpoints etc
-        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, true );
-        //Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, true );
-        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, true );
-        Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, true );
-        BattleRoyale_PlayerTags( playerid, lobbyid, true );
+        // toggle checkpoints etc if connected
+        if ( IsPlayerConnected( playerid ) ) {
+            Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, true );
+            Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, true );
+            Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, true );
+            BattleRoyale_PlayerTags( playerid, lobbyid, true );
+        }
 
         // perform neccessary operations/checks on the lobby
         if ( remove_from_iterator )
@@ -836,7 +844,6 @@ static stock BattleRoyale_StartGame( lobbyid )
 
         // hide default cnr things
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, false );
-        //Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, false );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, false );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_3D_TEXT_LABEL, false );
         BattleRoyale_PlayerTags( playerid, lobbyid, false );
@@ -862,6 +869,20 @@ function BattleRoyale_GameUpdate( lobbyid )
         }
     }
 
+    // hurt players outside the zone
+    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    {
+        if ( ! IsPlayerInArea( playerid, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
+        {
+            new
+                Float: health;
+
+            GetPlayerHealth( playerid, health );
+            GameTextForPlayer( playerid, "~r~STAY IN THE AREA!", 3500, 3 );
+            SetPlayerHealth( playerid, health - 5.0 );
+        }
+    }
+
     // prevent zone shrinking and bombing while the plane is rotating
     if ( br_lobbyData[ lobbyid ] [ E_PLANE ] != -1 ) {
         return 1;
@@ -870,6 +891,8 @@ function BattleRoyale_GameUpdate( lobbyid )
     // decrease zone size
     new Float: radius_x = ( VectorSize( br_lobbyData[ lobbyid ] [ E_B_MIN_X ] - br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 0.0, 0.0 ) ) / 2.0;
     new Float: radius_y = ( VectorSize( 0.0, br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] - br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 0.0 ) ) / 2.0;
+
+    new Float: BR_UNITS_PER_SECOND_SHRINK = br_areaData[ br_lobbyData[ lobbyid ] [ E_AREA_ID ] ] [ E_SHRINK_SPEED ];
 
     if ( radius_x > radius_y )
     {
@@ -899,20 +922,6 @@ function BattleRoyale_GameUpdate( lobbyid )
     // ensure a minimum zone area
     if ( br_lobbyData[ lobbyid ] [ E_B_MAX_X ] - br_lobbyData[ lobbyid ] [ E_B_MIN_X ] < 5.0 || br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] < 5.0 ) {
         return BattleRoyale_EndGame( lobbyid );
-    }
-
-    // hurt players outside the zone
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
-    {
-        if ( ! IsPlayerInArea( playerid, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
-        {
-            new
-                Float: health;
-
-            GetPlayerHealth( playerid, health );
-            GameTextForPlayer( playerid, "~r~STAY IN THE AREA!", 3500, 3 );
-            SetPlayerHealth( playerid, health - 5.0 );
-        }
     }
 
     // rocket
