@@ -192,15 +192,16 @@ hook OnPlayerDeath( playerid, killerid, reason )
 #endif
 {
     new
-        lobbyid = BattleRoyale_RemovePlayer( playerid, true );
+        lobbyid = p_battleRoyaleLobby[ playerid ];
 
-    if ( lobbyid != BR_INVALID_LOBBY ) {
+    if ( BR_IsValidLobby( lobbyid ) ) {
         if ( IsPlayerConnected( killerid ) ) {
             BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ) );
         } else {
             BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed!", ReturnPlayerName( playerid ), playerid );
         }
 		SendDeathMessage( killerid, playerid, reason );
+        BattleRoyale_RemovePlayer( playerid, true );
         return Y_HOOKS_BREAK_RETURN_1;
     }
     return 1;
@@ -551,7 +552,7 @@ CMD:battleroyale( playerid, params[ ] )
         {
             GivePlayerCash( playerid, -amount );
             br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += amount;
-            BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby.", ReturnPlayerName( playerid ), playerid, cash_format( amount ) );
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
         }
         return 1;
     }
@@ -734,7 +735,7 @@ hook OnPlayerStreamIn( playerid, forplayerid )
 
 static stock BattleRoyale_EndGame( lobbyid )
 {
-    new Float: distribution = float( br_lobbyData[ lobbyid ] [ E_LIMIT ] ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) );
+    new Float: distribution = float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ) / float( br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * ( distribution > 1.0 ? 1.0 : distribution ) );
 
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
