@@ -73,7 +73,7 @@ hook OnScriptInit( )
 	CreateEntrance( "[GAS STATION]", 		-1676.1494, 432.2187, 7.1797, -27.2923, -58.0535, 1003.5469, 			6,  29, false, false, 55 );
 	CreateEntrance( "[REVELATION CHURCH]",  -2482.0703, 2406.6750, 17.1094, 2013.3900, 1589.8300, 977.0594, 		1,   1, false, false, -1 );
 	CreateEntrance( "[VEHICLE DEALERSHIP]", -2521.1895, -624.9482, 132.7838, -1868.0262, -617.5386, 1002.1284, 		9,  32, true , false, 55 );
-	CreateEntrance( "[SOCCER STADIUM]",		-2109.6680, -444.1471, 38.7344, -1807.8997, 435.8948, 1039.4382, 		9,  32, true , false, 33 );
+	CreateEntrance( "[SOCCER STADIUM]",		-2080.1951, -407.7742, 38.7344, -1807.8997, 435.8948, 1039.4382, 		9,  32, true , false, 33 );
 	CreateEntrance( "[BOXING STADIUM]",		-2051.5239, -407.7723, 38.7344, -281.8263, 10.5794, 2217.3096, 			9,  32, true , false, 33 );
 	CreateEntrance( "[FILM STUDIO]",		-2591.4668, 170.4937, 4.7348, 2330.5608, 897.3838, 1054.8489, 			1,  21, true , false, 38 );
 	CreateEntrance( "[FREEFALL]", 			-1749.2736, 871.2025, 25.0859, -1753.7821, 883.8984, 295.6010, 			0,   0, false, false, -1 );
