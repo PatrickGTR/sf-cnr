@@ -5,16 +5,6 @@
  * Purpose: Battle Royale minigame implementation for SA-MP
  */
 
-/*
-    TODO:
-        [X] Make pickups work
-        [ ] Messages fix
-        [X] Prize pool deposit
-        [X] Invisible walls
-        [ ] Make areas
-        [X] Hide player name tags / checkpoints
-*/
-
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 #include 							< YSI\y_iterate >
@@ -115,7 +105,7 @@ static const
         { "Tierra Robada", -2989.5, 2074.5, -1144.5, 2990.5, 150, 10 },
         { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20 },
         { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
-        { "Flint County", -2988.0, -2988.5, 170, -634.5, BR_MAX_PICKUPS, BR_MAX_VEHICLES }
+        { "Flint County", -2988.0, -2988.5, 170.0, -634.5, BR_MAX_PICKUPS, BR_MAX_VEHICLES }
     }
 ;
 
@@ -296,6 +286,8 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             }
 
             GivePlayerCash( playerid, -10000 );
+            br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += 10000;
+
             BattleRoyale_JoinLobby( playerid, lobbyid );
             BattleRoyale_SendMessageAll( "%s(%d) has created a Battle Royale lobby!", ReturnPlayerName( playerid ), playerid );
 
@@ -370,6 +362,14 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             } else {
                 SendError( playerid, "You must have SA-MP CAC activated in order to enable this option." );
             }
+            return BattleRoyale_EditLobby( playerid, lobbyid );
+        }
+        else if ( listitem == 9 ) // start lobby option
+        {
+            if ( Iter_Count( battleroyaleplayers[ lobbyid ] ) < 2 ) {
+                return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
+            }
+            BattleRoyale_StartGame( lobbyid );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
         else
@@ -540,11 +540,16 @@ CMD:battleroyale( playerid, params[ ] )
     }
     else if ( strmatch( params, "start" ) )
     {
+        if ( Iter_Count( battleroyaleplayers[ lobbyid ] ) < 2 ) {
+            return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
+        }
         return BattleRoyale_StartGame( lobbyid );
     }
     else if ( strmatch ( params, "leave" ) )
     {
-        return BattleRoyale_RemovePlayer( playerid, true );
+        BattleRoyale_SendMessage( lobbyid, "%s(%d) has disconnected from the match!", ReturnPlayerName( playerid ), playerid );
+        BattleRoyale_RemovePlayer( playerid, true );
+        return 1;
     }
 	else if ( ! strcmp( params, "donate", false, 6 ) )
     {
@@ -578,7 +583,8 @@ static stock BattleRoyale_CreateLobby( playerid )
 
         br_lobbyData[ lobbyid ] [ E_LIMIT ] = 6;
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = 0;
-        br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 1000;
+        br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 10000;
+        br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] = 0;
         br_lobbyData[ lobbyid ] [ E_HOST ] = playerid;
         br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_WAITING;
 
@@ -611,7 +617,8 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         "Health\t"COL_GREY"%0.2f%%\n" \
         "Armour\t"COL_GREY"%0.2f%%\n" \
         "Walking Weapons Only\t%s\n" \
-        "CAC Only\t%s\n",
+        "CAC Only\t%s\n" \
+        ""COL_PURPLE"Start Match\t"COL_PURPLE">>>",
         br_lobbyData[ lobbyid ] [ E_NAME ],
         br_lobbyData[ lobbyid ] [ E_PASSWORD ],
         br_lobbyData[ lobbyid ] [ E_LIMIT ],
@@ -740,9 +747,13 @@ hook OnPlayerStreamIn( playerid, forplayerid )
 
 static stock BattleRoyale_EndGame( lobbyid )
 {
-    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ), floatround_ceil );
+    new fees_incurred = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * 0.2 );
 
-    new Float: distribution = floatround( float( prize ) / float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * 100.0 );
+    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] - fees_incurred ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ), floatround_ceil );
+
+    new Float: distribution = floatround( float( prize ) / float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] - fees_incurred ) * 100.0 );
+
+    StockMarket_UpdateEarnings( E_STOCK_BATTLE_ROYAL_CENTER, fees_incurred, 0.5 );
 
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
