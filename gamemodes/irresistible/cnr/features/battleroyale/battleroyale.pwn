@@ -62,7 +62,7 @@ static const
     Float: BR_MIN_HEIGHT = 750.0,
     Float: BR_MIN_CAMERA_HEIGHT = 50.0,
     Float: BR_PLANE_RADIUS_FROM_BORDER = 50.0,
-    Float: BR_UNITS_PER_SECOND_SHRINK = 1.0
+    Float: BR_UNITS_PER_SECOND_SHRINK = 2.0
 ;
 
 /* ** Variables ** */
@@ -101,21 +101,21 @@ enum E_BR_AREA_DATA
 {
     E_NAME[ 24 ],       Float: E_MIN_X,         Float: E_MIN_Y,
     Float: E_MAX_X,     Float: E_MAX_Y,         E_MAX_PICKUPS,
-    E_MAX_VEHICLES,
+    E_MAX_VEHICLES
 };
 
 static const
     // where all the area data is stored
     br_areaData                     [ ] [ E_BR_AREA_DATA ] =
     {
-        { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
-        { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20 },
+        { "Fort Carson", -465.9, 751.0, 277.0, 1361.0, 50, 5 },
+        { "Blueberry", -294.5, -451.5, 479.5, 272.5, 50, 5 },
         { "Polomino Creek", 2082.5, -326.5, 2952.5, 496.5, 75, 5 },
         { "Angel Pine", -2913.5, -2963.0, -1459.5, -1953.0, 100, 10 },
-        { "Bone County", -1847.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
         { "Tierra Robada", -2989.5, 2074.5, -1144.5, 2990.5, 150, 10 },
-        { "Blueberry", -294.5, -451.5, 479.5, 272.5, 50, 5 },
-        { "Fort Carson", -465.9, 751.0, 277.0, 1361.0, 50, 5 }
+        { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20 },
+        { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
+        { "Flint County", -2988.0, -2988.5, 170, -634.5, BR_MAX_PICKUPS, BR_MAX_VEHICLES }
     }
 ;
 
@@ -375,7 +375,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else
         {
             SetPVarInt( playerid, "editing_field", listitem );
-            return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", "Please enter a value for this field:", "Submit", "Back" );
+            return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", ""COL_WHITE"Please enter a value for this field:", "Submit", "Back" );
         }
     }
     else if ( dialogid == DIALOG_BR_SELECT_AREA )
@@ -392,7 +392,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
 
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = listitem;
-        BattleRoyale_SendMessage( lobbyid, "You have set the area to %s.", ReturnPlayerName( playerid ), br_areaData[ listitem ] [ E_NAME ] );
+        BattleRoyale_SendMessage( lobbyid, "%s has set the area to %s.", ReturnPlayerName( playerid ), br_areaData[ listitem ] [ E_NAME ] );
         return BattleRoyale_EditLobby( playerid, lobbyid );
     }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT_ENTRY )
@@ -421,6 +421,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( 3 <= strlen( name ) < 24 ) SendError( playerid, "You must enter a name between 3 and 24 characters." );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set the lobby name to %s.", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ] );
                     strcpy( br_lobbyData[ lobbyid ] [ E_NAME ], name );
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -441,6 +442,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( strlen( password ) >= 5 ) SendError( playerid, "You must enter a password between 1 and 5 characters." );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby password.", ReturnPlayerName( playerid ) );
                     strcpy( br_lobbyData[ lobbyid ] [ E_PASSWORD ], password );
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -456,6 +458,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( ! ( 1 <= limit < BR_MAX_PLAYERS ) ) SendError( playerid, "You must enter a limit between 1 and %d", BR_MAX_PLAYERS );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby player limit to %d.", ReturnPlayerName( playerid ), limit );
                     br_lobbyData[ lobbyid ] [ E_LIMIT ] = limit;
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -477,6 +480,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( ! ( 0 < entry_fee <= 10000000 ) ) SendError( playerid, "You must enter a entry fee between $1 and $10,000,000." );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby entry fee to %s.", ReturnPlayerName( playerid ), cash_format( entry_fee ) );
                     br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = entry_fee;
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -492,6 +496,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( ! ( 1.0 <= health <= 100.0 ) ) SendError( playerid, "You must enter a health value between 1 and 100." );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby spawn health to %0.2f%%.", ReturnPlayerName( playerid ), health );
                     br_lobbyData[ lobbyid ] [ E_HEALTH ] = health;
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -504,15 +509,16 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     Float: armour;
 
                 if ( sscanf( inputtext, "f", armour ) ) SendError( playerid, "You must enter a valid armour value." );
-                else if ( ! ( 1.0 <= armour <= 100.0 ) ) SendError( playerid, "You must enter a armour value between 1 and 100." );
+                else if ( ! ( 0.0 <= armour <= 100.0 ) ) SendError( playerid, "You must enter a armour value between 0 and 100." );
                 else
                 {
+                    BattleRoyale_SendMessage( lobbyid, "%s has set a lobby spawn health to %0.2f%%.", ReturnPlayerName( playerid ), armour );
                     br_lobbyData[ lobbyid ] [ E_ARMOUR ] = armour;
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
             }
         }
-        return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", "Please enter a value for this field:", "Submit", "Back" );
+        return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT_ENTRY, DIALOG_STYLE_INPUT, ""COL_WHITE"Battle Royale", ""COL_WHITE"Please enter a value for this field:", "Submit", "Back" );
     }
     return 1;
 }
@@ -604,7 +610,7 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         "Entry Fee\t"COL_GREEN"%s\n" \
         "Health\t"COL_GREY"%0.2f%%\n" \
         "Armour\t"COL_GREY"%0.2f%%\n" \
-        "Running Weapons Only\t%s\n" \
+        "Walking Weapons Only\t%s\n" \
         "CAC Only\t%s\n",
         br_lobbyData[ lobbyid ] [ E_NAME ],
         br_lobbyData[ lobbyid ] [ E_PASSWORD ],
@@ -630,7 +636,7 @@ static stock BattleRoyale_EditArea( playerid )
             format( areas, sizeof( areas ), "%s%s\t%d\t%d\n", areas, br_areaData[ i ] [ E_NAME ], br_areaData[ i ] [ E_MAX_PICKUPS ], br_areaData[ i ] [ E_MAX_VEHICLES ] );
         }
     }
-    return ShowPlayerDialog( playerid, DIALOG_BR_SELECT_AREA, DIALOG_STYLE_LIST, ""COL_WHITE"Battle Royale", areas, "Select", "Close" );
+    return ShowPlayerDialog( playerid, DIALOG_BR_SELECT_AREA, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", areas, "Select", "Back" );
 }
 
 static stock BattleRoyale_JoinLobby( playerid, lobbyid )
@@ -641,7 +647,7 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 
     // set player position in an island
     BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
-    SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] );
+    SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] + 1.0 );
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
     pauseToLoad( playerid );
 
@@ -724,7 +730,6 @@ hook OnPlayerStreamIn( playerid, forplayerid )
     new
         lobbyid = p_battleRoyaleLobby[ playerid ];
 
-    printf( "OnPlayerStreamIn(%d, %d) %d", playerid, forplayerid, lobbyid );
     if ( lobbyid != BR_INVALID_LOBBY && forplayerid != INVALID_PLAYER_ID )
     {
         ShowPlayerNameTagForPlayer( playerid, forplayerid, false );
@@ -735,12 +740,13 @@ hook OnPlayerStreamIn( playerid, forplayerid )
 
 static stock BattleRoyale_EndGame( lobbyid )
 {
-    new Float: distribution = float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ) / float( br_lobbyData[ lobbyid ] [ E_LIMIT ] );
-    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * ( distribution > 1.0 ? 1.0 : distribution ) );
+    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ), floatround_ceil );
+
+    new Float: distribution = floatround( float( prize ) / float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * 100.0 );
 
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
-        BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%s) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution * 100.0, "%%", br_lobbyData[ lobbyid ] [ E_NAME ] );
+        BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%s) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution, "%%", br_lobbyData[ lobbyid ] [ E_NAME ] );
         BattleRoyale_RemovePlayer( playerid, true, false );
         GivePlayerCash( playerid, prize );
         SpawnPlayer( playerid );
@@ -1037,7 +1043,6 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     #pragma unused sides_rate
     #pragma unused top_rate
 
-    new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
     new temporary_gangzone[ 4 ];
 
     // redraw gangzones
@@ -1047,8 +1052,8 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     temporary_gangzone[ 3 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
 
     // show the new gangzone
-    foreach ( new playerid : battleroyaleplayers[ areaid ] ) {
-        for ( new g = 0; g < 4; g ++ ) {
+    foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) {
+        for ( new g = 0; g < sizeof( temporary_gangzone ); g ++ ) {
             GangZoneShowForPlayer( playerid, temporary_gangzone[ g ], 0x000000FF );
         }
     }
