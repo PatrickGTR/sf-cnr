@@ -100,14 +100,22 @@ enum E_BR_PICKUP_DATA
 enum E_BR_AREA_DATA
 {
     E_NAME[ 24 ],       Float: E_MIN_X,         Float: E_MIN_Y,
-    Float: E_MAX_X,     Float: E_MAX_Y
+    Float: E_MAX_X,     Float: E_MAX_Y,         E_MAX_PICKUPS,
+    E_MAX_VEHICLES,
 };
 
 static const
     // where all the area data is stored
     br_areaData                     [ ] [ E_BR_AREA_DATA ] =
     {
-        { "Fort Carson", -394.0, 956.0, 164.0, 1254.0 }
+        { "Bone County", -1848.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
+        { "Red County", -276.0, -1024.0, 2997.0, 694.0, 150, 20 },
+        { "Polomino Creek", 2082.5, -326.5, 2952.5, 496.5, 75, 5 },
+        { "Angel Pine", -2913.5, -2963.0, -1459.5, -1953.0, 100, 10 },
+        { "Bone County", -1847.0, 565.0, 1061.0, 2956.0, BR_MAX_PICKUPS, BR_MAX_VEHICLES },
+        { "Tierra Robada", -2989.5, 2074.5, -1144.5, 2990.5, 150, 10 },
+        { "Blueberry", -294.5, -451.5, 479.5, 272.5, 50, 5 },
+        { "Fort Carson", -465.9, 751.0, 277.0, 1361.0, 50, 5 }
     }
 ;
 
@@ -616,8 +624,9 @@ static stock BattleRoyale_EditArea( playerid )
         areas[ 512 ];
 
     if ( areas[ 0 ] == '\0' ) {
+        areas = ""COL_WHITE"Area\t"COL_WHITE"Pickups\t"COL_WHITE"Vehicles\n";
         for ( new i = 0; i < sizeof( br_areaData ); i ++ ) {
-            format( areas, sizeof( areas ), "%s%s\n", areas, br_areaData[ i ] [ E_NAME ] );
+            format( areas, sizeof( areas ), "%s%s\t%d\t%d\n", areas, br_areaData[ i ] [ E_NAME ], br_areaData[ i ] [ E_MAX_PICKUPS ], br_areaData[ i ] [ E_MAX_VEHICLES ] );
         }
     }
     return ShowPlayerDialog( playerid, DIALOG_BR_SELECT_AREA, DIALOG_STYLE_LIST, ""COL_WHITE"Battle Royale", areas, "Select", "Close" );
@@ -787,7 +796,7 @@ static stock BattleRoyale_StartGame( lobbyid )
     br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] = br_areaData[ areaid ] [ E_MAX_Y ];
 
     // generate entities randomly
-    BattleRoyale_GenerateEntities( lobbyid );
+    BattleRoyale_GenerateEntities( lobbyid, br_areaData[ areaid ] [ E_MAX_PICKUPS ], br_areaData[ areaid ] [ E_MAX_VEHICLES ] );
 
     // destroy border walls
     BattleRoyale_DestroyBorder( lobbyid );
@@ -1139,7 +1148,7 @@ static stock BR_GetWorld( lobbyid ) {
     return 639 + lobbyid;
 }
 
-static stock BattleRoyale_GenerateEntities( lobbyid )
+static stock BattleRoyale_GenerateEntities( lobbyid, max_pickups, max_vehicles )
 {
     new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
 
@@ -1149,32 +1158,46 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
     // generate pickups
     for ( new i = 0; i < BR_MAX_PICKUPS; i ++ )
     {
-        new weaponid = br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? BR_WALKING_WEAPONS[ random( sizeof( BR_WALKING_WEAPONS ) ) ] : BR_RUNNING_WEAPONS[ random( sizeof( BR_RUNNING_WEAPONS ) ) ];
+        if ( i < max_pickups )
+        {
+            new weaponid = br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? BR_WALKING_WEAPONS[ random( sizeof( BR_WALKING_WEAPONS ) ) ] : BR_RUNNING_WEAPONS[ random( sizeof( BR_RUNNING_WEAPONS ) ) ];
 
-        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER );
-        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER );
-        new Float: Z;
+            new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER );
+            new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER );
+            new Float: Z;
 
-        MapAndreas_FindZ_For2DCoord( X, Y, Z );
+            MapAndreas_FindZ_For2DCoord( X, Y, Z );
 
-        br_lobbyPickupData[ lobbyid ] [ i ] [ E_WEAPON_ID ] = weaponid;
-        br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
+            br_lobbyPickupData[ lobbyid ] [ i ] [ E_WEAPON_ID ] = weaponid;
+            br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = CreateDynamicPickup( GetWeaponModel( weaponid ), 1, X, Y, Z + 1.0, .worldid = BR_GetWorld( lobbyid ) );
+        }
+        else
+        {
+            br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = -1;
+        }
     }
 
     // generate random cars
     for ( new c = 0; c < BR_MAX_VEHICLES; c ++ )
     {
-        new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
+        if ( c < max_vehicles )
+        {
+            new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
 
-        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
-        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
-        new Float: Z = 0.0;
+            new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
+            new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
+            new Float: Z = 0.0;
 
-        new nodeid = NearestNodeFromPoint( X, Y, Z );
-        GetNodePos( nodeid, X, Y, Z );
+            new nodeid = NearestNodeFromPoint( X, Y, Z );
+            GetNodePos( nodeid, X, Y, Z );
 
-        br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = CreateVehicle( modelid, X, Y, Z + 1.5, fRandomEx( 0.0, 360.0 ), -1, -1, 0, 0 );
-        SetVehicleVirtualWorld( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ], BR_GetWorld( lobbyid ) );
+            br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = CreateVehicle( modelid, X, Y, Z + 1.5, fRandomEx( 0.0, 360.0 ), -1, -1, 0, 0 );
+            SetVehicleVirtualWorld( br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ], BR_GetWorld( lobbyid ) );
+        }
+        else
+        {
+            br_lobbyData[ lobbyid ] [ E_VEHICLES ] [ c ] = -1;
+        }
     }
 }
 
