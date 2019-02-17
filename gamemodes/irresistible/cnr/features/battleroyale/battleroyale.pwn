@@ -7,12 +7,12 @@
 
 /*
     TODO:
-        [ ] Make pickups work
+        [X] Make pickups work
         [ ] Messages fix
-        [ ] Prize pool deposit
+        [X] Prize pool deposit
         [X] Invisible walls
         [ ] Make areas
-        [ ] Hide player name tags / checkpoints
+        [X] Hide player name tags / checkpoints
 */
 
 /* ** Includes ** */
@@ -20,11 +20,11 @@
 #include 							< YSI\y_iterate >
 
 /* ** Definitions ** */
-#define BR_MAX_LOBBIES              ( 10 )
+#define BR_MAX_LOBBIES              ( 5 )
 #define BR_MAX_PLAYERS              ( 32 )
 
-#define BR_MAX_PICKUPS              ( 100 )
-#define BR_MAX_VEHICLES             ( 5 )
+#define BR_MAX_PICKUPS              ( 250 )
+#define BR_MAX_VEHICLES             ( 25 )
 
 #define BR_INVALID_LOBBY            ( -1 )
 #define BR_PLANE_UPDATE_RATE        ( 30 )
@@ -166,9 +166,11 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
         {
             if ( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] == pickupid )
             {
+			    PlayerPlaySound( playerid, 1150, 0.0, 0.0, 0.0 );
                 GivePlayerWeapon( playerid, br_lobbyPickupData[ lobbyid ] [ i ] [ E_WEAPON_ID ], RandomEx( 20, 100 ) );
                 DestroyDynamicPickup( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] );
                 br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = -1;
+                return 1;
             }
         }
     }
@@ -217,17 +219,27 @@ hook SetPlayerRandomSpawn( playerid )
             new
                 Float: X, Float: Y, Float: Z;
 
-            GetDynamicObjectPos( br_lobbyData[ lobbyid ] [ E_PLANE ], X, Y, Z );
+            if ( GetDynamicObjectPos( br_lobbyData[ lobbyid ] [ E_PLANE ], X, Y, Z ) )
+            {
+                ResetPlayerWeapons( playerid );
+                GivePlayerWeapon( playerid, 46, 1 ); // parachute
 
-            ResetPlayerWeapons( playerid );
-            GivePlayerWeapon( playerid, 46, 1 ); // parachute
+                SetPlayerPos( playerid, X, Y, Z - 2.0 );
+                SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
-            SetPlayerPos( playerid, X, Y, Z - 2.0 );
-            SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
+                SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
+                SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
 
-            SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
-            SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
-            return Y_HOOKS_BREAK_RETURN_1;
+                BattleRoyale_ShowGangZone( playerid, lobbyid );
+                return Y_HOOKS_BREAK_RETURN_1;
+            }
+            else
+            {
+                // remove player from bugged lobby
+                BattleRoyale_RemovePlayer( playerid, true );
+                BattleRoyale_RespawnPlayer( playerid );
+                return Y_HOOKS_BREAK_RETURN_1;
+            }
         }
     }
     else if ( p_waitingForRespawn{ playerid } )
@@ -259,59 +271,65 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 {
     if ( dialogid == DIALOG_BR_LOBBY && response )
     {
-        new
-            x = 0;
-
-        // check if the player selected an existing lobby
-        foreach ( new l : battleroyale )
+        if ( ! listitem )
         {
-            if ( x == listitem )
-            {
-                // status must be in a waiting state
-                if ( br_lobbyData[ l ] [ E_STATUS ] != E_STATUS_WAITING )
-                {
-                    return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You cannot join this lobby at the moment." );
-                }
-
-                // check if the count is under the limit
-                if ( Iter_Count( battleroyaleplayers[ l ] ) >= br_lobbyData[ l ] [ E_LIMIT ] )
-                {
-                    return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby has reached its maximum player count." );
-                }
-
-                // check if player has money for the lobby
-                if ( GetPlayerCash( playerid ) < br_lobbyData[ l ] [ E_ENTRY_FEE ] )
-                {
-                    return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You need %s to join this lobby.", cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] ) );
-                }
-
-                // add entry fee to the pool
-                GivePlayerCash( playerid, -br_lobbyData[ l ] [ E_ENTRY_FEE ] );
-                br_lobbyData[ l ] [ E_PRIZE_POOL ] += br_lobbyData[ l ] [ E_ENTRY_FEE ];
-
-                // join the player to the lobby
-                return BattleRoyale_JoinLobby( playerid, l ), 1;
+            // check if player has money
+            if ( GetPlayerCash( playerid ) < 10000 ) {
+                return SendError( playerid, "You need $10,000 to create a battle royale lobby." );
             }
+
+            new
+                lobbyid = BattleRoyale_CreateLobby( playerid );
+
+            // otherwise assume they are creating a new lobby
+            if ( lobbyid == ITER_NONE ) {
+                return SendError( playerid, "You cannot create a battle royale lobby at the moment" );
+            }
+
+            GivePlayerCash( playerid, -10000 );
+            BattleRoyale_JoinLobby( playerid, lobbyid );
+            BattleRoyale_SendMessageAll( "%s(%d) has created a Battle Royale lobby!", ReturnPlayerName( playerid ), playerid );
+
+            return BattleRoyale_EditLobby( playerid, lobbyid );
         }
+        else
+        {
+            new
+                x = 0;
 
-        // check if player has money
-        if ( GetPlayerCash( playerid ) < 10000 ) {
-            return SendError( playerid, "You need $10,000 to create a battle royale lobby." );
+            // check if the player selected an existing lobby
+            foreach ( new l : battleroyale )
+            {
+                if ( x == listitem - 1 )
+                {
+                    // status must be in a waiting state
+                    if ( br_lobbyData[ l ] [ E_STATUS ] != E_STATUS_WAITING )
+                    {
+                        return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You cannot join this lobby at the moment." );
+                    }
+
+                    // check if the count is under the limit
+                    if ( Iter_Count( battleroyaleplayers[ l ] ) >= br_lobbyData[ l ] [ E_LIMIT ] )
+                    {
+                        return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby has reached its maximum player count." );
+                    }
+
+                    // check if player has money for the lobby
+                    if ( GetPlayerCash( playerid ) < br_lobbyData[ l ] [ E_ENTRY_FEE ] )
+                    {
+                        return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "You need %s to join this lobby.", cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] ) );
+                    }
+
+                    // add entry fee to the pool
+                    GivePlayerCash( playerid, -br_lobbyData[ l ] [ E_ENTRY_FEE ] );
+                    br_lobbyData[ l ] [ E_PRIZE_POOL ] += br_lobbyData[ l ] [ E_ENTRY_FEE ];
+
+                    // join the player to the lobby
+                    return BattleRoyale_JoinLobby( playerid, l ), 1;
+                }
+            }
+            return 1;
         }
-
-        new
-            lobbyid = BattleRoyale_CreateLobby( playerid );
-
-        // otherwise assume they are creating a new lobby
-        if ( lobbyid == ITER_NONE ) {
-            return SendError( playerid, "You cannot create a battle royale lobby at the moment" );
-        }
-
-        GivePlayerCash( playerid, -10000 );
-        BattleRoyale_JoinLobby( playerid, lobbyid );
-        BattleRoyale_SendMessageAll( "%s(%d) has created a Battle Royale lobby!", ReturnPlayerName( playerid ), playerid );
-
-        return BattleRoyale_EditLobby( playerid, lobbyid );
     }
     else if ( dialogid == DIALOG_BR_LOBBY_EDIT )
     {
@@ -617,6 +635,10 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
     pauseToLoad( playerid );
 
+    // make player invincible
+    ResetPlayerWeapons( playerid );
+    SetPlayerHealth( playerid, 99999.00 );
+
     // check if lobby is full
     BattleRoyale_CheckPlayers( lobbyid );
     return 1;
@@ -626,6 +648,9 @@ static stock BattleRoyale_ShowLobbies( playerid )
 {
     // set the headers
     szLargeString = ""COL_WHITE"Lobby Name\t"COL_WHITE"Host\t"COL_WHITE"Players\t"COL_WHITE"Entry Fee\n";
+
+    // make final option to create lobby
+    format( szLargeString, sizeof( szLargeString ), "%s"COL_PURPLE"Create Lobby\t \t"COL_PURPLE"$10,000\t"COL_PURPLE">>>\n", szLargeString );
 
     // format dialog
     foreach ( new l : battleroyale )
@@ -642,8 +667,6 @@ static stock BattleRoyale_ShowLobbies( playerid )
         );
     }
 
-    // make final option to create lobby
-    format( szLargeString, sizeof( szLargeString ), "%s"COL_PURPLE"Create Lobby\t \t"COL_PURPLE"$10,000\t"COL_PURPLE">>>", szLargeString );
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY, DIALOG_STYLE_TABLIST_HEADERS, ""COL_WHITE"Battle Royale", szLargeString, "Select", "Close" );
 }
 
@@ -686,6 +709,20 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
     return lobbyid;
 }
 
+hook OnPlayerStreamIn( playerid, forplayerid )
+{
+    new
+        lobbyid = p_battleRoyaleLobby[ playerid ];
+
+    printf( "OnPlayerStreamIn(%d, %d) %d", playerid, forplayerid, lobbyid );
+    if ( lobbyid != BR_INVALID_LOBBY && forplayerid != INVALID_PLAYER_ID )
+    {
+        ShowPlayerNameTagForPlayer( playerid, forplayerid, false );
+        SetPlayerMarkerForPlayer( playerid, forplayerid, setAlpha( GetPlayerColor( forplayerid ), 0x00 ) );
+    }
+    return 1;
+}
+
 static stock BattleRoyale_EndGame( lobbyid )
 {
     new Float: distribution = float( br_lobbyData[ lobbyid ] [ E_LIMIT ] ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) );
@@ -693,7 +730,7 @@ static stock BattleRoyale_EndGame( lobbyid )
 
     foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
     {
-        BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%%) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution, br_lobbyData[ lobbyid ] [ E_NAME ] );
+        BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%s) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution * 100.0, "%%", br_lobbyData[ lobbyid ] [ E_NAME ] );
         BattleRoyale_RemovePlayer( playerid, true, false );
         GivePlayerCash( playerid, prize );
         SpawnPlayer( playerid );
@@ -769,7 +806,6 @@ static stock BattleRoyale_StartGame( lobbyid )
         TogglePlayerSpectating( playerid, true );
 
         // hide default cnr things
-        Turf_HideAllGangZones( playerid );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_CP, false );
         //Streamer_ToggleAllItems( playerid, STREAMER_TYPE_RACE_CP, false );
         Streamer_ToggleAllItems( playerid, STREAMER_TYPE_MAP_ICON, false );
@@ -778,9 +814,7 @@ static stock BattleRoyale_StartGame( lobbyid )
         Streamer_Update( playerid );
 
         // show the battle royal playable zone
-        for ( new g = 0; g < 4; g ++ ) {
-            GangZoneShowForPlayer( playerid, br_lobbyData[ areaid ] [ E_BORDER_ZONE ] [ g ], 0x000000FF );
-        }
+        BattleRoyale_ShowGangZone( playerid, lobbyid );
 
         // show controls
         ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_JUMPING~~w~ - Jump Out Of Plane" );
@@ -791,6 +825,14 @@ static stock BattleRoyale_StartGame( lobbyid )
 
 function BattleRoyale_GameUpdate( lobbyid )
 {
+    // hide markers / etc
+    foreach ( new x : battleroyaleplayers[ lobbyid ] ) {
+        foreach ( new y : battleroyaleplayers[ lobbyid ] ) {
+            ShowPlayerNameTagForPlayer( x, y, false );
+            SetPlayerMarkerForPlayer( x, y, setAlpha( GetPlayerColor( y ), 0x00 ) );
+        }
+    }
+
     // prevent zone shrinking and bombing while the plane is rotating
     if ( br_lobbyData[ lobbyid ] [ E_PLANE ] != -1 ) {
         return 1;
@@ -986,10 +1028,10 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     new temporary_gangzone[ 4 ];
 
     // redraw gangzones
-    temporary_gangzone[ 0 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MAX_X ],-3000, 3000, 3000 );
-    temporary_gangzone[ 1 ] = GangZoneCreate( -3000, -3000, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], 3000 );
-    temporary_gangzone[ 2 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], -3000, br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] );
-    temporary_gangzone[ 3 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 3000 );
+    temporary_gangzone[ 0 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MAX_X ],-3000, 3000, 3000, .bordersize = 0.0, .numbersize = 0.0 );
+    temporary_gangzone[ 1 ] = GangZoneCreate( -3000, -3000, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
+    temporary_gangzone[ 2 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], -3000, br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], .bordersize = 0.0, .numbersize = 0.0 );
+    temporary_gangzone[ 3 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
 
     // show the new gangzone
     foreach ( new playerid : battleroyaleplayers[ areaid ] ) {
@@ -1009,10 +1051,22 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     {
         for ( new z = 0; z < sizeof( br_wallBorderObjectUp[ ] [ ] ); z ++ )
         {
-            MoveDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 240.0 * float( z ), top_rate );
-            MoveDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], 240.0 * float( z ), top_rate );
-            MoveDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
-            MoveDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+            // move only the bottom walls
+            if ( ! z )
+            {
+                MoveDynamicObject( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 240.0 * float( z ), top_rate );
+                MoveDynamicObject( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], 240.0 * float( z ), top_rate );
+                MoveDynamicObject( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+                MoveDynamicObject( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ), sides_rate );
+            }
+            // just force move top walls with set pos to reduce number of acks sent
+            else
+            {
+                SetDynamicObjectPos( br_wallBorderObjectUp[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], 240.0 * float( z ) );
+                SetDynamicObjectPos( br_wallBorderObjectDown[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ] + 240.0 * float( i ), br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], 240.0 * float( z ) );
+                SetDynamicObjectPos( br_wallBorderObjectLeft[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ) );
+                SetDynamicObjectPos( br_wallBorderObjectRight[ lobbyid ] [ i ] [ z ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - 240.0 * float( i ), 240.0 * float( z ) );
+            }
         }
     }
 }
@@ -1022,10 +1076,10 @@ static stock BattleRoyale_CreateBorder( lobbyid )
     new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
 
     // gang zone
-    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000 );
-    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000 );
-    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ] );
-    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 0 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MAX_X ],-3000, 3000, 3000, .bordersize = 0.0, .numbersize = 0.0 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 1 ] = GangZoneCreate( -3000, -3000, br_areaData[ areaid ] [ E_MIN_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 2 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], -3000, br_areaData[ areaid ] [ E_MAX_X ], br_areaData[ areaid ] [ E_MIN_Y ], .bordersize = 0.0, .numbersize = 0.0 );
+    br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ 3 ] = GangZoneCreate( br_areaData[ areaid ] [ E_MIN_X ], br_areaData[ areaid ] [ E_MAX_Y ], br_areaData[ areaid ] [ E_MAX_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
 
     // walls
     for ( new i = 0; i < sizeof( br_wallBorderObjectUp[ ] ); i ++ )
@@ -1164,6 +1218,13 @@ stock BattleRoyale_PlayerTags( playerid, lobbyid, bool: toggle ) {
         ShowPlayerNameTagForPlayer( playerid, x, toggle );
         if ( toggle ) SetPlayerColorToTeam( x );
         SetPlayerMarkerForPlayer( playerid, x, toggle ? GetPlayerColor( x ) : setAlpha( GetPlayerColor( x ), 0x00 ) );
+    }
+}
+
+static stock BattleRoyale_ShowGangZone( playerid, lobbyid ) {
+    Turf_HideAllGangZones( playerid );
+    for ( new g = 0; g < 4; g ++ ) {
+        GangZoneShowForPlayer( playerid, br_lobbyData[ lobbyid ] [ E_BORDER_ZONE ] [ g ], 0x000000FF );
     }
 }
 
