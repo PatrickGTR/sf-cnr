@@ -48,7 +48,7 @@ static const
         -2080.1951, -407.7742, 38.7344
     },
     Float: BR_ISLAND_POS[ 3 ] = {
-        -1504.9567, 1373.8749, 3.8165
+        -4957.9775, 2031.4171, 5.8310
     },
     BR_RUNNING_WEAPONS[ ] = {
         22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
@@ -135,6 +135,10 @@ static stock
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
+    // objects
+    BattleRoyale_InitLobbyObjects( );
+
+    // checkpoint
     g_battleRoyaleStadiumCP = CreateDynamicCP( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 1.0, 0 );
 	CreateDynamic3DTextLabel( "[BATTLE ROYALE]", COLOR_GOLD, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 20.0 );
     return 1;
@@ -589,6 +593,7 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
     BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] );
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
+    pauseToLoad( playerid );
 
     // check if lobby is full
     BattleRoyale_CheckPlayers( lobbyid );
@@ -1138,4 +1143,85 @@ stock BattleRoyale_PlayerTags( playerid, lobbyid, bool: toggle ) {
         if ( toggle ) SetPlayerColorToTeam( x );
         SetPlayerMarkerForPlayer( playerid, x, toggle ? GetPlayerColor( x ) : setAlpha( GetPlayerColor( x ), 0x00 ) );
     }
+}
+
+static stock BattleRoyale_InitLobbyObjects( )
+{
+    tmpVariable = CreateDynamicObject( 16207, -5022.422851, 1993.284057, -38.799999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    SetDynamicObjectMaterial( tmpVariable, 0, 8462, "vgsecoast", "desgrassbrn", -16 );
+    SetDynamicObjectMaterial( tmpVariable, 1, 8462, "vgsecoast", "desgrassbrn", -16 );
+    SetDynamicObjectMaterial( tmpVariable, 2, 8462, "vgsecoast", "desgrassbrn", -16 );
+    SetDynamicObjectMaterial( tmpVariable, 3, 8462, "vgsecoast", "desgrassbrn", -16 );
+    CreateDynamicObject( 8493, -4961.316894, 2066.529052, 17.107999, 6.500000, 0.000000, 88.099998, -1, -1, -1 );
+    CreateDynamicObject( 683, -4953.866210, 2007.400024, 1.439000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18765, -4958.104980, 2031.545043, 1.881000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4958.089843, 2033.555053, 8.461000, 0.000000, 90.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18764, -4958.085937, 2031.555053, 2.331000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4960.085937, 2031.555053, 8.463000, 0.000000, 90.000000, 90.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4958.089843, 2029.545043, 8.461000, 0.000000, 90.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18762, -4956.085937, 2031.555053, 8.463000, 0.000000, 90.000000, 90.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4955.611816, 2034.012939, -3.549000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4960.549804, 2034.083007, -3.549000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4955.611816, 2029.119995, -3.549000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    SetDynamicObjectMaterial( CreateDynamicObject( 18980, -4960.611816, 2029.119995, -3.549000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, 12911, "sw_farm1", "sw_barnwood4", -16 );
+    CreateDynamicObject( 14400, -4957.749023, 2030.637939, 8.503000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 14400, -4957.749023, 2032.668945, 8.503000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 3439, -4962.041992, 2035.514038, 3.288000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 3439, -4962.041992, 2027.522949, 3.288000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 3439, -4954.037109, 2027.522949, 3.288000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 3439, -4954.037109, 2035.510986, 3.288000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4960.604003, 2032.762939, 7.584000, 0.000000, -90.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4960.602050, 2030.795043, 7.585999, 0.000000, -90.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4955.691894, 2030.795043, 7.585999, 0.000000, -90.000000, 180.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4955.689941, 2032.649047, 7.587999, 0.000000, -90.000000, 180.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4956.902832, 2029.128051, 7.587999, 0.000000, -90.000000, 90.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4959.079101, 2029.130004, 7.590000, 0.000000, -90.000000, 90.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4959.079101, 2033.989990, 7.590000, 0.000000, -90.000000, -90.000000, -1, -1, -1 );
+    CreateDynamicObject( 635, -4957.064941, 2033.991943, 7.592000, 0.000000, -90.000000, -90.000000, -1, -1, -1 );
+    CreateDynamicObject( 14387, -4954.657226, 2031.552001, 3.835999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 14387, -4961.520996, 2031.552001, 3.835999, 0.000000, 0.000000, 180.000000, -1, -1, -1 );
+    CreateDynamicObject( 14387, -4957.988769, 2034.973999, 3.835999, 0.000000, 0.000000, 90.000000, -1, -1, -1 );
+    CreateDynamicObject( 14387, -4957.988769, 2028.152954, 3.835999, 0.000000, 0.000000, -90.000000, -1, -1, -1 );
+    CreateDynamicObject( 18271, -4966.595214, 2031.458984, 17.809999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 18271, -4947.519042, 2028.030029, 17.809999, 0.000000, 0.000000, 180.000000, -1, -1, -1 );
+    CreateDynamicObject( 698, -4982.479980, 2017.875976, 5.473999, 0.000000, 0.000000, -63.000000, -1, -1, -1 );
+    CreateDynamicObject( 706, -4930.003906, 2045.194946, -0.146999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 13369, -4934.434082, 2010.329956, -6.242000, -122.099998, 0.000000, 69.800003, -1, -1, -1 );
+    CreateDynamicObject( 790, -4939.732910, 2018.468994, -4.052000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 691, -4969.566894, 2017.631958, 2.188999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 688, -4973.712890, 2047.167968, 4.124000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 840, -4961.145996, 2023.975952, 4.576000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 838, -4962.453125, 2045.576049, 5.610000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 874, -4965.160156, 2001.401000, 2.331000, 0.000000, 0.000000, 51.400001, -1, -1, -1 );
+    CreateDynamicObject( 874, -4948.738769, 1995.686035, 2.331000, 0.000000, 0.000000, 87.500000, -1, -1, -1 );
+    CreateDynamicObject( 874, -4930.645996, 2032.130004, 1.690999, 0.000000, 0.000000, 87.500000, -1, -1, -1 );
+    CreateDynamicObject( 874, -4986.730957, 2034.552978, 4.513000, 0.000000, 17.500000, 170.000000, -1, -1, -1 );
+    CreateDynamicObject( 874, -4986.318847, 2050.239990, 3.351999, 0.000000, 17.500000, 170.000000, -1, -1, -1 );
+    CreateDynamicObject( 874, -4940.833007, 2050.229980, 4.015999, 0.000000, 0.000000, 47.299999, -1, -1, -1 );
+    CreateDynamicObject( 14400, -4953.277832, 2032.182983, 2.296999, 90.000000, 0.000000, 90.000000, -1, -1, -1 );
+    CreateDynamicObject( 827, -4939.162109, 2023.479003, 2.898999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 813, -4941.013183, 2036.902954, 3.178999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 700, -4959.982910, 2016.935058, 3.723000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 706, -4942.352050, 2033.354980, 1.282999, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 705, -4968.497070, 2037.600952, 3.555000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 708, -4967.596191, 2050.914062, -3.082000, 0.000000, 0.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 708, -4974.344238, 2027.313964, -4.381999, 0.000000, -20.000000, 0.000000, -1, -1, -1 );
+    CreateDynamicObject( 708, -4964.664062, 2006.703979, -4.077000, 0.000000, -20.000000, 89.900001, -1, -1, -1 );
+    CreateDynamicObject( 708, -4946.081054, 2006.670043, -4.077000, 0.000000, -20.000000, 102.400001, -1, -1, -1 );
+    CreateDynamicObject( 708, -4932.398925, 2014.104003, -2.503000, 0.000000, -20.000000, 167.000000, -1, -1, -1 );
+    CreateDynamicObject( 708, -4925.544921, 2029.609985, -5.900000, 0.000000, -20.000000, 167.000000, -1, -1, -1 );
+    CreateDynamicObject( 708, -4941.545898, 2051.969970, -3.897000, 0.000000, -20.000000, -112.000000, -1, -1, -1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4931.658203, 2043.897949, 4.823999, -1.899999, 1.000000, -59.200000, -1, -1, -1 ), 0, "Banging7Grams", 130, "Arial", 70, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4971.956054, 2023.493041, 6.739999, -1.200000, 0.500000, 104.599998, -1, -1, -1 ), 0, "Nibble", 130, "Arial", 70, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4947.923828, 2046.234985, 4.340000, -0.200000, 0.899999, -71.000000, -1, -1, -1 ), 0, "Dash", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4958.229003, 2049.212890, 5.451000, 0.000000, 0.000000, 0.000000, -1, -1, -1 ), 0, "Kova", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4940.236816, 2018.578979, 4.479000, 0.300000, -0.200000, -106.599998, -1, -1, -1 ), 0, "Alcoholic", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4973.568847, 2027.425048, 7.725999, 0.000000, 0.000000, 79.500000, -1, -1, -1 ), 0, "elijah_who", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4941.911132, 2051.261962, 6.762000, 0.000000, 0.000000, -28.399999, -1, -1, -1 ), 0, "iAshley", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4966.801757, 2013.499023, 6.711999, 0.000000, 0.000000, 169.000000, -1, -1, -1 ), 0, "XtreamFlaw", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4964.613769, 2007.512939, 5.831999, 0.000000, 0.000000, 169.000000, -1, -1, -1 ), 0, "Lyrical", 130, "Arial", 100, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4969.285156, 2017.756958, 6.668000, -1.200000, 0.500000, 115.599998, -1, -1, -1 ), 0, "Brad", 130, "Arial", 90, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4959.574218, 2017.125000, 4.847000, -1.200000, 0.500000, 115.599998, -1, -1, -1 ), 0, "Night", 130, "Arial", 90, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4943.875000, 2034.607055, 4.974999, -1.899999, 1.000000, -132.100006, -1, -1, -1 ), 0, "Chickenwing", 130, "Arial", 80, 1, -65022, 0, 1 );
+    SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4955.777832, 2010.151000, 4.922999, -1.200000, 0.500000, 163.899993, -1, -1, -1 ), 0, "RichxKID", 130, "Arial", 90, 1, -65022, 0, 1 );
 }
