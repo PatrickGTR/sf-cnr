@@ -162,7 +162,15 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 
     if ( BR_IsValidLobby( lobbyid ) )
     {
-
+        for ( new i = 0; i < sizeof ( br_lobbyPickupData [ ] ); i ++ ) if ( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] != -1 )
+        {
+            if ( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] == pickupid )
+            {
+                GivePlayerWeapon( playerid, br_lobbyPickupData[ lobbyid ] [ i ] [ E_WEAPON_ID ], RandomEx( 20, 100 ) );
+                DestroyDynamicPickup( br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] );
+                br_lobbyPickupData[ lobbyid ] [ i ] [ E_PICKUP ] = -1;
+            }
+        }
     }
     return 1;
 }
@@ -501,13 +509,27 @@ CMD:battleroyale( playerid, params[ ] )
     {
         return BattleRoyale_StartGame( lobbyid );
     }
-    else if ( strmatch( params, "stop" ) )
+    else if ( strmatch ( params, "leave" ) )
     {
-        // if ( br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED )
-        //     return SendError( playerid, "You cannot end the game when the lobby has started." );
-
+        return BattleRoyale_RemovePlayer( playerid, true );
     }
-    return SendUsage( playerid, "/battleroyale [EDIT/START/STOP]" );
+	else if ( ! strcmp( params, "donate", false, 6 ) )
+    {
+        new
+            amount;
+
+        if ( sscanf( params[ 7 ], "d", amount ) ) return SendUsage( playerid, "/br donate [AMOUNT]" );
+        else if ( amount < 1 ) return SendError( playerid, "You cannot donate less than $1 to this lobby." );
+        else if ( amount > GetPlayerCash( playerid ) ) return SendError( playerid, "You do not have this much money." );
+        else
+        {
+            GivePlayerCash( playerid, -amount );
+            br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += amount;
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby.", ReturnPlayerName( playerid ), playerid, cash_format( amount ) );
+        }
+        return 1;
+    }
+    return SendUsage( playerid, "/battleroyale [DONATE/EDIT/START/LEAVE]" );
 }
 
 /* ** Functions ** */
@@ -523,7 +545,7 @@ static stock BattleRoyale_CreateLobby( playerid )
 
         br_lobbyData[ lobbyid ] [ E_LIMIT ] = 6;
         br_lobbyData[ lobbyid ] [ E_AREA_ID ] = 0;
-        br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 0;
+        br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] = 1000;
         br_lobbyData[ lobbyid ] [ E_HOST ] = playerid;
         br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_WAITING;
 
@@ -1090,8 +1112,8 @@ static stock BattleRoyale_GenerateEntities( lobbyid )
     {
         new modelid = BR_VEHICLE_MODELS[ random( sizeof( BR_VEHICLE_MODELS ) ) ];
 
-        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER * 3.0, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER * 3.0 );
-        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER * 3.0, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER * 3.0 );
+        new Float: X = fRandomEx( br_areaData[ areaid ] [ E_MIN_X ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_X ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
+        new Float: Y = fRandomEx( br_areaData[ areaid ] [ E_MIN_Y ] + BR_PLANE_RADIUS_FROM_BORDER * 5.0, br_areaData[ areaid ] [ E_MAX_Y ] - BR_PLANE_RADIUS_FROM_BORDER * 5.0 );
         new Float: Z = 0.0;
 
         new nodeid = NearestNodeFromPoint( X, Y, Z );
