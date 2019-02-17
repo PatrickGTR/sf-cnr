@@ -62,7 +62,7 @@ hook OnScriptInit( playerid )
 	CreateNavigation( "Train Station", 			-1979.9883, 138.0498, 27.6875, CITY_SF, "Traindriver Minijob" );
 	CreateNavigation( "Mining Field", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Mining Minijob" );
 	CreateNavigation( "Duel Arena", 			-2232.9792, 251.5285, 34.8770, CITY_SF, "Waged Duels" );
-	CreateNavigation( "Battle Royale Arena",	-2232.9792, 251.5285, 34.8770, CITY_SF, "Battle royale minigame" );
+	CreateNavigation( "Battle Royale Arena",	-2109.6680, -444.147, 38.7344, CITY_SF, "Battle royale minigame" );
 
 	#if ENABLE_CITY_LV == true
 	// Las Venturas
