@@ -117,7 +117,7 @@ static stock
     //br_wallBorderObjectLeft         [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     //br_wallBorderObjectRight        [ BR_MAX_LOBBIES ] [ 4 ] [ 4 ],
     Iterator: battleroyale          < BR_MAX_LOBBIES >,
-    Iterator: battleroyaleplayers   [ BR_MAX_LOBBIES ] < BR_MAX_PLAYERS >,
+    Iterator: battleroyaleplayers   < BR_MAX_LOBBIES, MAX_PLAYERS >,
 
     // player related
     p_battleRoyaleLobby                     [ MAX_PLAYERS ] = { BR_INVALID_LOBBY, ... },
@@ -286,6 +286,13 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 return SendError( playerid, "You cannot create a battle royale lobby at the moment" );
             }
 
+            new
+                players = Iter_Count( battleroyaleplayers< lobbyid >, playerid );
+
+            if ( players >= BR_MAX_PLAYERS ) {
+                return SendError( playerid, "This lobby is currently full." );
+            }
+
             GivePlayerCash( playerid, -10000 );
             br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += 10000;
 
@@ -302,6 +309,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             // check if the player selected an existing lobby
             foreach ( new l : battleroyale )
             {
+                //printf ( "[BR DEBUG] %d : LINE 305", GetTickCount( ) );
                 if ( x == listitem - 1 )
                 {
                     // status must be in a waiting state
@@ -311,7 +319,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                     }
 
                     // check if the count is under the limit
-                    if ( Iter_Count( battleroyaleplayers[ l ] ) >= br_lobbyData[ l ] [ E_LIMIT ] )
+                    if ( Iter_Count( battleroyaleplayers< l > ) >= br_lobbyData[ l ] [ E_LIMIT ] )
                     {
                         return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby has reached its maximum player count." );
                     }
@@ -368,7 +376,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
         else if ( listitem == 9 ) // start lobby option
         {
-            if ( Iter_Count( battleroyaleplayers[ lobbyid ] ) < 2 ) {
+            if ( Iter_Count( battleroyaleplayers< lobbyid > ) < 2 ) {
                 SendError( playerid, "You need at least 2 players in your lobby to start this match." );
             } else {
                 BattleRoyale_StartGame( lobbyid );
@@ -543,7 +551,7 @@ CMD:battleroyale( playerid, params[ ] )
     }
     else if ( strmatch( params, "start" ) )
     {
-        if ( Iter_Count( battleroyaleplayers[ lobbyid ] ) < 2 ) {
+        if ( Iter_Count( battleroyaleplayers< lobbyid > ) < 2 ) {
             return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
         }
         return BattleRoyale_StartGame( lobbyid );
@@ -593,6 +601,7 @@ static stock BattleRoyale_CreateLobby( playerid )
         br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_WAITING;
 
         br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
+        br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
 
         br_lobbyData[ lobbyid ] [ E_HEALTH ] = 100.0;
         br_lobbyData[ lobbyid ] [ E_ARMOUR ] = 0.0;
@@ -654,10 +663,10 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
 {
     // set lobby id
     p_battleRoyaleLobby[ playerid ] = lobbyid;
-    Iter_Add( battleroyaleplayers[ lobbyid ], playerid );
+    Iter_Add( battleroyaleplayers< lobbyid >, playerid );
 
     // set player position in an island
-    BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers[ lobbyid ] ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
+    BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers< lobbyid > ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] + 1.0 );
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
     pauseToLoad( playerid );
@@ -682,6 +691,7 @@ static stock BattleRoyale_ShowLobbies( playerid )
     // format dialog
     foreach ( new l : battleroyale )
     {
+        //printf ( "[BR DEBUG] %d : LINE 686", GetTickCount( ) );
         format(
             szLargeString, sizeof( szLargeString ),
             "%s%s%s\t%s%s\t%s%d / %d\t%s%s\n",
@@ -691,7 +701,7 @@ static stock BattleRoyale_ShowLobbies( playerid )
             br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             IsPlayerConnected( br_lobbyData[ l ] [ E_HOST ] ) ? ( ReturnPlayerName( br_lobbyData[ l ] [ E_HOST ] ) ) : ( "N/A" ),
             br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
-            Iter_Count( battleroyaleplayers[ l ] ),
+            Iter_Count( battleroyaleplayers< l > ),
             br_lobbyData[ l ] [ E_LIMIT ],
             br_lobbyData[ l ] [ E_STATUS ] == E_STATUS_STARTED ? ( COL_RED ) : ( COL_WHITE ),
             cash_format( br_lobbyData[ l ] [ E_ENTRY_FEE ] )
@@ -735,7 +745,7 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
         // perform neccessary operations/checks on the lobby
         if ( remove_from_iterator )
         {
-            Iter_Remove( battleroyaleplayers[ lobbyid ], playerid );
+            Iter_Remove( battleroyaleplayers< lobbyid >, playerid );
             BattleRoyale_CheckPlayers( lobbyid );
         }
     }
@@ -759,14 +769,15 @@ static stock BattleRoyale_EndGame( lobbyid )
 {
     new fees_incurred = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * 0.2 );
 
-    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] - fees_incurred ) / float( Iter_Count( battleroyaleplayers[ lobbyid ] ) ), floatround_ceil );
+    new prize = floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] - fees_incurred ) / float( Iter_Count( battleroyaleplayers< lobbyid > ) ), floatround_ceil );
 
     new Float: distribution = floatround( float( prize ) / float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] - fees_incurred ) * 100.0 );
 
     StockMarket_UpdateEarnings( E_STOCK_BATTLE_ROYAL_CENTER, fees_incurred, 0.5 );
 
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
+        //printf ( "[BR DEBUG] %d : LINE 772", GetTickCount( ) );
         BattleRoyale_SendMessageAll( "%s(%d) has won %s (%0.0f%s) out of the %s prize pool.", ReturnPlayerName( playerid ), playerid, cash_format( prize ), distribution, "%%", br_lobbyData[ lobbyid ] [ E_NAME ] );
         BattleRoyale_RemovePlayer( playerid, true, false );
         GivePlayerCash( playerid, prize );
@@ -782,7 +793,7 @@ static stock BattleRoyale_CheckPlayers( lobbyid )
     }
 
     new
-        total_players = Iter_Count( battleroyaleplayers[ lobbyid ] );
+        total_players = Iter_Count( battleroyaleplayers< lobbyid > );
 
     // check if there is no more players
     if ( total_players <= 1 && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED )
@@ -836,8 +847,9 @@ static stock BattleRoyale_StartGame( lobbyid )
     br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = SetTimerEx( "BattleRoyale_GameUpdate", 2500, true, "d", lobbyid);
 
     // load the player into the area
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
+        //printf ( "[BR DEBUG] %d : LINE 844", GetTickCount( ) );
         // respawn player
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
         TogglePlayerSpectating( playerid, true );
@@ -862,16 +874,19 @@ static stock BattleRoyale_StartGame( lobbyid )
 function BattleRoyale_GameUpdate( lobbyid )
 {
     // hide markers / etc
-    foreach ( new x : battleroyaleplayers[ lobbyid ] ) {
-        foreach ( new y : battleroyaleplayers[ lobbyid ] ) {
+    foreach ( new x : battleroyaleplayers< lobbyid > ) {
+        //printf ( "[BR DEBUG] %d : LINE 870", GetTickCount( ) );
+        foreach ( new y : battleroyaleplayers< lobbyid > ) {
+            //printf ( "[BR DEBUG] %d : LINE 872", GetTickCount( ) );
             ShowPlayerNameTagForPlayer( x, y, false );
             SetPlayerMarkerForPlayer( x, y, setAlpha( GetPlayerColor( y ), 0x00 ) );
         }
     }
 
     // hurt players outside the zone
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
+        //printf ( "[BR DEBUG] %d : LINE 881", GetTickCount( ) ); <--
         if ( ! IsPlayerInArea( playerid, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
         {
             new
@@ -940,7 +955,8 @@ function BattleRoyale_GameUpdate( lobbyid )
         new flare = CreateDynamicObject( 18728, X, Y, Z - 1.0, 0.0, 0.0, 0.0 );
         new move_speed = MoveDynamicObject( rocket, X, Y, Z, 25.0 );
 
-        foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) {
+        foreach ( new playerid : battleroyaleplayers< lobbyid > ) {
+            //printf ( "[BR DEBUG] %d : LINE 951", GetTickCount( ) );
             PlayerPlaySound( playerid, 14800, X, Y, Z );
             Streamer_Update( playerid, STREAMER_TYPE_OBJECT );
         }
@@ -958,8 +974,9 @@ function BattleRoyale_ExplodeBomb( lobbyid, rocketid, flareid, Float: X, Float: 
 	DestroyDynamicObject( flareid );
 
     // create explosion
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] )
+    foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
+        //printf ( "[BR DEBUG] %d : LINE 971", GetTickCount( ) );
         CreateExplosionForPlayer( playerid, X, Y, Z, 6, 10.0 );
     }
     return 1;
@@ -981,11 +998,15 @@ function BattleRoyale_PlaneMove( lobbyid )
         new
             unready_players = 0;
 
-        foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) if ( p_battleRoyaleStatus[ playerid ] != E_STATUS_STARTED )
+        foreach ( new playerid : battleroyaleplayers< lobbyid > )
         {
-            unready_players ++;
-            BattleRoyale_ThrowFromPlane( playerid );
-            SendServerMessage( playerid, "You have been thrown out of your plane due to a lack of decision." );
+            //printf ( "[BR DEBUG] %d : LINE 995", GetTickCount( ) );
+            if ( p_battleRoyaleStatus[ playerid ] != E_STATUS_STARTED )
+            {
+                unready_players ++;
+                BattleRoyale_ThrowFromPlane( playerid );
+                SendServerMessage( playerid, "You have been thrown out of your plane due to a lack of decision." );
+            }
         }
 
         // ensures that the plane object is kept while players are thrown out
@@ -1012,17 +1033,21 @@ function BattleRoyale_PlaneMove( lobbyid )
 
     SetDynamicObjectRot( br_lobbyData[ lobbyid ] [ E_PLANE ], 0.0, 0.0, rotation );
 
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) if ( p_battleRoyaleStatus[ playerid ] == E_STATUS_WAITING )
+    foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
-        SetPlayerCameraPos( playerid, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT );
-        SetPlayerCameraLookAt( playerid, plane_x, plane_y, BR_MIN_HEIGHT );
+        //printf ( "[BR DEBUG] %d : LINE 1030", GetTickCount( ) );
+        if ( p_battleRoyaleStatus[ playerid ] == E_STATUS_WAITING )
+        {
+            SetPlayerCameraPos( playerid, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT );
+            SetPlayerCameraLookAt( playerid, plane_x, plane_y, BR_MIN_HEIGHT );
 
-        new
-            tick_count = GetTickCount( );
+            new
+                tick_count = GetTickCount( );
 
-        if ( tick_count > p_battleRoyaleJetNoiseTick[ playerid ] ) {
-            PlayerPlaySound( playerid, 14400, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT * 0.70 );
-            p_battleRoyaleJetNoiseTick[ playerid ] = tick_count + 250;
+            if ( tick_count > p_battleRoyaleJetNoiseTick[ playerid ] ) {
+                PlayerPlaySound( playerid, 14400, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT * 0.70 );
+                p_battleRoyaleJetNoiseTick[ playerid ] = tick_count + 250;
+            }
         }
     }
 }
@@ -1044,7 +1069,7 @@ static stock BattleRoyale_ThrowFromPlane( playerid )
 static stock BattleRoyale_DestroyLobby( lobbyid )
 {
     Iter_Remove( battleroyale, lobbyid );
-    Iter_Clear( battleroyaleplayers[ lobbyid ] );
+    Iter_Clear( battleroyaleplayers< lobbyid > );
 
     BattleRoyale_DestroyBorder( lobbyid );
     BattleRoyale_DestroyEntities( lobbyid );
@@ -1074,8 +1099,10 @@ static stock BattleRoyale_RedrawBorder( lobbyid, Float: sides_rate = 1.0, Float:
     temporary_gangzone[ 3 ] = GangZoneCreate( br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], 3000, .bordersize = 0.0, .numbersize = 0.0 );
 
     // show the new gangzone
-    foreach ( new playerid : battleroyaleplayers[ lobbyid ] ) {
+    foreach ( new playerid : battleroyaleplayers< lobbyid > ) {
+        //printf ( "[BR DEBUG] %d : LINE 1092", GetTickCount( ) );
         for ( new g = 0; g < sizeof( temporary_gangzone ); g ++ ) {
+            //printf ( "[BR DEBUG] %d : LINE 1094", GetTickCount( ) );
             GangZoneShowForPlayer( playerid, temporary_gangzone[ g ], 0x000000FF );
         }
     }
@@ -1257,7 +1284,8 @@ stock BattleRoyale_SMF( lobbyid, colour, const format[ ], va_args<> )
 
     va_format( out, sizeof( out ), format, va_start<3> );
 
-	foreach ( new i : battleroyaleplayers[ lobbyid ] ) {
+	foreach ( new i : battleroyaleplayers< lobbyid > ) {
+        //printf ( "[BR DEBUG] %d : LINE 1277", GetTickCount( ) );
 		SendClientMessage( i, colour, out );
 	}
 	return 1;
@@ -1268,7 +1296,8 @@ stock IsPlayerInBattleRoyale( playerid ) {
 }
 
 stock BattleRoyale_PlayerTags( playerid, lobbyid, bool: toggle ) {
-    foreach ( new x : battleroyaleplayers[ lobbyid ] ) {
+    foreach ( new x : battleroyaleplayers< lobbyid > ) {
+        //printf ( "[BR DEBUG] %d : LINE 1289", GetTickCount( ) );
         ShowPlayerNameTagForPlayer( playerid, x, toggle );
         if ( toggle ) SetPlayerColorToTeam( x );
         SetPlayerMarkerForPlayer( playerid, x, toggle ? GetPlayerColor( x ) : setAlpha( GetPlayerColor( x ), 0x00 ) );
