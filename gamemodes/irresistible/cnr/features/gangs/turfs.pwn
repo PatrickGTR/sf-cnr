@@ -321,8 +321,15 @@ hook OnServerGameDayEnd( )
 		}
 	}
 
+	// get previous turf
+	new previous_turf = Iter_Prev( gangzoneturfs, g_gangHardpointTurf );
+
+	if ( previous_turf >= Iter_Last( gangzoneturfs ) ) {
+		previous_turf = INVALID_GANG_TURF;
+	}
+
 	// reset hardpoint
-	g_gangHardpointPreviousTurf = Iter_Prev( gangzoneturfs, g_gangHardpointTurf );
+	g_gangHardpointPreviousTurf = previous_turf;
 	g_gangHardpointTurf = INVALID_GANG_TURF;
 	g_weekAveragePlayers = 0.0;
 	g_weekSecondsElapsed = 0.0;
