@@ -3796,6 +3796,7 @@ CMD:search( playerid, params[ ] )
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/search [PLAYER_ID]" );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) > 10.0 || !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not around." );
 	else if ( p_Class[ pID ] == CLASS_POLICE ) return SendError( playerid, "This player is in your team!" );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( !IsPlayerCuffed( pID ) ) return SendError( playerid, "This player must be cuffed." );
 	else if ( IsPlayerJailed( pID ) ) return SendError( playerid, "You cannot " );
 	else
