@@ -184,11 +184,15 @@ hook OnPlayerDeath( playerid, killerid, reason )
     new
         lobbyid = p_battleRoyaleLobby[ playerid ];
 
-    if ( BR_IsValidLobby( lobbyid ) ) {
+    if ( BR_IsValidLobby( lobbyid ) )
+    {
+        new
+            remaining = Iter_Count( battleroyaleplayers< playerid > );
+
         if ( IsPlayerConnected( killerid ) ) {
-            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ) );
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s, %d player%s remaining!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ), remaining, remaining == 1 ? ( "" ) : ( "s" ) );
         } else {
-            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed!", ReturnPlayerName( playerid ), playerid );
+            BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed, %d player%s remaining!", ReturnPlayerName( playerid ), playerid, remaining, remaining == 1 ? ( "" ) : ( "s" ) );
         }
 		SendDeathMessage( killerid, playerid, reason );
         BattleRoyale_RemovePlayer( playerid, true );
@@ -226,11 +230,13 @@ hook SetPlayerRandomSpawn( playerid )
                 SetPlayerPos( playerid, X, Y, Z - 2.0 );
                 SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
+                ResetPlayerPassiveMode( playerid );
+                DisablePlayerSpawnProtection( playerid, .default_health = br_lobbyData[ lobbyid ] [ E_HEALTH ] );
+
                 SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
                 SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
 
                 BattleRoyale_ShowGangZone( playerid, lobbyid );
-                ResetPlayerPassiveMode( playerid );
                 return Y_HOOKS_BREAK_RETURN_1;
             }
             else
@@ -665,8 +671,10 @@ static stock BattleRoyale_JoinLobby( playerid, lobbyid )
     p_battleRoyaleLobby[ playerid ] = lobbyid;
     Iter_Add( battleroyaleplayers< lobbyid >, playerid );
 
+    // alert
+    BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]"COL_GREEN" (%s POOL)", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers< lobbyid > ), br_lobbyData[ lobbyid ] [ E_LIMIT ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
+
     // set player position in an island
-    BattleRoyale_SendMessage( lobbyid, "%s has joined %s "COL_ORANGE"[%d/%d]", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ], Iter_Count( battleroyaleplayers< lobbyid > ), br_lobbyData[ lobbyid ] [ E_LIMIT ] );
     SetPlayerPos( playerid, BR_ISLAND_POS[ 0 ], BR_ISLAND_POS[ 1 ], BR_ISLAND_POS[ 2 ] + 1.0 );
     SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
     pauseToLoad( playerid );
@@ -745,7 +753,7 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
         // perform neccessary operations/checks on the lobby
         if ( remove_from_iterator )
         {
-            Iter_Remove( battleroyaleplayers< lobbyid >, playerid );
+            Iter_SafeRemove( battleroyaleplayers< lobbyid >, playerid, playerid );
             BattleRoyale_CheckPlayers( lobbyid );
         }
     }
@@ -873,28 +881,28 @@ static stock BattleRoyale_StartGame( lobbyid )
 
 function BattleRoyale_GameUpdate( lobbyid )
 {
-    // hide markers / etc
-    foreach ( new x : battleroyaleplayers< lobbyid > ) {
-        //printf ( "[BR DEBUG] %d : LINE 870", GetTickCount( ) );
-        foreach ( new y : battleroyaleplayers< lobbyid > ) {
+    foreach ( new x : battleroyaleplayers< lobbyid > )
+    {
+        // printf ( "[BR DEBUG] %d : LINE 878", GetTickCount( ) );
+
+        // hide markers / etc
+        foreach ( new y : battleroyaleplayers< lobbyid > )
+        {
             //printf ( "[BR DEBUG] %d : LINE 872", GetTickCount( ) );
             ShowPlayerNameTagForPlayer( x, y, false );
             SetPlayerMarkerForPlayer( x, y, setAlpha( GetPlayerColor( y ), 0x00 ) );
         }
-    }
 
-    // hurt players outside the zone
-    foreach ( new playerid : battleroyaleplayers< lobbyid > )
-    {
-        //printf ( "[BR DEBUG] %d : LINE 881", GetTickCount( ) ); <--
-        if ( ! IsPlayerInArea( playerid, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
+        // hurt players outside the zone
+        if ( IsPlayerSpawned( x ) && ! IsPlayerInArea( x, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
         {
             new
                 Float: health;
 
-            GetPlayerHealth( playerid, health );
-            GameTextForPlayer( playerid, "~r~STAY IN THE AREA!", 3500, 3 );
-            SetPlayerHealth( playerid, health - 5.0 );
+            GetPlayerHealth( x, health );
+
+            GameTextForPlayer( x, "~r~STAY IN THE AREA!", 5000, 3 );
+            SetPlayerHealth( x, health - 10.0 );
         }
     }
 
