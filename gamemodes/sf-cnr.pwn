@@ -1065,7 +1065,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 0;
 
 	// Anti RDM and gang member damage
-	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
+	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) && ! IsPlayerInBattleRoyale( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) ) {
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
@@ -7115,7 +7115,7 @@ stock CanPlayerExitEntrance( playerid ) return g_iTime > p_EntranceTimestamp[ pl
 stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
 
 stock IsPlayerInMinigame( playerid ) {
-	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
+	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid ) || IsPlayerInBattleRoyale( playerid );
 }
 
 stock SendClientMessageToCops( colour, const format[ ], va_args<> )

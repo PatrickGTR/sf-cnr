@@ -232,7 +232,7 @@ stock AC_SetPlayerHealth( playerid, Float:amount )
 		}
 
 		AC_SetPlayerSpawned( playerid, false );
-		CallRemoteFunction( "OnPlayerDeathEx", "ddfd", playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
+		SetTimerEx( "OnPlayerDeathEx", 10, false, "ddfd", playerid, p_LastDamageIssuer[ playerid ], p_LastWeaponIssuer[ playerid ], 3.3, 3 );
 	}
     return SetPlayerHealth( playerid, amount );
 }

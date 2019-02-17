@@ -37,11 +37,7 @@ hook OnPlayerDisconnect( playerid, reason )
 	return 1;
 }
 
-#if defined AC_INCLUDED
-hook OnPlayerDeathEx( playerid, killerid, reason, Float: damage, bodypart )
-#else
-hook OnPlayerDeath( playerid, killerid, reason )
-#endif
+hook OnPlayerSpawn( playerid )
 {
 	StopPlayerFireTracker( playerid );
 	return 1;

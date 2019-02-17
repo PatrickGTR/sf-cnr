@@ -157,7 +157,7 @@ hook OnPlayerFloodControl( playerid, iCount, iTimeSpan ) {
 		}
 		return 1;
 	}
-
+#else
 	// aims to clear the banned from the server bug
 	hook OnIncomingConnection( playerid, ip_address[ ], port ) {
 		SendRconCommand( "reloadbans" );

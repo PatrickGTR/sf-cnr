@@ -63,7 +63,8 @@ enum
 	E_STOCK_PAWN_STORE,
 	E_STOCK_CASINO,
 	E_STOCK_GOVERNMENT,
-	E_STOCK_AVIATION
+	E_STOCK_AVIATION,
+	E_STOCK_BATTLE_ROYAL_CENTER
 };
 
 static stock
@@ -93,6 +94,7 @@ hook OnScriptInit( )
 	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		7500.0,		100000.0,		150.0,			"Money lost by players gambling" );
 	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		7500.0,		100000.0,		150.0,			"Fireman and LEO activities" );
 	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
+	CreateStockMarket( E_STOCK_BATTLE_ROYAL_CENTER, "Battle Royale Center",	"BRC", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Battle Royale minigame fees" );
 
 	// force inactive share holders to sell their shares on startup
 	mysql_tquery( dbHandle, sprintf( "SELECT so.* FROM `STOCK_OWNERS` so JOIN `USERS` u ON so.`USER_ID`=u.`ID` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 604800 AND so.`USER_ID` != %d", STOCK_MM_USER_ID ), "StockMarket_ForceShareSale", "" );

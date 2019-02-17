@@ -81,11 +81,12 @@ enum E_TURF_ZONE_DATA {
 new
 	g_gangTurfData					[ MAX_TURFS ] [ E_TURF_ZONE_DATA ],
 	Iterator: turfs 				< MAX_TURFS >,
+	Iterator: gangzoneturfs 		< MAX_TURFS >,
 
 	Float: g_weekAveragePlayers		= 0.0,
 	Float: g_weekSecondsElapsed 	= 0.0,
 
-	g_gangHardpointRotation 		= -1, // it will begin at 0 this way
+	g_gangHardpointRotation 		= -1,
 	g_gangHardpointTurf				= INVALID_GANG_TURF,
 	g_gangHardpointPreviousTurf 	= INVALID_GANG_TURF,
 	g_gangHardpointAttacker			= INVALID_GANG_ID,
@@ -109,10 +110,14 @@ stock Float: Turf_GetHardpointPrizePool( Float: max_payout = 500000.0 )
 /* ** Hooks ** */
 hook OnGameModeInit( )
 {
-	/* ** Gangzone Allocation ** */
+	// Gangzone Allocation
 	for ( new i = 0; i < sizeof( g_gangzoneData ); i ++ ) {
-		Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE, .bordersize = GANGZONE_DEFAULT_BORDER_SIZE, .numbersize = GANGZONE_DEFAULT_NUMBER_SIZE );
+		new turfid = Turf_Create( g_gangzoneData[ i ] [ E_MIN_X ], g_gangzoneData[ i ] [ E_MIN_Y ], g_gangzoneData[ i ] [ E_MAX_X ], g_gangzoneData[ i ] [ E_MAX_Y ], INVALID_GANG_ID, COLOR_GANGZONE, .bordersize = GANGZONE_DEFAULT_BORDER_SIZE, .numbersize = GANGZONE_DEFAULT_NUMBER_SIZE );
+		Iter_Add( gangzoneturfs, turfid );
 	}
+
+	// Reset Iterator
+	g_gangHardpointRotation = Iter_Last( gangzoneturfs );
 	return 1;
 }
 
@@ -227,8 +232,15 @@ stock Turf_CreateHardpoint( )
 	}
 
 	// fixed zone rotation
-	if ( ! ( 0 <= g_gangHardpointRotation ++ < sizeof( g_gangzoneData ) - 1 ) ) {
-		g_gangHardpointRotation = 0;
+	new current_rotation = g_gangHardpointRotation;
+
+	// reset rotation
+	if ( current_rotation >= Iter_Last( gangzoneturfs ) ) {
+		g_gangHardpointRotation = Iter_First( gangzoneturfs );
+	}
+	// get next in rotation
+	else {
+		g_gangHardpointRotation = Iter_Next( gangzoneturfs, current_rotation );
 	}
 
 	// allocate new hardpoint
@@ -253,7 +265,7 @@ stock Turf_CreateHardpoint( )
 
 	Turf_GetMiddlePos( g_gangHardpointTurf, middle_x, middle_y );
 
-	g_gangHardpointMapIcon = CreateDynamicMapIcon( middle_x, middle_y, 0.0, 19, -1, -1, -1, 0, 3000.0, MAPICON_GLOBAL );
+	g_gangHardpointMapIcon = CreateDynamicMapIcon( middle_x, middle_y, 0.0,  19, -1, .worldid = 0, .interiorid = 0, .playerid = 0, .streamdistance = 3000.0, .style = MAPICON_GLOBAL );
 	Streamer_RemoveArrayData( STREAMER_TYPE_MAP_ICON, g_gangHardpointMapIcon, E_STREAMER_PLAYER_ID, 0 );
 
 	// redraw gangzones
@@ -309,8 +321,15 @@ hook OnServerGameDayEnd( )
 		}
 	}
 
+	// get previous turf
+	new previous_turf = Iter_Prev( gangzoneturfs, g_gangHardpointTurf );
+
+	if ( previous_turf >= Iter_Last( gangzoneturfs ) ) {
+		previous_turf = INVALID_GANG_TURF;
+	}
+
 	// reset hardpoint
-	g_gangHardpointPreviousTurf = g_gangHardpointTurf;
+	g_gangHardpointPreviousTurf = previous_turf;
 	g_gangHardpointTurf = INVALID_GANG_TURF;
 	g_weekAveragePlayers = 0.0;
 	g_weekSecondsElapsed = 0.0;
@@ -527,6 +546,15 @@ stock Turf_IsAbleToTakeover( i ) {
 
 	GetPlayerPos( i, Z, Z, Z );
 	return p_Class[ i ] == CLASS_CIVILIAN && ! IsPlayerSpawnProtected( i ) && ! IsPlayerPassive( i ) && ! IsPlayerAdminOnDuty( i ) && GetPlayerState( i ) != PLAYER_STATE_SPECTATING && ! IsPlayerAFK( i ) && Z <= 250.0;
+}
+
+stock Turf_HideAllGangZones( playerid )
+{
+	foreach ( new x : turfs )
+	{
+		GangZoneHideForPlayer( playerid, g_gangTurfData[ x ] [ E_ID ] );
+	}
+	return 1;
 }
 
 stock Turf_RedrawPlayerGangZones( playerid )
