@@ -217,7 +217,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 /* ** Commands ** */
 CMD:perks( playerid, params[ ] )
 {
-	if ( IsPlayerInEvent( playerid ) ) {
+	if ( IsPlayerInEvent( playerid ) || IsPlayerInBattleRoyale( playerid ) ) {
 		return SendError( playerid, "You cannot use this command since you're in an event." );
 	}
 	return ShowPlayerDialog( playerid, DIALOG_PERKS, DIALOG_STYLE_LIST, "{FFFFFF}Game Perks", "Player Perks\nVehicle Perks", "Select", "Cancel" );

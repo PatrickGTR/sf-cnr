@@ -235,7 +235,8 @@ stock TazePlayer( victimid, playerid )
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot taze yourself." );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "There are no players around to taze." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 5.0 && IsPlayerConnected( victimid ) )
+ 	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
+	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 5.0 && IsPlayerConnected( victimid ) )
  	{
  	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
 		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
@@ -288,7 +289,8 @@ stock ArrestPlayer( victimid, playerid )
 	// else if ( victimid == playerid ) return SendError( playerid, "You cannot arrest yourself." );
 	else if ( !IsPlayerConnected( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
- 	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
+ 	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
+	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
  	{
  	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );
 		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
@@ -347,6 +349,7 @@ stock CuffPlayer( victimid, playerid )
 	//else if ( victimid == playerid ) return SendError( playerid, "You cannot cuff yourself." );
 	else if ( !IsPlayerConnected( victimid ) || IsPlayerNPC( victimid ) ) return SendError( playerid, "This player is not connected." );
 	else if ( p_Spectating{ playerid } ) return SendError( playerid, "You cannot use such commands while you're spectating." );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
  	else if ( GetDistanceBetweenPlayers( playerid, victimid ) < 4.0 && IsPlayerConnected( victimid ) )
  	{
  	    if ( p_Class[ victimid ] == p_Class[ playerid ] ) return SendError( playerid, "This player is in your team." );

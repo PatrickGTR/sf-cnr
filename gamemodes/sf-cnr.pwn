@@ -2363,6 +2363,7 @@ CMD:mech( playerid, params[ ] )
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be a civilian to use this command." );
 	else if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
 	else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
 	else if ( strmatch( params, "fix" ) )
 	{
@@ -3442,6 +3443,7 @@ CMD:track( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	else if ( !IsPlayerJob( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/track [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
