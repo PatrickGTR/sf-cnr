@@ -123,6 +123,7 @@ static stock
     E_BR_LOBBY_STATUS: p_battleRoyaleStatus [ MAX_PLAYERS ],
     p_battleRoyaleJetNoiseTick              [ MAX_PLAYERS ],
     bool: p_waitingForRespawn               [ MAX_PLAYERS char ],
+    bool: p_battleRoyaleSpawned             [ MAX_PLAYERS char ],
 
     // global related
     g_battleRoyaleStadiumCP         = -1
@@ -236,6 +237,8 @@ hook SetPlayerRandomSpawn( playerid )
                 SetPlayerArmour( playerid, br_lobbyData[ lobbyid ] [ E_ARMOUR ] );
 
                 BattleRoyale_ShowGangZone( playerid, lobbyid );
+
+                p_battleRoyaleSpawned{ playerid } = true;
                 return Y_HOOKS_BREAK_RETURN_1;
             }
             else
@@ -741,6 +744,7 @@ static stock BattleRoyale_RemovePlayer( playerid, bool: respawn, bool: remove_fr
         // unset player variables from the match
         p_battleRoyaleLobby[ playerid ] = BR_INVALID_LOBBY;
         p_waitingForRespawn{ playerid } = respawn;
+        p_battleRoyaleSpawned{ playerid } = false;
 
         // toggle checkpoints etc if connected
         if ( IsPlayerConnected( playerid ) ) {
@@ -859,8 +863,8 @@ static stock BattleRoyale_StartGame( lobbyid )
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
-        //printf ( "[BR DEBUG] %d : LINE 844", GetTickCount( ) );
         // respawn player
+        p_battleRoyaleSpawned{ playerid } = false;
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
         TogglePlayerSpectating( playerid, true );
 
@@ -1021,14 +1025,14 @@ function BattleRoyale_PlaneMove( lobbyid )
             }
 
             // started, but not spawned ... keep the plane going a bit longer
-            else if ( ! IsPlayerSpawned( playerid ) )
+            if ( ! p_battleRoyaleSpawned{ playerid } )
             {
                 unready_players ++;
             }
         }
 
-        // ensures that the plane object is kept while players are thrown out (force remove will be 90 degrees on top of 360 - incase of bug)
-        if ( ! unready_players || br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] >= 450.0 )
+        // ensures that the plane object is kept while players are thrown out (force after 2nd rotation)
+        if ( ! unready_players || br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] >= 720.0 )
         {
             KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
             br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
