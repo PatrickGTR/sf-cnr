@@ -58,8 +58,7 @@ static const
 enum E_BR_LOBBY_STATUS
 {
     E_STATUS_WAITING,
-    E_STATUS_STARTED,
-    E_STATUS_ENDED
+    E_STATUS_STARTED
 };
 
 enum E_BR_LOBBY_DATA
@@ -608,6 +607,7 @@ static stock BattleRoyale_CreateLobby( playerid )
 
         br_lobbyData[ lobbyid ] [ E_PLANE ] = -1;
         br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
+        br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = -1;
 
         br_lobbyData[ lobbyid ] [ E_HEALTH ] = 100.0;
         br_lobbyData[ lobbyid ] [ E_ARMOUR ] = 0.0;
@@ -806,6 +806,7 @@ static stock BattleRoyale_CheckPlayers( lobbyid )
     // check if there is no more players
     if ( total_players <= 1 && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED )
     {
+        print("Too few players, stopping game.");
         return BattleRoyale_EndGame( lobbyid );
     }
 
@@ -852,6 +853,7 @@ static stock BattleRoyale_StartGame( lobbyid )
     BattleRoyale_CreateBorder( lobbyid );
 
     // game timer
+    KillTimer( br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_GAME_TIMER ] = SetTimerEx( "BattleRoyale_GameUpdate", 2500, true, "d", lobbyid);
 
     // load the player into the area
@@ -875,7 +877,9 @@ static stock BattleRoyale_StartGame( lobbyid )
         // show controls
         ShowPlayerHelpDialog( playerid, 0, "~y~~h~~k~~PED_JUMPING~~w~ - Jump Out Of Plane" );
     }
-    print("Started game");
+
+    // alert lobby
+    BattleRoyale_SendMessage( lobbyid, "The match has been started. Winner takes %s!", cash_format( floatround( float( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) * 0.8 ) ) );
     return 1;
 }
 
@@ -944,6 +948,7 @@ function BattleRoyale_GameUpdate( lobbyid )
 
     // ensure a minimum zone area
     if ( br_lobbyData[ lobbyid ] [ E_B_MAX_X ] - br_lobbyData[ lobbyid ] [ E_B_MIN_X ] < 5.0 || br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] - br_lobbyData[ lobbyid ] [ E_B_MIN_Y ] < 5.0 ) {
+        print( "Area too small, ending game." );
         return BattleRoyale_EndGame( lobbyid );
     }
 
@@ -1008,17 +1013,22 @@ function BattleRoyale_PlaneMove( lobbyid )
 
         foreach ( new playerid : battleroyaleplayers< lobbyid > )
         {
-            //printf ( "[BR DEBUG] %d : LINE 995", GetTickCount( ) );
+            // force throw out of plane inactive players
             if ( p_battleRoyaleStatus[ playerid ] != E_STATUS_STARTED )
             {
-                unready_players ++;
                 BattleRoyale_ThrowFromPlane( playerid );
                 SendServerMessage( playerid, "You have been thrown out of your plane due to a lack of decision." );
             }
+
+            // started, but not spawned ... keep the plane going a bit longer
+            else if ( ! IsPlayerSpawned( playerid ) )
+            {
+                unready_players ++;
+            }
         }
 
-        // ensures that the plane object is kept while players are thrown out
-        if ( ! unready_players )
+        // ensures that the plane object is kept while players are thrown out (force remove will be 90 degrees on top of 360 - incase of bug)
+        if ( ! unready_players || br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] >= 450.0 )
         {
             KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
             br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = -1;
