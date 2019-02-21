@@ -50,7 +50,7 @@ static const
         404, 422, 471, 478, 505, 543, 566, 552, 554
     },
     Float: BR_MIN_HEIGHT = 750.0,
-    Float: BR_MIN_CAMERA_HEIGHT = 50.0,
+    Float: BR_MIN_CAMERA_HEIGHT = 150.0,
     Float: BR_PLANE_RADIUS_FROM_BORDER = 50.0
 ;
 
@@ -559,9 +559,11 @@ CMD:battleroyale( playerid, params[ ] )
     }
     else if ( strmatch( params, "start" ) )
     {
+        #if !defined DEBUG_MODE
         if ( Iter_Count( battleroyaleplayers< lobbyid > ) < 2 ) {
             return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
         }
+        #endif
         return BattleRoyale_StartGame( lobbyid );
     }
     else if ( strmatch ( params, "leave" ) )
@@ -836,7 +838,7 @@ static stock BattleRoyale_StartGame( lobbyid )
 
     // plane movement
     br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] = 0.0;
-    br_lobbyData[ lobbyid ] [ E_PLANE ] = CreateDynamicObject( 1681, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = -1, .interiorid = -1 );
+    br_lobbyData[ lobbyid ] [ E_PLANE ] = CreateDynamicObject( 14553, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .worldid = -1, .interiorid = -1 );
 
     KillTimer( br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] );
     br_lobbyData[ lobbyid ] [ E_PLANE_TIMER ] = SetTimerEx( "BattleRoyale_PlaneMove", BR_PLANE_UPDATE_RATE, true, "d", lobbyid );
@@ -915,7 +917,8 @@ function BattleRoyale_GameUpdate( lobbyid )
     }
 
     // prevent zone shrinking and bombing while the plane is rotating
-    if ( br_lobbyData[ lobbyid ] [ E_PLANE ] != -1 ) {
+    if ( br_lobbyData[ lobbyid ] [ E_PLANE ] != -1 && br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] <= 180.0 )
+    {
         return 1;
     }
 
@@ -1010,7 +1013,7 @@ function BattleRoyale_PlaneMove( lobbyid )
     new Float: radius_y = ( VectorSize( 0.0, br_areaData[ areaid ] [ E_MIN_Y ] - br_areaData[ areaid ] [ E_MAX_Y ], 0.0 ) ) / 2.0 - BR_PLANE_RADIUS_FROM_BORDER;
 
     // if the plane completes a full rotation, throw everyone out
-    if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.006 * float( BR_PLANE_UPDATE_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
+    if ( ( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] += 0.003 * float( BR_PLANE_UPDATE_RATE ) ) >= 360.0 )  // 360.00 / 60000.0 * rate
     {
         new
             unready_players = 0;
@@ -1051,9 +1054,12 @@ function BattleRoyale_PlaneMove( lobbyid )
     new Float: plane_ahead_x = middle_x + radius_x * floatsin( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_PLANE_UPDATE_RATE ), degrees );
     new Float: plane_ahead_y = middle_y + radius_y * floatcos( br_lobbyData[ lobbyid ] [ E_PLANE_ROTATION ] + 0.006 * float( BR_PLANE_UPDATE_RATE ), degrees );
 
-    new Float: rotation = atan2( plane_ahead_y - plane_y, plane_ahead_x - plane_x ) - 90.0;
+    new Float: rotation = atan2( plane_ahead_y - plane_y, plane_ahead_x - plane_x ) + 90.0;
 
     SetDynamicObjectRot( br_lobbyData[ lobbyid ] [ E_PLANE ], 0.0, 0.0, rotation );
+
+    // new speed = MoveDynamicObject( br_lobbyData[ lobbyid ] [ E_PLANE ], plane_x, plane_y, BR_MIN_HEIGHT, float( BR_PLANE_UPDATE_RATE ) / 1000.0, .rz = rotation );
+    // printf("%d", speed);
 
     foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
@@ -1067,7 +1073,7 @@ function BattleRoyale_PlaneMove( lobbyid )
                 tick_count = GetTickCount( );
 
             if ( tick_count > p_battleRoyaleJetNoiseTick[ playerid ] ) {
-                PlayerPlaySound( playerid, 14400, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT * 0.70 );
+                PlayerPlaySound( playerid, 14400, plane_x, plane_y, BR_MIN_HEIGHT + BR_MIN_CAMERA_HEIGHT - 20.0 );
                 p_battleRoyaleJetNoiseTick[ playerid ] = tick_count + 250;
             }
         }
