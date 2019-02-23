@@ -68,3 +68,5 @@
     - Called when a player is arrested
 - `OnPlayerMoneyChanged( playerid, amount )`
     - Called when a player's money is changed
+- `OnServerVariablesLoaded( )`
+    - Called when server variables are fully loaded
