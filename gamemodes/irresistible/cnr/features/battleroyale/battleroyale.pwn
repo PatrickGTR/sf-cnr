@@ -433,7 +433,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( listitem == 6 ) // select walking weapon mode
         {
             br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ];
-            BattleRoyale_SendMessage( lobbyid, "%s has set only walking weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
+            BattleRoyale_SendMessage( lobbyid, "%s has set only running weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
         else if ( listitem == 7 ) // select cac mode
@@ -700,7 +700,7 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         "Entry Fee\t"COL_GREEN"%s\n" \
         "Health\t"COL_GREY"%0.2f%%\n" \
         "Armour\t"COL_GREY"%0.2f%%\n" \
-        "Walking Weapons Only\t%s\n" \
+        "Allow Running Weapons\t%s\n" \
         "CAC Only\t%s\n" \
         ""COL_GREEN"Start Match\t"COL_GREEN">>>",
         br_lobbyData[ lobbyid ] [ E_NAME ],
@@ -709,7 +709,7 @@ static stock BattleRoyale_EditLobby( playerid, lobbyid )
         cash_format( br_lobbyData[ lobbyid ] [ E_ENTRY_FEE ] ),
         br_lobbyData[ lobbyid ] [ E_HEALTH ],
         br_lobbyData[ lobbyid ] [ E_ARMOUR ],
-        br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" ),
+        ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" ),
         br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] ? ( COL_GREEN # "YES" ) : ( COL_RED # "NO" )
     );
     return ShowPlayerDialog( playerid, DIALOG_BR_LOBBY_EDIT, DIALOG_STYLE_TABLIST, ""COL_WHITE"Battle Royale", szLargeString, "Edit", "Close" );
