@@ -21,7 +21,6 @@ new
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentCoinsTD 		= Text: INVALID_TEXT_DRAW,
-	Text:  g_NotManyPlayersTD		= Text: INVALID_TEXT_DRAW,
 
 	// Player Textdraws
 	PlayerText: p_LocationTD		[ MAX_PLAYERS ] = { PlayerText: INVALID_TEXT_DRAW, ... },
@@ -44,15 +43,6 @@ new
 /* ** Hooks ** */
 hook OnScriptInit( )
 {
-	g_NotManyPlayersTD = TextDrawCreate(322.000000, 12.000000, "Coin generation increased by 5x as there aren't many players online!");
-	TextDrawAlignment(g_NotManyPlayersTD, 2);
-	TextDrawBackgroundColor(g_NotManyPlayersTD, 0);
-	TextDrawFont(g_NotManyPlayersTD, 1);
-	TextDrawLetterSize(g_NotManyPlayersTD, 0.149999, 0.799999);
-	TextDrawColor(g_NotManyPlayersTD, -16776961);
-	TextDrawSetOutline(g_NotManyPlayersTD, 1);
-	TextDrawSetProportional(g_NotManyPlayersTD, 1);
-
 	g_currentXPTD = TextDrawCreate(529.000000, 405.000000, "Current XP");
 	TextDrawBackgroundColor(g_currentXPTD, 255);
 	TextDrawFont(g_currentXPTD, 3);
