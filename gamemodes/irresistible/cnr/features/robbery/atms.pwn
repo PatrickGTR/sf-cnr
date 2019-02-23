@@ -10,9 +10,9 @@
 
 /* ** Definitions ** */
 #if defined MAX_FACILITIES
-	#define MAX_ATMS 				( 48 + MAX_FACILITIES )
+	#define MAX_ATMS 				( 49 + MAX_FACILITIES )
 #else
-	#define MAX_ATMS				( 48 )
+	#define MAX_ATMS				( 49 )
 #endif
 
 /* ** Variables ** */
@@ -41,6 +41,7 @@ hook OnScriptInit( )
 	CreateATM( -2636.040000, 208.560000, 3.8800000, 360.000000 );
 	CreateATM( -2512.100000, 2340.74000, 4.5799990, 180.000000 );
 	CreateATM( -2525.250000, -624.97000, 132.41000, 360.000000 );
+	CreateATM( -2151.442138, -405.575164, 34.945968, 44.300000 );
 
 	// Las Venturas
 	CreateATM( 2544.055175, 2242.881835, 10.471873, 180.000000 );
