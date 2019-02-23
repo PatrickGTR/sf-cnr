@@ -963,13 +963,21 @@ function BattleRoyale_GameUpdate( lobbyid )
         // hurt players outside the zone
         if ( IsPlayerSpawned( x ) && ! IsPlayerInArea( x, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
         {
-            new
-                Float: health;
+            // force kill afk player out of zone
+            if ( IsPlayerAFK( x ) )
+            {
+                SetPlayerHealth( x, -1 );
+            }
+            else
+            {
+                new
+                    Float: health;
 
-            GetPlayerHealth( x, health );
+                GetPlayerHealth( x, health );
 
-            GameTextForPlayer( x, "~r~STAY IN THE AREA!", 5000, 3 );
-            SetPlayerHealth( x, health - 10.0 );
+                GameTextForPlayer( x, "~r~STAY IN THE AREA!", 5000, 3 );
+                SetPlayerHealth( x, health - 10.0 );
+            }
         }
     }
 
