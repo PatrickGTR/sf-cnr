@@ -14,7 +14,7 @@
 #endif
 
 /* ** Configuration ** */
-#define DISABLE_HAPPY_HOUR
+#define DISABLE_HAPPY_HOUR			// UNCOMMENT TO ENABLE FEATURE
 
 /* ** Variables ** */
 #if !defined DISABLE_HAPPY_HOUR
