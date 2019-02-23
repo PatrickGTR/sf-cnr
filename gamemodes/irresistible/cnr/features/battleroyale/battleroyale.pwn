@@ -390,6 +390,12 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                         return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby has reached its maximum player count." );
                     }
 
+                    // cannot join without cac
+                    if ( br_lobbyData[ l ] [ E_CAC_ONLY ] && ! IsPlayerUsingSampAC( playerid ) )
+                    {
+                        return BattleRoyale_ShowLobbies( playerid ), SendError( playerid, "This lobby requires you to run an anti-cheat to play." );
+                    }
+
                     // check if player has money for the lobby
                     if ( GetPlayerCash( playerid ) < br_lobbyData[ l ] [ E_ENTRY_FEE ] )
                     {
@@ -420,17 +426,17 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             return SendError( playerid, "You cannot edit this lobby as you are no longer the host." );
         }
 
-        if ( listitem == 3 ) // select an area
+        if ( listitem == 2 ) // select an area
         {
             return BattleRoyale_EditArea( playerid );
         }
-        else if ( listitem == 7 ) // select walking weapon mode
+        else if ( listitem == 6 ) // select walking weapon mode
         {
             br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ];
             BattleRoyale_SendMessage( lobbyid, "%s has set only walking weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
-        else if ( listitem == 8 ) // select cac mode
+        else if ( listitem == 7 ) // select cac mode
         {
             if ( IsPlayerUsingSampAC( playerid ) ) {
                 br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] = ! br_lobbyData[ lobbyid ] [ E_CAC_ONLY ];
@@ -440,7 +446,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             }
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
-        else if ( listitem == 9 ) // start lobby option
+        else if ( listitem == 8 ) // start lobby option
         {
             if ( Iter_Count( battleroyaleplayers< lobbyid > ) < 2 ) {
                 SendError( playerid, "You need at least 2 players in your lobby to start this match." );
@@ -922,6 +928,14 @@ static stock BattleRoyale_StartGame( lobbyid )
     // load the player into the area
     foreach ( new playerid : battleroyaleplayers< lobbyid > )
     {
+        // remove non-cac players in a cac lobby
+        if ( br_lobbyData[ lobbyid ] [ E_CAC_ONLY ] && ! IsPlayerUsingSampAC( playerid ) )
+        {
+            SetPlayerHealth( playerid, -1 );
+            SendServerMessage( playerid, "You have been removed from the match for disabling SA-MP AC." );
+            continue;
+        }
+
         // respawn player
         p_battleRoyaleSpawned{ playerid } = false;
         p_battleRoyaleStatus[ playerid ] = E_STATUS_WAITING;
