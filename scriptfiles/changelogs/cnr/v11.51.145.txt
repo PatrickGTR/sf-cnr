@@ -1,0 +1,5 @@
+(+) Adds Battle Royale minigame to the SF Stadium.
+(+) Random airdrops drop every minute for Battle Royale players.
+(/) Replaces ordinary plane for an andromanda model.
+(*) Battle Royale games cannot be started without the leader starting.
+(*) Battle Royale players will be autokilled if they AFK out of the playable area.
