@@ -622,6 +622,9 @@ CMD:battleroyale( playerid, params[ ] )
     }
     else if ( strmatch ( params, "leave" ) )
     {
+        if ( ! p_battleRoyaleSpawned{ playerid } && br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED ) {
+            return SendError( playerid, "You must be spawned before you can leave the match." );
+        }
         BattleRoyale_SendMessage( lobbyid, "%s(%d) has disconnected from the match!", ReturnPlayerName( playerid ), playerid );
         BattleRoyale_RemovePlayer( playerid, true );
         SpawnPlayer( playerid );
