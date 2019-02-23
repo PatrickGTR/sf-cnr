@@ -627,7 +627,7 @@ CMD:battleroyale( playerid, params[ ] )
             br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += amount;
 
             if ( amount >= 100000 ) {
-                BattleRoyale_SendMessageAll( "%s(%d) has contributed %s to the %s lobby (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), br_lobbyData[ lobbyid ] [ E_NAME ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
+                BattleRoyale_SendMessageAll( "%s(%d) has contributed %s to %s (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), br_lobbyData[ lobbyid ] [ E_NAME ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
             } else {
                 BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
             }
