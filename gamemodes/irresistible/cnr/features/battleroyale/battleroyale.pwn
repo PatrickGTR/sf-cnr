@@ -506,7 +506,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 else if ( ! ( 3 <= strlen( name ) < 24 ) ) SendError( playerid, "You must enter a name between 3 and 24 characters." );
                 else
                 {
-                    BattleRoyale_SendMessage( lobbyid, "%s has set the lobby name to %s.", ReturnPlayerName( playerid ), br_lobbyData[ lobbyid ] [ E_NAME ] );
+                    BattleRoyale_SendMessage( lobbyid, "%s has set the lobby name to %s.", ReturnPlayerName( playerid ), name );
                     strcpy( br_lobbyData[ lobbyid ] [ E_NAME ], name );
                     return BattleRoyale_EditLobby( playerid, lobbyid );
                 }
@@ -644,7 +644,7 @@ CMD:battleroyale( playerid, params[ ] )
             br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += amount;
 
             if ( amount >= 100000 ) {
-                BattleRoyale_SendMessageAll( "%s(%d) has contributed %s to %s (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), br_lobbyData[ lobbyid ] [ E_NAME ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
+                BattleRoyale_SendMessageAll( ""COL_GREY"%s(%d) has contributed %s to %s (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), br_lobbyData[ lobbyid ] [ E_NAME ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
             } else {
                 BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
             }
