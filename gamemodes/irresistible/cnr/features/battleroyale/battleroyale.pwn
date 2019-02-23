@@ -445,7 +445,9 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
             if ( Iter_Count( battleroyaleplayers< lobbyid > ) < 2 ) {
                 SendError( playerid, "You need at least 2 players in your lobby to start this match." );
             } else {
-                BattleRoyale_StartGame( lobbyid );
+                if ( ! BattleRoyale_StartGame( lobbyid ) ) {
+                    SendError( playerid, "This lobby has already started." );
+                }
             }
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
@@ -601,10 +603,16 @@ CMD:battleroyale( playerid, params[ ] )
             return SendError( playerid, "You need at least 2 players in your lobby to start this match." );
         }
         #endif
+
         if ( ! BR_IsHost( playerid, lobbyid ) ) {
             return SendError( playerid, "You cannot edit this lobby as you are no longer the host." );
         }
-        return BattleRoyale_StartGame( lobbyid );
+
+        // attempt to start the game
+        if ( ! BattleRoyale_StartGame( lobbyid ) ) {
+            SendError( playerid, "This lobby has already started." );
+        }
+        return 1;
     }
     else if ( strmatch ( params, "leave" ) )
     {
@@ -874,6 +882,10 @@ static stock BattleRoyale_CheckPlayers( lobbyid )
 
 static stock BattleRoyale_StartGame( lobbyid )
 {
+    if ( br_lobbyData[ lobbyid ] [ E_STATUS ] == E_STATUS_STARTED ) {
+        return 0;
+    }
+
     new areaid = br_lobbyData[ lobbyid ] [ E_AREA_ID ];
 
     br_lobbyData[ lobbyid ] [ E_STATUS ] = E_STATUS_STARTED;
