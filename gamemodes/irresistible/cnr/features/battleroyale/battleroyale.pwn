@@ -147,7 +147,7 @@ hook OnScriptInit( )
     // checkpoint
     g_battleRoyaleStadiumCP = CreateDynamicCP( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 1.0, 0 );
 	CreateDynamic3DTextLabel( "[BATTLE ROYALE]", COLOR_GOLD, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 20.0 );
-	CreateDynamicMapIcon( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 23, 0, -1, -1, -1, 750.0 );
+	CreateDynamicMapIcon( BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ], 33, 0, -1, -1, -1, 750.0 );
     return 1;
 }
 
@@ -1534,6 +1534,7 @@ static stock BattleRoyale_InitLobbyObjects( )
     SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4959.574218, 2017.125000, 4.847000, -1.200000, 0.500000, 115.599998, -1, -1, -1 ), 0, "Night", 130, "Arial", 90, 1, -65022, 0, 1 );
     SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4943.875000, 2034.607055, 4.974999, -1.899999, 1.000000, -132.100006, -1, -1, -1 ), 0, "Chickenwing", 130, "Arial", 80, 1, -65022, 0, 1 );
     SetDynamicObjectMaterialText( CreateDynamicObject( 19327, -4955.777832, 2010.151000, 4.922999, -1.200000, 0.500000, 163.899993, -1, -1, -1 ), 0, "RichxKID", 130, "Arial", 90, 1, -65022, 0, 1 );
+	SetDynamicObjectMaterialText( CreateDynamicObject(4731, -2159.6147, -453.5427, 52.6459, 0.0000, 0.0000, 164.6383 ), 0, "Battle Royale Stadium", 120, "Impact", 48, 0, -1, -16777216, 1 );
 }
 
 static stock BattleRoyale_DestroyAirdrops( lobbyid )

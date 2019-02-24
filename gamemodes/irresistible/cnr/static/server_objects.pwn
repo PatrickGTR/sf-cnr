@@ -3439,7 +3439,6 @@ hook OnScriptInit( )
 	CreateDynamicObject( 1278, -1742.212036, 378.549163, 1039.438232, 0.000000, 0.000000, -121.799964 );
 	CreateDynamicObject( 1278, -1742.400634, 425.707427, 1039.438232, 0.000000, 0.000000, -45.499961 );
 	CreateDynamicObject( 7617, -1781.526977, 356.313201, 1051.508422, 0.000000, 0.000000, 0.000000 );
-	SetDynamicObjectMaterialText( CreateDynamicObject(4731, -2159.6147, -453.5427, 52.6459, 0.0000, 0.0000, 164.6383 ), 0, "Gal and Daniel's Soccer Stadium", 120, "Candara", 42, 0, -1, -16777216, 1 );
 
 	// SF GYM / STEAKHOUSE / WANG CARS
 	CreateDynamicObject(2169, 754.92590, -19.41582, 999.75348,   0.00000, 0.00000, 90.00000);
