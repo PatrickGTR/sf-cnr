@@ -314,7 +314,7 @@ hook SetPlayerRandomSpawn( playerid )
                 SetPlayerPos( playerid, X, Y, Z - 2.0 );
                 SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
-                ResetPlayerPassiveMode( playerid );
+                ResetPlayerPassiveMode( playerid, true );
                 DisablePlayerSpawnProtection( playerid, .default_health = br_lobbyData[ lobbyid ] [ E_HEALTH ] );
 
                 SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
@@ -459,7 +459,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         else if ( listitem == 6 ) // select walking weapon mode
         {
             br_lobbyData[ lobbyid ] [ E_WALK_WEP ] = ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ];
-            BattleRoyale_SendMessage( lobbyid, "%s has set only running weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
+            BattleRoyale_SendMessage( lobbyid, "%s has set allow running weapons to %s.", ReturnPlayerName( playerid ), bool_to_string( ! br_lobbyData[ lobbyid ] [ E_WALK_WEP ] ) );
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
         else if ( listitem == 7 ) // select cac mode
@@ -480,6 +480,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
                 if ( ! BattleRoyale_StartGame( lobbyid ) ) {
                     SendError( playerid, "This lobby has already started." );
                 }
+                return 1;
             }
             return BattleRoyale_EditLobby( playerid, lobbyid );
         }
@@ -669,7 +670,7 @@ CMD:battleroyale( playerid, params[ ] )
             GivePlayerCash( playerid, -amount );
             br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] += amount;
 
-            if ( amount >= 100000 ) {
+            if ( amount >= 50000 ) {
                 BattleRoyale_SendMessageAll( ""COL_GREY"%s(%d) has contributed %s to %s (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), br_lobbyData[ lobbyid ] [ E_NAME ], cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
             } else {
                 BattleRoyale_SendMessage( lobbyid, "%s(%d) has contributed %s to the lobby (total %s).", ReturnPlayerName( playerid ), playerid, cash_format( amount ), cash_format( br_lobbyData[ lobbyid ] [ E_PRIZE_POOL ] ) );
@@ -1004,7 +1005,7 @@ function BattleRoyale_GameUpdate( lobbyid )
         }
 
         // hurt players outside the zone
-        if ( IsPlayerSpawned( x ) && ! IsPlayerInArea( x, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
+        if ( p_battleRoyaleSpawned{ x } && ! IsPlayerInArea( x, br_lobbyData[ lobbyid ] [ E_B_MIN_X ], br_lobbyData[ lobbyid ] [ E_B_MAX_X ], br_lobbyData[ lobbyid ] [ E_B_MIN_Y ], br_lobbyData[ lobbyid ] [ E_B_MAX_Y ] ) )
         {
             // force kill afk player out of zone
             if ( IsPlayerAFK( x ) )
