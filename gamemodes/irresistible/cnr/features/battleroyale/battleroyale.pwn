@@ -247,6 +247,32 @@ hook OnPlayerDeath( playerid, killerid, reason )
         new
             remaining = Iter_Count( battleroyaleplayers< lobbyid > ) - 1;
 
+        // drop player weapons
+    #if defined CreateWeaponPickup
+        if ( remaining > 1 )
+        {
+            new Float: X, Float: Y, Float: Z;
+            new expire_time = GetServerTime( ) + 180;
+
+            GetPlayerPos( playerid, X, Y, Z );
+
+            for ( new slotid = 0; slotid < 13; slotid++ )
+            {
+                new
+                    weaponid,
+                    ammo;
+
+                GetPlayerWeaponData( playerid, slotid, weaponid, ammo );
+
+                // check valid parameters and shit
+                if ( weaponid != 0 && 1 < ammo < 5000 && ! IsWeaponBanned( weaponid ) ) {
+                    CreateWeaponPickup( weaponid, ammo, slotid, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, GetPlayerVirtualWorld( playerid ) );
+                }
+            }
+        }
+    #endif
+
+        // alert lobby
         if ( IsPlayerConnected( killerid ) ) {
             BattleRoyale_SendMessage( lobbyid, "%s(%d) has been killed by %s(%d)'s %s, %d player%s remaining!", ReturnPlayerName( playerid ), playerid, ReturnPlayerName( killerid ), killerid, ReturnWeaponName( reason ), remaining, remaining == 1 ? ( "" ) : ( "s" ) );
         } else {
