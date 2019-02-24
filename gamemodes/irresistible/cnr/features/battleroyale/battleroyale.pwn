@@ -289,6 +289,9 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
 {
     if ( checkpointid == g_battleRoyaleStadiumCP )
     {
+        if ( GetPlayerClass( playerid ) != CLASS_CIVILIAN ) {
+            return SendError( playerid, "You must be a civilian to use this feature." );
+        }
         return BattleRoyale_ShowLobbies( playerid );
     }
     return 1;
