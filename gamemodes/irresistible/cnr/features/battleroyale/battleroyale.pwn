@@ -292,6 +292,9 @@ hook OnPlayerEnterDynamicCP( playerid, checkpointid )
         if ( GetPlayerClass( playerid ) != CLASS_CIVILIAN ) {
             return SendError( playerid, "You must be a civilian to use this feature." );
         }
+        else if ( GetPlayerWantedLevel( playerid ) ) {
+            return SendError( playerid, "You must not be a wanted player if you want to use this feature." );
+        }
         return BattleRoyale_ShowLobbies( playerid );
     }
     return 1;
