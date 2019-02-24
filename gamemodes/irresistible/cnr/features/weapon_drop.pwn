@@ -55,6 +55,9 @@ hook OnPlayerDeath( playerid, killerid, reason )
 		return 1; // do not break return
 
 	new Float: X, Float: Y, Float: Z;
+
+	new worldid = GetPlayerVirtualWorld( playerid );
+
 	new expire_time = GetServerTime( ) + 180;
 
 	GetPlayerPos( playerid, X, Y, Z );
@@ -74,7 +77,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 			// check valid parameters and shit
 			if ( weaponid != 0 && 1 < ammo < 5000 && ! IsWeaponBanned( weaponid ) ) {
-				CreateWeaponPickup( weaponid, ammo, slotid, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+				CreateWeaponPickup( weaponid, ammo, slotid, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, worldid );
 			}
 		}
 
@@ -87,12 +90,12 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 		// health drop
 		if ( killer_dm_level >= 10 ) {
-			CreateWeaponPickup( WEAPON_HEALTH, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+			CreateWeaponPickup( WEAPON_HEALTH, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, worldid );
 		}
 
 		// random armour drop (1% chance)
 		if ( killer_dm_level >= 50 && random( 101 ) == 66 ) {
-			CreateWeaponPickup( WEAPON_ARMOUR, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time );
+			CreateWeaponPickup( WEAPON_ARMOUR, killer_dm_level, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, worldid );
 		}
 	}
 
@@ -117,7 +120,7 @@ hook OnPlayerDeath( playerid, killerid, reason )
 
 		// reduce player money
 		GivePlayerCash( playerid, -player_money );
-		CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, .include_player = playerid );
+		CreateWeaponPickup( WEAPON_MONEY, player_money, 0, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, expire_time, worldid );
 	}
 	return 1;
 }
@@ -260,7 +263,7 @@ CMD:dropmoney( playerid, params[ ] )
 
 		GetPlayerPos( playerid, X, Y, Z );
 
-		if ( CreateWeaponPickup( WEAPON_MONEY, money, 0, X, Y, Z, 0, .nonpassive_only = false ) != ITER_NONE )
+		if ( CreateWeaponPickup( WEAPON_MONEY, money, 0, X, Y, Z, 0 ) != ITER_NONE )
 		{
 		    new
 				szLocation[ MAX_ZONE_NAME ], szCity[ MAX_ZONE_NAME ];
@@ -330,7 +333,7 @@ CMD:dropweapon( playerid, params[ ] ) {
 }
 
 /* ** Functions ** */
-stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, expire_time, bool: nonpassive_only = true, include_player = -1 ) {
+stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, expire_time, worldid = -1 ) {
 
 	new handle = Iter_Free( weapondrop );
 
@@ -358,19 +361,7 @@ stock CreateWeaponPickup( weaponid, ammo, slotid, Float: X, Float: Y, Float: Z, 
 		g_weaponDropData[ handle ] [ E_SLOT_ID ] = slotid;
 
 		// create pickup, but for specific group
-		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z, .playerid = 0 );
-
-	  	// reset players in map icon/cp
-	  	Streamer_RemoveArrayData( STREAMER_TYPE_PICKUP, g_weaponDropData[ handle ] [ E_PICKUP ], E_STREAMER_PLAYER_ID, 0 );
-
-	  	// stream to non-passive players
-		foreach ( new i : Player )
-		{
-			if ( include_player != i && nonpassive_only && IsPlayerPassive( i ) )
-				continue;
-
-  			Streamer_AppendArrayData( STREAMER_TYPE_PICKUP, g_weaponDropData[ handle ] [ E_PICKUP ], E_STREAMER_PLAYER_ID, i );
-		}
+		g_weaponDropData[ handle ] [ E_PICKUP ] = CreateDynamicPickup( modelid, 1, X, Y, Z, .worldid = worldid );
 
 		// add to iterator
 		Iter_Add( weapondrop, handle );
@@ -436,7 +427,7 @@ stock RemoveSpecificPlayerWeapon( playerid, weaponid, bool:createpickup )
 				new
 					Float: X, Float: Y, Float: Z;
 
-				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120, .nonpassive_only = false ) != ITER_NONE ) {
+				if ( GetPlayerPos( playerid, X, Y, Z ) && CreateWeaponPickup( iWeapon, iAmmo, iSlot, X + fRandomEx( 0.5, 3.0 ), Y + fRandomEx( 0.5, 3.0 ), Z, GetServerTime( ) + 120, GetPlayerVirtualWorld( playerid ) ) != ITER_NONE ) {
 					p_PlayerPickupDelay[ playerid ] = GetServerTime( ) + 3;
 				}
 			}
