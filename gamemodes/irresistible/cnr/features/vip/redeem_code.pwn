@@ -210,7 +210,6 @@ thread OnGrabLatestDonor( hidden )
 		new Float: total_donations = cache_get_field_content_float( 0, "TOTAL_DONATIONS", dbHandle );
 		new Float: funding_goal_percent = total_donations / GetServerVariableFloat( "donation_goal_amount" ) * 100.0;
 
-		printf( "%f", funding_goal_percent );
 		// Prevents total revenue for the month being disclosed mathematically
 		if ( funding_goal_percent >= 100.0 ) {
 			TextDrawSetString( g_TopDonorTD, sprintf( "Latest Donor %s - $%0.2f, ~g~Month Is Fully %0.2f%% Funded!", szName, last_donation, 100.0 ) );
