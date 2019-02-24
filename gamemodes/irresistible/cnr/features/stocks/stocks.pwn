@@ -474,6 +474,9 @@ thread StockMarket_PanicSell( stockid )
 		{
 			new user_id = cache_get_field_content_int( row, "USER_ID" );
 
+			if ( user_id == STOCK_MM_USER_ID )
+				continue; // ignore market maker account
+
 			new Float: held_shares = cache_get_field_content_float( row, "HELD_SHARES" );
 			new Float: owned_shares = cache_get_field_content_float( row, "OWNED_SHARES" );
 			new Float: player_shares_forfeited = floatround( ( held_shares + owned_shares ) * STOCK_BANKRUPTCY_LOSS_PERCENT / 100.0 );
