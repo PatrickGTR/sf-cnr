@@ -35,6 +35,10 @@ static const Float: STOCK_DEFAULT_START_POOL = 0.0; 		// the default amount that
 static const Float: STOCK_DEFAULT_START_DONATIONS = 0.0;	// the default amount that the donations pool starts at (useless)
 static const Float: STOCK_DEFAULT_START_PRICE = 0.0; 		// the default starting price for a new report (useless)
 
+static const Float: STOCK_BANKRUPTCY_PERCENT = -80.0;		// the % that makes a company go bankrupt
+static const Float: STOCK_BANKRUPTCY_LOSS_PERCENT = 20.0;	// the % that is lost by the user when a stock drops
+// static const Float: STOCK_BANKRUPTCY_MIN_PERCENT = -5.0; 	// the % that should make a company go bankrupt 'again' after it is $1
+
 /* ** Variables ** */
 enum E_STOCK_MARKET_DATA
 {
@@ -81,6 +85,7 @@ hook OnScriptInit( )
 {
 	// server variables
 	AddServerVariable( "stock_report_time", "0", GLOBAL_VARTYPE_INT );
+
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
 	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
@@ -371,6 +376,8 @@ thread Stock_UpdateReportingPeriods( stockid )
 
 thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: default_start_price, Float: default_donation_pool, bool: is_ipo )
 {
+	new Float: before_price = g_stockMarketReportData[ stockid ] [ 1 ] [ E_PRICE ];
+
 	// set the new price of the company [TODO: use parabola for factor difficulty?]
 	new Float: new_price = ( g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] / g_stockMarketData[ stockid ] [ E_POOL_FACTOR ] ) * g_stockMarketData[ stockid ] [ E_PRICE_FACTOR ] + STOCK_MARKET_PRICE_FLOOR;
 
@@ -391,6 +398,42 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	if ( is_ipo ) {
 		new_price = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
 	}
+
+	// bankrupt motherf**kers
+	new Float: price_change = ( ( new_price / before_price ) - 1.0 ) * 100.0;
+
+	// stock is above the floor
+	if ( price_change <= STOCK_BANKRUPTCY_PERCENT )
+	{
+		format( szLargeString, sizeof( szLargeString ),
+			"SELECT   USER_ID, SUM(HELD_SHARES) AS HELD_SHARES, SUM(OWNED_SHARES) AS OWNED_SHARES " \
+			"FROM     ( " \
+			"	(SELECT STOCK_ID, USER_ID, SHARES AS HELD_SHARES, 0 AS OWNED_SHARES FROM STOCK_SELL_ORDERS t1 WHERE STOCK_ID=%d) " \
+			"	UNION ALL " \
+			"	(SELECT STOCK_ID, USER_ID, 0 AS HELD_SHARES, SHARES AS OWNED_SHARES FROM STOCK_OWNERS t2 WHERE STOCK_ID=%d) " \
+			") t_union " \
+			"GROUP BY USER_ID",
+			stockid, stockid
+		);
+		mysql_tquery( dbHandle, szLargeString, "StockMarket_PanicSell", "d", stockid );
+		print(szLargeString);
+	}
+
+	// full bankruptcy if a stock is $1 (UNTESTED!)
+	// else if ( price_change <= STOCK_BANKRUPTCY_MIN_PERCENT && new_price == STOCK_MARKET_PRICE_FLOOR )
+	// {
+	// 	// purge all user association to the stock
+	// 	mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d", stockid ) );
+	// 	mysql_single_query( sprintf( "DELETE FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d", stockid ) );
+
+	// 	// allow market maker to sell the shares again at IPO price
+	// 	StockMarket_UpdateSellOrder( stockid, STOCK_MM_USER_ID, g_stockMarketData[ stockid ] [ E_IPO_SHARES ] );
+	// 	new_price = g_stockMarketData[ stockid ] [ E_IPO_PRICE ];
+
+	// 	// inform everyone of the sale
+	// 	SendClientMessageToAllFormatted( -1, ""COL_GREY"[STOCKS]"COL_WHITE" %s has went bankrupt, all shareholders have suffered a loss!", g_stockMarketData[ stockid ] [ E_NAME ] );
+	// 	printf( "[STOCK MAJOR BANKRUPTCY] %s(%d) has went majorly bankrupt.", g_stockMarketData[ stockid ] [ E_NAME ], stockid );
+	// }
 
 	// set the new price of the asset
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = new_price;
@@ -413,6 +456,60 @@ thread StockMarket_InsertReport( stockid, Float: default_start_pool, Float: defa
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_POOL ] = default_start_pool;
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_DONATIONS ] = default_donation_pool;
 	g_stockMarketReportData[ stockid ] [ 0 ] [ E_PRICE ] = default_start_price;
+	return 1;
+}
+
+thread StockMarket_PanicSell( stockid )
+{
+	new
+		rows = cache_get_row_count( );
+
+	if ( rows )
+	{
+		new
+			Float: global_shares_forfeited = 0.0;
+
+		// remove the percentage of stock from the user
+		for ( new row = 0; row < rows; row ++ )
+		{
+			new user_id = cache_get_field_content_int( row, "USER_ID" );
+
+			new Float: held_shares = cache_get_field_content_float( row, "HELD_SHARES" );
+			new Float: owned_shares = cache_get_field_content_float( row, "OWNED_SHARES" );
+			new Float: player_shares_forfeited = floatround( ( held_shares + owned_shares ) * STOCK_BANKRUPTCY_LOSS_PERCENT / 100.0 );
+
+			// the amount forfeitted succeeds the amount in sale orders ... remove them
+			if ( ( held_shares - player_shares_forfeited ) <= 0.0 ) {
+				printf( "Strip sell orders if there is any for user %d, stock %d", user_id, stockid );
+				mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, user_id ) );
+				player_shares_forfeited -= held_shares;
+				global_shares_forfeited += held_shares;
+			} else {
+				printf( "Deduct sell orders if there is any for user %d, stock %d", user_id, stockid );
+				mysql_single_query( sprintf( "UPDATE `STOCK_SELL_ORDERS` SET `SHARES`=%f WHERE `STOCK_ID`=%d AND `USER_ID`=%d", held_shares - player_shares_forfeited, stockid, user_id ) );
+				global_shares_forfeited += player_shares_forfeited;
+				player_shares_forfeited = 0.0;
+			}
+
+			// the amount forfeitted succeeds the amount in holdings ... remove them too
+			if ( ( owned_shares - player_shares_forfeited ) <= 0.0 ) {
+				printf( "Strip owners if there is any for user %d, stock %d", user_id, stockid );
+				mysql_single_query( sprintf( "DELETE FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, user_id ) );
+				global_shares_forfeited += owned_shares;
+			} else {
+				printf( "Deduct owners if there is any for user %d, stock %d", user_id, stockid );
+				mysql_single_query( sprintf( "UPDATE `STOCK_OWNERS` SET `SHARES`=%f WHERE `STOCK_ID`=%d AND `USER_ID`=%d", owned_shares - player_shares_forfeited, stockid, user_id ) );
+				global_shares_forfeited += player_shares_forfeited;
+			}
+		}
+
+		// allow market maker to sell the shares again at IPO price
+		StockMarket_UpdateSellOrder( stockid, STOCK_MM_USER_ID, floatround( global_shares_forfeited ) );
+
+		// inform everyone of the sale
+		SendClientMessageToAllFormatted( -1, ""COL_GREY"[STOCKS]"COL_WHITE" %s has penalized its shareholders and has %d shares available for sale.", g_stockMarketData[ stockid ] [ E_NAME ], floatround( global_shares_forfeited ) );
+		printf( "[STOCK MAJOR BANKRUPTCY] %s(%d) has went partly bankrupt.", g_stockMarketData[ stockid ] [ E_NAME ], stockid );
+	}
 	return 1;
 }
 
