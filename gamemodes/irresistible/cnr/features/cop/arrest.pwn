@@ -26,7 +26,7 @@ hook OnPlayerDisconnect( playerid, reason )
 	p_AwaitingBCAttemptTimer[ playerid ] = -1;
 
 	// Quit to Avoid - Award Handling
-	if ( playerid != INVALID_PLAYER_ID ) AwardNearestLEO( playerid, 0 );
+	AwardNearestLEO( playerid, 0 );
 	return 1;
 }
 
@@ -499,12 +499,9 @@ stock AwardNearestLEO( playerid, reason )
 	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID || GetPlayerWantedLevel( playerid ) < 2 )
 		return false;
 
-	new
-		closestLEO = INVALID_PLAYER_ID,
-		Float: radius = ( IsPlayerInAnyVehicle( playerid ) ? 150.0 : 75.0 ) // If player is in a vehicle, increase radius due to ability to get farther quicker.
-	;
+	new Float: radius = ( IsPlayerInAnyVehicle( playerid ) ? 150.0 : 75.0 ); // If player is in a vehicle, increase radius due to ability to get farther quicker.
 
-	closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
+	new closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
 
 	if ( IsPlayerConnected( closestLEO ) )
 	{
@@ -512,15 +509,14 @@ stock AwardNearestLEO( playerid, reason )
 
 		switch ( reason )
 		{
-			case 0: reasonText = "Q'ing to Avoid";
-			case 1: reasonText = "being AFK while wanted";
+			case 0: reasonText = "Quit To Avoid";
+			case 1: reasonText = "AFK'd While Wanted";
 		}
 
 		AwardArrest( playerid, closestLEO );
-		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been awarded for the arrest on %s(%d) due to them "COL_LRED"%s.", ReturnPlayerName( closestLEO ), closestLEO, ReturnPlayerName( playerid ), playerid, reasonText );
+		SendGlobalMessage( -1, ""COL_GOLD"[JAIL]{FFFFFF} %s(%d) has been awarded for the arrest on %s(%d) as they "COL_LRED"%s.", ReturnPlayerName( closestLEO ), closestLEO, ReturnPlayerName( playerid ), playerid, reasonText );
 		return true;
 	}
-
 	return false;
 }
 
