@@ -88,18 +88,18 @@ hook OnScriptInit( )
 
 	AddServerVariable( "stock_trading_fees", "0.0", GLOBAL_VARTYPE_FLOAT );
 
-	// 					ID 							NAME 					SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
-	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 	"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Exporting mined ores" );
-	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 			"A", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
-	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 	"VD", 	100000.0, 	25.0,		1000.0,		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
-	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 			"SS", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
-	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", "TC", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed trucking missions" );
-	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 		"CB", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exporting meth bags" );
-	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 			"PS", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
-	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 				"CAS", 	100000.0, 	990.0, 		7500.0,		100000.0,		150.0,			"Money lost by players gambling" );
-	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 			"GOV", 	100000.0, 	750.0, 		7500.0,		100000.0,		150.0,			"Fireman and LEO activities" );
-	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",		"ET", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
-	CreateStockMarket( E_STOCK_BATTLE_ROYAL_CENTER, "Battle Royale Center",	"BRC", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Battle Royale minigame fees" );
+	// 					ID 							NAME 						SYMBOL 	MAX SHARES 	IPO_PRICE 	MAX_PRICE 	POOL_FACTOR 	PRICE_FACTOR 	DESCRIPTION
+	CreateStockMarket( E_STOCK_MINING_COMPANY,		"The Mining Company", 		"MC", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Exporting mined ores" );
+	CreateStockMarket( E_STOCK_AMMUNATION, 			"Ammu-Nation", 				"A", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Ammu-Nation/Weapon Dealers/Facilities" );
+	CreateStockMarket( E_STOCK_VEHICLE_DEALERSHIP, 	"Vehicle Dealership", 		"VD", 	100000.0, 	25.0,		1000.0,		100000.0,		20.0,			"Car jacker exports, vehicle and component sales" );
+	CreateStockMarket( E_STOCK_SUPA_SAVE, 			"Supa-Save", 				"SS", 	100000.0, 	25.0, 		500.0, 		100000.0,		10.0,			"Purchases at Supa-Save and 24/7" );
+	CreateStockMarket( E_STOCK_TRUCKING_COMPANY, 	"The Trucking Company", 	"TC", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed trucking missions" );
+	CreateStockMarket( E_STOCK_CLUCKIN_BELL,		"Cluckin' Bell", 			"CB", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exporting meth bags" );
+	CreateStockMarket( E_STOCK_PAWN_STORE, 			"Pawn Store", 				"PS", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Exported stolen furniture and toy sales" );
+	CreateStockMarket( E_STOCK_CASINO, 				"Casino", 					"CAS", 	100000.0, 	990.0, 		7500.0,		100000.0,		150.0,			"Money lost by players gambling" );
+	CreateStockMarket( E_STOCK_GOVERNMENT, 			"Government", 				"GOV", 	100000.0, 	750.0, 		7500.0,		100000.0,		150.0,			"Fireman and LEO activities" );
+	CreateStockMarket( E_STOCK_AVIATION, 			"Elitas Travel",			"ET", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Completed pilot missions and intercity travel" );
+	CreateStockMarket( E_STOCK_BATTLE_ROYAL_CENTER, "Battle Royale Stadium",	"BRS", 	100000.0, 	50.0, 		500.0, 		100000.0,		20.0,			"Battle Royale minigame fees" );
 
 	// force inactive share holders to sell their shares on startup
 	mysql_tquery( dbHandle, sprintf( "SELECT so.* FROM `STOCK_OWNERS` so JOIN `USERS` u ON so.`USER_ID`=u.`ID` WHERE UNIX_TIMESTAMP()-u.`LASTLOGGED` > 604800 AND so.`USER_ID` != %d", STOCK_MM_USER_ID ), "StockMarket_ForceShareSale", "" );
