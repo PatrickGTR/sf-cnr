@@ -483,12 +483,12 @@ thread StockMarket_PanicSell( stockid )
 
 			// the amount forfeitted succeeds the amount in sale orders ... remove them
 			if ( ( held_shares - player_shares_forfeited ) <= 0.0 ) {
-				printf( "Strip sell orders if there is any for user %d, stock %d", user_id, stockid );
+				// printf( "Strip sell orders if there is any for user %d, stock %d", user_id, stockid );
 				mysql_single_query( sprintf( "DELETE FROM `STOCK_SELL_ORDERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, user_id ) );
 				player_shares_forfeited -= held_shares;
 				global_shares_forfeited += held_shares;
 			} else {
-				printf( "Deduct sell orders if there is any for user %d, stock %d", user_id, stockid );
+				// printf( "Deduct sell orders if there is any for user %d, stock %d", user_id, stockid );
 				mysql_single_query( sprintf( "UPDATE `STOCK_SELL_ORDERS` SET `SHARES`=%f WHERE `STOCK_ID`=%d AND `USER_ID`=%d", held_shares - player_shares_forfeited, stockid, user_id ) );
 				global_shares_forfeited += player_shares_forfeited;
 				player_shares_forfeited = 0.0;
@@ -496,11 +496,11 @@ thread StockMarket_PanicSell( stockid )
 
 			// the amount forfeitted succeeds the amount in holdings ... remove them too
 			if ( ( owned_shares - player_shares_forfeited ) <= 0.0 ) {
-				printf( "Strip owners if there is any for user %d, stock %d", user_id, stockid );
+				// printf( "Strip owners if there is any for user %d, stock %d", user_id, stockid );
 				mysql_single_query( sprintf( "DELETE FROM `STOCK_OWNERS` WHERE `STOCK_ID`=%d AND `USER_ID`=%d", stockid, user_id ) );
 				global_shares_forfeited += owned_shares;
 			} else {
-				printf( "Deduct owners if there is any for user %d, stock %d", user_id, stockid );
+				// printf( "Deduct owners if there is any for user %d, stock %d", user_id, stockid );
 				mysql_single_query( sprintf( "UPDATE `STOCK_OWNERS` SET `SHARES`=%f WHERE `STOCK_ID`=%d AND `USER_ID`=%d", owned_shares - player_shares_forfeited, stockid, user_id ) );
 				global_shares_forfeited += player_shares_forfeited;
 			}
