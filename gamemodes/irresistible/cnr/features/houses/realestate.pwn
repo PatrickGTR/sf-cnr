@@ -79,7 +79,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				if ( IsPlayerInAnyVehicle( playerid ) )
 				{
 					GPS_SetPlayerWaypoint( playerid, g_houseData[ houseid ] [ E_HOUSE_NAME ], g_houseData[ houseid ] [ E_EX ], g_houseData[ houseid ] [ E_EY ], g_houseData[ houseid ] [ E_EZ ] );
-					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s. Follow the arrow to reach your destination.", g_houseData[ houseid ] [ E_HOUSE_NAME ] );
+					SendClientMessageFormatted( playerid, -1, ""COL_GREY"[GPS]"COL_WHITE" You have set your destination to %s"COL_WHITE". Follow the arrow to reach your destination.", g_houseData[ houseid ] [ E_HOUSE_NAME ] );
 				}
 				else
 				{
