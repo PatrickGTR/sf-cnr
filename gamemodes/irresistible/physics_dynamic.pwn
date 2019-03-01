@@ -19,7 +19,7 @@
 #include <foreach>
 
 #if !defined PHY_TIMER_INTERVAL
-	#define PHY_TIMER_INTERVAL (20.0)
+	#define PHY_TIMER_INTERVAL (50.0)
 #endif
 #if !defined PHY_MAX_OBJECTS
 	#define PHY_MAX_OBJECTS (1024)
