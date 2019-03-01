@@ -1,0 +1,11 @@
+(+) Adds Battle Royale minigame to the SF Stadium.
+(+) If a stock drops more than 80%, its shareholders will lose 20% of its shares.
+(+) Random airdrops drop every minute for Battle Royale players.
+(+) Weapon drops are implemented into the battle royale minigame.
+(+) ATM added at the SF Stadium.
+(/) Replaces ordinary plane for an andromanda model.
+(*) Battle Royale games cannot be started without the leader starting.
+(*) Battle Royale players will be autokilled if they AFK out of the playable area.
+(*) Fix issue with donation goal percentage not loading on restart.
+(-) Happy hour removed due to annoyance of players.
+(-) Free VIP cannot be redeemed when an email is inserted to a user account.

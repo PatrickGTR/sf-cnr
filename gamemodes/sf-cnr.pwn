@@ -13,7 +13,7 @@
 */
 
 #pragma compat 1
-//#pragma option -d3
+#pragma option -d3
 #pragma dynamic 7200000
 
 #define DEBUG_MODE
@@ -830,7 +830,7 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 		if ( p_Class[ playerid ] == CLASS_POLICE && p_WantedLevel[ hitid ] > 2 )
 			p_QuitToAvoidTimestamp[ hitid ] = g_iTime + 3;
 
-		if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( playerid ) )
+		if ( p_Class[ playerid ] == CLASS_POLICE && p_Class[ hitid ] != CLASS_POLICE && !p_WantedLevel[ hitid ] && GetPlayerState( hitid ) != PLAYER_STATE_WASTED && ! IsPlayerInEvent( playerid ) && ! IsPlayerInBattleRoyale( playerid ) )
 		 	return ShowPlayerHelpDialog( playerid, 2000, "You cannot hurt innocent civilians, you're a ~b~cop~w~~h~!" ), 0;
 
 		// CIA Exposure when weapon is shot
@@ -1065,7 +1065,7 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 		return 0;
 
 	// Anti RDM and gang member damage
-	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) )
+	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) && ! IsPlayerInBattleRoyale( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) ) {
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
@@ -2363,6 +2363,7 @@ CMD:mech( playerid, params[ ] )
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "You must be a civilian to use this command." );
 	else if ( !IsPlayerJob( playerid, JOB_DIRTY_MECHANIC ) ) return SendError( playerid, "You are not a dirty mechanic." );
 	else if ( IsPlayerBelowSeaLevel( playerid ) ) return SendError( playerid, "You cannot use this command while below sea level." );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( isnull( params ) ) return SendUsage( playerid, "/(mech)anic [FIX/NOS/REMP/FLIP/FLIX/PRICE/NEARBY]" );
 	else if ( strmatch( params, "fix" ) )
 	{
@@ -3442,6 +3443,7 @@ CMD:track( playerid, params[ ] )
 
 	if ( p_Class[ playerid ] != CLASS_CIVILIAN ) return SendError( playerid, "This is restricted to civilians only." );
 	else if ( !IsPlayerJob( playerid, JOB_HITMAN ) ) return SendError( playerid, "You have to be a hitman to use this command." );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/track [PLAYER_ID]" );
 	else if ( !IsPlayerConnected( pID ) || IsPlayerNPC( pID ) ) return SendError( playerid, "This player isn't connected!" );
 	else if ( pID == playerid ) return SendError( playerid, "You cannot apply this to yourself." );
@@ -3794,6 +3796,7 @@ CMD:search( playerid, params[ ] )
 	else if ( sscanf( params, "u", pID ) ) return SendUsage( playerid, "/search [PLAYER_ID]" );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) > 10.0 || !IsPlayerConnected( pID ) ) return SendError( playerid, "This player is not around." );
 	else if ( p_Class[ pID ] == CLASS_POLICE ) return SendError( playerid, "This player is in your team!" );
+	else if ( IsPlayerInBattleRoyale( playerid ) ) return SendError( playerid, "You cannot use this command while in Battle Royale." );
 	else if ( !IsPlayerCuffed( pID ) ) return SendError( playerid, "This player must be cuffed." );
 	else if ( IsPlayerJailed( pID ) ) return SendError( playerid, "You cannot " );
 	else
@@ -7115,7 +7118,7 @@ stock CanPlayerExitEntrance( playerid ) return g_iTime > p_EntranceTimestamp[ pl
 stock IsBuyableVehicle( vehicleid ) return g_buyableVehicle{ vehicleid };
 
 stock IsPlayerInMinigame( playerid ) {
-	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid );
+	return IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) || IsPlayerPlayingPool( playerid ) || IsPlayerPlayingPoker( playerid ) || IsPlayerInBattleRoyale( playerid );
 }
 
 stock SendClientMessageToCops( colour, const format[ ], va_args<> )

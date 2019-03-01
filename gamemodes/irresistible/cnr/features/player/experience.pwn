@@ -385,6 +385,9 @@ stock ShowPlayerIrresistibleRank( playerid )
 
 stock GivePlayerSeasonalXP( playerid, Float: default_xp )
 {
+	if ( ! IsPlayerConnected( playerid ) || ! IsPlayerLoggedIn( playerid ) )
+		return;
+
 	new Float: previous_season_xp = p_seasonalXP[ playerid ];
 	new Float: current_season_xp = previous_season_xp + default_xp;
 

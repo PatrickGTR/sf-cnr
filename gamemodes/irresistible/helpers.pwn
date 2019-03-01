@@ -29,6 +29,7 @@
 #define SetPlayerPosEx(%0,%1,%2,%3,%4)      SetPlayerPos(%0,%1,%2,%3),SetPlayerInterior(%0,%4)
 #define mysql_single_query(%0)              mysql_tquery(dbHandle,(%0),"","")
 #define points_format(%0)                   (number_format(%0, .prefix = '\0', .decimals = 2))
+#define bool_to_string(%0)                  (%0 == true ? (COL_GREEN # "YES" # COL_WHITE) : (COL_RED # "NO" # COL_WHITE))
 
 // Defines
 #define KEY_AIM                             (128)

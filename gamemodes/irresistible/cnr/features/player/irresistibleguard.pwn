@@ -8,6 +8,9 @@
 /* ** Includes ** */
 #include 							< YSI\y_hooks >
 
+/* ** Configuration ** */
+#define DISABLE_FREE_VIP
+
 /* ** Definitions ** */
 #define SECURITY_MODE_MILD					( 0 )
 #define SECURITY_MODE_PARANOID				( 1 )
@@ -63,6 +66,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				format( szBigString, sizeof( szBigString ), "SELECT * FROM `EMAILS` WHERE `ID`=%d", p_accountSecurityData[ playerid ] [ E_ID ] );
 				mysql_function_query( dbHandle, szBigString, true, "OnAccountGuardDelete", "d", playerid );
 			}
+		#if !defined DISABLE_FREE_VIP
 			case 3:
 			{
 				if ( p_AddedEmail{ playerid } )
@@ -78,6 +82,7 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 				SendGlobalMessage( COLOR_GOLD, "[EMAIL CONFIRMED]"COL_GREY" %s(%d) has confirmed their "COL_GOLD"/email"COL_GREY" and received 3 days of V.I.P!", ReturnPlayerName( playerid ), playerid );
  				return 1;
 			}
+		#endif
 		}
 		return 1;
 	}
@@ -455,10 +460,12 @@ stock ShowPlayerAccountGuard( playerid )
 			format( szBigString, sizeof( szBigString ), ""COL_WHITE"Your account email is "COL_GREEN"confirmed\t \nConfirm Email\t"COL_GREEN"%s\nSecurity Mode\t%s\n"COL_RED"Remove Irresistible Guard\t"COL_RED"approx. 24h", CensoreString( p_accountSecurityData[ playerid ] [ E_EMAIL ] ), SecurityModeToString( p_accountSecurityData[ playerid ] [ E_MODE ] ) );
 		}
 
+	#if !defined DISABLE_FREE_VIP
 		// award user for adding their email
 		if ( p_AddedEmail{ playerid } == false ) {
 			strcat( szBigString, "\n"COL_GOLD"Claim Free 3 Days Of Regular VIP!\t"COL_GOLD">>>" );
 		}
+	#endif
 	} else {
 		szBigString = ""COL_WHITE"Your account email is "COL_RED"unconfirmed\t \nConfirm Email\t"COL_GREY">>>";
 	}

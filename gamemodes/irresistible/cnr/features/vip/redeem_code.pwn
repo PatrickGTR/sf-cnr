@@ -52,8 +52,11 @@ hook OnScriptInit( )
 	TextDrawColor(g_TopDonorTD, -2347265);
 	TextDrawSetOutline(g_TopDonorTD, 1);
 	TextDrawSetProportional(g_TopDonorTD, 1);
+	return 1;
+}
 
-	/* ** Update Donation TD ** */
+hook OnServerVariablesLoaded( )
+{
 	UpdateGlobalDonated( );
 	return 1;
 }

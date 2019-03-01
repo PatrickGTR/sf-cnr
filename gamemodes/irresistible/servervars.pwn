@@ -63,6 +63,9 @@ thread OnLoadServerVariables( )
 				case GLOBAL_VARTYPE_FLOAT: SetGVarFloat( variable_name, cache_get_field_content_float( i, "FLOAT_VAL", dbHandle ) );
 			}
 		}
+
+		// safe method for modules
+		CallLocalFunction( "OnServerVariablesLoaded", "" );
 	}
 	return printf( "[SERVER] %d server variables have been loaded.", rows ), 1;
 }

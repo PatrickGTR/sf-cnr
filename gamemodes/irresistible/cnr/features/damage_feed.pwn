@@ -568,6 +568,9 @@ CMD:sync( playerid, params[ ] )
 	if ( IsPlayerPassive( playerid ) )
 		return SendError( playerid, "You cannot use this feature while in passive mode." );
 
+	if ( IsPlayerInBattleRoyale( playerid ) )
+		return SendError( playerid, "You cannot use this command while in Battle Royale." );
+	
 	new
 		curr_server_time = GetServerTime( );
 
