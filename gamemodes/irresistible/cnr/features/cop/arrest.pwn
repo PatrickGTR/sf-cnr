@@ -503,7 +503,7 @@ stock AwardNearestLEO( playerid, reason )
 
 	new closestLEO = GetClosestPlayerEx( playerid, CLASS_POLICE, radius );
 
-	if ( IsPlayerConnected( closestLEO ) )
+	if ( IsPlayerConnected( closestLEO ) && !p_Spectating{ closestLEO } )
 	{
 		new reasonText[ 24 ];
 

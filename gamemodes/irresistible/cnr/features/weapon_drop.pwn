@@ -133,8 +133,8 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 
 	// Health Pickups
 	if ( pickupid == g_HealthPickup ) {
-		SetPlayerHealth( playerid, 100.0 );
-		return 1;
+		new Float: health;
+		if ( GetPlayerHealth( playerid, health ) <= 100 ) return SetPlayerHealth( playerid, 100.0 );
 	}
 
 	// ignore if theres a delay
