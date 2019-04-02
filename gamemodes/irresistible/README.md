@@ -1,11 +1,11 @@
 # Irresistible Gaming Development Framework
-#### Copyright (C) 2011-2018
+#### Copyright (C) 2011-2019
 
-**Source Contributors:**  Lorenc ("Lorenc") Pekaj, Steven ("Stev") Howard
+**Source Contributors:**  Lorenc, Stev, Damen
 
 **BIG THANKS to Stev, Nibble, Banging7Grams, Kova, Queen and Panther for making this possible.**
 
-### Script Callbacks
+### Custom Script Callbacks
 
 - `SetPlayerRandomSpawn( playerid )`
     - Called when a player is attempting to be respawned somewhere randomly
