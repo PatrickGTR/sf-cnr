@@ -53,23 +53,27 @@ hook OnScriptInit( )
 }
 
 /* ** Functions ** */
-stock IsPlayerLeadMaintainer( playerid )
+stock IsPlayerLeadMaintainer( playerid ) // Limits money, coin, xp spawning to this user id
 {
-	return GetPlayerAccountID( playerid ) == 1; // limits money, coin, xp spawning to this user
+	return GetPlayerAccountID( playerid ) == 1;
 }
 
-stock IsPlayerServerMaintainer( playerid )
+stock IsPlayerServerMaintainer( playerid ) // Same as lead maintainer, just cant spawn money/xp/coins
 {
-	new
-		account_id = GetPlayerAccountID( playerid );
+	if ( IsPlayerLeadMaintainer( playerid ) )
+		return true;
 
-	return IsPlayerLeadMaintainer( playerid ) || account_id == 277833 || account_id == 758617; // same as lead maintainer, just cant spawn money/xp/coins
+	// new account_id = GetPlayerAccountID( playerid );
+	// return account_id == -1;
+	return false;
 }
 
-stock IsPlayerUnderCover( playerid ) // StefiTV852, Shepard23, JamesComey
+stock IsPlayerUnderCover( playerid ) // Undercover accounts allow admin commands on a specific id unnoticed
 {
-	new
-		account_id = GetPlayerAccountID( playerid );
+	if ( ! IsPlayerLoggedIn( playerid ) )
+		return false;
 
-	return ( account_id == 917827 || account_id == 917829 || account_id == 921105 || account_id == 721420 ) && IsPlayerLoggedIn( playerid );
+	// new account_id = GetPlayerAccountID( playerid );
+	// return account_id == 1;
+	return false;
 }
