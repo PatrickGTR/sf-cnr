@@ -47,13 +47,7 @@ stock CNR_SetPlayerWantedLevel( playerid, level )
 		{
 			PlayerTextDrawSetString( playerid, p_WantedLevelTD[ playerid ], sprintf( "] %d ]", p_WantedLevel[ playerid ] ) );
 			if ( ! IsPlayerMovieMode( playerid ) ) PlayerTextDrawShow( playerid, p_WantedLevelTD[ playerid ] );
-			ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // remove passive mode if the player is wanted
 		}
-	}
-	else if ( IsPlayerInAnyVehicle( playerid ) )
-	{
-		new vehicleID = GetPlayerVehicleID( playerid );
-		GivePassivePassengersWanted( playerid, vehicleID );
 	}
 	else
 	{
@@ -81,11 +75,6 @@ stock GivePlayerWantedLevel( playerid, level )
 {
 	if ( ! IsPlayerConnected( playerid ) || IsPlayerNPC( playerid ) || IsPlayerJailed( playerid ) || IsPlayerDueling( playerid ) || level == 0 )
 	    return 0;
-	else if ( IsPlayerInAnyVehicle( playerid ) )
-	{
-		new vehicleID = GetPlayerVehicleID( playerid );
-		GivePassivePassengersWanted( playerid, vehicleID );
-	}
 	
 	new
 		current_wanted = GetPlayerWantedLevel( playerid );

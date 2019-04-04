@@ -320,7 +320,6 @@ hook SetPlayerRandomSpawn( playerid )
                 SetPlayerPos( playerid, X, Y, Z - 2.0 );
                 SetPlayerVirtualWorld( playerid, BR_GetWorld( lobbyid ) );
 
-                ResetPlayerPassiveMode( playerid, true );
                 DisablePlayerSpawnProtection( playerid, .default_health = br_lobbyData[ lobbyid ] [ E_HEALTH ] );
 
                 SetPlayerHealth( playerid, br_lobbyData[ lobbyid ] [ E_HEALTH ] );
@@ -822,7 +821,6 @@ static stock BattleRoyale_RespawnPlayer( playerid )
     SetPlayerPos( playerid, BR_CHECKPOINT_POS[ 0 ], BR_CHECKPOINT_POS[ 1 ], BR_CHECKPOINT_POS[ 2 ] );
     SetPlayerVirtualWorld( playerid, 0 );
     SetPlayerInterior( playerid, 0 );
-    SetPlayerPassiveMode( playerid );
 
     // reset the respawn variable
     p_waitingForRespawn{ playerid } = false;

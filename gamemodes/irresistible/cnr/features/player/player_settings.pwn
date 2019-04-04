@@ -9,7 +9,7 @@
 #include 							< YSI\y_hooks >
 
 /* ** Definitions ** */
-#define MAX_SETTINGS 				( 13 )
+#define MAX_SETTINGS 				( 12 )
 
 #define SETTING_BAILOFFERS 			( 0 )
 #define SETTING_EVENT_TP			( 1 )
@@ -23,14 +23,13 @@
 #define SETTING_COINS_BAR	 		( 9 )
 #define SETTING_TOP_DONOR 			( 10 )
 #define SETTING_WEAPON_PICKUP 		( 11 )
-#define SETTING_PASSIVE_MODE 		( 12 )
 
 /* ** Variables ** */
 static stock
 	g_PlayerSettings 				[ MAX_SETTINGS ] [ 24 ] = {
 		{ "Prevent Bail Offers" }, { "Prevent Event Teleports" }, { "Prevent Gang Invites" }, { "Prevent Chat Prefixes" }, { "Prevent Ransom Offers" },
 		{ "Display User ID In Chat" }, { "Display Connection Log" }, { "Display Hitmarker" }, { "Set V.I.P Skin" }, { "Hide Total Coin Bar" }, { "Hide Last Donor Text" },
-		{ "Manual Pickup Weapon" }, { "Prevent Passive Mode" }
+		{ "Manual Pickup Weapon" }
 	},
 	bool: p_PlayerSettings 			[ MAX_PLAYERS ] [ MAX_SETTINGS char ]
 ;
@@ -38,7 +37,6 @@ static stock
 /* ** Hooks ** */
 hook OnPlayerRegister( playerid )
 {
-	TogglePlayerSetting( playerid, SETTING_PASSIVE_MODE, true ); // remove passive mode by default
 	return 1;
 }
 
@@ -74,10 +72,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			 	HidePlayerTogglableTextdraws( playerid, .force = false );
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
 			}
-
-			/*else if ( settingid == SETTING_PASSIVE_MODE ) {
-				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
-			}*/
 		}
 		else // setting is not being toggled
 		{
@@ -85,9 +79,6 @@ hook OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 			 	HidePlayerTogglableTextdraws( playerid, .force = false );
  				ShowPlayerTogglableTextdraws( playerid, .force = false );
 			}
-			/*else if ( settingid == SETTING_PASSIVE_MODE ) {
-				ResetPlayerPassiveMode( playerid, .passive_disabled = true ); // avoid abusing
-			}*/
 		}
 
 		TogglePlayerSetting( playerid, settingid, ! p_PlayerSettings[ playerid ] { settingid } );
@@ -163,36 +154,6 @@ CMD:controlpanel( playerid, params[ ] )
 
 	ShowPlayerDialog( playerid, DIALOG_CP_MENU, DIALOG_STYLE_TABLIST_HEADERS, "{FFFFFF}Control Panel", szLargeString, "Select", "Cancel" );
 	return 1;
-}
-
-CMD:rpmode( playerid, params[ ] ) return cmd_passive( playerid, params );
-CMD:passivemode( playerid, params[ ] ) return cmd_passive( playerid, params );
-CMD:passive( playerid, params[ ] )
-{
-	CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
-	return 1;
-}
-
-CMD:passivelist( playerid, params[ ] )
-{
-	new
-		count = 0;
-
-	szBigString[ 0 ] = '\0';
-
-	foreach ( new i : Player )
-	{
-		if ( IsPlayerPassive( i ) )
-		{
-			format( szBigString, sizeof( szBigString ), "%s%s(%d)\n", szBigString, ReturnPlayerName( i ), i );
-			count ++;
-		}
-	}
-
-	if ( count == 0 )
-		return SendError( playerid, "There is currently no players in passive mode." );
-	else
-		return ShowPlayerDialog(playerid, DIALOG_NULL, DIALOG_STYLE_LIST, ""COL_WHITE"Passive List", szBigString, "Close", "" ), 1;
 }
 
 /* ** Functions ** */

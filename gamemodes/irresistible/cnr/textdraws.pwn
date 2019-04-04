@@ -16,7 +16,6 @@ new
 	Text:  g_AchievementTD          [ 4 ] = { Text: INVALID_TEXT_DRAW, ... },
 	Text:  g_AdminLogTD         	= Text: INVALID_TEXT_DRAW,
 	Text:  g_AdminOnDutyTD          = Text: INVALID_TEXT_DRAW,
-	Text:  g_PassiveModeTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_DoubleXPTD				= Text: INVALID_TEXT_DRAW,
 	Text:  g_currentXPTD 			= Text: INVALID_TEXT_DRAW,
 	Text:  g_CurrentRankTD 			= Text: INVALID_TEXT_DRAW,
@@ -166,13 +165,6 @@ hook OnScriptInit( )
 	TextDrawSetOutline(g_AdminOnDutyTD, 1);
 	TextDrawSetProportional(g_AdminOnDutyTD, 1);
 
-	g_PassiveModeTD = TextDrawCreate(555.000000, 66.500000, "PASSIVE MODE" );
-	TextDrawBackgroundColor(g_PassiveModeTD, 255);
-	TextDrawFont(g_PassiveModeTD, 1);
-	TextDrawLetterSize(g_PassiveModeTD, 0.180000, 0.899999);
-	TextDrawColor(g_PassiveModeTD, COLOR_GREEN);
-	TextDrawSetOutline(g_PassiveModeTD, 1);
-	TextDrawSetProportional(g_PassiveModeTD, 1);
 	return Y_HOOKS_CONTINUE_RETURN_1;
 }
 

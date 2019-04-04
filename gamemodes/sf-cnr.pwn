@@ -931,10 +931,6 @@ public OnPlayerWeaponShot( playerid, weaponid, hittype, hitid, Float: fX, Float:
 
 					return ShowPlayerHelpDialog( playerid, 2000, "You cannot damage an innocent player's vehicle unless they have wanted players alongside them!" ), 0;
 				}
-
-				// Passive Players can't damage normal players vehicles
-				if ( IsPlayerPassive( playerid ) )
-					return 0;
 			}
 		}
 	}
@@ -1060,28 +1056,11 @@ public OnPlayerTakePlayerDamage( playerid, issuerid, &Float: amount, weaponid, b
 	if ( p_Class[ playerid ] == CLASS_POLICE && IsPlayerInAnyVehicle( playerid ) && GetVehicleModel( GetPlayerVehicleID( playerid ) ) == 432 )
 		return 0;
 
-	// Passive players cannot damage with vehicles
-	if ( IsPlayerPassive( issuerid ) && IsPlayerInAnyVehicle( issuerid ) )
-		return 0;
-
 	// Anti RDM and gang member damage
 	if ( ! IsPlayerInEvent( playerid ) && ! IsPlayerInPaintBall( playerid ) && ! IsPlayerBoxing( playerid ) && ! IsPlayerDueling( playerid ) && ! IsPlayerInBattleRoyale( playerid ) )
 	{
 		if ( IsPlayerInPlayerGang( issuerid, playerid ) ) {
 		 	return ShowPlayerHelpDialog( issuerid, 2000, "You cannot damage your homies!" ), 0;
-		}
-
-		// Passive mode enabled for player?
-		if ( IsPlayerPassive( issuerid ) ) {
-			/*if ( p_PassiveModeExpireTimer[ issuerid ] == -1 ) {
-				p_PassiveModeExpireTimer[ issuerid ] = PassiveMode_Reset( issuerid, 4 ); // it will just set it to anything but -1 for now
-			}*/
- 			return ShowPlayerHelpDialog( issuerid, 2000, "~r~You cannot deathmatch with /passive enabled." ), 0;
-		}
-
-		// Passive mode enabled for damaged id?
-		if ( IsPlayerPassive( playerid ) ) {
- 			return ShowPlayerHelpDialog( issuerid, 2000, "This player has passive mode ~g~enabled." ), 0;
 		}
 
 		// Anti Random Deathmatch
@@ -2013,8 +1992,6 @@ CMD:robitems( playerid, params[ ] )
 		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		else if ( IsPlayerAdminOnDuty( victimid ) ) return SendError( playerid, "You cannot use this command on admins that are on duty." );
 		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 
 		SetPVarInt( playerid, "robitems_timestamp", g_iTime + 60 );
 		GivePlayerWantedLevel( playerid, 4 );
@@ -2968,8 +2945,6 @@ CMD:sellgun( playerid, params[ ] )
 	else if ( p_Jailed{ pID } ) return SendError( playerid, "This player is jailed, you cannot sell weapons to him." );
 	else if ( IsPlayerInPaintBall( pID ) || IsPlayerDueling( pID ) ) return SendError( playerid, "You can't sell weapons in an arena." );
 	else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
-	else if ( IsPlayerPassive( pID ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-	else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 	else if ( GetDistanceBetweenPlayers( playerid, pID ) < 5.0 )
 	{
 		SendClientMessageFormatted( pID, -1, ""COL_ORANGE"[WEAPON DEAL]{FFFFFF} %s(%d) wishes to sell you weapons. "COL_ORANGE"/viewguns{FFFFFF} to view the available weapons.", ReturnPlayerName( playerid ), playerid );
@@ -3598,8 +3573,6 @@ CMD:kidnap( playerid, params[ ] )
 		else if ( IsPlayerBlowingCock( playerid ) ) return SendError( playerid, "You cannot use this command since you're giving oral sex." );
 		else if ( IsPlayerInMinigame( playerid ) ) return SendError( playerid, "You cannot use this command at the moment." );
 		else if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
-		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 		else if ( p_KidnapImmunity[ victimid ] > g_iTime ) return SendError( playerid, "This player cannot be kidnapped for another %s.", secondstotime( p_KidnapImmunity[ victimid ] - g_iTime ) );
 		else if ( PutPlayerInEmptyVehicleSeat( p_LastVehicle[ playerid ], victimid ) == -1 ) return SendError( playerid, "Failed to place the player inside a full of player vehicle." );
 		SendClientMessageFormatted( victimid, -1, ""COL_RED"[KIDNAPPED]{FFFFFF} You have been kidnapped by %s(%d)!", ReturnPlayerName( playerid ), playerid );
@@ -3671,8 +3644,6 @@ CMD:tie( playerid, params[ ] )
 		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		else if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
 		else if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "You cannot use this command on spawn protected players." );
-		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
-		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
 		else if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to tie is in a casino." );
 
 		// remove rope after attempt
@@ -3856,8 +3827,6 @@ CMD:rob( playerid, params[ ] )
 		else if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
 		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		else if ( IsPlayerInPlayerGang( playerid, victimid ) ) return SendError( playerid, "You cannot use this command on your homies!" );
-		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 
 		new
 			iRandom = random( 101 );
@@ -3940,8 +3909,6 @@ CMD:rape( playerid, params[ ] )
 		else if ( IsPlayerInCasino( victimid ) && ! p_WantedLevel[ victimid ] ) return SendError( playerid, "The innocent person you're trying to rape is in a casino." );
 		else if ( IsPlayerLoadingObjects( victimid ) ) return SendError( playerid, "This player is in a object-loading state." );
 		else if ( IsPlayerSpawnProtected( victimid ) ) return SendError( playerid, "This player is in a anti-spawn-kill state." );
-		else if ( IsPlayerPassive( victimid ) ) return SendError( playerid, "You cannot use this command on passive mode players." );
-		else if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as a passive mode player." );
 		else if ( p_ClassSelection{ victimid } ) return SendError( playerid, "This player is currently in class selection." );
 		else if ( IsPlayerInEvent( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an event." );
 		else if ( IsPlayerAFK( victimid ) && GetPlayerState( playerid ) != PLAYER_STATE_WASTED ) return SendError( playerid, "This player is in an AFK state." );
@@ -4811,11 +4778,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
 
             TogglePlayerControllable( playerid, 1 );
 
-			/* Passive Mode - Removed E:\SF-CNR\gamemodes\sf-cnr.pwn
-			if ( ! p_JobSet{ playerid } ) {
-				ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
-			}*/
-
             p_JobSet{ playerid } = true;
 
             //if ( !p_CitySet{ playerid } )
@@ -4832,19 +4794,6 @@ public OnDialogResponse( playerid, dialogid, response, listitem, inputtext[ ] )
         }
     }
 
-	/*if ( dialogid == DIALOG_PASSIVE_MODE )
-	{
-		if ( ! response || ! listitem ) {
-			ShowPlayerDialog( playerid, DIALOG_PASSIVE_MODE, DIALOG_STYLE_LIST, "{FFFFFF}What is your type of style?", "{555555}Choose Below Below:\nI Like Roleplaying\nI Like Deathmatching", "Select", "" );
-		}
-
-		if ( listitem == 1 ) {
-			SendServerMessage( playerid, "Since you like roleplay, passive mode has been automatically enabled for you!" );
-		} else if ( listitem == 2 ) {
-			CallLocalFunction( "OnDialogResponse", "dddds", playerid, DIALOG_CP_MENU, 1, SETTING_PASSIVE_MODE + 1, "ignore" ); // cunning way
-			SendServerMessage( playerid, "Since you like deathmatch, passive mode has been automatically enabled for you!" );
-		}
-	}*/
 	if ( dialogid == DIALOG_HOUSES )
 	{
 		if ( ! response )
@@ -6906,9 +6855,6 @@ stock IsRandomDeathmatch( issuerid, damagedid )
 		if ( IsPlayerBoxing( issuerid ) )
 			return false;
 
-		if ( IsPlayerPassive( damagedid ) )
-			return true;
-
 		if ( ! IsPlayerInCasino( issuerid ) || ! IsPlayerInCasino( damagedid ) )
 			return false;
 
@@ -7168,5 +7114,11 @@ stock IsPlayerBelowSeaLevel( playerid )
 
 	GetPlayerPos( playerid, z, z, z );
 
-	return z < 0.0;
+	return z < -2.0;
+}
+
+stock ReturnPlayerHealth( playerid )
+{
+	new Float: health;
+	return GetPlayerHealth( playerid, health );
 }
