@@ -146,10 +146,6 @@ hook OnPlayerPickUpDynPickup( playerid, pickupid )
 	{
 		if ( g_weaponDropData[ dropid ] [ E_PICKUP ] == pickupid )
 		{
-			// if player is in passive mode cannot pickup weapons, ammo
-			if ( IsPlayerPassive( playerid ) )
-				return ShowPlayerHelpDialog( playerid, 2500, "You cannot pick up dropped items in ~r~passive mode." );
-
 			if ( g_weaponDropData[ dropid ] [ E_WEAPON_ID ] == WEAPON_HEALTH )
 			{
 				new

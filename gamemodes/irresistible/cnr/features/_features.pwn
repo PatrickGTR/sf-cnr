@@ -31,7 +31,7 @@
 #include "irresistible\cnr\features\ammunation.pwn"
 #include "irresistible\cnr\features\game_day.pwn"
 #include "irresistible\cnr\features\movie_mode.pwn"
-#include "irresistible\cnr\features\passive_mode.pwn"
+#include "irresistible\cnr\features\anti-spawn_kill.pwn"
 #include "irresistible\cnr\features\server_rules.pwn"
 #include "irresistible\cnr\features\toys.pwn"
 #include "irresistible\cnr\features\fps.pwn"

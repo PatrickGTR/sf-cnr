@@ -174,7 +174,6 @@ CMD:c4( playerid, params[ ] )
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You cannot use this command since you're kidnapped." );
 		if ( IsPlayerInCasino( playerid ) ) return SendError( playerid, "You cannot use this command since you're in a casino." );
 		if ( IsPlayerInPaintBall( playerid ) || IsPlayerDueling( playerid ) ) return SendError( playerid, "You cannot use this command since you're in an arena." );
-		if ( IsPlayerPassive( playerid ) ) return SendError( playerid, "You cannot use this command as an innocent player in passive mode." );
 		if ( p_C4Amount[ playerid ] < 1 ) return SendError( playerid, "You don't have any C4's" );
 
 		#if defined __cnr__chuffsec
