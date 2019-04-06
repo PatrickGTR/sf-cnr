@@ -16,7 +16,7 @@
 #pragma option -d3
 #pragma dynamic 7200000
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 
 #if defined DEBUG_MODE
 	#pragma option -d3
@@ -7117,8 +7117,13 @@ stock IsPlayerBelowSeaLevel( playerid )
 	return z < -2.0;
 }
 
-stock ReturnPlayerHealth( playerid )
+stock IsPlayerDead( playerid )
 {
-	new Float: health;
-	return GetPlayerHealth( playerid, health );
+	new
+		Float: health;
+
+	if ( GetPlayerHealth( playerid, health ) )
+		return health <= 0.0;
+
+	return GetPlayerState( playerid ) == PLAYER_STATE_WASTED;
 }

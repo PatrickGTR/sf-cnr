@@ -243,7 +243,7 @@ stock TazePlayer( victimid, playerid )
 		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
 		if ( IsPlayerTazed( victimid ) ) return SendError( playerid, "This player is already tazed." );
-		if ( ReturnPlayerHealth( victimid ) <= 0.0 ) return SendError( playerid, "This player is dead." );
+		if ( IsPlayerDead( victimid ) ) return SendError( playerid, "This player is dead." );
 		//if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
 		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
 		if ( IsPlayerGettingBlowed( playerid ) ) return SendError( playerid, "You cannot use this command since you're getting blowed." );
@@ -297,7 +297,7 @@ stock ArrestPlayer( victimid, playerid )
 		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
 		if ( !IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is not cuffed." );
 		if ( IsPlayerKidnapped( playerid ) ) return SendError( playerid, "You are kidnapped, you cannot do this." );
-		if ( ReturnPlayerHealth( victimid ) <= 0.0 ) return SendError( playerid, "This player is dead." );
+		if ( IsPlayerDead( victimid ) ) return SendError( playerid, "This player is dead." );
 		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is detained, you cannot arrest them." );
 		if ( IsPlayerTied( playerid ) ) return SendError( playerid, "You are tied, you cannot do this." );
 		if ( IsPlayerJailed( victimid ) ) return SendError( playerid, "This player is jailed. He may be paused." );
@@ -358,7 +358,7 @@ stock CuffPlayer( victimid, playerid )
 		if ( p_WantedLevel[ victimid ] == 0 ) return SendError( playerid, "This player is innocent!" );
 		if ( p_WantedLevel[ victimid ] < 6 ) return SendError( playerid, "This person isn't worth cuffing, ticket them." );
 		if ( IsPlayerInAnyVehicle( victimid ) ) return SendError( playerid, "This player is in a vehicle " );
-		if ( ReturnPlayerHealth( victimid ) <= 0.0 ) return SendError( playerid, "This player is dead." );
+		if ( IsPlayerDead( victimid ) ) return SendError( playerid, "This player is dead." );
 		//if ( IsPlayerDetained( victimid ) ) return SendError( playerid, "This player is already detained." );
 		if ( IsPlayerInAnyVehicle( playerid ) ) return SendError( playerid, "You cannot do this while you're inside a vehicle." );
 		if ( IsPlayerCuffed( victimid ) ) return SendError( playerid, "This player is already cuffed." );
@@ -446,7 +446,7 @@ function Uncuff( playerid )
 
 stock BreakPlayerCuffs( playerid )
 {
-	if ( !IsPlayerConnected( playerid ) || ReturnPlayerHealth( playerid ) <= 0 ) return false;
+	if ( !IsPlayerConnected( playerid ) || IsPlayerDead( playerid ) ) return false;
 
 	if ( p_BobbyPins[ playerid ] < 1 )
 	{
@@ -499,7 +499,7 @@ function BreakPlayerCuffsAttempt( playerid ) return BreakPlayerCuffs( playerid )
 
 stock AwardNearestLEO( playerid, reason )
 {
-	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID || GetPlayerWantedLevel( playerid ) < 2 || ReturnPlayerHealth( playerid ) <= 0 )
+	if ( ! IsPlayerConnected( playerid ) || playerid == INVALID_PLAYER_ID || GetPlayerWantedLevel( playerid ) < 2 || IsPlayerDead( playerid ) )
 		return false;
 
 	new Float: radius = ( IsPlayerInAnyVehicle( playerid ) ? 150.0 : 75.0 ); // If player is in a vehicle, increase radius due to ability to get farther quicker.
